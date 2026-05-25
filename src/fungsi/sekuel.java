@@ -12,6 +12,8 @@
 
 package fungsi;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.Canvas;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -22,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1489,6 +1492,42 @@ public final class sekuel {
         }
             
         return dicari;
+    }
+
+    public String CariPegawai(String kode) {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode root = null;
+        JsonNode response = null;
+        FileReader myObj = null;
+        String iyem = "";
+        try {
+            myObj = new FileReader("./cache/pegawai.iyem");
+            root = mapper.readTree(myObj);
+            response = root.path("pegawai");
+            if (response.isArray()) {
+                for (JsonNode list : response) {
+                    if (list.path("NIP").asText().equalsIgnoreCase(kode)) {
+                        iyem = list.path("Nama").asText();
+                        break;
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println("Notifikasi : " + ex);
+        } finally {
+            if (myObj != null) {
+                try {
+                    myObj.close();
+                } catch (Exception e) {
+                }
+            }
+            response = null;
+            root = null;
+        }
+        if (iyem.equals("")) {
+            iyem = cariIsi("select pegawai.nama from pegawai where pegawai.nik=?", kode);
+        }
+        return iyem;
     }
     
     public Date cariIsi2(String sql){

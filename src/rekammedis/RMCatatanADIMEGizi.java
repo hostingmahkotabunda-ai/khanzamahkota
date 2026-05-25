@@ -60,6 +60,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     public RMCatatanADIMEGizi(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        aturTampilanFormInput();
         this.setLocation(8,1);
         setSize(628,674);
 
@@ -169,6 +170,49 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
         isForm();
         
         jam();
+    }
+
+    private void aturTampilanFormInput(){
+        java.awt.Font fontInputBesar=new java.awt.Font("Tahoma", java.awt.Font.BOLD, 13);
+        java.awt.Font fontAreaBesar=new java.awt.Font("Tahoma", java.awt.Font.BOLD, 14);
+        java.awt.Component[] inputan={
+            TNoRw,TPasien,TNoRM,Tanggal,Jam,Menit,Detik,KdPetugas,NmPetugas
+        };
+        for(java.awt.Component input:inputan){
+            input.setFont(fontInputBesar);
+        }
+        javax.swing.JTextArea[] areaBesar={Asesmen,Diagnosis,Intervensi,Monitoring,Evaluasi,Instruksi};
+        for(javax.swing.JTextArea area:areaBesar){
+            area.setFont(fontAreaBesar);
+            area.setLineWrap(true);
+            area.setWrapStyleWord(true);
+        }
+
+        PanelInput.setPreferredSize(new Dimension(192,420));
+        FormInput.setPreferredSize(new Dimension(100,370));
+        TNoRw.setBounds(79, 10, 141, 28);
+        TPasien.setBounds(336, 10, 450, 28);
+        TNoRM.setBounds(222, 10, 112, 28);
+        Tanggal.setBounds(79, 40, 90, 28);
+        Jam.setBounds(173, 40, 62, 28);
+        Menit.setBounds(238, 40, 62, 28);
+        Detik.setBounds(303, 40, 62, 28);
+        ChkKejadian.setBounds(368, 40, 23, 28);
+        KdPetugas.setBounds(474, 40, 94, 28);
+        NmPetugas.setBounds(570, 40, 184, 28);
+        btnPetugas.setBounds(758, 40, 28, 28);
+        jLabel24.setBounds(0, 70, 75, 23);
+        jLabel29.setBounds(400, 70, 70, 23);
+        scrollPane1.setBounds(79, 70, 312, 90);
+        scrollPane2.setBounds(474, 70, 312, 90);
+        jLabel25.setBounds(0, 170, 75, 23);
+        jLabel30.setBounds(400, 170, 70, 23);
+        scrollPane3.setBounds(79, 170, 312, 90);
+        scrollPane4.setBounds(474, 170, 312, 90);
+        jLabel26.setBounds(0, 270, 75, 23);
+        jLabel31.setBounds(400, 270, 70, 23);
+        scrollPane5.setBounds(79, 270, 312, 90);
+        scrollPane6.setBounds(474, 270, 312, 90);
     }
 
 
@@ -824,6 +868,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     private void TNoRwKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TNoRwKeyPressed
         if(evt.getKeyCode()==KeyEvent.VK_PAGE_DOWN){
             isRawat();
+            isiDiagnosisIntervensiDariAsuhanGizi();
         }else{            
             Valid.pindah(evt,TCari,Tanggal);
         }
@@ -1305,6 +1350,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
         Evaluasi.setText("");
         Instruksi.setText("");
         Tanggal.setDate(new Date());
+        isiDiagnosisIntervensiDariAsuhanGizi();
         Asesmen.requestFocus();
     } 
 
@@ -1358,21 +1404,60 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
             System.out.println("Notif : "+e);
         }
     }
+
+    private void isiDiagnosisIntervensiDariAsuhanGizi() {
+        if(TNoRw.getText().trim().equals("") || (!Diagnosis.getText().trim().equals("") && !Intervensi.getText().trim().equals(""))) {
+            return;
+        }
+        PreparedStatement psAsuhan=null;
+        ResultSet rsAsuhan=null;
+        try {
+            psAsuhan=koneksi.prepareStatement(
+                "select ifnull(asuhan_gizi.diagnosis,'') as diagnosis,ifnull(asuhan_gizi.intervensi_gizi,'') as intervensi_gizi "+
+                "from asuhan_gizi where asuhan_gizi.no_rawat=? "+
+                "and (ifnull(asuhan_gizi.diagnosis,'')<>'' or ifnull(asuhan_gizi.intervensi_gizi,'')<>'') "+
+                "order by asuhan_gizi.tanggal desc limit 1");
+            psAsuhan.setString(1,TNoRw.getText());
+            rsAsuhan=psAsuhan.executeQuery();
+            if(rsAsuhan.next()){
+                if(Diagnosis.getText().trim().equals("")){
+                    Diagnosis.setText(rsAsuhan.getString("diagnosis"));
+                }
+                if(Intervensi.getText().trim().equals("")){
+                    Intervensi.setText(rsAsuhan.getString("intervensi_gizi"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif auto diagnosis/intervensi asuhan gizi : "+e);
+        } finally {
+            try {
+                if(rsAsuhan!=null){
+                    rsAsuhan.close();
+                }
+                if(psAsuhan!=null){
+                    psAsuhan.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notif close auto diagnosis/intervensi asuhan gizi : "+e);
+            }
+        }
+    }
     
     public void setNoRm(String norwt, Date tgl2) {
         TNoRw.setText(norwt);
         TCari.setText(norwt);
         DTPCari2.setDate(tgl2);
-        isRawat();              
+        isRawat();
+        isiDiagnosisIntervensiDariAsuhanGizi();
         ChkInput.setSelected(true);
         isForm();
     }
     
     private void isForm(){
         if(ChkInput.isSelected()==true){
-            if(internalFrame1.getHeight()>478){
+            if(internalFrame1.getHeight()>592){
                 ChkInput.setVisible(false);
-                PanelInput.setPreferredSize(new Dimension(WIDTH,306));
+                PanelInput.setPreferredSize(new Dimension(WIDTH,420));
                 FormInput.setVisible(true);      
                 ChkInput.setVisible(true);
             }else{

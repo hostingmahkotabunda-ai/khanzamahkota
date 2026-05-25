@@ -96,9 +96,9 @@
 	<detail>
 		<band height="145" splitType="Stretch">
 			<textField>
-				<reportElement x="6" y="94" width="174" height="15" forecolor="#002800"/>
+				<reportElement x="6" y="92" width="174" height="18" forecolor="#002800"/>
 				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="9" isBold="true"/>
+					<font fontName="Tahoma" size="12" isBold="true"/>
 				</textElement>
 				<textFieldExpression class="java.lang.String"><![CDATA[$F{no_rkm_medis}]]></textFieldExpression>
 			</textField>
@@ -113,10 +113,46 @@
 				<textElement lineSpacing="Single">
 					<font fontName="Tahoma" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{nm_pasien}+"/"+$F{nm_ibu}]]></textFieldExpression>
+				<textFieldExpression class="java.lang.String"><![CDATA[$F{nm_pasien}]]></textFieldExpression>
 			</textField>
+			<staticText>
+				<reportElement x="6" y="60" width="82" height="15" forecolor="#002800"/>
+				<textElement lineSpacing="Single">
+					<font fontName="Tahoma" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[TTL]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="88" y="60" width="8" height="15" forecolor="#002800"/>
+				<textElement lineSpacing="Single">
+					<font fontName="Tahoma" size="9" isBold="true"/>
+				</textElement>  
+				
+				<text><![CDATA[:]]></text>
+			</staticText>
 			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
-				<reportElement x="6" y="60" width="222" height="15" forecolor="#002800"/>
+				<reportElement x="98" y="60" width="130" height="15" forecolor="#002800"/>
+				<textElement lineSpacing="Single">
+					<font fontName="Tahoma" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression class="java.util.Date"><![CDATA[$F{tgl_lahir}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="6" y="76" width="82" height="15" forecolor="#002800"/>
+				<textElement lineSpacing="Single">
+					<font fontName="Tahoma" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Tanggal Daftar]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="88" y="76" width="8" height="15" forecolor="#002800"/>
+				<textElement lineSpacing="Single">
+					<font fontName="Tahoma" size="9" isBold="true"/>
+				</textElement>
+				<text><![CDATA[:]]></text>
+			</staticText>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement x="98" y="76" width="130" height="15" forecolor="#002800"/>
 				<textElement lineSpacing="Single">
 					<font fontName="Tahoma" size="9" isBold="true"/>
 				</textElement>

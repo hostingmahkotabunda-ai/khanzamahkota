@@ -1205,7 +1205,27 @@ public class koneksiDB {
         }
         return var;
     }
+
+    public static String LOKASITEMPLATESOAPCSV(){
+        try{
+            prop.loadFromXML(new FileInputStream("setting/database.xml"));
+            var=prop.getProperty("LOKASITEMPLATESOAPCSV","");
+        }catch(Exception e){
+            var="";
+        }
+        return var;
+    }
     
+    public static String URLKFAV2SATUSEHAT(){
+        try{
+            prop.loadFromXML(new FileInputStream("setting/database.xml"));
+            var=prop.getProperty("URLKFAV2SATUSEHAT","https://api-satusehat.kemkes.go.id/kfa-v2");
+        }catch(Exception e){
+            var="https://api-satusehat.kemkes.go.id/kfa-v2";
+        }
+        return var;
+    }
+
     public static String USERORTHANC(){
         try{
             prop.loadFromXML(new FileInputStream("setting/database.xml"));

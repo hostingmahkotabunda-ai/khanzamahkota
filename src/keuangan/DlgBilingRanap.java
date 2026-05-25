@@ -232,6 +232,13 @@ public class DlgBilingRanap extends javax.swing.JDialog {
     private JsonNode root;
     private JsonNode response;
     private FileReader myObj;
+    private String planSOAPBilling="";
+    private boolean draftResepSOAPTableChecked=false;
+    private javax.swing.JPanel panelTagihanBilling;
+    private javax.swing.JPanel panelPlanSOAPBilling;
+    private widget.ScrollPane scrollPlanSOAPBilling;
+    private javax.swing.JTextArea areaPlanSOAPBilling;
+    private widget.Label labelPlanSOAPBilling;
 
     /** Creates new form DlgBiling
      * @param parent
@@ -239,6 +246,7 @@ public class DlgBilingRanap extends javax.swing.JDialog {
     public DlgBilingRanap(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        inisialisasiPanelPlanSOAPBilling();
         //this.setLocation(8,1);
         //setSize(891,640);
 
@@ -780,6 +788,112 @@ public class DlgBilingRanap extends javax.swing.JDialog {
             }
         } catch (Exception e) {
             System.out.println(e);
+        }
+    }
+
+    private void inisialisasiPanelPlanSOAPBilling() {
+        panelTagihanBilling = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelTagihanBilling.setName("panelTagihanBilling");
+        panelTagihanBilling.setOpaque(false);
+
+        panelPlanSOAPBilling = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelPlanSOAPBilling.setName("panelPlanSOAPBilling");
+        panelPlanSOAPBilling.setOpaque(false);
+        panelPlanSOAPBilling.setPreferredSize(new java.awt.Dimension(420,100));
+
+        labelPlanSOAPBilling = new widget.Label();
+        labelPlanSOAPBilling.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelPlanSOAPBilling.setText("Plan SOAP Dokter :");
+        labelPlanSOAPBilling.setPreferredSize(new java.awt.Dimension(100,23));
+
+        areaPlanSOAPBilling = new javax.swing.JTextArea();
+        areaPlanSOAPBilling.setEditable(false);
+        areaPlanSOAPBilling.setLineWrap(true);
+        areaPlanSOAPBilling.setWrapStyleWord(true);
+        areaPlanSOAPBilling.setMargin(new java.awt.Insets(6,6,6,6));
+        areaPlanSOAPBilling.setName("areaPlanSOAPBilling");
+
+        scrollPlanSOAPBilling = new widget.ScrollPane();
+        scrollPlanSOAPBilling.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollPlanSOAPBilling.setName("scrollPlanSOAPBilling");
+        scrollPlanSOAPBilling.setViewportView(areaPlanSOAPBilling);
+
+        panelPlanSOAPBilling.add(labelPlanSOAPBilling, java.awt.BorderLayout.PAGE_START);
+        panelPlanSOAPBilling.add(scrollPlanSOAPBilling, java.awt.BorderLayout.CENTER);
+
+        int indexTagihan = TabRawat.indexOfComponent(Scroll);
+        if(indexTagihan>-1) {
+            TabRawat.remove(indexTagihan);
+            panelTagihanBilling.add(Scroll, java.awt.BorderLayout.CENTER);
+            panelTagihanBilling.add(panelPlanSOAPBilling, java.awt.BorderLayout.EAST);
+            TabRawat.insertTab("Data Tagihan", null, panelTagihanBilling, null, indexTagihan);
+        }
+
+        refreshPanelPlanSOAPBilling();
+    }
+
+    private void tampilkanPlanSOAPBilling(String noRawat) {
+        planSOAPBilling="";
+        try {
+            if(noRawat!=null && !noRawat.trim().equals("")) {
+                pastikanTabelDraftResepSOAP();
+                bersihkanDraftSOAPNonDokter(noRawat);
+                planSOAPBilling=Sequel.cariIsi(
+                    "select ifnull(permintaan_resep_soap.resep_teks,'') from permintaan_resep_soap " +
+                    "inner join dokter on permintaan_resep_soap.kd_dokter=dokter.kd_dokter " +
+                    "where permintaan_resep_soap.no_rawat=? and permintaan_resep_soap.status='Belum Terlayani' " +
+                    "order by permintaan_resep_soap.tgl_permintaan desc,permintaan_resep_soap.jam_permintaan desc limit 1",
+                    noRawat
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Plan SOAP DlgBilingRanap : "+e);
+        }
+        refreshPanelPlanSOAPBilling();
+    }
+
+    private void refreshPanelPlanSOAPBilling() {
+        if(areaPlanSOAPBilling!=null) {
+            areaPlanSOAPBilling.setText(planSOAPBilling.trim().equals("") ? "Belum ada Plan SOAP dokter untuk kunjungan ini." : planSOAPBilling);
+            areaPlanSOAPBilling.setCaretPosition(0);
+        }
+    }
+
+    private void pastikanTabelDraftResepSOAP() {
+        if(draftResepSOAPTableChecked){
+            return;
+        }
+        try {
+            Sequel.queryu("create table if not exists permintaan_resep_soap ("+
+                    "id bigint not null auto_increment,"+
+                    "no_rawat varchar(17) not null,"+
+                    "tgl_soap date not null,"+
+                    "jam_soap time not null,"+
+                    "kd_dokter varchar(20) not null,"+
+                    "tgl_permintaan date not null,"+
+                    "jam_permintaan time not null,"+
+                    "resep_teks text not null,"+
+                    "status varchar(20) not null default 'Belum Terlayani',"+
+                    "no_resep varchar(15) not null default '',"+
+                    "primary key (id),"+
+                    "key idx_prs_soap_1 (no_rawat,tgl_soap,jam_soap),"+
+                    "key idx_prs_soap_2 (status,tgl_permintaan,jam_permintaan))");
+            draftResepSOAPTableChecked=true;
+        } catch (Exception e) {
+            System.out.println("Notifikasi Plan SOAP DlgBilingRanap : "+e);
+        }
+    }
+
+    private void bersihkanDraftSOAPNonDokter(String noRawat) {
+        try {
+            Sequel.queryu2(
+                "delete from permintaan_resep_soap where no_rawat=? and status='Belum Terlayani' " +
+                "and kd_dokter not in (select kd_dokter from dokter)",
+                1,
+                new String[]{noRawat}
+            );
+        } catch (Exception e) {
+            System.out.println("Notifikasi Plan SOAP DlgBilingRanap : "+e);
         }
     }
    
@@ -4700,6 +4814,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     // End of variables declaration//GEN-END:variables
 
     public void isRawat() {
+        tampilkanPlanSOAPBilling(TNoRw.getText());
          try {      
             pscekbilling=koneksi.prepareStatement(sqlpscekbilling);
             try {

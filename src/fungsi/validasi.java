@@ -81,6 +81,48 @@ public final class validasi {
         super();
     };
 
+    public String sanitizeWhatsAppText(String text){
+        if(text==null){
+            return "";
+        }
+        String hasil=text;
+        hasil=hasil.replace("\uFEFF","");
+        hasil=hasil.replace("\u00A0"," ");
+        hasil=hasil.replace("\u200B","");
+        hasil=hasil.replace("\u200C","");
+        hasil=hasil.replace("\u200D","");
+        hasil=hasil.replace("\u2060","");
+        hasil=hasil.replace("\u2028","\n");
+        hasil=hasil.replace("\u2029","\n");
+        hasil=hasil.replace("\r\n","\n");
+        hasil=hasil.replace("\r","\n");
+        hasil=hasil.replace('“','"');
+        hasil=hasil.replace('”','"');
+        hasil=hasil.replace('„','"');
+        hasil=hasil.replace('‟','"');
+        hasil=hasil.replace('‘','\'');
+        hasil=hasil.replace('’','\'');
+        hasil=hasil.replace('‚','\'');
+        hasil=hasil.replace('‛','\'');
+        hasil=hasil.replace('•','-');
+        hasil=hasil.replace('‣','-');
+        hasil=hasil.replace('◦','-');
+        hasil=hasil.replace('▪','-');
+        hasil=hasil.replace('–','-');
+        hasil=hasil.replace('—','-');
+        hasil=hasil.replace('―','-');
+        hasil=hasil.replaceAll("[\\p{Cntrl}&&[^\\n\\t]]","");
+        hasil=hasil.replaceAll("[ \\t]+\\n","\n");
+        hasil=hasil.replaceAll("\\n{3,}","\n\n");
+        return hasil.trim();
+    }
+
+    public void sanitizeTextArea(JTextArea area){
+        if(area!=null){
+            area.setText(sanitizeWhatsAppText(area.getText()));
+        }
+    }
+
     public void autoNomer(DefaultTableModel tabMode,String strAwal,Integer pnj,javax.swing.JTextField teks){        
         s=Integer.toString(tabMode.getRowCount()+1);
         j=s.length();
@@ -832,6 +874,74 @@ public final class validasi {
         } catch (Exception ex) {
            System.out.println("Notifikasi : "+ex);
         } 
+    }
+
+    public String openDialog(){
+        try{
+            javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+            chooser.setDialogTitle("Simpan File");
+            chooser.setSelectedFile(new java.io.File("export_"+new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())+".xls"));
+            int resultChooser = chooser.showSaveDialog(null);
+            if(resultChooser == javax.swing.JFileChooser.APPROVE_OPTION){
+                return chooser.getSelectedFile().getAbsolutePath();
+            }
+        }catch(Exception e){
+            System.out.println("Notifikasi : "+e);
+        }
+        return "./export_"+new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())+".xls";
+    }
+
+    public void MyReportToExcel(String qry,String fileName){
+        PreparedStatement localPs=null;
+        ResultSet localRs=null;
+        WritableWorkbook workbook=null;
+        try{
+            String target=fileName;
+            if(target==null || target.trim().equals("")){
+                target=openDialog();
+            }
+            if(!target.toLowerCase().endsWith(".xls")){
+                target=target+".xls";
+            }
+            localPs=connect.prepareStatement(qry);
+            localRs=localPs.executeQuery();
+            workbook=Workbook.createWorkbook(new File(target));
+            WritableSheet sheet=workbook.createSheet("Sheet1", 0);
+            java.sql.ResultSetMetaData meta=localRs.getMetaData();
+            int cols=meta.getColumnCount();
+            for(int c=1;c<=cols;c++){
+                sheet.addCell(new Label(c-1,0,meta.getColumnLabel(c)));
+            }
+            int row=1;
+            while(localRs.next()){
+                for(int c=1;c<=cols;c++){
+                    String value=localRs.getString(c);
+                    sheet.addCell(new Label(c-1,row,value==null?"":value));
+                }
+                row++;
+            }
+            workbook.write();
+            Desktop.getDesktop().open(new File(target));
+        }catch(Exception e){
+            System.out.println("Notifikasi : "+e);
+            JOptionPane.showMessageDialog(null,"Gagal export Excel : "+e);
+        }finally{
+            try{
+                if(workbook!=null){
+                    workbook.close();
+                }
+            }catch(Exception e){}
+            try{
+                if(localRs!=null){
+                    localRs.close();
+                }
+            }catch(Exception e){}
+            try{
+                if(localPs!=null){
+                    localPs.close();
+                }
+            }catch(Exception e){}
+        }
     }
 
 

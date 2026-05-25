@@ -37,7 +37,7 @@ import simrskhanza.DlgCariPoli;
 import simrskhanza.DlgInputResepPulang;
 
 public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
-    private final DefaultTableModel tabMode,tabMode2,tabMode3,tabMode4,tabMode5,tabMode6,tabMode7,tabMode8;
+    private final DefaultTableModel tabMode,tabMode2,tabMode3,tabMode4,tabMode5,tabMode6,tabMode7,tabMode8,tabMode9;
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
     private Connection koneksi=koneksiDB.condb();
@@ -45,13 +45,19 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
     private ResultSet rs,rs2,rs3;
     private String bangsal="",aktifkanparsial="no",kamar="",alarm="",DEPOAKTIFOBAT="",
             formalarm="",nol_detik,detik,NoResep="",TglPeresepan="",JamPeresepan="",
-            NoRawat="",NoRM="",Pasien="",DokterPeresep="",Status="",KodeDokter="",Ruang="",KodeRuang="";
+            NoRawat="",NoRM="",Pasien="",DokterPeresep="",Status="",KodeDokter="",Ruang="",KodeRuang="",
+            IdDraftResepSOAP="",ResepTeksDraftSOAP="",TglSoapDraftSOAP="",JamSoapDraftSOAP="";
     private DlgCariDokter dokter=new DlgCariDokter(null,false);
     private DlgCariPoli poli=new DlgCariPoli(null,false);
     private DlgCariBangsal ruang=new DlgCariBangsal(null,false);
     private int jmlparsial=0,nilai_detik,resepbaru=0,i=0;
     private BackgroundMusic music;
     private boolean aktif=false,semua;
+    private boolean draftResepSOAPTableChecked=false;
+    private final javax.swing.JPopupMenu PopupResepRalan=new javax.swing.JPopupMenu();
+    private final javax.swing.JPopupMenu PopupResepRanap=new javax.swing.JPopupMenu();
+    private final javax.swing.JMenuItem ppCetakObatResepRalan=new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem ppCetakObatResepRanap=new javax.swing.JMenuItem();
     
     /** Creates new form 
      * @param parent
@@ -112,6 +118,7 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
             }
         }
         tbResepRalan.setDefaultRenderer(Object.class, new WarnaTable());
+        initPopupResepRalan();
         
         tabMode2=new DefaultTableModel(null,new Object[]{
                 "No.Resep","Tgl.Resep","Poli/Unit","Status","Pasien","Dokter Peresep"
@@ -189,6 +196,7 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
             }
         }
         tbResepRanap.setDefaultRenderer(Object.class, new WarnaTable());
+        initPopupResepRanap();
         
         tabMode4=new DefaultTableModel(null,new Object[]{
                 "No.Resep","Tgl.Resep","Ruang/Kamar","Status","Pasien","Dokter Peresep"
@@ -364,6 +372,54 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
             }
         }
         tbDetailPermintaanResepPulang.setDefaultRenderer(Object.class, new WarnaTable());
+
+        tabMode9=new DefaultTableModel(null,new Object[]{
+                "ID","Tgl.Permintaan","Jam","No.Rawat","No.RM","Pasien","Dokter Peresep",
+                "Status","No.Resep","Tgl.SOAP","Jam SOAP","Resep Teks","Kode Dokter"
+            }){
+              @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
+        };
+        tbDraftResepSOAP.setModel(tabMode9);
+        tbDraftResepSOAP.setPreferredScrollableViewportSize(new Dimension(500,500));
+        tbDraftResepSOAP.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+
+        for (int i = 0; i < 13; i++) {
+            TableColumn column = tbDraftResepSOAP.getColumnModel().getColumn(i);
+            if(i==0){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(i==1){
+                column.setPreferredWidth(80);
+            }else if(i==2){
+                column.setPreferredWidth(80);
+            }else if(i==3){
+                column.setPreferredWidth(105);
+            }else if(i==4){
+                column.setPreferredWidth(70);
+            }else if(i==5){
+                column.setPreferredWidth(180);
+            }else if(i==6){
+                column.setPreferredWidth(180);
+            }else if(i==7){
+                column.setPreferredWidth(110);
+            }else if(i==8){
+                column.setPreferredWidth(85);
+            }else if(i==9){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(i==10){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(i==11){
+                column.setPreferredWidth(900);
+            }else if(i==12){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }
+        }
+        tbDraftResepSOAP.setDefaultRenderer(Object.class, new WarnaTable());
+
+        pastikanTabelDraftResepSOAP();
         
         TCari.setDocument(new batasInput((byte)100).getKata(TCari));
         if(koneksiDB.CARICEPAT().equals("aktif")){
@@ -545,6 +601,8 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
         tbPermintaanResepPulang = new widget.Table();
         scrollPane8 = new widget.ScrollPane();
         tbDetailPermintaanResepPulang = new widget.Table();
+        scrollPane9 = new widget.ScrollPane();
+        tbDraftResepSOAP = new widget.Table();
         panelGlass9 = new widget.panelisi();
         jLabel15 = new widget.Label();
         CrDokter2 = new widget.TextBox();
@@ -898,7 +956,33 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
 
         TabRawatJalan.addTab("Detail Rawat Jalan", scrollPane2);
 
-        internalFrame2.add(TabRawatJalan, java.awt.BorderLayout.PAGE_START);
+        tbDraftResepSOAP.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        tbDraftResepSOAP.setName("tbDraftResepSOAP"); // NOI18N
+        tbDraftResepSOAP.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                tbDraftResepSOAPMouseClicked(evt);
+            }
+        });
+        tbDraftResepSOAP.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                tbDraftResepSOAPKeyPressed(evt);
+            }
+        });
+        scrollPane9.setViewportView(tbDraftResepSOAP);
+
+        TabRawatJalan.addTab("Draft Resep SOAP", scrollPane9);
+
+        internalFrame2.add(TabRawatJalan, java.awt.BorderLayout.CENTER);
 
         panelGlass8.setBorder(null);
         panelGlass8.setName("panelGlass8"); // NOI18N
@@ -1417,6 +1501,8 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
                     Valid.MyReportqry("rptDaftarResep.jasper","report","::[ Daftar Resep Obat ]::","select * from temporary_resep where temporary_resep.temp37='"+akses.getalamatip()+"' order by temporary_resep.no",param);
                     this.setCursor(Cursor.getDefaultCursor());
                 }
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                JOptionPane.showMessageDialog(null,"Print draft resep SOAP belum tersedia...!!!!");
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -1653,7 +1739,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                     if(Status.equals("Sudah Terlayani")){
                         JOptionPane.showMessageDialog(rootPane,"Resep sudah tervalidasi ..!!");
                     }else {
-                        DlgPeresepanDokter resep=new DlgPeresepanDokter(null,false);
+                        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
                         resep.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
                         resep.setLocationRelativeTo(internalFrame1);
                         resep.MatikanJam();
@@ -1667,6 +1753,26 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                if(tabMode9.getRowCount()==0){
+                    JOptionPane.showMessageDialog(null,"Maaf, data draft resep SOAP sudah habis...!!!!");
+                    TCari.requestFocus();
+                }else if(NoRawat.equals("")){
+                    JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih draft resep SOAP yang mau diproses..!!");
+                }else if(NoResep.trim().equals("")){
+                    panggilFormDraftResepSOAP();
+                }else{
+                    String[] jamDraft=pecahJamDraftSOAP(JamPeresepan);
+                    DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
+                    resep.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                    resep.setLocationRelativeTo(internalFrame1);
+                    resep.MatikanJam();
+                    resep.setNoRm(NoRawat,Valid.SetTgl2(TglPeresepan),jamDraft[0],jamDraft[1],jamDraft[2],KodeDokter,DokterPeresep,"ralan");
+                    resep.isCek();
+                    resep.tampilobat(NoResep);
+                    TeksKosong();
+                    resep.setVisible(true);
+                }
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -1691,7 +1797,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                         }else{
                             akses.setkdbangsal(bangsal);
                         }
-                        DlgPeresepanDokter resep=new DlgPeresepanDokter(null,false);
+                        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
                         resep.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
                         resep.setLocationRelativeTo(internalFrame1);
                         resep.MatikanJam();
@@ -1865,6 +1971,24 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                if(akses.getresep_dokter()==true){
+                    if(tabMode9.getRowCount()==0){
+                        JOptionPane.showMessageDialog(null,"Maaf, data draft resep SOAP sudah habis...!!!!");
+                        TCari.requestFocus();
+                    }else if(IdDraftResepSOAP.equals("")){
+                        JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih draft resep SOAP yang mau dihapus..!!");
+                    }else if(Status.equals("Sudah Terlayani")){
+                        JOptionPane.showMessageDialog(rootPane,"Draft resep SOAP yang sudah dikonversi tidak bisa dihapus ..!!");
+                    }else{
+                        Sequel.queryu2("delete from permintaan_resep_soap where id=?",1,new String[]{IdDraftResepSOAP});
+                        TeksKosong();
+                        tampilDraftResepSOAP();
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null,"Maaf, Anda tidak punya hak akses untuk menghapus draft resep SOAP...!!!!");
+                    TCari.requestFocus();
+                }
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -1968,6 +2092,9 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                JOptionPane.showMessageDialog(null,"Penyerahan resep tidak berlaku untuk draft resep SOAP...!!!!");
+                TCari.requestFocus();
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             JOptionPane.showMessageDialog(null,"Maaf, Penyerahan resep hanya untuk rawat jalan..!!!!");
@@ -2017,6 +2144,9 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                 }
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
+                TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                JOptionPane.showMessageDialog(null,"Pemberian obat tidak berlaku untuk draft resep SOAP...!!!!");
                 TCari.requestFocus();
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
@@ -2131,6 +2261,24 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                if(akses.getresep_dokter()==true){
+                    if(tabMode9.getRowCount()==0){
+                        JOptionPane.showMessageDialog(null,"Maaf, data draft resep SOAP sudah habis...!!!!");
+                        TCari.requestFocus();
+                    }else if(NoRawat.equals("")){
+                        JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih draft resep SOAP yang mau diproses..!!");
+                    }else if(Status.equals("Sudah Terlayani")){
+                        JOptionPane.showMessageDialog(rootPane,"Draft resep SOAP ini sudah dikonversi menjadi resep ..!!");
+                    }else if(Sequel.cariRegistrasi(NoRawat)>0){
+                        JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi ..!!");
+                    }else{
+                        panggilFormDraftResepSOAP();
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null,"Maaf, Anda tidak punya hak akses untuk menginput resep dokter...!!!!");
+                    TCari.requestFocus();
+                }
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -2219,6 +2367,24 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                if(akses.getresep_dokter()==true){
+                    if(tabMode9.getRowCount()==0){
+                        JOptionPane.showMessageDialog(null,"Maaf, data draft resep SOAP sudah habis...!!!!");
+                        TCari.requestFocus();
+                    }else if(NoRawat.equals("")){
+                        JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih draft resep SOAP yang mau diproses..!!");
+                    }else if(Status.equals("Sudah Terlayani")){
+                        JOptionPane.showMessageDialog(rootPane,"Draft resep SOAP ini sudah dikonversi menjadi resep ..!!");
+                    }else if(Sequel.cariRegistrasi(NoRawat)>0){
+                        JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi ..!!");
+                    }else{
+                        panggilFormDraftResepSOAP();
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null,"Maaf, Anda tidak punya hak akses untuk menginput resep dokter...!!!!");
+                    TCari.requestFocus();
+                }
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -2310,6 +2476,24 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                if(akses.getresep_dokter()==true){
+                    if(tabMode9.getRowCount()==0){
+                        JOptionPane.showMessageDialog(null,"Maaf, data draft resep SOAP sudah habis...!!!!");
+                        TCari.requestFocus();
+                    }else if(NoRawat.equals("")){
+                        JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih draft resep SOAP yang mau diproses..!!");
+                    }else if(Status.equals("Sudah Terlayani")){
+                        JOptionPane.showMessageDialog(rootPane,"Draft resep SOAP ini sudah dikonversi menjadi resep ..!!");
+                    }else if(Sequel.cariRegistrasi(NoRawat)>0){
+                        JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi ..!!");
+                    }else{
+                        panggilFormDraftResepSOAP();
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null,"Maaf, Anda tidak punya hak akses untuk menginput resep dokter...!!!!");
+                    TCari.requestFocus();
+                }
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -2550,6 +2734,24 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }else if(TabRawatJalan.getSelectedIndex()==1){
                 JOptionPane.showMessageDialog(null,"Maaf, silahkan buka Daftar Resep...!!!!");
                 TCari.requestFocus();
+            }else if(TabRawatJalan.getSelectedIndex()==2){
+                if(akses.getresep_dokter()==true){
+                    if(tabMode9.getRowCount()==0){
+                        JOptionPane.showMessageDialog(null,"Maaf, data draft resep SOAP sudah habis...!!!!");
+                        TCari.requestFocus();
+                    }else if(NoRawat.equals("")){
+                        JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih draft resep SOAP yang mau diproses..!!");
+                    }else if(Status.equals("Sudah Terlayani")){
+                        JOptionPane.showMessageDialog(rootPane,"Draft resep SOAP ini sudah dikonversi menjadi resep ..!!");
+                    }else if(Sequel.cariRegistrasi(NoRawat)>0){
+                        JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi ..!!");
+                    }else{
+                        panggilFormDraftResepSOAP();
+                    }
+                }else{
+                    JOptionPane.showMessageDialog(null,"Maaf, Anda tidak punya hak akses untuk menginput resep dokter...!!!!");
+                    TCari.requestFocus();
+                }
             }
         }else if(TabPilihRawat.getSelectedIndex()==1){
             if(TabRawatInap.getSelectedIndex()==0){
@@ -2708,6 +2910,12 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     private void tbResepRanapMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbResepRanapMouseClicked
         if(tabMode3.getRowCount()!=0){
             try {
+                if(javax.swing.SwingUtilities.isRightMouseButton(evt)){
+                    int row=tbResepRanap.rowAtPoint(evt.getPoint());
+                    if(row!=-1){
+                        tbResepRanap.setRowSelectionInterval(row,row);
+                    }
+                }
                 getData2();
             } catch (java.lang.NullPointerException e) {
             }
@@ -2736,6 +2944,12 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     private void tbResepRalanMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbResepRalanMouseClicked
         if(tabMode.getRowCount()!=0){
             try {
+                if(javax.swing.SwingUtilities.isRightMouseButton(evt)){
+                    int row=tbResepRalan.rowAtPoint(evt.getPoint());
+                    if(row!=-1){
+                        tbResepRalan.setRowSelectionInterval(row,row);
+                    }
+                }
                 getData();
             } catch (java.lang.NullPointerException e) {
             }
@@ -2746,6 +2960,34 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }
         }
     }//GEN-LAST:event_tbResepRalanMouseClicked
+
+    private void tbDraftResepSOAPKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbDraftResepSOAPKeyPressed
+        if(tabMode9.getRowCount()!=0){
+            if(evt.getKeyCode()==KeyEvent.VK_SPACE){
+                try {
+                    getDataDraftResepSOAP();
+                } catch (java.lang.NullPointerException e) {
+                }
+                if(akses.getresep_dokter()==true){
+                    BtnTambahActionPerformed(null);
+                }
+            }
+        }
+    }//GEN-LAST:event_tbDraftResepSOAPKeyPressed
+
+    private void tbDraftResepSOAPMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbDraftResepSOAPMouseClicked
+        if(tabMode9.getRowCount()!=0){
+            try {
+                getDataDraftResepSOAP();
+            } catch (java.lang.NullPointerException e) {
+            }
+            if(evt.getClickCount()==2){
+                if(akses.getresep_dokter()==true){
+                    BtnTambahActionPerformed(null);
+                }
+            }
+        }
+    }//GEN-LAST:event_tbDraftResepSOAPMouseClicked
 
     /**
     * @param args the command line arguments
@@ -2825,8 +3067,10 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     private widget.ScrollPane scrollPane6;
     private widget.ScrollPane scrollPane7;
     private widget.ScrollPane scrollPane8;
+    private widget.ScrollPane scrollPane9;
     private widget.Table tbDetailPermintaanResepPulang;
     private widget.Table tbDetailPermintaanStok;
+    private widget.Table tbDraftResepSOAP;
     private widget.Table tbDetailResepRalan;
     private widget.Table tbDetailResepRanap;
     private widget.Table tbPermintaanResepPulang;
@@ -2998,9 +3242,148 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             KodeRuang=tbPermintaanResepPulang.getValueAt(tbPermintaanResepPulang.getSelectedRow(),10).toString();
         }
     }
+
+    private void getDataDraftResepSOAP() {
+        if(tbDraftResepSOAP.getSelectedRow()!= -1){
+            IdDraftResepSOAP=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),0).toString();
+            TglPeresepan=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),1).toString();
+            JamPeresepan=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),2).toString();
+            NoRawat=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),3).toString();
+            NoRM=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),4).toString();
+            Pasien=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),5).toString();
+            DokterPeresep=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),6).toString();
+            Status=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),7).toString();
+            NoResep=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),8).toString();
+            TglSoapDraftSOAP=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),9).toString();
+            JamSoapDraftSOAP=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),10).toString();
+            ResepTeksDraftSOAP=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),11).toString();
+            KodeDokter=tbDraftResepSOAP.getValueAt(tbDraftResepSOAP.getSelectedRow(),12).toString();
+        }
+    }
+
+    private void initPopupResepRalan(){
+        ppCetakObatResepRalan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png")));
+        ppCetakObatResepRalan.setText("Cetak Obat Dalam Pesanan");
+        ppCetakObatResepRalan.setName("ppCetakObatResepRalan");
+        ppCetakObatResepRalan.addActionListener((java.awt.event.ActionEvent evt) -> {
+            cetakObatResepRalan();
+        });
+        PopupResepRalan.add(ppCetakObatResepRalan);
+        tbResepRalan.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                pilihBarisResepRalan(evt);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                pilihBarisResepRalan(evt);
+            }
+        });
+        scrollPane1.setComponentPopupMenu(PopupResepRalan);
+        tbResepRalan.setComponentPopupMenu(PopupResepRalan);
+    }
+
+    private void initPopupResepRanap(){
+        ppCetakObatResepRanap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png")));
+        ppCetakObatResepRanap.setText("Cetak Obat Dalam Pesanan");
+        ppCetakObatResepRanap.setName("ppCetakObatResepRanap");
+        ppCetakObatResepRanap.addActionListener((java.awt.event.ActionEvent evt) -> {
+            cetakObatResepRanap();
+        });
+        PopupResepRanap.add(ppCetakObatResepRanap);
+        tbResepRanap.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                pilihBarisResepRanap(evt);
+            }
+
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                pilihBarisResepRanap(evt);
+            }
+        });
+        scrollPane3.setComponentPopupMenu(PopupResepRanap);
+        tbResepRanap.setComponentPopupMenu(PopupResepRanap);
+    }
+
+    private void pilihBarisResepRalan(java.awt.event.MouseEvent evt){
+        if(evt.isPopupTrigger()||javax.swing.SwingUtilities.isRightMouseButton(evt)){
+            int row=tbResepRalan.rowAtPoint(evt.getPoint());
+            if(row!=-1){
+                tbResepRalan.setRowSelectionInterval(row,row);
+                getData();
+            }
+        }
+    }
+
+    private void pilihBarisResepRanap(java.awt.event.MouseEvent evt){
+        if(evt.isPopupTrigger()||javax.swing.SwingUtilities.isRightMouseButton(evt)){
+            int row=tbResepRanap.rowAtPoint(evt.getPoint());
+            if(row!=-1){
+                tbResepRanap.setRowSelectionInterval(row,row);
+                getData2();
+            }
+        }
+    }
+
+    private void cetakObatResepRalan(){
+        if(tbResepRalan.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Maaf, pilih dulu data resep rawat jalan yang mau dicetak...!!!!");
+            tbResepRalan.requestFocus();
+            return;
+        }
+        getData();
+        if(NoResep.equals("")){
+            JOptionPane.showMessageDialog(null,"Maaf, No.Resep masih kosong...!!!!");
+            tbResepRalan.requestFocus();
+            return;
+        }
+        Valid.panggilUrl("billing/CetakObatResepDokter.php?usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB()+"&no_resep="+NoResep);
+    }
+
+    private void cetakObatResepRanap(){
+        if(tbResepRanap.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Maaf, pilih dulu data resep rawat inap yang mau dicetak...!!!!");
+            tbResepRanap.requestFocus();
+            return;
+        }
+        getData2();
+        if(NoResep.equals("")){
+            JOptionPane.showMessageDialog(null,"Maaf, No.Resep masih kosong...!!!!");
+            tbResepRanap.requestFocus();
+            return;
+        }
+        Valid.panggilUrl("billing/CetakObatResepDokter.php?usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB()+"&no_resep="+NoResep);
+    }
     
     public JTable getTable(){
         return tbResepRalan;
+    }
+
+    private void pastikanTabelDraftResepSOAP() {
+        if(draftResepSOAPTableChecked){
+            return;
+        }
+        try {
+            Sequel.queryu("create table if not exists permintaan_resep_soap ("+
+                    "id bigint not null auto_increment,"+
+                    "no_rawat varchar(17) not null,"+
+                    "tgl_soap date not null,"+
+                    "jam_soap time not null,"+
+                    "kd_dokter varchar(20) not null,"+
+                    "tgl_permintaan date not null,"+
+                    "jam_permintaan time not null,"+
+                    "resep_teks text not null,"+
+                    "status varchar(20) not null default 'Belum Terlayani',"+
+                    "no_resep varchar(15) not null default '',"+
+                    "primary key (id),"+
+                    "key idx_prs_soap_1 (no_rawat,tgl_soap,jam_soap),"+
+                    "key idx_prs_soap_2 (status,tgl_permintaan,jam_permintaan))");
+            draftResepSOAPTableChecked=true;
+        } catch (Exception e) {
+            System.out.println("Notif Draft Resep SOAP : "+e);
+        }
     }
     
     public void isCek(){
@@ -3248,7 +3631,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     }
 
     private void panggilform() {
-        DlgCariObat dlgobt=new DlgCariObat(null,false);
+        DlgCariObat dlgobt=DlgCariObat.buatDari(this);
         dlgobt.setNoRm(NoRawat,NoRM,Pasien,TglPeresepan,JamPeresepan);
         dlgobt.isCek();
         dlgobt.tampilobat2(NoResep);
@@ -3256,6 +3639,45 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
         dlgobt.setLocationRelativeTo(internalFrame1);
         TeksKosong();
         dlgobt.setVisible(true);   
+    }
+
+    private String[] pecahJamDraftSOAP(String jam) {
+        String[] hasil={"00","00","00"};
+        try {
+            String[] pecah=jam.split(":");
+            if(pecah.length>0){
+                hasil[0]=pecah[0];
+            }
+            if(pecah.length>1){
+                hasil[1]=pecah[1];
+            }
+            if(pecah.length>2){
+                hasil[2]=pecah[2];
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Jam Draft SOAP : "+e);
+        }
+        return hasil;
+    }
+
+    private void panggilFormDraftResepSOAP() {
+        String[] jamDraft=pecahJamDraftSOAP(JamPeresepan);
+        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
+        resep.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+        resep.setLocationRelativeTo(internalFrame1);
+        resep.MatikanJam();
+        resep.setNoRm(NoRawat,Valid.SetTgl2(TglPeresepan),jamDraft[0],jamDraft[1],jamDraft[2],KodeDokter,DokterPeresep,"ralan");
+        resep.setDraftTerapiSOAP(ResepTeksDraftSOAP);
+        resep.isCek();
+        resep.tampilobat();
+        resep.setVisible(true);
+        if(resep.isResepBerhasilDisimpan()){
+            Sequel.queryu2("update permintaan_resep_soap set status='Sudah Terlayani', no_resep=? where id=?",2,new String[]{
+                resep.getNoResepTersimpan(),IdDraftResepSOAP
+            });
+            tampilDraftResepSOAP();
+        }
+        TeksKosong();
     }
     
     private void TeksKosong(){
@@ -3270,6 +3692,10 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
         KodeDokter="";
         Ruang="";
         KodeRuang="";
+        IdDraftResepSOAP="";
+        ResepTeksDraftSOAP="";
+        TglSoapDraftSOAP="";
+        JamSoapDraftSOAP="";
     }
     
     private void panggilform2() {
@@ -3351,6 +3777,79 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             tampil();
         }else if(TabRawatJalan.getSelectedIndex()==1){
             tampil2();
+        }else if(TabRawatJalan.getSelectedIndex()==2){
+            tampilDraftResepSOAP();
+        }
+    }
+
+    private void tampilDraftResepSOAP() {
+        pastikanTabelDraftResepSOAP();
+        Valid.tabelKosong(tabMode9);
+        try {
+            semua=CrDokter.getText().trim().equals("")&&CrPoli.getText().trim().equals("")&&TCari.getText().trim().equals("");
+            if(DEPOAKTIFOBAT.equals("")){
+                ps=koneksi.prepareStatement("select permintaan_resep_soap.id,permintaan_resep_soap.tgl_permintaan,permintaan_resep_soap.jam_permintaan,"+
+                        "permintaan_resep_soap.no_rawat,pasien.no_rkm_medis,pasien.nm_pasien,dokter.nm_dokter,permintaan_resep_soap.status,"+
+                        "permintaan_resep_soap.no_resep,permintaan_resep_soap.tgl_soap,permintaan_resep_soap.jam_soap,permintaan_resep_soap.resep_teks,permintaan_resep_soap.kd_dokter "+
+                        "from permintaan_resep_soap inner join reg_periksa on permintaan_resep_soap.no_rawat=reg_periksa.no_rawat "+
+                        "inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
+                        "inner join dokter on permintaan_resep_soap.kd_dokter=dokter.kd_dokter "+
+                        "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli "+
+                        "where permintaan_resep_soap.tgl_permintaan between ? and ? "+
+                        (semua?"":"and dokter.nm_dokter like ? and poliklinik.nm_poli like ? and "+
+                        "(permintaan_resep_soap.no_rawat like ? or pasien.no_rkm_medis like ? or pasien.nm_pasien like ? or dokter.nm_dokter like ? or permintaan_resep_soap.resep_teks like ? or permintaan_resep_soap.no_resep like ?) ")+
+                        "order by permintaan_resep_soap.tgl_permintaan desc,permintaan_resep_soap.jam_permintaan desc");
+            }else{
+                ps=koneksi.prepareStatement("select permintaan_resep_soap.id,permintaan_resep_soap.tgl_permintaan,permintaan_resep_soap.jam_permintaan,"+
+                        "permintaan_resep_soap.no_rawat,pasien.no_rkm_medis,pasien.nm_pasien,dokter.nm_dokter,permintaan_resep_soap.status,"+
+                        "permintaan_resep_soap.no_resep,permintaan_resep_soap.tgl_soap,permintaan_resep_soap.jam_soap,permintaan_resep_soap.resep_teks,permintaan_resep_soap.kd_dokter "+
+                        "from permintaan_resep_soap inner join reg_periksa on permintaan_resep_soap.no_rawat=reg_periksa.no_rawat "+
+                        "inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
+                        "inner join dokter on permintaan_resep_soap.kd_dokter=dokter.kd_dokter "+
+                        "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli "+
+                        "inner join set_depo_ralan on set_depo_ralan.kd_poli=reg_periksa.kd_poli "+
+                        "where set_depo_ralan.kd_bangsal='"+DEPOAKTIFOBAT+"' and permintaan_resep_soap.tgl_permintaan between ? and ? "+
+                        (semua?"":"and dokter.nm_dokter like ? and poliklinik.nm_poli like ? and "+
+                        "(permintaan_resep_soap.no_rawat like ? or pasien.no_rkm_medis like ? or pasien.nm_pasien like ? or dokter.nm_dokter like ? or permintaan_resep_soap.resep_teks like ? or permintaan_resep_soap.no_resep like ?) ")+
+                        "order by permintaan_resep_soap.tgl_permintaan desc,permintaan_resep_soap.jam_permintaan desc");
+            }
+
+            try {
+                ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
+                ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
+                if(!semua){
+                    ps.setString(3,"%"+CrDokter.getText().trim()+"%");
+                    ps.setString(4,"%"+CrPoli.getText().trim()+"%");
+                    ps.setString(5,"%"+TCari.getText().trim()+"%");
+                    ps.setString(6,"%"+TCari.getText().trim()+"%");
+                    ps.setString(7,"%"+TCari.getText().trim()+"%");
+                    ps.setString(8,"%"+TCari.getText().trim()+"%");
+                    ps.setString(9,"%"+TCari.getText().trim()+"%");
+                    ps.setString(10,"%"+TCari.getText().trim()+"%");
+                }
+                rs=ps.executeQuery();
+                while(rs.next()){
+                    if(cmbStatus.getSelectedItem().toString().equals("Semua")||rs.getString("status").equals(cmbStatus.getSelectedItem().toString())){
+                        tabMode9.addRow(new String[]{
+                            rs.getString("id"),rs.getString("tgl_permintaan"),rs.getString("jam_permintaan"),rs.getString("no_rawat"),
+                            rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),rs.getString("nm_dokter"),rs.getString("status"),
+                            rs.getString("no_resep"),rs.getString("tgl_soap"),rs.getString("jam_soap"),rs.getString("resep_teks"),rs.getString("kd_dokter")
+                        });
+                    }
+                }
+                LCount.setText(""+tabMode9.getRowCount());
+            } catch (Exception e) {
+                System.out.println("Notifikasi Draft SOAP : "+e);
+            } finally{
+                if(rs!=null){
+                    rs.close();
+                }
+                if(ps!=null){
+                    ps.close();
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Draft SOAP : "+e);
         }
     }
     

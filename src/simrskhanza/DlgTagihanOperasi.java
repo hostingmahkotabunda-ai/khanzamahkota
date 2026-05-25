@@ -532,6 +532,9 @@ public class DlgTagihanOperasi extends javax.swing.JDialog {
         BtnCari1 = new widget.Button();
         BtnAll = new widget.Button();
         BtnTambah = new widget.Button();
+        BtnPaketObat = new widget.Button();
+        BtnSimpanJadiPaket = new widget.Button();
+        BtnMasterPaketObat = new widget.Button();
         Scroll = new widget.ScrollPane();
         tbObat = new widget.Table();
         panelisi1 = new widget.panelisi();
@@ -860,6 +863,36 @@ public class DlgTagihanOperasi extends javax.swing.JDialog {
             }
         });
         panelisi4.add(BtnTambah);
+
+        BtnPaketObat.setText("Paket");
+        BtnPaketObat.setName("BtnPaketObat"); // NOI18N
+        BtnPaketObat.setPreferredSize(new java.awt.Dimension(75, 23));
+        BtnPaketObat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnPaketObatActionPerformed(evt);
+            }
+        });
+        panelisi4.add(BtnPaketObat);
+
+        BtnSimpanJadiPaket.setText("Jadi Paket");
+        BtnSimpanJadiPaket.setName("BtnSimpanJadiPaket"); // NOI18N
+        BtnSimpanJadiPaket.setPreferredSize(new java.awt.Dimension(95, 23));
+        BtnSimpanJadiPaket.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnSimpanJadiPaketActionPerformed(evt);
+            }
+        });
+        panelisi4.add(BtnSimpanJadiPaket);
+
+        BtnMasterPaketObat.setText("Master Paket");
+        BtnMasterPaketObat.setName("BtnMasterPaketObat"); // NOI18N
+        BtnMasterPaketObat.setPreferredSize(new java.awt.Dimension(105, 23));
+        BtnMasterPaketObat.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnMasterPaketObatActionPerformed(evt);
+            }
+        });
+        panelisi4.add(BtnMasterPaketObat);
 
         jPanel2.add(panelisi4, java.awt.BorderLayout.PAGE_END);
 
@@ -2153,6 +2186,18 @@ private void BtnTambahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         this.setCursor(Cursor.getDefaultCursor());         
 }//GEN-LAST:event_BtnTambahActionPerformed
 
+private void BtnPaketObatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnPaketObatActionPerformed
+        ambilPaketObatBhpOperasi();
+}//GEN-LAST:event_BtnPaketObatActionPerformed
+
+private void BtnSimpanJadiPaketActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanJadiPaketActionPerformed
+        simpanTagihanSaatIniJadiPaket();
+}//GEN-LAST:event_BtnSimpanJadiPaketActionPerformed
+
+private void BtnMasterPaketObatActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnMasterPaketObatActionPerformed
+        bukaMasterPaketObatBhpOperasi();
+}//GEN-LAST:event_BtnMasterPaketObatActionPerformed
+
 private void tbObatMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbObatMouseClicked
         if(tbObat.getRowCount()!=0){
             try {
@@ -2835,7 +2880,10 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                     
                 if(sukses==true){
                     if(!Laporan.getText().equals("")){
-                        if(Sequel.menyimpantf2("laporan_operasi","?,?,?,?,?,?,?,?","laporan operasi",8,new String[]{
+                        if(Sequel.menyimpantf2(
+                                "laporan_operasi(no_rawat,tanggal,diagnosa_preop,diagnosa_postop,jaringan_dieksekusi,selesaioperasi,permintaan_pa,laporan_operasi)",
+                                "?,?,?,?,?,?,?,?",
+                                "laporan operasi",8,new String[]{
                                 TNoRw.getText(),Valid.SetTgl(tgl.getSelectedItem()+"")+" "+tgl.getSelectedItem().toString().substring(11,19),PreOp.getText(),
                                 PostOp.getText(),Jaringan.getText(),Valid.SetTgl(tgl2.getSelectedItem()+"")+" "+tgl2.getSelectedItem().toString().substring(11,19),
                                 DikirimPA.getSelectedItem().toString(),Laporan.getText()
@@ -3031,7 +3079,10 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private widget.Button BtnCari1;
     private widget.Button BtnCari2;
     private widget.Button BtnKeluar;
+    private widget.Button BtnMasterPaketObat;
     private widget.Button BtnOperator1;
+    private widget.Button BtnPaketObat;
+    private widget.Button BtnSimpanJadiPaket;
     private widget.Button BtnOperator2;
     private widget.Button BtnSimpan;
     private widget.Button BtnTambah;
@@ -3445,12 +3496,12 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         index=0;        
         for(i=0;i<tabMode2.getRowCount();i++){
             if(!tabMode2.getValueAt(i,0).toString().equals("")){
-                jmlobat[index]=Double.parseDouble(tabMode2.getValueAt(i,0).toString());
+                jmlobat[index]=angkaDariSel(tabMode2.getValueAt(i,0));
                 kd_obat[index]=tabMode2.getValueAt(i,1).toString();
                 nm_obat[index]=tabMode2.getValueAt(i,2).toString();
                 satuan[index]=tabMode2.getValueAt(i,3).toString();
-                hargasatuan[index]=Double.parseDouble(tabMode2.getValueAt(i,4).toString());
-                ttlobat[index]=Double.parseDouble(tabMode2.getValueAt(i,5).toString());
+                hargasatuan[index]=angkaDariSel(tabMode2.getValueAt(i,4));
+                ttlobat[index]=angkaDariSel(tabMode2.getValueAt(i,5));
                 index++;
             }
         }
@@ -3504,7 +3555,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
            if((kolom==0)||(kolom==1)){    
                if(!tbObat.getValueAt(row,0).toString().equals("")){
                    try {
-                       tbObat.setValueAt(Valid.SetAngka2(Double.parseDouble(tbObat.getValueAt(row,0).toString())*Double.parseDouble(tbObat.getValueAt(row,4).toString())), row,5);                    
+                       tbObat.setValueAt(Valid.SetAngka2(angkaDariSel(tbObat.getValueAt(row,0))*angkaDariSel(tbObat.getValueAt(row,4))), row,5);                    
                    } catch (Exception e) {
                        tbObat.setValueAt(0, row,5);                    
                    }
@@ -3519,7 +3570,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
             for(int r=0;r<row2;r++){ 
                 if(!tbObat.getValueAt(r,5).toString().isEmpty()){
                     try {
-                        y=Double.parseDouble(tbObat.getValueAt(r,5).toString()); 
+                        y=angkaDariSel(tbObat.getValueAt(r,5)); 
                     } catch (Exception e) {
                         y=0;
                     }                                   
@@ -3586,8 +3637,219 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                         break;
                 }
                 biayatindakan=biayatindakan+y;
-            }            
+            }
         }
+    }
+
+    private void bukaMasterPaketObatBhpOperasi() {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DlgPaketObatOperasi dialog = new DlgPaketObatOperasi(null, false);
+        dialog.setSelectionMode(false);
+        dialog.setSize(internalFrame1.getWidth(), internalFrame1.getHeight());
+        dialog.setLocationRelativeTo(internalFrame1);
+        dialog.setVisible(true);
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private void ambilPaketObatBhpOperasi() {
+        if (kdoperator1.getText().trim().equals("") || nmoperator1.getText().trim().equals("")) {
+            Valid.textKosong(kdoperator1, "Operator 1 untuk acuan paket");
+            return;
+        }
+
+        String kodeOperasiAktif = getKodeOperasiAktifUntukPaket();
+        String namaOperasiAktif = getNamaOperasiAktifUntukPaket();
+
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DlgPaketObatOperasi dialog = new DlgPaketObatOperasi(null, true);
+        dialog.setSelectionMode(true);
+        dialog.setFilterContext(kdoperator1.getText().trim(), nmoperator1.getText().trim(), kodeOperasiAktif, namaOperasiAktif);
+        dialog.setSize(internalFrame1.getWidth(), internalFrame1.getHeight());
+        dialog.setLocationRelativeTo(internalFrame1);
+        dialog.setVisible(true);
+        this.setCursor(Cursor.getDefaultCursor());
+
+        if (!dialog.getSelectedPackageCode().trim().equals("")) {
+            muatPaketObatBhpKeTagihan(dialog.getSelectedPackageCode().trim());
+        }
+    }
+
+    private void simpanTagihanSaatIniJadiPaket() {
+        if (kdoperator1.getText().trim().equals("") || nmoperator1.getText().trim().equals("")) {
+            Valid.textKosong(kdoperator1, "Operator 1 untuk paket");
+            return;
+        }
+        if (!adaItemObatTagihan()) {
+            JOptionPane.showMessageDialog(this, "Obat/BHP pada tagihan operasi masih kosong.");
+            return;
+        }
+
+        String kodeOperasiAktif = getKodeOperasiAktifUntukPaket();
+        String namaOperasiAktif = getNamaOperasiAktifUntukPaket();
+        Object[][] draft = buildDraftItemPaketDariTagihan();
+        String namaUsulan = buildNamaPaketUsulan(namaOperasiAktif);
+        String keteranganUsulan = "Template dari tagihan operasi no. rawat " + TNoRw.getText().trim();
+
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DlgPaketObatOperasi dialog = new DlgPaketObatOperasi(null, false);
+        dialog.setDraftPaketDariTagihan(
+                kdoperator1.getText().trim(),
+                nmoperator1.getText().trim(),
+                kodeOperasiAktif,
+                namaOperasiAktif,
+                namaUsulan,
+                keteranganUsulan,
+                draft
+        );
+        dialog.setSize(internalFrame1.getWidth(), internalFrame1.getHeight());
+        dialog.setLocationRelativeTo(internalFrame1);
+        dialog.setVisible(true);
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private String getKodeOperasiAktifUntukPaket() {
+        int row = tbtindakan.getSelectedRow();
+        if (row != -1) {
+            return tbtindakan.getValueAt(row, 1).toString();
+        }
+        for (int i = 0; i < tbtindakan.getRowCount(); i++) {
+            if (tbtindakan.getValueAt(i, 0).toString().equals("true")) {
+                return tbtindakan.getValueAt(i, 1).toString();
+            }
+        }
+        return "-";
+    }
+
+    private String getNamaOperasiAktifUntukPaket() {
+        int row = tbtindakan.getSelectedRow();
+        if (row != -1) {
+            return tbtindakan.getValueAt(row, 2).toString();
+        }
+        for (int i = 0; i < tbtindakan.getRowCount(); i++) {
+            if (tbtindakan.getValueAt(i, 0).toString().equals("true")) {
+                return tbtindakan.getValueAt(i, 2).toString();
+            }
+        }
+        return "";
+    }
+
+    private void muatPaketObatBhpKeTagihan(String kdPaketObat) {
+        int totalItem = 0;
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select d.kd_obat,o.nm_obat,k.satuan,o.hargasatuan,d.jumlah " +
+                "from paket_obat_operasi_detail d inner join obatbhp_ok o on d.kd_obat=o.kd_obat " +
+                "inner join kodesatuan k on o.kode_sat=k.kode_sat where d.kd_paket_obat=? order by d.urut,o.nm_obat")) {
+            ps.setString(1, kdPaketObat);
+            kosongkanJumlahObatBhp();
+            try (ResultSet rsPaket = ps.executeQuery()) {
+                while (rsPaket.next()) {
+                    totalItem++;
+                    terapkanObatPaketKeTbObat(
+                            rsPaket.getString("kd_obat"),
+                            rsPaket.getString("nm_obat"),
+                            rsPaket.getString("satuan"),
+                            rsPaket.getDouble("hargasatuan"),
+                            rsPaket.getDouble("jumlah")
+                    );
+                }
+            }
+            if (totalItem == 0) {
+                JOptionPane.showMessageDialog(this,
+                        "Detail paket tidak ditemukan atau item paket belum ada di master Obat & BHP Operasi.");
+                return;
+            }
+            tampil2();
+            hitungUlangBiayaObat();
+            LTotal.setText("Total Biaya : " + Valid.SetAngka(biayaobat + biayatindakan));
+            JOptionPane.showMessageDialog(this, "Paket obat/BHP berhasil dimasukkan ke tagihan operasi.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal memuat paket obat/BHP operasi.\n" + e.getMessage());
+        }
+    }
+
+    private void kosongkanJumlahObatBhp() {
+        for (int i = 0; i < tbObat.getRowCount(); i++) {
+            tbObat.setValueAt("", i, 0);
+            tbObat.setValueAt(0, i, 5);
+        }
+    }
+
+    private void terapkanObatPaketKeTbObat(String kdObat, String nama, String satuanItem, double harga, double jumlahPaket) {
+        for (int i = 0; i < tbObat.getRowCount(); i++) {
+            if (tbObat.getValueAt(i, 1).toString().equals(kdObat)) {
+                tbObat.setValueAt(Valid.SetAngka3(jumlahPaket), i, 0);
+                tbObat.setValueAt(nama, i, 2);
+                tbObat.setValueAt(satuanItem, i, 3);
+                tbObat.setValueAt(Valid.SetAngka3(harga), i, 4);
+                tbObat.setValueAt(Valid.SetAngka3(jumlahPaket * harga), i, 5);
+                return;
+            }
+        }
+        tabMode2.addRow(new Object[]{
+            Valid.SetAngka3(jumlahPaket),
+            kdObat,
+            nama,
+            satuanItem,
+            Valid.SetAngka3(harga),
+            Valid.SetAngka3(jumlahPaket * harga)
+        });
+    }
+
+    private void hitungUlangBiayaObat() {
+        biayaobat = 0;
+        for (int r = 0; r < tbObat.getRowCount(); r++) {
+            biayaobat = biayaobat + angkaDariSel(tbObat.getValueAt(r, 5));
+        }
+    }
+
+    private double angkaDariSel(Object nilai) {
+        String teks = nilai == null ? "" : nilai.toString().trim();
+        if (teks.equals("")) {
+            return 0;
+        }
+        try {
+            return Double.parseDouble(teks.replace(",", ""));
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+    private boolean adaItemObatTagihan() {
+        for (int i = 0; i < tbObat.getRowCount(); i++) {
+            if (Valid.SetAngka(tbObat.getValueAt(i, 0).toString()) > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Object[][] buildDraftItemPaketDariTagihan() {
+        int total = 0;
+        for (int i = 0; i < tbObat.getRowCount(); i++) {
+            if (Valid.SetAngka(tbObat.getValueAt(i, 0).toString()) > 0) {
+                total++;
+            }
+        }
+        Object[][] data = new Object[total][5];
+        int indexData = 0;
+        for (int i = 0; i < tbObat.getRowCount(); i++) {
+            if (Valid.SetAngka(tbObat.getValueAt(i, 0).toString()) > 0) {
+                data[indexData][0] = tbObat.getValueAt(i, 1).toString();
+                data[indexData][1] = tbObat.getValueAt(i, 2).toString();
+                data[indexData][2] = tbObat.getValueAt(i, 3).toString();
+                data[indexData][3] = tbObat.getValueAt(i, 4).toString();
+                data[indexData][4] = tbObat.getValueAt(i, 0).toString();
+                indexData++;
+            }
+        }
+        return data;
+    }
+
+    private String buildNamaPaketUsulan(String namaOperasiAktif) {
+        if (namaOperasiAktif != null && !namaOperasiAktif.trim().equals("")) {
+            return "Paket " + nmoperator1.getText().trim() + " - " + namaOperasiAktif.trim();
+        }
+        return "Paket " + nmoperator1.getText().trim();
     }
     
 
@@ -3599,6 +3861,9 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
             BtnSimpan.setEnabled(akses.getoperasi());
             BtnTambahOperasi.setEnabled(akses.gettarif_operasi());
             BtnTambah.setEnabled(akses.getoperasi());
+            BtnPaketObat.setEnabled(akses.getoperasi());
+            BtnSimpanJadiPaket.setEnabled(akses.getoperasi());
+            BtnMasterPaketObat.setEnabled(akses.getoperasi());
         }        
     }
     

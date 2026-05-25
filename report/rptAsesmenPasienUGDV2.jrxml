@@ -1,0 +1,973 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAsesmenPasienUGDV2" language="groovy" pageWidth="595" pageHeight="842" columnWidth="565" leftMargin="15" rightMargin="15" topMargin="15" bottomMargin="15" uuid="94e0b0f4-c993-4a0d-b5b8-6f6ca44ef4ef">
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="lokal"/>
+	<parameter name="namars" class="java.lang.String"/>
+	<parameter name="alamatrs" class="java.lang.String"/>
+	<parameter name="kotars" class="java.lang.String"/>
+	<parameter name="propinsirs" class="java.lang.String"/>
+	<parameter name="kontakrs" class="java.lang.String"/>
+	<parameter name="emailrs" class="java.lang.String"/>
+	<parameter name="logo" class="java.io.InputStream"/>
+	<parameter name="ttd_resusitasi" class="java.awt.Image"/>
+	<parameter name="ttd_emergent" class="java.awt.Image"/>
+	<parameter name="ttd_urgent" class="java.awt.Image"/>
+	<parameter name="ttd_non_urgent" class="java.awt.Image"/>
+	<parameter name="petugas_triase_resusitasi" class="java.lang.String"/>
+	<parameter name="petugas_triase_emergent" class="java.lang.String"/>
+	<parameter name="petugas_triase_urgent" class="java.lang.String"/>
+	<parameter name="petugas_triase_non_urgent" class="java.lang.String"/>
+	<parameter name="ttd_perawat" class="java.awt.Image"/>
+	<parameter name="ttd_penanggung_jawab" class="java.awt.Image"/>
+	<queryString language="SQL">
+		<![CDATA[select '' as no_rawat,'' as no_rkm_medis,'' as nm_pasien,'' as jk,null as tgl_lahir,'' as umur,null as tanggal_asesmen,'' as jam_datang,'' as jam_periksa,'' as jenis_kasus,'' as rujukan,'' as respons,'' as status_pernikahan,'' as anak_status,'' as jumlah_anak,'' as kebiasaan,'' as warga_negara,'' as warga_negara_keterangan,'' as pekerjaan,'' as agama,'' as tinggal_bersama,'' as tinggal_keterangan,'' as no_telp,'' as masalah_bicara,'' as masalah_bicara_keterangan,'' as keluhan_rps,'' as tekanan_darah,'' as respirasi,'' as frekuensi_nadi,'' as suhu,'' as alergi_makanan,'' as alergi_obat,'' as alergi_lain,'' as kategori_triase,'' as jalan_nafas,'' as pernafasan,'' as sirkulasi,'' as kesadaran,'' as morse_skor,'' as morse_resiko,'' as nutrisi_skor,'' as nutrisi_resiko,'' as nyeri_dewasa,'' as nyeri_anak,'' as lokasi_nyeri,'' as nyeri_hilang_bila,'' as humpty_skor,'' as humpty_resiko,'' as keterangan,'' as nama_perawat,'' as penanggung_jawab,'' as pemeriksaan_fisik,'' as pemeriksaan_penunjang,'' as diagnosis_masalah,'' as rencana,'' as instruksi,'' as nama_dokter,'' as nama_dokter_instruksi,'' as status_keluar,null as tanggal_keluar,'' as jam_keluar,'' as keadaan_umum_keluar,'' as td_keluar,'' as rr_keluar,'' as spo2_keluar,'' as hr_keluar,'' as temp_keluar,'' as gcs_keluar,'' as opname_ruangan,'' as indikasi_masuk,'' as kontrol_ke,'' as dirujuk_ke,'' as alasan_dirujuk,'' as meninggal_jam,'' as penyebab_meninggal,'' as nama_petugas,'' as nip_petugas]]>
+	</queryString>
+	<field name="no_rawat" class="java.lang.String"/>
+	<field name="no_rkm_medis" class="java.lang.String"/>
+	<field name="nm_pasien" class="java.lang.String"/>
+	<field name="jk" class="java.lang.String"/>
+	<field name="tgl_lahir" class="java.sql.Date"/>
+	<field name="umur" class="java.lang.String"/>
+	<field name="tanggal_asesmen" class="java.sql.Date"/>
+	<field name="jam_datang" class="java.lang.String"/>
+	<field name="jam_periksa" class="java.lang.String"/>
+	<field name="jenis_kasus" class="java.lang.String"/>
+	<field name="rujukan" class="java.lang.String"/>
+	<field name="respons" class="java.lang.String"/>
+	<field name="status_pernikahan" class="java.lang.String"/>
+	<field name="anak_status" class="java.lang.String"/>
+	<field name="jumlah_anak" class="java.lang.String"/>
+	<field name="kebiasaan" class="java.lang.String"/>
+	<field name="warga_negara" class="java.lang.String"/>
+	<field name="warga_negara_keterangan" class="java.lang.String"/>
+	<field name="pekerjaan" class="java.lang.String"/>
+	<field name="agama" class="java.lang.String"/>
+	<field name="tinggal_bersama" class="java.lang.String"/>
+	<field name="tinggal_keterangan" class="java.lang.String"/>
+	<field name="no_telp" class="java.lang.String"/>
+	<field name="masalah_bicara" class="java.lang.String"/>
+	<field name="masalah_bicara_keterangan" class="java.lang.String"/>
+	<field name="keluhan_rps" class="java.lang.String"/>
+	<field name="tekanan_darah" class="java.lang.String"/>
+	<field name="respirasi" class="java.lang.String"/>
+	<field name="frekuensi_nadi" class="java.lang.String"/>
+	<field name="suhu" class="java.lang.String"/>
+	<field name="alergi_makanan" class="java.lang.String"/>
+	<field name="alergi_obat" class="java.lang.String"/>
+	<field name="alergi_lain" class="java.lang.String"/>
+	<field name="kategori_triase" class="java.lang.String"/>
+	<field name="jalan_nafas" class="java.lang.String"/>
+	<field name="pernafasan" class="java.lang.String"/>
+	<field name="sirkulasi" class="java.lang.String"/>
+	<field name="kesadaran" class="java.lang.String"/>
+	<field name="morse_skor" class="java.lang.String"/>
+	<field name="morse_resiko" class="java.lang.String"/>
+	<field name="nutrisi_skor" class="java.lang.String"/>
+	<field name="nutrisi_resiko" class="java.lang.String"/>
+	<field name="nyeri_dewasa" class="java.lang.String"/>
+	<field name="nyeri_anak" class="java.lang.String"/>
+	<field name="lokasi_nyeri" class="java.lang.String"/>
+	<field name="nyeri_hilang_bila" class="java.lang.String"/>
+	<field name="humpty_skor" class="java.lang.String"/>
+	<field name="humpty_resiko" class="java.lang.String"/>
+	<field name="keterangan" class="java.lang.String"/>
+	<field name="nama_perawat" class="java.lang.String"/>
+	<field name="penanggung_jawab" class="java.lang.String"/>
+	<field name="pemeriksaan_fisik" class="java.lang.String"/>
+	<field name="pemeriksaan_penunjang" class="java.lang.String"/>
+	<field name="diagnosis_masalah" class="java.lang.String"/>
+	<field name="rencana" class="java.lang.String"/>
+	<field name="instruksi" class="java.lang.String"/>
+	<field name="nama_dokter" class="java.lang.String"/>
+	<field name="nama_dokter_instruksi" class="java.lang.String"/>
+	<field name="status_keluar" class="java.lang.String"/>
+	<field name="tanggal_keluar" class="java.sql.Date"/>
+	<field name="jam_keluar" class="java.lang.String"/>
+	<field name="keadaan_umum_keluar" class="java.lang.String"/>
+	<field name="td_keluar" class="java.lang.String"/>
+	<field name="rr_keluar" class="java.lang.String"/>
+	<field name="spo2_keluar" class="java.lang.String"/>
+	<field name="hr_keluar" class="java.lang.String"/>
+	<field name="temp_keluar" class="java.lang.String"/>
+	<field name="gcs_keluar" class="java.lang.String"/>
+	<field name="opname_ruangan" class="java.lang.String"/>
+	<field name="indikasi_masuk" class="java.lang.String"/>
+	<field name="kontrol_ke" class="java.lang.String"/>
+	<field name="dirujuk_ke" class="java.lang.String"/>
+	<field name="alasan_dirujuk" class="java.lang.String"/>
+	<field name="meninggal_jam" class="java.lang.String"/>
+	<field name="penyebab_meninggal" class="java.lang.String"/>
+	<field name="nama_petugas" class="java.lang.String"/>
+	<field name="nip_petugas" class="java.lang.String"/>
+	<title>
+		<band height="96" splitType="Stretch">
+			<image scaleImage="FillFrame" onErrorType="Blank">
+				<reportElement x="0" y="0" width="48" height="48" uuid="92fbb487-e45e-4ca4-b8b8-d4cf33048439"/>
+				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+			<textField>
+				<reportElement x="56" y="0" width="509" height="18" uuid="4eb8df50-2692-48c9-b9d1-b19f4dc4d9ca"/>
+				<textElement>
+					<font fontName="Arial Narrow" size="18" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{namars}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="56" y="20" width="509" height="12" uuid="07a84dbe-2304-4db4-b603-f94998640536"/>
+				<textElement>
+					<font fontName="Arial Narrow" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{alamatrs} + " " + $P{kotars} + " " + $P{propinsirs}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="56" y="33" width="509" height="12" uuid="603f48b2-b1b5-4a9f-b8d0-814da62f3391"/>
+				<textElement>
+					<font fontName="Arial Narrow" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA["Telp. " + $P{kontakrs} + "  E-mail : " + $P{emailrs}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="54" width="430" height="1" uuid="edc012df-29d6-4733-a753-5d22ce1038a2"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="66" width="300" height="22" uuid="88aee597-74aa-43aa-b327-a76699d69022"/>
+				<textElement>
+					<font fontName="Arial Narrow" size="20" isBold="true" isUnderline="true"/>
+				</textElement>
+				<text><![CDATA[ASESMEN PASIEN UGD]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="230" splitType="Stretch">
+			<frame>
+				<reportElement x="374" y="0" width="191" height="60" uuid="f4f750ef-f59a-41f9-a7d8-4a96ea240e84"/>
+				<box>
+					<pen lineWidth="0.7"/>
+					<topPen lineWidth="0.7"/>
+					<leftPen lineWidth="0.7"/>
+					<bottomPen lineWidth="0.7"/>
+					<rightPen lineWidth="0.7"/>
+				</box>
+				<staticText>
+					<reportElement x="8" y="8" width="70" height="12" uuid="a241ff7e-f9da-41e1-a347-d355037e8f90"/>
+					<textElement><font fontName="Arial Narrow" size="8" isBold="true"/></textElement>
+					<text><![CDATA[TANGGAL MASUK]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="8" y="24" width="70" height="12" uuid="b1f2c0f2-b4d9-4d20-b43f-9be5bb815ebc"/>
+					<textElement><font fontName="Arial Narrow" size="8" isBold="true"/></textElement>
+					<text><![CDATA[JAM DATANG]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="8" y="40" width="70" height="12" uuid="b59ba824-d5b6-4276-bc0d-2c3c3d56b5be"/>
+					<textElement><font fontName="Arial Narrow" size="8" isBold="true"/></textElement>
+					<text><![CDATA[JAM PERIKSA]]></text>
+				</staticText>
+				<textField pattern="dd-MM-yyyy">
+					<reportElement x="84" y="8" width="99" height="12" uuid="bb276601-e173-41c6-9a61-cb0445f4d923"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[": " + ($F{tanggal_asesmen} == null ? "" : new java.text.SimpleDateFormat("dd-MM-yyyy").format($F{tanggal_asesmen}))]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="84" y="24" width="99" height="12" uuid="e8ab0af8-a7ab-4d10-b6d8-44c2f48c4558"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{jam_datang}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="84" y="40" width="99" height="12" uuid="1506284d-f932-42b4-90a4-0f0c6d645efd"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{jam_periksa}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement x="374" y="68" width="191" height="110" uuid="af18cd93-39d4-4ae5-9436-21ee2f6c3efe"/>
+				<box>
+					<pen lineWidth="0.7"/>
+					<topPen lineWidth="0.7"/>
+					<leftPen lineWidth="0.7"/>
+					<bottomPen lineWidth="0.7"/>
+					<rightPen lineWidth="0.7"/>
+				</box>
+				<staticText>
+					<reportElement x="0" y="6" width="191" height="12" uuid="eb8bc1eb-68e0-4d69-98b8-d69f4d60da8b"/>
+					<textElement textAlignment="Center">
+						<font fontName="Times New Roman" size="9" isBold="true"/>
+					</textElement>
+					<text><![CDATA[IDENTITAS PASIEN]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="10" y="26" width="171" height="11" uuid="e4a5b2b6-b761-40f1-8dc1-0b521fe3b623"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA["No. RM    : " + $F{no_rkm_medis}]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="10" y="40" width="171" height="22" uuid="0f7df650-5724-4930-a6d7-c1c5cc7473fd"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA["Nama      : " + $F{nm_pasien}]]></textFieldExpression>
+				</textField>
+				<textField pattern="dd-MM-yyyy">
+					<reportElement x="10" y="64" width="171" height="11" uuid="91c3dd4d-111a-42a4-b94e-e50ccb5223e0"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA["Tgl.Lahir : " + ($F{tgl_lahir} == null ? "" : new java.text.SimpleDateFormat("dd-MM-yyyy").format($F{tgl_lahir}))]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="10" y="78" width="171" height="11" uuid="0ebd4ff3-8530-435e-91f6-a8bb774c4e51"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA["JK / Umur : " + $F{jk} + " / " + $F{umur}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="10" y="93" width="171" height="10" uuid="b37d37ff-a9b3-44a5-b0f0-e79a2d5c3513"/>
+					<textElement><font fontName="Arial Narrow" size="6"/></textElement>
+					<text><![CDATA[* Tempelkan stiker identitas pasien jika ada]]></text>
+				</staticText>
+			</frame>
+			<textField>
+				<reportElement x="0" y="0" width="110" height="12" uuid="10bbd468-9064-4cb5-b62a-54a6ed97bc59"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("NON TRAUMA") ? "[X] " : "[ ] ") + "NON TRAUMA"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="110" y="0" width="100" height="12" uuid="6f0700b6-8b53-4566-a7e1-1ba1491b86af"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("KECELAKAAN") ? "[X] " : "[ ] ") + "KECELAKAAN"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="212" y="0" width="84" height="12" uuid="6e0f6f30-b5e8-4d5d-ba3f-d6808b29d4c2"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("INTOKSIKASI") ? "[X] " : "[ ] ") + "INTOKSIKASI"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="296" y="0" width="78" height="12" uuid="f23f3cd2-737e-47b5-b50b-a5cdb1155d29"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("KEKERASAN") ? "[X] " : "[ ] ") + "KEKERASAN"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="0" y="14" width="84" height="12" uuid="7f8cd087-d055-45cf-a976-a8dfef6502f2"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("TRAUMA") ? "[X] " : "[ ] ") + "TRAUMA"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="86" y="14" width="120" height="12" uuid="2d210537-a865-4fb4-bbbd-9f2a53ac524b"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("PENGANIAYAAN") ? "[X] " : "[ ] ") + "PENGANIAYAAN"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="208" y="14" width="90" height="12" uuid="74b3bc53-4880-4201-af7d-e1c83240856a"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("GIGITAN") ? "[X] " : "[ ] ") + "GIGITAN"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="300" y="14" width="74" height="12" uuid="44f53ce2-bc0d-47a9-aa6a-e44ca15dc41c"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[(($F{jenis_kasus} != null) && $F{jenis_kasus}.contains("SEKSUAL") ? "[X] " : "[ ] ") + "SEKSUAL"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="28" width="350" height="1" uuid="ee3c9909-2ac7-4d97-b64b-f42aeef97f1b"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="34" width="60" height="12" uuid="80a55dc4-b27d-4da3-87e9-042ee210d926"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<text><![CDATA[RUJUKAN]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="12" y="48" width="84" height="12" uuid="7f75f620-f93a-415c-9986-b055d1e0e723"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[($F{rujukan}.equals("ADA") ? "[X] " : "[ ] ") + "ADA"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="12" y="62" width="84" height="12" uuid="9d9bd86b-4968-40bd-9530-d8a6d880f86a"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[($F{rujukan}.equals("TIDAK ADA") ? "[X] " : "[ ] ") + "TIDAK ADA"]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="104" y="34" width="64" height="12" uuid="2c0da530-2ff7-4732-91d5-80c06dfbca1a"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<text><![CDATA[RESPONS]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="116" y="48" width="64" height="12" uuid="f3f0b166-1a2e-403a-a44a-c67744b03b69"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[($F{respons}.equals("ALERT") ? "[X] " : "[ ] ") + "ALERT"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="48" width="58" height="12" uuid="a7661b77-63eb-436d-b1a8-12959ed13b00"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[($F{respons}.equals("PAIN") ? "[X] " : "[ ] ") + "PAIN"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="116" y="62" width="64" height="12" uuid="cedd0910-7b18-4f55-a3b0-aaf64d70c18f"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[($F{respons}.equals("VERBAL") ? "[X] " : "[ ] ") + "VERBAL"]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement x="180" y="62" width="96" height="12" uuid="0e855ab1-f86e-472f-b5c6-5abcf2ecbd03"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[($F{respons}.equals("UNRESPONS") ? "[X] " : "[ ] ") + "UNRESPONS"]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="78" width="350" height="1" uuid="6d7b6c0d-a017-43ab-87e0-b44a3665db6c"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="84" width="90" height="12" uuid="00d9b2c0-5d32-4099-9858-b27897f4e4e1"/>
+				<textElement><font fontName="Arial Narrow" size="8" isItalic="true"/></textElement>
+				<text><![CDATA[Biopsikososial]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="0" y="98" width="350" height="120" uuid="6d4e5dc0-4f87-484b-b429-d6c8db0f0670"/>
+				<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+				<textFieldExpression><![CDATA[
+					"Status Pernikahan : " + ($F{status_pernikahan}.equals("") ? "-" : $F{status_pernikahan}) + "\n" +
+					"Anak             : " + $F{anak_status} + ($F{jumlah_anak}.equals("") ? "" : " / " + $F{jumlah_anak} + " orang") + "\n" +
+					"Warga Negara     : " + $F{warga_negara} + ($F{warga_negara_keterangan}.equals("") ? "" : " / " + $F{warga_negara_keterangan}) + "\n" +
+					"Pekerjaan        : " + ($F{pekerjaan}.equals("") ? "-" : $F{pekerjaan}) + "\n" +
+					"Kebiasaan        : " + ($F{kebiasaan}.equals("") ? "-" : $F{kebiasaan}) + "\n" +
+					"Agama            : " + ($F{agama}.equals("") ? "-" : $F{agama}) + "\n" +
+					"Tinggal Bersama  : " + ($F{tinggal_bersama}.equals("") ? "-" : $F{tinggal_bersama}) + ($F{tinggal_keterangan}.equals("") ? "" : " / " + $F{tinggal_keterangan}) + "\n" +
+					"No.Telp          : " + ($F{no_telp}.equals("") ? "-" : $F{no_telp}) + "\n" +
+					"Masalah Bicara   : " + $F{masalah_bicara} + ($F{masalah_bicara_keterangan}.equals("") ? "" : ", " + $F{masalah_bicara_keterangan}) + "\n" +
+					"Keluhan & RPS    : " + ($F{keluhan_rps}.equals("") ? "-" : $F{keluhan_rps})
+				]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="282" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="565" height="282" uuid="5d5d6c11-4081-40b7-95d8-f17db702f0f5"/>
+				<box>
+					<pen lineWidth="0.7"/>
+				</box>
+				<staticText>
+					<reportElement x="0" y="0" width="96" height="86" uuid="3c92f913-9e6e-4568-b672-0d71d4fecc39"/>
+					<box>
+						<pen lineWidth="0.7"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial Narrow" size="9" isItalic="true"/>
+					</textElement>
+					<text><![CDATA[TANDA VITAL]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="96" y="0" width="88" height="86" uuid="1237d726-e514-45af-b871-0a8c6976b61d"/>
+					<box>
+						<pen lineWidth="0.7"/>
+					</box>
+					<textElement textAlignment="Center" verticalAlignment="Middle">
+						<font fontName="Arial Narrow" size="9" isItalic="true"/>
+					</textElement>
+					<text><![CDATA[PEMERIKSAAN]]></text>
+				</staticText>
+				<frame>
+					<reportElement x="184" y="0" width="95" height="86" uuid="13cafef9-5718-43b3-8c3f-55dfe9948f5d" backcolor="#3B6EA5" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="8" y="8" width="79" height="10" uuid="c20d7d0c-f6cc-4cd7-9b2c-c22d849e9220"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="8" isItalic="true"/></textElement>
+						<text><![CDATA[[ ] Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="6" y="18" width="83" height="24" uuid="59231a9b-7fa0-4f64-8994-3cfbf0827513"/>
+						<imageExpression><![CDATA[$P{ttd_resusitasi}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="43" width="87" height="16" uuid="2e996440-f8f3-4626-ac9c-6b279542b4a4"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="6"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_resusitasi}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement x="0" y="62" width="95" height="12" uuid="203232cc-7cee-41ee-ba32-80daf4214a66"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="9" isBold="true" isItalic="true"/></textElement>
+						<text><![CDATA[RESUSITASI]]></text>
+					</staticText>
+					<textField>
+						<reportElement x="35" y="74" width="25" height="10" uuid="4de871c5-ec35-43cf-bbf0-7cb575e69e97"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isBold="true"/></textElement>
+						<textFieldExpression><![CDATA[$F{kategori_triase}.equals("RESUSITASI") ? "[X]" : "[ ]"]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="279" y="0" width="95" height="86" uuid="56b26b1e-a6c6-414d-a6a4-bcfe4fa85b76" backcolor="#C75A5A" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="8" y="8" width="79" height="10" uuid="f6f08cef-6485-4352-9fc8-72a185287410"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="8" isItalic="true"/></textElement>
+						<text><![CDATA[[ ] Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="6" y="18" width="83" height="24" uuid="39821de0-cff1-4fa9-9660-34b6be8d8617"/>
+						<imageExpression><![CDATA[$P{ttd_emergent}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="43" width="87" height="16" uuid="4b2ee9c2-8a97-4d3b-baa6-21fbe30a16cf"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="6"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_emergent}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement x="0" y="62" width="95" height="12" uuid="59c1f4b2-b3d0-4f71-b9c2-1f1e4fce08e0"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="9" isBold="true" isItalic="true"/></textElement>
+						<text><![CDATA[EMERGENT]]></text>
+					</staticText>
+					<textField>
+						<reportElement x="35" y="74" width="25" height="10" uuid="ac7a5747-b8c6-460c-bfe2-ec53db0c8b04"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isBold="true"/></textElement>
+						<textFieldExpression><![CDATA[$F{kategori_triase}.equals("EMERGENT") ? "[X]" : "[ ]"]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="374" y="0" width="95" height="86" uuid="f552840c-b66f-4833-8ed9-a15f76b01aa7" backcolor="#FFF200" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="8" y="8" width="79" height="10" uuid="4e188d8a-b9f5-44fe-ad98-7ece6e4d4f37"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="8" isItalic="true"/></textElement>
+						<text><![CDATA[[ ] Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="6" y="18" width="83" height="24" uuid="586261f5-d653-4c33-83d8-72f1f704e2d8"/>
+						<imageExpression><![CDATA[$P{ttd_urgent}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="43" width="87" height="16" uuid="91d724c0-9e28-43a7-9f55-6fd5cb138b7e"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="6"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_urgent}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement x="0" y="62" width="95" height="12" uuid="9ab0dd72-028d-4db1-bfa8-ff19ae32d6da"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="9" isBold="true" isItalic="true"/></textElement>
+						<text><![CDATA[URGENT]]></text>
+					</staticText>
+					<textField>
+						<reportElement x="35" y="74" width="25" height="10" uuid="3994ec08-db88-49e3-88fb-0f87fe9fca22"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isBold="true"/></textElement>
+						<textFieldExpression><![CDATA[$F{kategori_triase}.equals("URGENT") ? "[X]" : "[ ]"]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="469" y="0" width="96" height="86" uuid="260047f5-d9ea-46ea-aeb6-54f13f57e0ec" backcolor="#92D050" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="8" y="8" width="80" height="10" uuid="c622f633-8cd3-4dc6-872a-c01b7252c74c"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="8" isItalic="true"/></textElement>
+						<text><![CDATA[[ ] Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="6" y="18" width="84" height="24" uuid="0c74f587-34e6-4614-bec7-d6f4d9655ad8"/>
+						<imageExpression><![CDATA[$P{ttd_non_urgent}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="43" width="88" height="16" uuid="0c1f01e7-f826-4778-8270-a15f6e59641b"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="6"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_non_urgent}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement x="0" y="62" width="96" height="12" uuid="2d1010ca-af7f-4304-94fb-f1b5b4a16159"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="9" isBold="true" isItalic="true"/></textElement>
+						<text><![CDATA[NON URGENT]]></text>
+					</staticText>
+					<textField>
+						<reportElement x="35" y="74" width="26" height="10" uuid="a5d06498-47b1-4e2f-8dda-a8eb5eb42354"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isBold="true"/></textElement>
+						<textFieldExpression><![CDATA[$F{kategori_triase}.equals("NON URGENT") ? "[X]" : "[ ]"]]></textFieldExpression>
+					</textField>
+				</frame>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="6" y="92" width="84" height="102" uuid="fb40d4a9-ab4b-460e-b164-b11ee5b4562d"/>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[
+						"Tekanan Darah\n" + ($F{tekanan_darah}.equals("") ? "." : $F{tekanan_darah}) + " mmHg\n\n" +
+						"RR/Respirator\n" + ($F{respirasi}.equals("") ? "." : $F{respirasi}) + " x/menit\n\n" +
+						"Frek.Nadi\n" + ($F{frekuensi_nadi}.equals("") ? "." : $F{frekuensi_nadi}) + " x/menit\n\n" +
+						"Suhu\n" + ($F{suhu}.equals("") ? "." : $F{suhu}) + " C\n\n" +
+						"Riwayat Alergi\nMakanan : " + ($F{alergi_makanan}.equals("") ? "-" : $F{alergi_makanan}) + "\n" +
+						"Obat    : " + ($F{alergi_obat}.equals("") ? "-" : $F{alergi_obat}) + "\n" +
+						"Lain-lain : " + ($F{alergi_lain}.equals("") ? "-" : $F{alergi_lain})
+					]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="102" y="92" width="74" height="102" uuid="e778fd28-3751-4683-bc13-7f4cd126962f"/>
+					<textElement><font fontName="Arial Narrow" size="8" isItalic="true"/></textElement>
+					<textFieldExpression><![CDATA[
+						"JALAN NAFAS\n\nPERNAFASAN\n\n\nSIRKULASI\n\n\n\nKESADARAN\n\nPilihan saat ini :\n" + $F{kategori_triase}
+					]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="188" y="92" width="87" height="102" uuid="a482f85f-8126-4c61-a717-f5f862b7e3e4"/>
+					<box><pen lineWidth="0.7"/></box>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<text><![CDATA[Sumbatan [X]
+
+Henti Nafas
+Freq Nafas <10x/menit
+Sianosis
+
+Henti Jantung
+Nadi tidak teraba
+Pucat / Akral dingin
+
+GCS < 8]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="283" y="92" width="87" height="102" uuid="1f521ac4-c96a-4636-8df6-62c51778db3d"/>
+					<box><pen lineWidth="0.7"/></box>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<text><![CDATA[Bebas [ ]
+
+Freq Nafas >32x/menit
+Mengi
+
+Nadi lemah
+Freq Nadi <50 / >150
+CRT < 2 detik
+
+GCS 9 - 12]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="378" y="92" width="87" height="102" uuid="d670d5a0-7ffb-4fe0-9f9c-c731e232612e"/>
+					<box><pen lineWidth="0.7"/></box>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<text><![CDATA[Bebas [ ]
+
+Freq Nafas 24-32x/menit
+Mengi
+
+Freq Nadi 120-150
+TD >160 / >100
+
+GCS > 12]]></text>
+				</staticText>
+				<staticText>
+					<reportElement x="473" y="92" width="86" height="102" uuid="48ed90cb-2c22-4f6d-a334-e311afc28553"/>
+					<box><pen lineWidth="0.7"/></box>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<text><![CDATA[Bebas [ ]
+
+Freq Nafas 16-29x/menit
+
+Freq Nadi 80-120
+TD 120-160 / 80-100
+
+GCS 15]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="188" y="201" width="371" height="74" uuid="624668ea-a66a-4dfa-ad15-bc753b30aa26"/>
+					<box><pen lineWidth="0.7"/></box>
+					<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[
+						"HASIL ASESMEN TRIAGE SAAT INI\n" +
+						"Kategori   : " + ($F{kategori_triase}.equals("") ? "-" : $F{kategori_triase}) + "\n" +
+						"Jalan Nafas: " + ($F{jalan_nafas}.equals("") ? "-" : $F{jalan_nafas}) + "\n" +
+						"Pernafasan : " + ($F{pernafasan}.equals("") ? "-" : $F{pernafasan}) + "\n" +
+						"Sirkulasi  : " + ($F{sirkulasi}.equals("") ? "-" : $F{sirkulasi}) + "\n" +
+						"Kesadaran  : " + ($F{kesadaran}.equals("") ? "-" : $F{kesadaran})
+					]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+		<band height="170" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="565" height="170" uuid="9fdf6c9b-b6e6-4d74-baf0-81504bdc2dc2"/>
+				<box><pen lineWidth="0.7"/></box>
+				<frame>
+					<reportElement x="0" y="0" width="114" height="88" uuid="17c5c3db-53d2-431b-89f8-dd3d8bc86fbb"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="4" width="106" height="10" uuid="bb4ab859-ef10-48c4-a276-3bd13fbebff6"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true" isBold="true"/></textElement>
+						<text><![CDATA[RESIKO JATUH MORSE SKOR]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="6" y="20" width="102" height="60" uuid="2b8a3105-5851-435a-a98f-9af1e60eead3"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[
+							($F{morse_resiko}.equals("Resiko Rendah 0-24") ? "[X] " : "[ ] ") + "Resiko Rendah 0-24\n" +
+							($F{morse_resiko}.equals("Resiko Sedang 25-50") ? "[X] " : "[ ] ") + "Resiko Sedang 25-50\n" +
+							($F{morse_resiko}.equals("Resiko Tinggi >= 51") ? "[X] " : "[ ] ") + "Resiko Tinggi >= 51"
+						]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="114" y="0" width="114" height="88" uuid="44579fa7-c30c-4711-b9df-60704c519a64"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="4" width="106" height="10" uuid="369f60c1-d929-4ca4-a51a-bf3221f2fd7a"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true" isBold="true"/></textElement>
+						<text><![CDATA[SKALA NUTRISI]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="6" y="20" width="102" height="60" uuid="0119f796-6a06-4676-8a4c-54df7553e6fb"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[
+							($F{nutrisi_resiko}.equals("Berisiko Rendah 0") ? "[X] " : "[ ] ") + "Berisiko Rendah 0\n" +
+							($F{nutrisi_resiko}.equals("Berisiko Sedang 1-3") ? "[X] " : "[ ] ") + "Berisiko Sedang 1-3\n" +
+							($F{nutrisi_resiko}.equals("Berisiko Tinggi 4-5") ? "[X] " : "[ ] ") + "Berisiko Tinggi 4-5"
+						]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="228" y="0" width="337" height="88" uuid="58ce97cd-b064-4b03-b2f3-c87274c6746d"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="4" width="92" height="10" uuid="d6c1cd43-a376-4c2e-bd1f-a932cd1176a9"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true" isBold="true"/></textElement>
+						<text><![CDATA[SKALA NYERI]]></text>
+					</staticText>
+					<staticText>
+						<reportElement x="8" y="16" width="110" height="10" uuid="85eb6b1d-b5ca-4b7a-a245-169f3ee4014f"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[DEWASA]]></text>
+					</staticText>
+					<staticText>
+						<reportElement x="240" y="16" width="40" height="10" uuid="cef0de7d-b7f4-4934-968f-84c37e02265f"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[ANAK]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="8" y="28" width="150" height="36" uuid="e8655c9d-4ea6-4985-ba11-187de31a573d"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[
+							($F{nyeri_dewasa}.equals("Tidak Nyeri") ? "[X] " : "[ ] ") + "Tidak Nyeri\n" +
+							($F{nyeri_dewasa}.equals("Sedang (4-6)") ? "[X] " : "[ ] ") + "Sedang (4-6)\n" +
+							($F{nyeri_dewasa}.equals("Ringan (1-3)") ? "[X] " : "[ ] ") + "Ringan (1-3)\n" +
+							($F{nyeri_dewasa}.equals("Berat (7-10)") ? "[X] " : "[ ] ") + "Berat (7-10)"
+						]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement x="8" y="66" width="48" height="10" uuid="de7efe28-20ab-4eb7-8e53-b11fc5ca1b69"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Lokasi]]></text>
+					</staticText>
+					<textField>
+						<reportElement x="46" y="66" width="108" height="10" uuid="7b0c7074-5c89-4891-9866-aa56f84fba0f"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[$F{lokasi_nyeri}.equals("") ? "........" : $F{lokasi_nyeri}]]></textFieldExpression>
+					</textField>
+					<staticText>
+						<reportElement x="8" y="76" width="76" height="10" uuid="70e27667-b58c-4f74-b76e-8f321f5ef198"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Nyeri Hilang Bila]]></text>
+					</staticText>
+					<textField>
+						<reportElement x="76" y="76" width="116" height="10" uuid="ad71db75-5331-40fb-a0b9-4c4b755349bc"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[$F{nyeri_hilang_bila}.equals("") ? "........" : $F{nyeri_hilang_bila}]]></textFieldExpression>
+					</textField>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="198" y="24" width="130" height="54" uuid="7be5d7f9-12d3-4747-8447-452f3da460fb"/>
+						<imageExpression><![CDATA[new java.io.FileInputStream("./report/skala_nyeri_ugd.png")]]></imageExpression>
+					</image>
+				</frame>
+				<frame>
+					<reportElement x="0" y="88" width="112" height="82" uuid="f70c5387-a374-4ac1-9fdf-d51d3c721315"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="4" width="104" height="18" uuid="6eedf96a-fb34-4906-b0ca-7a9d7ad75104"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true" isBold="true"/></textElement>
+						<text><![CDATA[RESIKO JATUH HUMPTY DUMPTY]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="6" y="24" width="100" height="44" uuid="1a840671-ac4b-4e99-b7e5-8f0efec53bb7"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[
+							($F{humpty_resiko}.equals("Resiko Rendah 7-11") ? "[X] " : "[ ] ") + "Resiko Rendah 7-11\n" +
+							($F{humpty_resiko}.equals("Resiko Tinggi >= 12") ? "[X] " : "[ ] ") + "Resiko Tinggi >= 12"
+						]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="112" y="88" width="218" height="82" uuid="8d8df73d-9d7f-4812-b8f4-3efaef582313"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="4" width="30" height="10" uuid="a2f31cf9-dbf5-4fb3-9720-3bdcd8ca433e"/>
+						<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Ket]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="6" y="20" width="206" height="54" uuid="bc5248b7-7298-4598-9e60-c87805968b08"/>
+						<textElement><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[$F{keterangan}.equals("") ? "-" : $F{keterangan}]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="330" y="88" width="118" height="82" uuid="6b513866-0561-4195-92c3-6f22a3ca0fd8"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="0" y="4" width="118" height="10" uuid="6ef05500-6d65-477b-bc1d-8db567c0952f"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true" isBold="true"/></textElement>
+						<text><![CDATA[NAMA PERAWAT]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="6" y="16" width="106" height="12" uuid="b947f765-0c3d-41f7-8fd9-f8f6bb08f6f0"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[$F{nama_perawat}.equals("") ? "-" : $F{nama_perawat}]]></textFieldExpression>
+					</textField>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="8" y="30" width="102" height="26" uuid="1bcc2d4f-f96f-4390-9e13-d8460c57b308"/>
+						<imageExpression><![CDATA[$P{ttd_perawat}]]></imageExpression>
+					</image>
+					<staticText>
+						<reportElement x="0" y="64" width="118" height="10" uuid="7c0f1e12-70e8-4faa-abcd-eb24d2ce8a30"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[TTD]]></text>
+					</staticText>
+				</frame>
+				<frame>
+					<reportElement x="448" y="88" width="117" height="82" uuid="f0fbd2d5-0dab-4b7f-9c79-c51d2669be9f"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="0" y="4" width="117" height="10" uuid="f9d6cb58-c1b3-4f18-9e30-d961e8e8489d"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true" isBold="true"/></textElement>
+						<text><![CDATA[PENANGGUNG JAWAB]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="6" y="16" width="105" height="12" uuid="bd743b3f-448e-4dd2-92de-bbe8ff00d30a"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[$F{penanggung_jawab}.equals("") ? "-" : $F{penanggung_jawab}]]></textFieldExpression>
+					</textField>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="8" y="30" width="101" height="26" uuid="fa49cdd8-80b7-4280-91fd-f90a2351bba0"/>
+						<imageExpression><![CDATA[$P{ttd_penanggung_jawab}]]></imageExpression>
+					</image>
+					<staticText>
+						<reportElement x="0" y="64" width="117" height="10" uuid="c3925b43-d748-4b52-a74b-7d26e9cd0c84"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[TTD]]></text>
+					</staticText>
+				</frame>
+			</frame>
+		</band>
+		<band height="486" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="565" height="486" uuid="1bffc595-a794-40d1-862a-a3474b252b5a"/>
+				<box><pen lineWidth="0.7"/></box>
+				<staticText>
+					<reportElement x="6" y="6" width="130" height="10" uuid="7222e29f-20dd-4d1a-a8d1-1e4ae97f28e7"/>
+					<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+					<text><![CDATA[PEMERIKSAAN FISIK :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="6" y="20" width="550" height="92" uuid="681b2b3d-3a7c-46f2-a573-f3a78a1ea82b"/>
+					<textElement verticalAlignment="Top"><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{pemeriksaan_fisik}.equals("") ? " " : $F{pemeriksaan_fisik}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="6" y="134" width="150" height="10" uuid="06734b86-fad6-4026-92d1-f6439873982d"/>
+					<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+					<text><![CDATA[PEMERIKSAAN PENUNJANG :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="6" y="148" width="550" height="88" uuid="330f6b0b-e629-4d33-9f96-dd0f3369f217"/>
+					<textElement verticalAlignment="Top"><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{pemeriksaan_penunjang}.equals("") ? " " : $F{pemeriksaan_penunjang}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="6" y="248" width="180" height="10" uuid="9e7702cc-0f52-4d5d-8d02-dc7b2bcb490e"/>
+					<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+					<text><![CDATA[DIAGNOSIS SEMENTARA/MASALAH :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="6" y="262" width="550" height="94" uuid="9fd4e806-8f43-42f3-a74d-f4c446c4876e"/>
+					<textElement verticalAlignment="Top"><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{diagnosis_masalah}.equals("") ? " " : $F{diagnosis_masalah}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="6" y="366" width="70" height="10" uuid="354c419f-e008-45be-b9cf-23c609dfd3cf"/>
+					<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+					<text><![CDATA[RENCANA :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="6" y="380" width="550" height="70" uuid="6d39e014-8b15-41d6-9f74-691f1b34f623"/>
+					<textElement verticalAlignment="Top"><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{rencana}.equals("") ? " " : $F{rencana}]]></textFieldExpression>
+				</textField>
+				<staticText>
+					<reportElement x="6" y="458" width="70" height="10" uuid="75badc8f-d6ce-45bd-ab8c-9d24d49480a5"/>
+					<textElement><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+					<text><![CDATA[INSTRUKSI :]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true">
+					<reportElement x="6" y="470" width="360" height="10" uuid="3a4b799f-d515-4210-a55e-cf34c15b4bd0"/>
+					<textElement verticalAlignment="Top"><font fontName="Arial Narrow" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{instruksi}.equals("") ? " " : $F{instruksi}]]></textFieldExpression>
+				</textField>
+				<frame>
+					<reportElement x="400" y="390" width="140" height="60" uuid="74f8dcb5-ef0f-4713-951e-83e0442af79e"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="0" y="6" width="140" height="10" uuid="fa0d9829-a15c-4035-8b38-c739cb28290d"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isBold="true"/></textElement>
+						<text><![CDATA[NAMA DOKTER]]></text>
+					</staticText>
+					<textField isStretchWithOverflow="true">
+						<reportElement x="8" y="20" width="124" height="26" uuid="83e24f3d-9718-4d03-b10b-6013cc77c3ea"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="8"/></textElement>
+						<textFieldExpression><![CDATA[$F{nama_dokter}.equals("") ? $F{nama_dokter_instruksi} : $F{nama_dokter}]]></textFieldExpression>
+					</textField>
+				</frame>
+			</frame>
+		</band>
+		<band height="172" splitType="Stretch">
+			<frame>
+				<reportElement x="0" y="0" width="565" height="154" uuid="4f7cc76c-b7d7-4afb-8658-f0d91e2fec2d"/>
+				<box><pen lineWidth="0.7"/></box>
+				<staticText>
+					<reportElement x="0" y="0" width="565" height="12" uuid="604a5bb8-6be4-48d1-8e33-cc3c9c275949"/>
+					<box><pen lineWidth="0.7"/></box>
+					<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+					<text><![CDATA[PASIEN KELUAR IGD]]></text>
+				</staticText>
+				<line>
+					<reportElement x="230" y="12" width="1" height="142" uuid="459b8fcf-9829-4d7f-a272-505fd03b34cb"/>
+				</line>
+				<textField>
+					<reportElement x="6" y="18" width="220" height="10" uuid="89901472-9769-4993-a236-1798c13f2693"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["TANGGAL KELUAR        : " + ($F{tanggal_keluar} == null ? "-" : new java.text.SimpleDateFormat("dd-MM-yyyy").format($F{tanggal_keluar}))]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="30" width="220" height="10" uuid="d816b5ff-69e4-4c68-b166-a698b8ef7ab7"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["JAM KELUAR            : " + ($F{jam_keluar}.equals("") ? "-" : $F{jam_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="42" width="220" height="10" uuid="cf17092e-d70d-40e2-9e1b-dd7a8a91687a"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["OPNAME DI RUANGAN     : " + ($F{opname_ruangan}.equals("") ? "-" : $F{opname_ruangan})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="54" width="220" height="10" uuid="860bdbd2-f63c-4c5f-bce2-38a6aef414cd"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["INDIKASI MASUK        : " + ($F{indikasi_masuk}.equals("") ? "-" : $F{indikasi_masuk})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="66" width="220" height="10" uuid="a94df775-6513-4689-a653-6eb3b48edaa2"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["DIPULANGKAN KONTROL KE: " + ($F{kontrol_ke}.equals("") ? "-" : $F{kontrol_ke})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="78" width="220" height="10" uuid="173f8479-fa0d-4bf1-8997-68c80d9e41e3"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["DIRUJUK KE            : " + ($F{dirujuk_ke}.equals("") ? "-" : $F{dirujuk_ke})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="90" width="220" height="10" uuid="3675f0df-c5ab-4a42-bcd5-cedbc9852041"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["ALASAN DIRUJUK        : " + ($F{alasan_dirujuk}.equals("") ? "-" : $F{alasan_dirujuk})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="102" width="220" height="10" uuid="e0f36b81-3d40-4fc1-ad4a-8ca21c020f56"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["MENINGGAL JAM         : " + ($F{meninggal_jam}.equals("") ? "-" : $F{meninggal_jam})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="6" y="114" width="220" height="10" uuid="a5ee97ae-54c8-4900-a5e0-40200a0e5a48"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["PENYEBAB              : " + ($F{penyebab_meninggal}.equals("") ? "-" : $F{penyebab_meninggal})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="236" y="18" width="100" height="10" uuid="94981894-b9ec-4676-b2f6-c507bd0a03d1"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["K/U : " + ($F{keadaan_umum_keluar}.equals("") ? "-" : $F{keadaan_umum_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="236" y="42" width="100" height="10" uuid="041ebdbc-a92d-4e97-b88f-5aa3f278cb5a"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["TD : " + ($F{td_keluar}.equals("") ? "-" : $F{td_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="334" y="42" width="100" height="10" uuid="7c7f4e33-dd98-4613-a7e0-592afe043b3b"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["RR : " + ($F{rr_keluar}.equals("") ? "-" : $F{rr_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="438" y="42" width="118" height="10" uuid="344cc7dd-db41-4a71-9aa0-870c0f8b3bc2"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["SpO2 : " + ($F{spo2_keluar}.equals("") ? "-" : $F{spo2_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="236" y="66" width="100" height="10" uuid="f7c06da3-a5f0-4c20-a4d2-a02150400e4f"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["HR : " + ($F{hr_keluar}.equals("") ? "-" : $F{hr_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="334" y="66" width="100" height="10" uuid="c364c0d1-a6fe-4ed6-8187-6d554f617f6d"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["Temp : " + ($F{temp_keluar}.equals("") ? "-" : $F{temp_keluar})]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="438" y="66" width="118" height="10" uuid="4479224e-52d6-4f33-b213-f39e8d54febf"/>
+					<textElement><font fontName="Arial Narrow" size="7"/></textElement>
+					<textFieldExpression><![CDATA["GCS : " + ($F{gcs_keluar}.equals("") ? "-" : $F{gcs_keluar})]]></textFieldExpression>
+				</textField>
+				<frame>
+					<reportElement x="230" y="106" width="84" height="48" uuid="fae3e5f0-a6f5-4c9e-9088-f1e232453267" backcolor="#1F4E79" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="8" width="76" height="10" uuid="c9c48b14-d5cb-4489-ba02-a4a3543d0b56"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="4" y="18" width="76" height="12" uuid="fc6a21a4-8f93-4146-b2c3-f5ed8970f8e2"/>
+						<imageExpression><![CDATA[$P{ttd_resusitasi}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="31" width="76" height="12" uuid="5b041e76-a5cd-4824-8dc1-eb6a390694f1"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="5"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_resusitasi}]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="314" y="106" width="84" height="48" uuid="b15f68ae-ebef-4a58-a198-71439bc63129" backcolor="#C00000" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="8" width="76" height="10" uuid="76ea618c-df76-4951-bdd9-2111ec387f96"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="4" y="18" width="76" height="12" uuid="694bf4ca-bf39-4ca4-949c-97f18d00a3b0"/>
+						<imageExpression><![CDATA[$P{ttd_emergent}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="31" width="76" height="12" uuid="f716db7a-ee83-44c2-b9e4-46883d7f7e32"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="5"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_emergent}]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="398" y="106" width="84" height="48" uuid="8d378841-3d4d-4cc8-a06b-aae34a13bb7f" backcolor="#FFFF00" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="8" width="76" height="10" uuid="247ce739-1cc0-4c8b-bd24-8ccca48b058c"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="4" y="18" width="76" height="12" uuid="a5423b6e-3173-4063-90be-3b18eecfa4b8"/>
+						<imageExpression><![CDATA[$P{ttd_urgent}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="31" width="76" height="12" uuid="34e2d2d9-7934-46eb-93f9-0f5d814d2e8f"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="5"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_urgent}]]></textFieldExpression>
+					</textField>
+				</frame>
+				<frame>
+					<reportElement x="482" y="106" width="83" height="48" uuid="4b2866c2-996f-4bcc-9072-d0df1d52656a" backcolor="#92D050" mode="Opaque"/>
+					<box><pen lineWidth="0.7"/></box>
+					<staticText>
+						<reportElement x="4" y="8" width="75" height="10" uuid="7ff7bef4-1ff4-4d54-afd2-3d034d8eac4d"/>
+						<textElement textAlignment="Center"><font fontName="Arial Narrow" size="7" isItalic="true"/></textElement>
+						<text><![CDATA[Nama & Paraf]]></text>
+					</staticText>
+					<image scaleImage="RetainShape" onErrorType="Blank">
+						<reportElement x="4" y="18" width="75" height="12" uuid="645b10f9-4cab-45ef-9e8f-cea984bc510b"/>
+						<imageExpression><![CDATA[$P{ttd_non_urgent}]]></imageExpression>
+					</image>
+					<textField isBlankWhenNull="true">
+						<reportElement x="4" y="31" width="75" height="12" uuid="d93aff8b-f2cc-4cbc-a6cb-89dceaf46577"/>
+						<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Arial Narrow" size="5"/></textElement>
+						<textFieldExpression><![CDATA[$P{petugas_triase_non_urgent}]]></textFieldExpression>
+					</textField>
+				</frame>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

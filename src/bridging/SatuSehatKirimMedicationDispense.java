@@ -25,6 +25,9 @@ import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Document;
@@ -47,7 +50,7 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
     private PreparedStatement ps;
     private ResultSet rs;   
     private int i=0;
-    private String link="",json="",idpasien="",iddokter="",signa1="1",signa2="1";
+    private String link="",json="",idpasien="",iddokter="",idmedicationrequest="",signa1="1",signa2="1";
     private ApiSatuSehat api=new ApiSatuSehat();
     private HttpHeaders headers ;
     private HttpEntity requestEntity;
@@ -648,23 +651,12 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
                 try {
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,7).toString());
-                    arrSplit = tbObat.getValueAt(i,24).toString().toLowerCase().split("x");
-                    signa1="1";
-                    try {
-                        if(!arrSplit[0].replaceAll("[^0-9.]+", "").equals("")){
-                            signa1=arrSplit[0].replaceAll("[^0-9.]+", "");
-                        }
-                    } catch (Exception e) {
-                        signa1="1";
+                    setSigna(tbObat.getValueAt(i,24).toString());
+                    idmedicationrequest=cariMedicationRequest(tbObat.getValueAt(i,25).toString(),tbObat.getValueAt(i,11).toString());
+                    if(idmedicationrequest.equals("")){
+                        System.out.println("Notifikasi Bridging : ID MedicationRequest kosong untuk No.Resep "+tbObat.getValueAt(i,25).toString()+", Kode Barang "+tbObat.getValueAt(i,11).toString());
+                        continue;
                     }
-                    signa2="1";
-                    try {
-                        if(!arrSplit[1].replaceAll("[^0-9.]+", "").equals("")){
-                            signa2=arrSplit[1].replaceAll("[^0-9.]+", "");
-                        }
-                    } catch (Exception e) {
-                        signa2="1";
-                    } 
                     
                     try{
                         headers = new HttpHeaders();
@@ -688,7 +680,7 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
                                     "\"category\": {" +
                                         "\"coding\": [" +
                                             "{" +
-                                                "\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\"," +
+                                                "\"system\": \"http://terminology.hl7.org/fhir/CodeSystem/medicationdispense-category\"," +
                                                 "\"code\": \""+tbObat.getValueAt(i,30).toString().replaceAll("Ralan","outpatient").replaceAll("Ranap","inpatient")+"\"," +
                                                 "\"display\": \""+tbObat.getValueAt(i,30).toString().replaceAll("Ralan","Outpatient").replaceAll("Ranap","Inpatient")+"\"" +
                                             "}" +
@@ -717,13 +709,18 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
                                         "\"reference\": \"Location/"+tbObat.getValueAt(i,31).toString()+"\"," +
                                         "\"display\": \""+tbObat.getValueAt(i,32).toString()+"\"" +
                                     "},"+
+                                    "\"authorizingPrescription\": [" +
+                                        "{" +
+                                            "\"reference\": \"MedicationRequest/"+idmedicationrequest+"\"" +
+                                        "}" +
+                                    "]," +
                                     "\"quantity\": {" +
                                         "\"system\": \""+tbObat.getValueAt(i,20).toString()+"\"," +
                                         "\"code\": \""+tbObat.getValueAt(i,19).toString()+"\"," +
                                         "\"value\": "+tbObat.getValueAt(i,22).toString()+
                                     "}," +
-                                    "\"whenPrepared\": \""+tbObat.getValueAt(i,21).toString().replaceAll(" ","T")+"Z\"," +
-                                    "\"whenHandedOver\": \""+tbObat.getValueAt(i,29).toString().replaceAll(" ","T")+"Z\","+
+                                    "\"whenPrepared\": \""+toUTC(tbObat.getValueAt(i,21).toString())+"\"," +
+                                    "\"whenHandedOver\": \""+toUTC(tbObat.getValueAt(i,29).toString())+"\","+
                                     "\"dosageInstruction\": [" +
                                         "{" +
                                             "\"sequence\": 1," +
@@ -800,23 +797,12 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
                 try {
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,7).toString());
-                    arrSplit = tbObat.getValueAt(i,24).toString().toLowerCase().split("x");
-                    signa1="1";
-                    try {
-                        if(!arrSplit[0].replaceAll("[^0-9.]+", "").equals("")){
-                            signa1=arrSplit[0].replaceAll("[^0-9.]+", "");
-                        }
-                    } catch (Exception e) {
-                        signa1="1";
+                    setSigna(tbObat.getValueAt(i,24).toString());
+                    idmedicationrequest=cariMedicationRequest(tbObat.getValueAt(i,25).toString(),tbObat.getValueAt(i,11).toString());
+                    if(idmedicationrequest.equals("")){
+                        System.out.println("Notifikasi Bridging : ID MedicationRequest kosong untuk No.Resep "+tbObat.getValueAt(i,25).toString()+", Kode Barang "+tbObat.getValueAt(i,11).toString());
+                        continue;
                     }
-                    signa2="1";
-                    try {
-                        if(!arrSplit[1].replaceAll("[^0-9.]+", "").equals("")){
-                            signa2=arrSplit[1].replaceAll("[^0-9.]+", "");
-                        }
-                    } catch (Exception e) {
-                        signa2="1";
-                    } 
                     
                     try{
                         headers = new HttpHeaders();
@@ -841,7 +827,7 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
                                     "\"category\": {" +
                                         "\"coding\": [" +
                                             "{" +
-                                                "\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\"," +
+                                                "\"system\": \"http://terminology.hl7.org/fhir/CodeSystem/medicationdispense-category\"," +
                                                 "\"code\": \""+tbObat.getValueAt(i,30).toString().replaceAll("Ralan","outpatient").replaceAll("Ranap","inpatient")+"\"," +
                                                 "\"display\": \""+tbObat.getValueAt(i,30).toString().replaceAll("Ralan","Outpatient").replaceAll("Ranap","Inpatient")+"\"" +
                                             "}" +
@@ -870,13 +856,18 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
                                         "\"reference\": \"Location/"+tbObat.getValueAt(i,31).toString()+"\"," +
                                         "\"display\": \""+tbObat.getValueAt(i,32).toString()+"\"" +
                                     "},"+
+                                    "\"authorizingPrescription\": [" +
+                                        "{" +
+                                            "\"reference\": \"MedicationRequest/"+idmedicationrequest+"\"" +
+                                        "}" +
+                                    "]," +
                                     "\"quantity\": {" +
                                         "\"system\": \""+tbObat.getValueAt(i,20).toString()+"\"," +
-                                        "\"code\": \""+tbObat.getValueAt(i,19).toString()+"\"" +
-                                        "\"value\": "+tbObat.getValueAt(i,22).toString()+"," +
+                                        "\"code\": \""+tbObat.getValueAt(i,19).toString()+"\"," +
+                                        "\"value\": "+tbObat.getValueAt(i,22).toString()+
                                     "}," +
-                                    "\"whenPrepared\": \""+tbObat.getValueAt(i,21).toString().replaceAll(" ","T")+"Z\"," +
-                                    "\"whenHandedOver\": \""+tbObat.getValueAt(i,29).toString().replaceAll(" ","T")+"Z\","+
+                                    "\"whenPrepared\": \""+toUTC(tbObat.getValueAt(i,21).toString())+"\"," +
+                                    "\"whenHandedOver\": \""+toUTC(tbObat.getValueAt(i,29).toString())+"\","+
                                     "\"dosageInstruction\": [" +
                                         "{" +
                                             "\"sequence\": 1," +
@@ -938,6 +929,64 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
             Valid.pindah(evt, BtnPrint, BtnKeluar);
         }
     }//GEN-LAST:event_BtnAllKeyPressed
+
+    private void setSigna(String aturan) {
+        signa1="1";
+        signa2="1";
+        try {
+            arrSplit = aturan.toLowerCase().split("x");
+            signa2 = angkaTerakhir(arrSplit[0]);
+            signa1 = angkaTerakhir(arrSplit[1]);
+        } catch (Exception e) {
+            signa1="1";
+            signa2="1";
+        }
+    }
+
+    private String angkaTerakhir(String text) {
+        String[] angka=text.replaceAll("[^0-9.]+", " ").trim().split("\\s+");
+        return angka.length>0 && !angka[angka.length-1].equals("") ? angka[angka.length-1] : "1";
+    }
+
+    private String cariMedicationRequest(String noResep, String kodeBrng) {
+        PreparedStatement psmed=null;
+        ResultSet rsmed=null;
+        try {
+            psmed=koneksi.prepareStatement("select id_medicationrequest from satu_sehat_medicationrequest where no_resep=? and kode_brng=?");
+            psmed.setString(1,noResep);
+            psmed.setString(2,kodeBrng);
+            rsmed=psmed.executeQuery();
+            if(rsmed.next()){
+                return rsmed.getString("id_medicationrequest");
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi : "+e);
+        } finally {
+            try {
+                if(rsmed!=null){
+                    rsmed.close();
+                }
+                if(psmed!=null){
+                    psmed.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notifikasi : "+e);
+            }
+        }
+        return "";
+    }
+
+    private String toUTC(String tanggalJam) {
+        try {
+            return LocalDateTime.parse(tanggalJam.replaceAll(" ", "T"))
+                    .atZone(ZoneId.of("Asia/Makassar"))
+                    .withZoneSameInstant(ZoneOffset.UTC)
+                    .toOffsetDateTime()
+                    .toString();
+        } catch (Exception e) {
+            return tanggalJam.replaceAll(" ", "T")+"Z";
+        }
+    }
 
     /**
     * @param args the command line arguments

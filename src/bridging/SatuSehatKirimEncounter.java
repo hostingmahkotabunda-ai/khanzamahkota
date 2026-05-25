@@ -624,8 +624,7 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                                         "{" +
                                             "\"status\": \"arrived\"," +
                                             "\"period\": {" +
-                                                "\"start\": \""+tbObat.getValueAt(i,1).toString()+"\"," +
-                                                "\"end\": \""+tbObat.getValueAt(i,14).toString()+"\"" +
+                                                "\"start\": \""+tbObat.getValueAt(i,1).toString()+"\"" +
                                             "}" +
                                         "}" +
                                     "]," +
@@ -738,8 +737,7 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                                         "{" +
                                             "\"status\": \"arrived\"," +
                                             "\"period\": {" +
-                                                "\"start\": \""+tbObat.getValueAt(i,1).toString()+"\"," +
-                                                "\"end\": \""+tbObat.getValueAt(i,14).toString()+"\"" +
+                                                "\"start\": \""+tbObat.getValueAt(i,1).toString()+"\"" +
                                             "}" +
                                         "}" +
                                     "]," +

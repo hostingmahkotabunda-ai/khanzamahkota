@@ -6793,14 +6793,16 @@ private void KabupatenMouseMoved(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
             param.put("kontakrs",akses.getkontakrs());
             param.put("emailrs",akses.getemailrs());   
             param.put("logo",Sequel.cariGambar("select setting.logo from setting")); 
-            Valid.MyReportqry("rptBarcodeRM.jasper","report","::[ Label Rekam Medis ]::","select pasien.no_rkm_medis, pasien.nm_pasien, pasien.no_ktp, pasien.jk, "+
-                   "pasien.tmp_lahir, pasien.tgl_lahir,pasien.nm_ibu, concat(pasien.alamat,', ',kelurahan.nm_kel,', ',kecamatan.nm_kec,', ',kabupaten.nm_kab,', ',propinsi.nm_prop) as alamat, pasien.gol_darah, pasien.pekerjaan,"+
-                   "pasien.stts_nikah,pasien.agama,pasien.tgl_daftar,pasien.no_tlp,pasien.umur,"+
-                   "pasien.pnd, pasien.keluarga, pasien.namakeluarga,penjab.png_jawab,pasien.pekerjaanpj,"+
-                   "concat(pasien.alamatpj,', ',pasien.kelurahanpj,', ',pasien.kecamatanpj,', ',pasien.kabupatenpj,', ',pasien.propinsipj) as alamatpj from pasien "+
-                   "inner join kelurahan inner join kecamatan inner join kabupaten "+
-                   "inner join penjab inner join propinsi on pasien.kd_prop=propinsi.kd_prop and pasien.kd_pj=penjab.kd_pj and pasien.kd_kel=kelurahan.kd_kel "+
-                   "and pasien.kd_kec=kecamatan.kd_kec and pasien.kd_kab=kabupaten.kd_kab  where pasien.no_rkm_medis='"+TNo.getText()+"' ",param);
+            Valid.MyReportqry("rptLabelTracker.jasper","report","::[ Label Rekam Medis ]::",
+                    "select '' as no_rawat,pasien.no_rkm_medis,pasien.nm_pasien,pasien.tgl_lahir,"+
+                    "case "+
+                    "when pasien.tgl_lahir is null then '' "+
+                    "when timestampdiff(year,pasien.tgl_lahir,current_date())>0 and timestampdiff(month,date_add(pasien.tgl_lahir,interval timestampdiff(year,pasien.tgl_lahir,current_date()) year),current_date())>0 then concat(timestampdiff(year,pasien.tgl_lahir,current_date()),' Th ',timestampdiff(month,date_add(pasien.tgl_lahir,interval timestampdiff(year,pasien.tgl_lahir,current_date()) year),current_date()),' Bl') "+
+                    "when timestampdiff(year,pasien.tgl_lahir,current_date())>0 then concat(timestampdiff(year,pasien.tgl_lahir,current_date()),' Th') "+
+                    "when timestampdiff(month,pasien.tgl_lahir,current_date())>0 then concat(timestampdiff(month,pasien.tgl_lahir,current_date()),' Bl') "+
+                    "else '0 Bl' "+
+                    "end as umur "+
+                    "from pasien where pasien.no_rkm_medis='"+TNo.getText()+"' ",param);
             this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_MnBarcodeRMActionPerformed

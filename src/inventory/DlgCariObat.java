@@ -56,6 +56,7 @@ import widget.Button;
  */
 public final class DlgCariObat extends javax.swing.JDialog {
     private final DefaultTableModel tabModeobat,tabModeObatRacikan,tabModeDetailObatRacikan;
+    private DefaultTableModel tabModeTindakan;
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
     private Connection koneksi=koneksiDB.condb();
@@ -70,6 +71,7 @@ public final class DlgCariObat extends javax.swing.JDialog {
     private String[] kodebarang,namabarang,kodesatuan,letakbarang,namajenis,aturan,industri,kategori,golongan,no,nobatch,nofaktur,kadaluarsa;
     private String signa1="1",signa2="1",nokunjungan="",kdObatSK="",requestJson="",URL="",otorisasi,sql="",aktifpcare="no",no_batchcari="", tgl_kadaluarsacari="", no_fakturcari="", aktifkanbatch="no",kodedokter="",namadokter="",noresep="",bangsal="",bangsaldefault=Sequel.cariIsi("select set_lokasi.kd_bangsal from set_lokasi limit 1"),tampilkan_ppnobat_ralan="",
                    Suspen_Piutang_Obat_Ralan="",Obat_Ralan="",HPP_Obat_Rawat_Jalan="",Persediaan_Obat_Rawat_Jalan="",hppfarmasi="",VALIDASIULANGBERIOBAT="",DEPOAKTIFOBAT="",utc="";
+    private String noRacikAktif="";
     private DlgCariBangsal caribangsal=new DlgCariBangsal(null,false);
     public DlgCariAturanPakai aturanpakai=new DlgCariAturanPakai(null,false);
     private DlgCariMetodeRacik metoderacik=new DlgCariMetodeRacik(null,false);
@@ -86,13 +88,54 @@ public final class DlgCariObat extends javax.swing.JDialog {
     private ApiPcare api=new ApiPcare();
     private String[] arrSplit;
     private boolean sukses=true;
+    private String planSOAPTerakhir="";
+    private boolean draftResepSOAPTableChecked=false;
+    private javax.swing.JPanel panelUmumObat;
+    private javax.swing.JPanel panelRacikanObat;
+    private javax.swing.JPanel panelPlanSOAP;
+    private javax.swing.JPanel panelPlanSOAPRacikan;
+    private widget.ScrollPane scrollPlanSOAP;
+    private widget.ScrollPane scrollPlanSOAPRacikan;
+    private javax.swing.JTextArea areaPlanSOAP;
+    private javax.swing.JTextArea areaPlanSOAPRacikan;
+    private javax.swing.JPanel panelTindakanPasien;
+    private javax.swing.JPanel panelTindakanPasienRacikan;
+    private widget.ScrollPane scrollTindakanPasien;
+    private widget.ScrollPane scrollTindakanPasienRacikan;
+    private widget.Table tbTindakanPasien;
+    private widget.Table tbTindakanPasienRacikan;
+    private widget.Label labelTindakanPasien;
+    private widget.Label labelTindakanPasienRacikan;
+    private widget.Label labelPlanSOAP;
+    private widget.Label labelPlanSOAPRacikan;
+
+    public static DlgCariObat buatDari(java.awt.Component parent) {
+        java.awt.Window owner = parent instanceof java.awt.Window ? (java.awt.Window)parent : javax.swing.SwingUtilities.getWindowAncestor(parent);
+        if(owner instanceof java.awt.Dialog){
+            return new DlgCariObat((java.awt.Dialog)owner,false);
+        }else if(owner instanceof java.awt.Frame){
+            return new DlgCariObat((java.awt.Frame)owner,false);
+        }
+        return new DlgCariObat((java.awt.Frame)null,false);
+    }
     
     /** Creates new form DlgPenyakit
      * @param parent
      * @param modal */
     public DlgCariObat(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+        this((java.awt.Window)parent,modal);
+    }
+
+    public DlgCariObat(java.awt.Dialog parent, boolean modal) {
+        this((java.awt.Window)parent,modal);
+    }
+
+    private DlgCariObat(java.awt.Window parent, boolean modal) {
+        super(parent);
+        setModalityType(modal ? java.awt.Dialog.ModalityType.APPLICATION_MODAL : java.awt.Dialog.ModalityType.MODELESS);
         initComponents();
+        inisialisasiPanelTindakanPasien();
+        inisialisasiPanelPlanSOAP();
         this.setLocation(10,2);
         setSize(656,250);
 
@@ -220,6 +263,14 @@ public final class DlgCariObat extends javax.swing.JDialog {
 
         warna2.kolom=4;
         tbObatRacikan.setDefaultRenderer(Object.class,warna2);
+        tbObatRacikan.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            @Override
+            public void valueChanged(javax.swing.event.ListSelectionEvent e) {
+                if(!e.getValueIsAdjusting()){
+                    setNoRacikAktifDariPilihan();
+                }
+            }
+        });
         
         tabModeDetailObatRacikan=new DefaultTableModel(null,new Object[]{
                 "No","Kode Barang","Nama Barang","Satuan","Harga(Rp)","H.Beli",
@@ -1095,7 +1146,8 @@ public final class DlgCariObat extends javax.swing.JDialog {
         }else if(TabRawat.getSelectedIndex()==1){
             if(tbObatRacikan.getRowCount()!=0){
                 if(tbObatRacikan.getSelectedRow()!= -1){
-                    if(tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString().equals("")||
+                    setNoRacikAktifDariPilihan();
+                    if(getNoRacikAktif().equals("")||
                             tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),1).toString().equals("")||
                             tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),2).toString().equals("")||
                             tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),3).toString().equals("")||
@@ -1791,6 +1843,8 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             JOptionPane.showMessageDialog(null,"Maksimal 98 Racikan..!!");
         }else{
             tabModeObatRacikan.addRow(new Object[]{""+i,"","","","","",""});
+            tbObatRacikan.setRowSelectionInterval(tbObatRacikan.getRowCount()-1, tbObatRacikan.getRowCount()-1);
+            setNoRacikAktifDariPilihan();
         }            
     }//GEN-LAST:event_BtnTambah1ActionPerformed
 
@@ -1830,7 +1884,8 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             }else if(evt.getKeyCode()==KeyEvent.VK_ENTER){
                 if((i==6)){
                     if(tbObatRacikan.getSelectedRow()!= -1){
-                        if(tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString().equals("")||
+                        setNoRacikAktifDariPilihan();
+                        if(getNoRacikAktif().equals("")||
                                 tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),1).toString().equals("")||
                                 tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),2).toString().equals("")||
                                 tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),3).toString().equals("")||
@@ -3426,6 +3481,8 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         Jam.setText(jam);  
         KdPj.setText(Sequel.cariIsi("select reg_periksa.kd_pj from reg_periksa where reg_periksa.no_rawat=?",norwt));
         kenaikan=Sequel.cariIsiAngka("select (set_harga_obat_ralan.hargajual/100) from set_harga_obat_ralan where set_harga_obat_ralan.kd_pj=?",KdPj.getText());
+        tampilkanPlanSOAPTerakhir(norwt);
+        tampilkanTindakanPasienRalan(norwt);
         TCari.requestFocus();
     }
     
@@ -3443,9 +3500,287 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         ChkJln.setSelected(cekbox);
         KdPj.setText(Sequel.cariIsi("select reg_periksa.kd_pj from reg_periksa where reg_periksa.no_rawat=?",norwt));
         kenaikan=Sequel.cariIsiAngka("select (set_harga_obat_ralan.hargajual/100) from set_harga_obat_ralan where set_harga_obat_ralan.kd_pj=?",KdPj.getText());
+        tampilkanPlanSOAPTerakhir(norwt);
+        tampilkanTindakanPasienRalan(norwt);
         TCari.requestFocus();
     }
-    
+
+    private void inisialisasiPanelPlanSOAP() {
+        panelUmumObat = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelUmumObat.setName("panelUmumObat");
+        panelUmumObat.setOpaque(false);
+        panelRacikanObat = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelRacikanObat.setName("panelRacikanObat");
+        panelRacikanObat.setOpaque(false);
+
+        panelPlanSOAP = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelPlanSOAP.setName("panelPlanSOAP");
+        panelPlanSOAP.setOpaque(false);
+        panelPlanSOAP.setPreferredSize(new java.awt.Dimension(460,100));
+        panelPlanSOAPRacikan = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelPlanSOAPRacikan.setName("panelPlanSOAPRacikan");
+        panelPlanSOAPRacikan.setOpaque(false);
+        panelPlanSOAPRacikan.setPreferredSize(new java.awt.Dimension(460,100));
+
+        labelPlanSOAP = new widget.Label();
+        labelPlanSOAP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelPlanSOAP.setText("Plan SOAP Dokter :");
+        labelPlanSOAP.setPreferredSize(new java.awt.Dimension(100,23));
+        labelPlanSOAPRacikan = new widget.Label();
+        labelPlanSOAPRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelPlanSOAPRacikan.setText("Plan SOAP Dokter :");
+        labelPlanSOAPRacikan.setPreferredSize(new java.awt.Dimension(100,23));
+
+        areaPlanSOAP = new javax.swing.JTextArea();
+        areaPlanSOAP.setEditable(false);
+        areaPlanSOAP.setLineWrap(true);
+        areaPlanSOAP.setWrapStyleWord(true);
+        areaPlanSOAP.setMargin(new java.awt.Insets(6,6,6,6));
+        areaPlanSOAP.setName("areaPlanSOAP");
+        areaPlanSOAPRacikan = new javax.swing.JTextArea();
+        areaPlanSOAPRacikan.setEditable(false);
+        areaPlanSOAPRacikan.setLineWrap(true);
+        areaPlanSOAPRacikan.setWrapStyleWord(true);
+        areaPlanSOAPRacikan.setMargin(new java.awt.Insets(6,6,6,6));
+        areaPlanSOAPRacikan.setName("areaPlanSOAPRacikan");
+
+        scrollPlanSOAP = new widget.ScrollPane();
+        scrollPlanSOAP.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollPlanSOAP.setName("scrollPlanSOAP");
+        scrollPlanSOAP.setViewportView(areaPlanSOAP);
+        scrollPlanSOAPRacikan = new widget.ScrollPane();
+        scrollPlanSOAPRacikan.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollPlanSOAPRacikan.setName("scrollPlanSOAPRacikan");
+        scrollPlanSOAPRacikan.setViewportView(areaPlanSOAPRacikan);
+
+        javax.swing.JPanel panelIsiPlanSOAP=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelIsiPlanSOAP.setName("panelIsiPlanSOAP");
+        panelIsiPlanSOAP.setOpaque(false);
+        panelIsiPlanSOAP.add(labelPlanSOAP, java.awt.BorderLayout.PAGE_START);
+        panelIsiPlanSOAP.add(scrollPlanSOAP, java.awt.BorderLayout.CENTER);
+        javax.swing.JSplitPane splitInfoSOAP=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelIsiPlanSOAP,panelTindakanPasien);
+        splitInfoSOAP.setName("splitInfoSOAP");
+        splitInfoSOAP.setBorder(null);
+        splitInfoSOAP.setResizeWeight(0.35);
+        splitInfoSOAP.setDividerLocation(210);
+        panelPlanSOAP.add(splitInfoSOAP, java.awt.BorderLayout.CENTER);
+
+        javax.swing.JPanel panelIsiPlanSOAPRacikan=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelIsiPlanSOAPRacikan.setName("panelIsiPlanSOAPRacikan");
+        panelIsiPlanSOAPRacikan.setOpaque(false);
+        panelIsiPlanSOAPRacikan.add(labelPlanSOAPRacikan, java.awt.BorderLayout.PAGE_START);
+        panelIsiPlanSOAPRacikan.add(scrollPlanSOAPRacikan, java.awt.BorderLayout.CENTER);
+        javax.swing.JSplitPane splitInfoSOAPRacikan=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelIsiPlanSOAPRacikan,panelTindakanPasienRacikan);
+        splitInfoSOAPRacikan.setName("splitInfoSOAPRacikan");
+        splitInfoSOAPRacikan.setBorder(null);
+        splitInfoSOAPRacikan.setResizeWeight(0.35);
+        splitInfoSOAPRacikan.setDividerLocation(210);
+        panelPlanSOAPRacikan.add(splitInfoSOAPRacikan, java.awt.BorderLayout.CENTER);
+
+        int indexUmum = TabRawat.indexOfComponent(Scroll);
+        if(indexUmum>-1) {
+            TabRawat.remove(indexUmum);
+            panelUmumObat.add(Scroll, java.awt.BorderLayout.CENTER);
+            panelUmumObat.add(panelPlanSOAP, java.awt.BorderLayout.EAST);
+            TabRawat.insertTab("Umum", null, panelUmumObat, null, indexUmum);
+        }
+
+        int indexRacikan = TabRawat.indexOfComponent(jPanel3);
+        if(indexRacikan>-1) {
+            TabRawat.remove(indexRacikan);
+            panelRacikanObat.add(jPanel3, java.awt.BorderLayout.CENTER);
+            panelRacikanObat.add(panelPlanSOAPRacikan, java.awt.BorderLayout.EAST);
+            TabRawat.insertTab("Racikan", null, panelRacikanObat, null, indexRacikan);
+        }
+
+        TabRawat.setSelectedIndex(0);
+        refreshPanelPlanSOAP();
+    }
+
+    private void inisialisasiPanelTindakanPasien() {
+        tabModeTindakan=new DefaultTableModel(null,new Object[]{
+            "Tgl.Perawatan","Jam","Jenis","Kode","Nama Tindakan","Dokter/Petugas","Biaya"
+        }){
+            @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
+        };
+        labelTindakanPasien = new widget.Label();
+        labelTindakanPasien.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelTindakanPasien.setText("Tindakan yang sudah diinput :");
+        labelTindakanPasien.setPreferredSize(new java.awt.Dimension(100,23));
+        labelTindakanPasienRacikan = new widget.Label();
+        labelTindakanPasienRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelTindakanPasienRacikan.setText("Tindakan yang sudah diinput :");
+        labelTindakanPasienRacikan.setPreferredSize(new java.awt.Dimension(100,23));
+
+        tbTindakanPasien=new widget.Table();
+        tbTindakanPasien.setName("tbTindakanPasien");
+        tbTindakanPasien.setModel(tabModeTindakan);
+        tbTindakanPasien.setPreferredScrollableViewportSize(new Dimension(500,500));
+        tbTindakanPasien.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tbTindakanPasienRacikan=new widget.Table();
+        tbTindakanPasienRacikan.setName("tbTindakanPasienRacikan");
+        tbTindakanPasienRacikan.setModel(tabModeTindakan);
+        tbTindakanPasienRacikan.setPreferredScrollableViewportSize(new Dimension(500,500));
+        tbTindakanPasienRacikan.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        aturKolomTindakanPasien(tbTindakanPasien);
+        aturKolomTindakanPasien(tbTindakanPasienRacikan);
+
+        scrollTindakanPasien=new widget.ScrollPane();
+        scrollTindakanPasien.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollTindakanPasien.setName("scrollTindakanPasien");
+        scrollTindakanPasien.setOpaque(true);
+        scrollTindakanPasien.setViewportView(tbTindakanPasien);
+        scrollTindakanPasienRacikan=new widget.ScrollPane();
+        scrollTindakanPasienRacikan.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollTindakanPasienRacikan.setName("scrollTindakanPasienRacikan");
+        scrollTindakanPasienRacikan.setOpaque(true);
+        scrollTindakanPasienRacikan.setViewportView(tbTindakanPasienRacikan);
+
+        panelTindakanPasien=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelTindakanPasien.setName("panelTindakanPasien");
+        panelTindakanPasien.setOpaque(false);
+        panelTindakanPasien.add(labelTindakanPasien, java.awt.BorderLayout.PAGE_START);
+        panelTindakanPasien.add(scrollTindakanPasien, java.awt.BorderLayout.CENTER);
+        panelTindakanPasienRacikan=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelTindakanPasienRacikan.setName("panelTindakanPasienRacikan");
+        panelTindakanPasienRacikan.setOpaque(false);
+        panelTindakanPasienRacikan.add(labelTindakanPasienRacikan, java.awt.BorderLayout.PAGE_START);
+        panelTindakanPasienRacikan.add(scrollTindakanPasienRacikan, java.awt.BorderLayout.CENTER);
+    }
+
+    private void aturKolomTindakanPasien(JTable table){
+        for (int kolom = 0; kolom < 7; kolom++) {
+            TableColumn column = table.getColumnModel().getColumn(kolom);
+            if(kolom==0){
+                column.setPreferredWidth(85);
+            }else if(kolom==1){
+                column.setPreferredWidth(70);
+            }else if(kolom==2){
+                column.setPreferredWidth(120);
+            }else if(kolom==3){
+                column.setPreferredWidth(90);
+            }else if(kolom==4){
+                column.setPreferredWidth(260);
+            }else if(kolom==5){
+                column.setPreferredWidth(240);
+            }else if(kolom==6){
+                column.setPreferredWidth(90);
+            }
+        }
+    }
+
+    private void tampilkanTindakanPasienRalan(String noRawat) {
+        if(tabModeTindakan==null){
+            return;
+        }
+        Valid.tabelKosong(tabModeTindakan);
+        if(noRawat==null || noRawat.trim().equals("")){
+            return;
+        }
+
+        String sql=
+            "select rawat_jl_dr.tgl_perawatan,rawat_jl_dr.jam_rawat,'Dokter' as jenis,rawat_jl_dr.kd_jenis_prw,jns_perawatan.nm_perawatan,dokter.nm_dokter as pelaksana,rawat_jl_dr.biaya_rawat "+
+            "from rawat_jl_dr inner join jns_perawatan on rawat_jl_dr.kd_jenis_prw=jns_perawatan.kd_jenis_prw inner join dokter on rawat_jl_dr.kd_dokter=dokter.kd_dokter where rawat_jl_dr.no_rawat=? "+
+            "union all "+
+            "select rawat_jl_pr.tgl_perawatan,rawat_jl_pr.jam_rawat,'Petugas' as jenis,rawat_jl_pr.kd_jenis_prw,jns_perawatan.nm_perawatan,petugas.nama as pelaksana,rawat_jl_pr.biaya_rawat "+
+            "from rawat_jl_pr inner join jns_perawatan on rawat_jl_pr.kd_jenis_prw=jns_perawatan.kd_jenis_prw inner join petugas on rawat_jl_pr.nip=petugas.nip where rawat_jl_pr.no_rawat=? "+
+            "union all "+
+            "select rawat_jl_drpr.tgl_perawatan,rawat_jl_drpr.jam_rawat,'Dokter & Petugas' as jenis,rawat_jl_drpr.kd_jenis_prw,jns_perawatan.nm_perawatan,concat(dokter.nm_dokter,' / ',petugas.nama) as pelaksana,rawat_jl_drpr.biaya_rawat "+
+            "from rawat_jl_drpr inner join jns_perawatan on rawat_jl_drpr.kd_jenis_prw=jns_perawatan.kd_jenis_prw inner join dokter on rawat_jl_drpr.kd_dokter=dokter.kd_dokter inner join petugas on rawat_jl_drpr.nip=petugas.nip where rawat_jl_drpr.no_rawat=? "+
+            "order by tgl_perawatan,jam_rawat,jenis,nm_perawatan";
+
+        try(PreparedStatement psTindakan=koneksi.prepareStatement(sql)){
+            psTindakan.setString(1,noRawat);
+            psTindakan.setString(2,noRawat);
+            psTindakan.setString(3,noRawat);
+            try(ResultSet rsTindakan=psTindakan.executeQuery()){
+                while(rsTindakan.next()){
+                    tabModeTindakan.addRow(new Object[]{
+                        rsTindakan.getString("tgl_perawatan"),
+                        rsTindakan.getString("jam_rawat"),
+                        rsTindakan.getString("jenis"),
+                        rsTindakan.getString("kd_jenis_prw"),
+                        rsTindakan.getString("nm_perawatan"),
+                        rsTindakan.getString("pelaksana"),
+                        Valid.SetAngka(rsTindakan.getDouble("biaya_rawat"))
+                    });
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Tindakan Pasien DlgCariObat : "+e);
+        }
+    }
+
+    private void tampilkanPlanSOAPTerakhir(String noRawat) {
+        planSOAPTerakhir="";
+        try {
+            if(noRawat!=null && !noRawat.trim().equals("")) {
+                pastikanTabelDraftResepSOAP();
+                bersihkanDraftSOAPNonDokter(noRawat);
+                planSOAPTerakhir=Sequel.cariIsi(
+                    "select ifnull(permintaan_resep_soap.resep_teks,'') from permintaan_resep_soap " +
+                    "inner join dokter on permintaan_resep_soap.kd_dokter=dokter.kd_dokter " +
+                    "where permintaan_resep_soap.no_rawat=? and permintaan_resep_soap.status='Belum Terlayani' " +
+                    "order by permintaan_resep_soap.tgl_permintaan desc,permintaan_resep_soap.jam_permintaan desc limit 1",
+                    noRawat
+                );
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Plan SOAP DlgCariObat : "+e);
+        }
+        refreshPanelPlanSOAP();
+    }
+
+    private void refreshPanelPlanSOAP() {
+        String isi = planSOAPTerakhir.trim().equals("") ? "Belum ada Plan SOAP dokter untuk kunjungan ini." : planSOAPTerakhir;
+        if(areaPlanSOAP!=null) {
+            areaPlanSOAP.setText(isi);
+            areaPlanSOAP.setCaretPosition(0);
+        }
+        if(areaPlanSOAPRacikan!=null) {
+            areaPlanSOAPRacikan.setText(isi);
+            areaPlanSOAPRacikan.setCaretPosition(0);
+        }
+    }
+
+    private void pastikanTabelDraftResepSOAP() {
+        if(draftResepSOAPTableChecked){
+            return;
+        }
+        try {
+            Sequel.queryu("create table if not exists permintaan_resep_soap ("+
+                    "id bigint not null auto_increment,"+
+                    "no_rawat varchar(17) not null,"+
+                    "tgl_soap date not null,"+
+                    "jam_soap time not null,"+
+                    "kd_dokter varchar(20) not null,"+
+                    "tgl_permintaan date not null,"+
+                    "jam_permintaan time not null,"+
+                    "resep_teks text not null,"+
+                    "status varchar(20) not null default 'Belum Terlayani',"+
+                    "no_resep varchar(15) not null default '',"+
+                    "primary key (id),"+
+                    "key idx_prs_soap_1 (no_rawat,tgl_soap,jam_soap),"+
+                    "key idx_prs_soap_2 (status,tgl_permintaan,jam_permintaan))");
+            draftResepSOAPTableChecked=true;
+        } catch (Exception e) {
+            System.out.println("Notifikasi Plan SOAP DlgCariObat : "+e);
+        }
+    }
+
+    private void bersihkanDraftSOAPNonDokter(String noRawat) {
+        try {
+            Sequel.queryu2(
+                "delete from permintaan_resep_soap where no_rawat=? and status='Belum Terlayani' " +
+                "and kd_dokter not in (select kd_dokter from dokter)",
+                1,
+                new String[]{noRawat}
+            );
+        } catch (Exception e) {
+            System.out.println("Notifikasi Plan SOAP DlgCariObat : "+e);
+        }
+    }
+
     private void jam(){
         ActionListener taskPerformer = new ActionListener(){
             private int nilai_jam;
@@ -3504,6 +3839,19 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
     public void setDokter(String kodedokter,String namadokter){
         this.kodedokter=kodedokter;
         this.namadokter=namadokter;
+    }
+
+    private void setNoRacikAktifDariPilihan(){
+        if(tbObatRacikan.getSelectedRow()!=-1 && tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0)!=null){
+            noRacikAktif=tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString();
+        }
+    }
+
+    private String getNoRacikAktif(){
+        if(noRacikAktif.equals("")){
+            setNoRacikAktifDariPilihan();
+        }
+        return noRacikAktif;
     }
     
     public void tampildetailracikanobat() {        
@@ -3672,7 +4020,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         rsobat=psobat.executeQuery();
                         while(rsobat.next()){
                             tabModeDetailObatRacikan.addRow(new Object[] {
-                                tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                getNoRacikAktif(),
                                 rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                 rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("harga"),100),
                                 rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3729,7 +4077,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         rsobat=psobat.executeQuery();
                         while(rsobat.next()){
                             tabModeDetailObatRacikan.addRow(new Object[] {
-                                tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                getNoRacikAktif(),
                                 rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                 rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("harga"),100),
                                 rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3793,7 +4141,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         if(Jeniskelas.getSelectedItem().equals("Karyawan")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("karyawan"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3805,7 +4153,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         }else if(Jeniskelas.getSelectedItem().equals("Rawat Jalan")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("ralan"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3817,7 +4165,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         }else if(Jeniskelas.getSelectedItem().equals("Beli Luar")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("beliluar"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3829,7 +4177,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         }else if(Jeniskelas.getSelectedItem().equals("Utama/BPJS")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("utama"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3888,7 +4236,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         if(Jeniskelas.getSelectedItem().equals("Karyawan")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("karyawan"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3899,7 +4247,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         }else if(Jeniskelas.getSelectedItem().equals("Rawat Jalan")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("ralan"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3910,7 +4258,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         }else if(Jeniskelas.getSelectedItem().equals("Beli Luar")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("beliluar"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),
@@ -3921,7 +4269,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                         }else if(Jeniskelas.getSelectedItem().equals("Utama/BPJS")){
                             while(rsobat.next()){
                                 tabModeDetailObatRacikan.addRow(new Object[] {
-                                    tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString(),
+                                    getNoRacikAktif(),
                                     rsobat.getString("kode_brng"),rsobat.getString("nama_brng"),
                                     rsobat.getString("kode_sat"),Valid.roundUp(rsobat.getDouble("utama"),100),
                                     rsobat.getDouble("dasar"),rsobat.getString("nama"),rsobat.getDouble("stok"),

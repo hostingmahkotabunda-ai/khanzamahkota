@@ -61,6 +61,7 @@ public final class RMDataSkriningGiziLanjut extends javax.swing.JDialog {
     public RMDataSkriningGiziLanjut(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        aturTampilanFormInput();
         this.setLocation(8,1);
         setSize(628,674);
 
@@ -209,6 +210,44 @@ public final class RMDataSkriningGiziLanjut extends javax.swing.JDialog {
         isForm();
         
         jam();
+    }
+
+    private void aturTampilanFormInput(){
+        java.awt.Font fontInputBesar=new java.awt.Font("Tahoma", java.awt.Font.BOLD, 13);
+        java.awt.Component[] inputan={
+            TNoRw,TPasien,TNoRM,Tanggal,Jam,Menit,Detik,KdPetugas,NmPetugas,
+            BB,TB,IMT,Alergi,cmbSkor1,Skor1,cmbSkor2,Skor2,cmbSkor3,Skor3,TotalSkor,ParameterSkor,TglLahir
+        };
+        for(java.awt.Component input:inputan){
+            input.setFont(fontInputBesar);
+        }
+
+        PanelInput.setPreferredSize(new Dimension(192,320));
+        FormInput.setPreferredSize(new Dimension(100,285));
+        TNoRw.setBounds(79, 10, 141, 28);
+        TPasien.setBounds(336, 10, 285, 28);
+        TNoRM.setBounds(222, 10, 112, 28);
+        TglLahir.setBounds(689, 10, 100, 28);
+        Tanggal.setBounds(79, 40, 90, 28);
+        Jam.setBounds(173, 40, 62, 28);
+        Menit.setBounds(238, 40, 62, 28);
+        Detik.setBounds(303, 40, 62, 28);
+        ChkKejadian.setBounds(368, 40, 23, 28);
+        KdPetugas.setBounds(474, 40, 94, 28);
+        NmPetugas.setBounds(570, 40, 187, 28);
+        btnPetugas.setBounds(761, 40, 28, 28);
+        BB.setBounds(79, 70, 60, 28);
+        TB.setBounds(202, 70, 60, 28);
+        IMT.setBounds(336, 70, 60, 28);
+        Alergi.setBounds(509, 70, 280, 28);
+        cmbSkor1.setBounds(420, 100, 260, 28);
+        Skor1.setBounds(745, 100, 44, 28);
+        cmbSkor2.setBounds(420, 130, 260, 28);
+        Skor2.setBounds(745, 130, 44, 28);
+        cmbSkor3.setBounds(420, 160, 260, 28);
+        Skor3.setBounds(745, 160, 44, 28);
+        TotalSkor.setBounds(79, 190, 50, 28);
+        ParameterSkor.setBounds(131, 190, 658, 28);
     }
 
 
@@ -553,12 +592,12 @@ public final class RMDataSkriningGiziLanjut extends javax.swing.JDialog {
 
         PanelInput.setName("PanelInput"); // NOI18N
         PanelInput.setOpaque(false);
-        PanelInput.setPreferredSize(new java.awt.Dimension(192, 244));
+        PanelInput.setPreferredSize(new java.awt.Dimension(192, 320));
         PanelInput.setLayout(new java.awt.BorderLayout(1, 1));
 
         FormInput.setBackground(new java.awt.Color(250, 255, 245));
         FormInput.setName("FormInput"); // NOI18N
-        FormInput.setPreferredSize(new java.awt.Dimension(100, 225));
+        FormInput.setPreferredSize(new java.awt.Dimension(100, 285));
         FormInput.setLayout(null);
 
         jLabel4.setText("No.Rawat :");
@@ -1566,7 +1605,7 @@ public final class RMDataSkriningGiziLanjut extends javax.swing.JDialog {
     private void isForm(){
         if(ChkInput.isSelected()==true){
             ChkInput.setVisible(false);
-            PanelInput.setPreferredSize(new Dimension(WIDTH,244));
+            PanelInput.setPreferredSize(new Dimension(WIDTH,320));
             FormInput.setVisible(true);      
             ChkInput.setVisible(true);
         }else if(ChkInput.isSelected()==false){           

@@ -25,6 +25,35 @@
 		background-repeat: no-repeat;
 		background-color: #FFFFCC;
 	}
+	.jadwal-logo-bar {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 45px;
+		padding: 12px 0 6px;
+	}
+	.jadwal-logo-bar img {
+		height: 74px;
+		width: auto;
+	}
+	.jadwal-title {
+		margin: 0 auto 14px;
+		padding: 10px 60px;
+		width: fit-content;
+		background: #1f64c8;
+		border: 3px dotted #ffffff;
+		color: #ffffff;
+		font-family: Tahoma, Arial, sans-serif;
+		font-size: 34px;
+		font-weight: bold;
+		text-align: center;
+		letter-spacing: 0;
+	}
+	@media (max-width: 700px) {
+		.jadwal-logo-bar { gap: 22px; }
+		.jadwal-logo-bar img { height: 54px; }
+		.jadwal-title { width: auto; margin-left: 10px; margin-right: 10px; padding: 10px 16px; font-size: 24px; }
+	}
 	-->
 	</style>
 </head>
@@ -66,6 +95,11 @@
 			 </tr>
 		  </table> "; 
 	?>
+	<div class='jadwal-logo-bar'>
+		<img src='../kars.png' alt='Logo KARS'>
+		<img src='../bpjs.png' alt='Logo BPJS'>
+	</div>
+	<div class='jadwal-title'>JADWAL PRAKTEK DOKTER</div>
 	<table width='100%' bgcolor='FFFFFF' border='0' align='center' cellpadding='0' cellspacing='0'>
 	     <tr class='head5'>
               <td width='100%'><div align='center'></div></td>

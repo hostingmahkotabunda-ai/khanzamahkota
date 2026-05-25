@@ -1697,7 +1697,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                         }
                     }
 
-                    DlgPeresepanDokter resep=new DlgPeresepanDokter(null,false);
+                    DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
                     resep.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
                     resep.setLocationRelativeTo(internalFrame1);
                     resep.setNoRm(TNoRw.getText(),DTPTgl.getDate(),JamSelesai.getSelectedItem().toString(),MenitSelesai.getSelectedItem().toString(),

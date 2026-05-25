@@ -55,7 +55,7 @@ public class DlgPemberianObat extends javax.swing.JDialog {
     private Connection koneksi=koneksiDB.condb();
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
-    public  DlgCariObat dlgobtjalan=new DlgCariObat(null,false);
+    public  DlgCariObat dlgobtjalan;
     public  DlgCariObat2 dlgobt=new DlgCariObat2(null,false);
     public  DlgCariObat3 dlgobt2=new DlgCariObat3(null,false);
     private riwayatobat Trackobat=new riwayatobat();
@@ -79,6 +79,7 @@ public class DlgPemberianObat extends javax.swing.JDialog {
     public DlgPemberianObat(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        dlgobtjalan=DlgCariObat.buatDari(this);
 
         tabModePO=new DefaultTableModel(null,new Object[]{
                 "Tgl.Beri","Jam Beri","No.Rawat","No.R.M.","Nama Pasien","Kode Obat","Nama Obat/Alkes","Embalase",

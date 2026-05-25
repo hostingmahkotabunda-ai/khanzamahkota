@@ -3,6 +3,7 @@ package fungsi;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 /**
@@ -120,7 +121,7 @@ public final class akses {
             daftar_pasien_ranaptni=false,pengajuan_asetinventaris=false,item_apotek_jenis=false,item_apotek_kategori=false,item_apotek_golongan=false,
             item_apotek_industrifarmasi=false,obat10_terbanyak_poli=false,grafik_pengajuan_aset_urgensi=false,grafik_pengajuan_aset_status=false,
             grafik_pengajuan_aset_departemen=false,rekap_pengajuan_aset_departemen=false,grafik_kelompok_jabatanpegawai=false,grafik_resiko_kerjapegawai=false,
-            grafik_emergency_indexpegawai=false,grafik_inventaris_ruang=false,harian_HAIs2=false,grafik_inventaris_jenis=false,data_resume_pasien=false,
+            grafik_emergency_indexpegawai=false,grafik_inventaris_ruang=false,harian_HAIs2=false,grafik_inventaris_jenis=false,data_resume_pasien=false,data_resume_ranap_v2=false,
             perkiraan_biaya_ranap=false,rekap_obat_poli=false,rekap_obat_pasien=false,grafik_HAIs_pasienbangsal=false,grafik_HAIs_pasienbulan=false,
             permintaan_perbaikan_inventaris=false,grafik_HAIs_laju_vap=false,grafik_HAIs_laju_iad=false,grafik_HAIs_laju_pleb=false,grafik_HAIs_laju_isk=false,
             grafik_HAIs_laju_ilo=false,grafik_HAIs_laju_hap=false,inhealth_mapping_poli=false,inhealth_mapping_dokter=false,inhealth_mapping_tindakan_ralan=false,
@@ -221,6 +222,14 @@ public final class akses {
             penilaian_pre_induksi=false,hasil_usg_urologi=false,hasil_usg_gynecologi=false,hasil_pemeriksaan_ekg=false,hapus_edit_sep_bpjs=false,satu_sehat_kirim_diet=false,
             satu_sehat_mapping_obat=false,dapur_ringkasan_pembelian=false,satu_sehat_kirim_medication=false,satu_sehat_kirim_medicationrequest=false,
             penatalaksanaan_terapi_okupasi=false,satu_sehat_kirim_medicationdispense=false,hasil_usg_neonatus=false,hasil_endoskopi_faring_laring=false;
+
+    private static boolean getBoolean(ResultSet result, String kolom) {
+        try {
+            return result.getBoolean(kolom);
+        } catch (SQLException e) {
+            return false;
+        }
+    }
     
     public static void setData(String user, String pass) {
         try {        
@@ -794,6 +803,7 @@ public final class akses {
                         akses.harian_HAIs2=true;
                         akses.grafik_inventaris_jenis=true;
                         akses.data_resume_pasien=true;
+                        akses.data_resume_ranap_v2=true;
                         akses.perkiraan_biaya_ranap=true;
                         akses.rekap_obat_poli=true;
                         akses.rekap_obat_pasien=true;
@@ -1809,6 +1819,7 @@ public final class akses {
                         akses.harian_HAIs2=rs2.getBoolean("harian_HAIs2");
                         akses.grafik_inventaris_jenis=rs2.getBoolean("grafik_inventaris_jenis");
                         akses.data_resume_pasien=rs2.getBoolean("data_resume_pasien");
+                        akses.data_resume_ranap_v2=getBoolean(rs2,"data_resume_ranap_v2");
                         akses.perkiraan_biaya_ranap=rs2.getBoolean("perkiraan_biaya_ranap");
                         akses.rekap_obat_poli=rs2.getBoolean("rekap_obat_poli");
                         akses.rekap_obat_pasien=rs2.getBoolean("rekap_obat_pasien");
@@ -2822,6 +2833,7 @@ public final class akses {
                         akses.harian_HAIs2=false;
                         akses.grafik_inventaris_jenis=false;
                         akses.data_resume_pasien=false;
+                        akses.data_resume_ranap_v2=false;
                         akses.perkiraan_biaya_ranap=false;
                         akses.rekap_obat_poli=false;
                         akses.rekap_obat_pasien=false;
@@ -3858,6 +3870,7 @@ public final class akses {
         akses.harian_HAIs2=false;
         akses.grafik_inventaris_jenis=false;
         akses.data_resume_pasien=false;
+        akses.data_resume_ranap_v2=false;
         akses.perkiraan_biaya_ranap=false;
         akses.rekap_obat_poli=false;
         akses.rekap_obat_pasien=false;
@@ -4910,6 +4923,7 @@ public final class akses {
     public static boolean getharian_HAIs2(){return akses.harian_HAIs2;}
     public static boolean getgrafik_inventaris_jenis(){return akses.grafik_inventaris_jenis;}
     public static boolean getdata_resume_pasien(){return akses.data_resume_pasien;}
+    public static boolean getdata_resume_ranap_v2(){return akses.data_resume_ranap_v2;}
     public static boolean getperkiraan_biaya_ranap(){return akses.perkiraan_biaya_ranap;}
     public static boolean getrekap_obat_poli(){return akses.rekap_obat_poli;}
     public static boolean getrekap_obat_pasien(){return akses.rekap_obat_pasien;}

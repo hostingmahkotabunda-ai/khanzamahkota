@@ -55,6 +55,7 @@ public final class RMSkriningNutrisiDewasa extends javax.swing.JDialog {
     public RMSkriningNutrisiDewasa(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        aturTampilanFormInput();
         this.setLocation(8,1);
         setSize(628,674);
 
@@ -181,6 +182,45 @@ public final class RMSkriningNutrisiDewasa extends javax.swing.JDialog {
         isForm();
         
         jam();
+    }
+
+    private void aturTampilanFormInput(){
+        java.awt.Font fontInputBesar=new java.awt.Font("Tahoma", java.awt.Font.BOLD, 13);
+        java.awt.Component[] inputan={
+            TNoRw,TPasien,TNoRM,TglLahir,Tanggal,Jam,Menit,Detik,KdPetugas,NmPetugas,
+            BB,TBPB,TD,HR,RR,Suhu,SpO2,Alergi,SG1,Nilai1,SG2,Nilai2,TotalHasil
+        };
+        for(java.awt.Component input:inputan){
+            input.setFont(fontInputBesar);
+        }
+
+        PanelInput.setPreferredSize(new Dimension(192,320));
+        FormInput.setPreferredSize(new Dimension(100,280));
+        TNoRw.setBounds(79, 10, 141, 28);
+        TPasien.setBounds(336, 10, 285, 28);
+        TNoRM.setBounds(222, 10, 112, 28);
+        TglLahir.setBounds(689, 10, 100, 28);
+        Tanggal.setBounds(79, 40, 90, 28);
+        Jam.setBounds(173, 40, 62, 28);
+        Menit.setBounds(238, 40, 62, 28);
+        Detik.setBounds(303, 40, 62, 28);
+        ChkKejadian.setBounds(368, 40, 23, 28);
+        KdPetugas.setBounds(474, 40, 94, 28);
+        NmPetugas.setBounds(570, 40, 187, 28);
+        btnPetugas.setBounds(761, 40, 28, 28);
+        BB.setBounds(79, 70, 45, 28);
+        TBPB.setBounds(230, 70, 45, 28);
+        TD.setBounds(370, 70, 60, 28);
+        HR.setBounds(538, 70, 45, 28);
+        RR.setBounds(697, 70, 45, 28);
+        Suhu.setBounds(79, 100, 45, 28);
+        SpO2.setBounds(230, 100, 45, 28);
+        Alergi.setBounds(370, 100, 419, 28);
+        SG1.setBounds(530, 150, 130, 28);
+        Nilai1.setBounds(729, 150, 60, 28);
+        SG2.setBounds(530, 180, 130, 28);
+        Nilai2.setBounds(729, 180, 60, 28);
+        TotalHasil.setBounds(729, 210, 60, 28);
     }
 
 
@@ -1597,7 +1637,7 @@ public final class RMSkriningNutrisiDewasa extends javax.swing.JDialog {
     private void isForm(){
         if(ChkInput.isSelected()==true){
             ChkInput.setVisible(false);
-            PanelInput.setPreferredSize(new Dimension(WIDTH,263));
+            PanelInput.setPreferredSize(new Dimension(WIDTH,320));
             FormInput.setVisible(true);      
             ChkInput.setVisible(true);
         }else if(ChkInput.isSelected()==false){           

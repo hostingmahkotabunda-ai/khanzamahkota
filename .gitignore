@@ -16,8 +16,5 @@ nbproject/private/
 
 # tambahkan ini kalau mau
 cache/*.iyem
-setting/database.xml
 # Hasil compile
 *.class
-
-

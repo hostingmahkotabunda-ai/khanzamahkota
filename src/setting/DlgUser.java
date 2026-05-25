@@ -56,6 +56,7 @@ public class DlgUser extends javax.swing.JDialog {
     public DlgUser(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ensureAksesResumeRanapV2();
         
         Object[] row={"ID User","Nama User","Jabatan","Password","[J]ICD 10","[J]Obat Penyakit","[C]Dokter","[A]Jadwal Praktek","[C]Petugas","[M]Pasien","[A]Registrasi","[A]Tindakan Ralan",
                 "[A]Rawat Inap","[A]Tindakan Ranap","[A]Operasi","[A]Rujukan Keluar","[A]Rujukan Masuk","[A]Beri Obat, Alkes & BHP","[A]Resep Pulang",
@@ -241,7 +242,7 @@ public class DlgUser extends javax.swing.JDialog {
                 "[M]Catatan Persalinan","[M]Skor Aldrette Pasca Anestesi","[M]Skor Steward Pasca Anestesi","[M]Skor Bromage Pasca Anestesi","[M]Penilaian Pre Induksi","[M]Hasil USG Urologi",
                 "[M]Hasil USG Gynecologi","[M]Hasil Pemeriksaan EKG","[L]Hapus/Edit SEP VClaim","[L]Kirim Diet Satu Sehat","[L]Mapping Obat/Alkes/BHP Satu Sehat","[F]Ringkasan Pengadaan Barang Dapur",
                 "[L]Kirim Medication Satu Sehat","[L]Kirim Medication Request Satu Sehat","[M]Penatalaksanaan Terapi Okupasi","[L]Kirim Medication Dispense Satu Sehat","[M]Hasil USG Neonatus",
-                "[M]Hasil Endoskopi Faring/Laring"
+                "[M]Hasil Endoskopi Faring/Laring","[M]Resume Medis Ranap V2"
         };
         
         tabMode=new DefaultTableModel(null,row){
@@ -527,7 +528,7 @@ public class DlgUser extends javax.swing.JDialog {
              };
              @Override
              public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return columnIndex < types.length ? types[columnIndex] : java.lang.Boolean.class;
              }
         };
 
@@ -536,7 +537,7 @@ public class DlgUser extends javax.swing.JDialog {
         tbUser.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbUser.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 1012;i++) {
+        for (i = 0; i < 1013;i++) {
             TableColumn column = tbUser.getColumnModel().getColumn(i);
             switch (i) {
                 case 0:
@@ -3110,6 +3111,16 @@ public class DlgUser extends javax.swing.JDialog {
     DlgCariDokter dlgdokter=new DlgCariDokter(null,false);
     DlgCariPetugas dlgpetugas=new DlgCariPetugas(null,false);
 
+    private void ensureAksesResumeRanapV2() {
+        try {
+            if (Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() and table_name='user' and column_name='data_resume_ranap_v2'") == 0) {
+                Sequel.queryu2("alter table user add column data_resume_ranap_v2 enum('true','false') default 'false'");
+            }
+        } catch (Exception e) {
+            System.out.println("Notif akses Resume Ranap V2 : " + e);
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do falseT modify this code. The content of this method is
@@ -4609,7 +4620,8 @@ public class DlgUser extends javax.swing.JDialog {
                     "penatalaksanaan_terapi_okupasi='"+tbUser.getValueAt(i,1008).toString()+"',"+
                     "satu_sehat_kirim_medicationdispense='"+tbUser.getValueAt(i,1009).toString()+"',"+
                     "hasil_usg_neonatus='"+tbUser.getValueAt(i,1010).toString()+"',"+
-                    "hasil_endoskopi_faring_laring='"+tbUser.getValueAt(i,1011).toString()+"'")==true){
+                    "hasil_endoskopi_faring_laring='"+tbUser.getValueAt(i,1011).toString()+"',"+
+                    "data_resume_ranap_v2='"+tbUser.getValueAt(i,1012).toString()+"'")==true){
                     emptTeks();
                 }
             }         
@@ -5819,7 +5831,8 @@ private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                                         "penatalaksanaan_terapi_okupasi='"+tbUser.getValueAt(barisdicopy,1008).toString()+"',"+
                                         "satu_sehat_kirim_medicationdispense='"+tbUser.getValueAt(barisdicopy,1009).toString()+"',"+
                                         "hasil_usg_neonatus='"+tbUser.getValueAt(barisdicopy,1010).toString()+"',"+
-                                        "hasil_endoskopi_faring_laring='"+tbUser.getValueAt(barisdicopy,1011).toString()+"'");
+                                        "hasil_endoskopi_faring_laring='"+tbUser.getValueAt(barisdicopy,1011).toString()+"',"+
+                                        "data_resume_ranap_v2='"+tbUser.getValueAt(barisdicopy,1012).toString()+"'");
                                 }
                                 userdicopy="";
                                 copyhakakses="";
@@ -6111,7 +6124,7 @@ private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                 "user.skor_steward_pasca_anestesi,user.skor_bromage_pasca_anestesi,user.penilaian_pre_induksi,user.hasil_usg_urologi,user.hasil_usg_gynecologi,user.hasil_pemeriksaan_ekg,"+
                 "user.hapus_edit_sep_bpjs,user.satu_sehat_kirim_diet,user.satu_sehat_mapping_obat,user.dapur_ringkasan_pembelian,user.satu_sehat_kirim_medication,"+
                 "user.satu_sehat_kirim_medicationrequest,user.penatalaksanaan_terapi_okupasi,user.satu_sehat_kirim_medicationdispense,user.hasil_usg_neonatus,"+
-                "user.hasil_endoskopi_faring_laring from user order by AES_DECRYPT(user.id_user,'nur')");
+                "user.hasil_endoskopi_faring_laring,user.data_resume_ranap_v2 from user order by AES_DECRYPT(user.id_user,'nur')");
             try {
                 rs=ps.executeQuery();
                 while(rs.next()){
@@ -7135,7 +7148,8 @@ private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                                rs.getBoolean("penatalaksanaan_terapi_okupasi"),
                                rs.getBoolean("satu_sehat_kirim_medicationdispense"),
                                rs.getBoolean("hasil_usg_neonatus"),
-                               rs.getBoolean("hasil_endoskopi_faring_laring")
+                               rs.getBoolean("hasil_endoskopi_faring_laring"),
+                               rs.getBoolean("data_resume_ranap_v2")
                             });
                         }   
                     } catch (Exception e) {
@@ -8148,7 +8162,8 @@ private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                            rs.getBoolean("penatalaksanaan_terapi_okupasi"),
                            rs.getBoolean("satu_sehat_kirim_medicationdispense"),
                            rs.getBoolean("hasil_usg_neonatus"),
-                           rs.getBoolean("hasil_endoskopi_faring_laring")
+                           rs.getBoolean("hasil_endoskopi_faring_laring"),
+                           rs.getBoolean("data_resume_ranap_v2")
                         });
                     }                                             
                  }

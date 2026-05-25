@@ -117,7 +117,7 @@ public class DlgUpdateUser extends javax.swing.JDialog {
             master_triase_macamkasus=false,rekap_permintaan_diet=false,daftar_pasien_ranap=false,daftar_pasien_ranaptni=false,pengajuan_asetinventaris=false,item_apotek_jenis=false,item_apotek_kategori=false,
             item_apotek_golongan=false,item_apotek_industrifarmasi=false,sepuluh_obat_terbanyak_poli=false,grafik_pengajuan_aset_urgensi=false,grafik_pengajuan_aset_status=false,grafik_pengajuan_aset_departemen=false,
             rekap_pengajuan_aset_departemen=false,grafik_kelompok_jabatanpegawai=false,grafik_resiko_kerjapegawai=false,grafik_emergency_indexpegawai=false,grafik_inventaris_ruang=false,harian_HAIs2=false,
-            grafik_inventaris_jenis=false,data_resume_pasien=false,perkiraan_biaya_ranap=false,rekap_obat_poli=false,rekap_obat_pasien=false,permintaan_perbaikan_inventaris=false,grafik_HAIs_pasienbangsal=false,
+            grafik_inventaris_jenis=false,data_resume_pasien=false,data_resume_ranap_v2=false,perkiraan_biaya_ranap=false,rekap_obat_poli=false,rekap_obat_pasien=false,permintaan_perbaikan_inventaris=false,grafik_HAIs_pasienbangsal=false,
             grafik_HAIs_pasienbulan=false,grafik_HAIs_laju_vap=false,grafik_HAIs_laju_iad=false,grafik_HAIs_laju_pleb=false,grafik_HAIs_laju_isk=false,grafik_HAIs_laju_ilo=false,grafik_HAIs_laju_hap=false,
             inhealth_mapping_poli=false,inhealth_mapping_dokter=false,inhealth_mapping_tindakan_ralan=false,inhealth_mapping_tindakan_ranap=false,inhealth_mapping_tindakan_radiologi=false,
             inhealth_mapping_tindakan_laborat=false,inhealth_mapping_tindakan_operasi=false,hibah_obat_bhp=false,asal_hibah=false,asuhan_gizi=false,inhealth_kirim_tagihan=false,sirkulasi_obat4=false,
@@ -195,6 +195,7 @@ public class DlgUpdateUser extends javax.swing.JDialog {
     public DlgUpdateUser(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ensureAksesResumeRanapV2();
 
         tabMode=new DefaultTableModel(null,new Object[]{"P","Pilihan Hak Akses Menu di SIMKES","Status"}){
               @Override 
@@ -651,6 +652,16 @@ public class DlgUpdateUser extends javax.swing.JDialog {
     private widget.Table tbUser;
     // End of variables declaration//GEN-END:variables
 
+    private void ensureAksesResumeRanapV2() {
+        try {
+            if (Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() and table_name='user' and column_name='data_resume_ranap_v2'") == 0) {
+                Sequel.queryu2("alter table user add column data_resume_ranap_v2 enum('true','false') default 'false'");
+            }
+        } catch (Exception e) {
+            System.out.println("Notif akses Resume Ranap V2 : " + e);
+        }
+    }
+
     private void tampil(String user) {  
         penyakit=false;obat_penyakit=false;dokter=false;jadwal_praktek=false;petugas=false;pasien=false;registrasi=false;tindakan_ralan=false;kamar_inap=false;
         tindakan_ranap=false;operasi=false;rujukan_keluar=false;rujukan_masuk=false;beri_obat=false;resep_pulang=false;pasien_meninggal=false;diet_pasien=false;kelahiran_bayi=false;
@@ -727,7 +738,7 @@ public class DlgUpdateUser extends javax.swing.JDialog {
         master_triase_macamkasus=false;rekap_permintaan_diet=false;daftar_pasien_ranap=false;daftar_pasien_ranaptni=false;pengajuan_asetinventaris=false;item_apotek_jenis=false;item_apotek_kategori=false;
         item_apotek_golongan=false;item_apotek_industrifarmasi=false;sepuluh_obat_terbanyak_poli=false;grafik_pengajuan_aset_urgensi=false;grafik_pengajuan_aset_status=false;grafik_pengajuan_aset_departemen=false;
         rekap_pengajuan_aset_departemen=false;grafik_kelompok_jabatanpegawai=false;grafik_resiko_kerjapegawai=false;grafik_emergency_indexpegawai=false;grafik_inventaris_ruang=false;harian_HAIs2=false;
-        grafik_inventaris_jenis=false;data_resume_pasien=false;perkiraan_biaya_ranap=false;rekap_obat_poli=false;rekap_obat_pasien=false;permintaan_perbaikan_inventaris=false;grafik_HAIs_pasienbangsal=false;
+        grafik_inventaris_jenis=false;data_resume_pasien=false;data_resume_ranap_v2=false;perkiraan_biaya_ranap=false;rekap_obat_poli=false;rekap_obat_pasien=false;permintaan_perbaikan_inventaris=false;grafik_HAIs_pasienbangsal=false;
         grafik_HAIs_pasienbulan=false;grafik_HAIs_laju_vap=false;grafik_HAIs_laju_iad=false;grafik_HAIs_laju_pleb=false;grafik_HAIs_laju_isk=false;grafik_HAIs_laju_ilo=false;grafik_HAIs_laju_hap=false;
         inhealth_mapping_poli=false;inhealth_mapping_dokter=false;inhealth_mapping_tindakan_ralan=false;inhealth_mapping_tindakan_ranap=false;inhealth_mapping_tindakan_radiologi=false;
         inhealth_mapping_tindakan_laborat=false;inhealth_mapping_tindakan_operasi=false;hibah_obat_bhp=false;asal_hibah=false;asuhan_gizi=false;inhealth_kirim_tagihan=false;sirkulasi_obat4=false;
@@ -929,7 +940,7 @@ public class DlgUpdateUser extends javax.swing.JDialog {
                 "user.item_apotek_kategori,user.item_apotek_golongan,user.item_apotek_industrifarmasi,user.10_obat_terbanyak_poli,user.grafik_pengajuan_aset_urgensi,"+
                 "user.grafik_pengajuan_aset_status,user.grafik_pengajuan_aset_departemen,user.rekap_pengajuan_aset_departemen,user.grafik_kelompok_jabatanpegawai,"+
                 "user.grafik_resiko_kerjapegawai,user.grafik_emergency_indexpegawai,user.grafik_inventaris_ruang,user.harian_HAIs2,user.grafik_inventaris_jenis,"+
-                "user.data_resume_pasien,user.perkiraan_biaya_ranap,user.rekap_obat_poli,user.rekap_obat_pasien,user.permintaan_perbaikan_inventaris,"+
+                "user.data_resume_pasien,user.data_resume_ranap_v2,user.perkiraan_biaya_ranap,user.rekap_obat_poli,user.rekap_obat_pasien,user.permintaan_perbaikan_inventaris,"+
                 "user.grafik_HAIs_pasienbangsal,user.grafik_HAIs_pasienbulan,user.grafik_HAIs_laju_vap,user.grafik_HAIs_laju_iad,user.grafik_HAIs_laju_pleb,"+
                 "user.grafik_HAIs_laju_isk,user.grafik_HAIs_laju_ilo,user.grafik_HAIs_laju_hap,user.inhealth_mapping_poli,user.inhealth_mapping_dokter,"+
                 "user.inhealth_mapping_tindakan_ralan,user.inhealth_mapping_tindakan_ranap,user.inhealth_mapping_tindakan_radiologi,user.inhealth_mapping_tindakan_laborat,"+
@@ -1085,7 +1096,7 @@ public class DlgUpdateUser extends javax.swing.JDialog {
                     data_triase_igd=rs.getBoolean("data_triase_igd");master_triase_skala1=rs.getBoolean("master_triase_skala1");master_triase_skala2=rs.getBoolean("master_triase_skala2");master_triase_skala3=rs.getBoolean("master_triase_skala3");master_triase_skala4=rs.getBoolean("master_triase_skala4");master_triase_skala5=rs.getBoolean("master_triase_skala5");master_triase_pemeriksaan=rs.getBoolean("master_triase_pemeriksaan");master_triase_macamkasus=rs.getBoolean("master_triase_macamkasus");rekap_permintaan_diet=rs.getBoolean("rekap_permintaan_diet");
                     daftar_pasien_ranap=rs.getBoolean("daftar_pasien_ranap");daftar_pasien_ranaptni=rs.getBoolean("daftar_pasien_ranaptni");pengajuan_asetinventaris=rs.getBoolean("pengajuan_asetinventaris");item_apotek_jenis=rs.getBoolean("item_apotek_jenis");item_apotek_kategori=rs.getBoolean("item_apotek_kategori");item_apotek_golongan=rs.getBoolean("item_apotek_golongan");item_apotek_industrifarmasi=rs.getBoolean("item_apotek_industrifarmasi");sepuluh_obat_terbanyak_poli=rs.getBoolean("10_obat_terbanyak_poli");grafik_pengajuan_aset_urgensi=rs.getBoolean("grafik_pengajuan_aset_urgensi");
                     grafik_pengajuan_aset_status=rs.getBoolean("grafik_pengajuan_aset_status");grafik_pengajuan_aset_departemen=rs.getBoolean("grafik_pengajuan_aset_departemen");rekap_pengajuan_aset_departemen=rs.getBoolean("rekap_pengajuan_aset_departemen");grafik_kelompok_jabatanpegawai=rs.getBoolean("grafik_kelompok_jabatanpegawai");grafik_resiko_kerjapegawai=rs.getBoolean("grafik_resiko_kerjapegawai");grafik_emergency_indexpegawai=rs.getBoolean("grafik_emergency_indexpegawai");grafik_inventaris_ruang=rs.getBoolean("grafik_inventaris_ruang");harian_HAIs2=rs.getBoolean("harian_HAIs2");
-                    grafik_inventaris_jenis=rs.getBoolean("grafik_inventaris_jenis");data_resume_pasien=rs.getBoolean("data_resume_pasien");perkiraan_biaya_ranap=rs.getBoolean("perkiraan_biaya_ranap");rekap_obat_poli=rs.getBoolean("rekap_obat_poli");rekap_obat_pasien=rs.getBoolean("rekap_obat_pasien");permintaan_perbaikan_inventaris=rs.getBoolean("permintaan_perbaikan_inventaris");grafik_HAIs_pasienbangsal=rs.getBoolean("grafik_HAIs_pasienbangsal");grafik_HAIs_pasienbulan=rs.getBoolean("grafik_HAIs_pasienbulan");grafik_HAIs_laju_vap=rs.getBoolean("grafik_HAIs_laju_vap");
+                    grafik_inventaris_jenis=rs.getBoolean("grafik_inventaris_jenis");data_resume_pasien=rs.getBoolean("data_resume_pasien");data_resume_ranap_v2=rs.getBoolean("data_resume_ranap_v2");perkiraan_biaya_ranap=rs.getBoolean("perkiraan_biaya_ranap");rekap_obat_poli=rs.getBoolean("rekap_obat_poli");rekap_obat_pasien=rs.getBoolean("rekap_obat_pasien");permintaan_perbaikan_inventaris=rs.getBoolean("permintaan_perbaikan_inventaris");grafik_HAIs_pasienbangsal=rs.getBoolean("grafik_HAIs_pasienbangsal");grafik_HAIs_pasienbulan=rs.getBoolean("grafik_HAIs_pasienbulan");grafik_HAIs_laju_vap=rs.getBoolean("grafik_HAIs_laju_vap");
                     grafik_HAIs_laju_iad=rs.getBoolean("grafik_HAIs_laju_iad");grafik_HAIs_laju_pleb=rs.getBoolean("grafik_HAIs_laju_pleb");grafik_HAIs_laju_isk=rs.getBoolean("grafik_HAIs_laju_isk");grafik_HAIs_laju_ilo=rs.getBoolean("grafik_HAIs_laju_ilo");grafik_HAIs_laju_hap=rs.getBoolean("grafik_HAIs_laju_hap");inhealth_mapping_poli=rs.getBoolean("inhealth_mapping_poli");inhealth_mapping_dokter=rs.getBoolean("inhealth_mapping_dokter");inhealth_mapping_tindakan_ralan=rs.getBoolean("inhealth_mapping_tindakan_ralan");inhealth_mapping_tindakan_ranap=rs.getBoolean("inhealth_mapping_tindakan_ranap");
                     inhealth_mapping_tindakan_radiologi=rs.getBoolean("inhealth_mapping_tindakan_radiologi");inhealth_mapping_tindakan_laborat=rs.getBoolean("inhealth_mapping_tindakan_laborat");inhealth_mapping_tindakan_operasi=rs.getBoolean("inhealth_mapping_tindakan_operasi");hibah_obat_bhp=rs.getBoolean("hibah_obat_bhp");asal_hibah=rs.getBoolean("asal_hibah");asuhan_gizi=rs.getBoolean("asuhan_gizi");inhealth_kirim_tagihan=rs.getBoolean("inhealth_kirim_tagihan");sirkulasi_obat4=rs.getBoolean("sirkulasi_obat4");sirkulasi_obat5=rs.getBoolean("sirkulasi_obat5");
                     sirkulasi_non_medis2=rs.getBoolean("sirkulasi_non_medis2");monitoring_asuhan_gizi=rs.getBoolean("monitoring_asuhan_gizi");penerimaan_obat_perbulan=rs.getBoolean("penerimaan_obat_perbulan");rekap_kunjungan=rs.getBoolean("rekap_kunjungan");surat_sakit=rs.getBoolean("surat_sakit");penilaian_awal_keperawatan_ralan=rs.getBoolean("penilaian_awal_keperawatan_ralan");permintaan_diet=rs.getBoolean("permintaan_diet");master_masalah_keperawatan=rs.getBoolean("master_masalah_keperawatan");pengajuan_cuti=rs.getBoolean("pengajuan_cuti");kedatangan_pasien=rs.getBoolean("kedatangan_pasien");
@@ -3705,6 +3716,10 @@ public class DlgUpdateUser extends javax.swing.JDialog {
 
         if("[M]Resume Pasien".toLowerCase().contains(TCari.getText().toLowerCase())){
             tabMode.addRow(new Object[]{false,"[M]Resume Pasien",data_resume_pasien});
+        }
+
+        if("[M]Resume Medis Ranap V2".toLowerCase().contains(TCari.getText().toLowerCase())){
+            tabMode.addRow(new Object[]{false,"[M]Resume Medis Ranap V2",data_resume_ranap_v2});
         }
 
         if("[M]Asuhan Gizi".toLowerCase().contains(TCari.getText().toLowerCase())){
@@ -7752,6 +7767,10 @@ public class DlgUpdateUser extends javax.swing.JDialog {
 
             if("[M]Resume Pasien".equals(tbUser.getValueAt(i,1).toString())){
                 Sequel.mengedit("user","id_user=AES_ENCRYPT('"+TKd.getText()+"','nur')","data_resume_pasien='"+tbUser.getValueAt(i,2).toString()+"'");
+            }
+
+            if("[M]Resume Medis Ranap V2".equals(tbUser.getValueAt(i,1).toString())){
+                Sequel.mengedit("user","id_user=AES_ENCRYPT('"+TKd.getText()+"','nur')","data_resume_ranap_v2='"+tbUser.getValueAt(i,2).toString()+"'");
             }
             
             if("[M]Asuhan Gizi".equals(tbUser.getValueAt(i,1).toString())){

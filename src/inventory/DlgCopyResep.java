@@ -587,7 +587,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     }
 
     private void panggilform() {
-        DlgPeresepanDokter resep=new DlgPeresepanDokter(null,false);
+        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
         resep.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
         resep.setLocationRelativeTo(internalFrame1);
         resep.setNoRm(norawat,tbPemisahan.getValueAt(tbPemisahan.getSelectedRow(),7).toString(),
@@ -601,7 +601,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     }
     
     private void panggilform2() {
-        DlgPeresepanDokter resep=new DlgPeresepanDokter(null,false);
+        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
         resep.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
         resep.setLocationRelativeTo(internalFrame1);
         resep.MatikanJam();
