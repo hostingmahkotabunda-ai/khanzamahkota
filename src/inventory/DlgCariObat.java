@@ -77,7 +77,23 @@ public final class DlgCariObat extends javax.swing.JDialog {
     private DlgCariMetodeRacik metoderacik=new DlgCariMetodeRacik(null,false);
     private WarnaTable2 warna=new WarnaTable2();
     private WarnaTable2 warna2=new WarnaTable2();
-    private WarnaTable2 warna3=new WarnaTable2();
+    private WarnaTable2 warna3=new WarnaTable2(){
+        @Override
+        public java.awt.Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column){
+            java.awt.Component component=super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            if(column==kolom){
+                try {
+                    String nilai=table.getValueAt(row,kolom).toString().trim();
+                    if(nilai.equals("0")||nilai.equals("0.0")||nilai.equals("0,0")){
+                        component.setBackground(new java.awt.Color(215,215,255));
+                        component.setForeground(new java.awt.Color(255,255,255));
+                    }
+                } catch (Exception e) {
+                }
+            }
+            return component;
+        }
+    };
     private riwayatobat Trackobat=new riwayatobat();
     private HttpHeaders headers;
     private HttpEntity requestEntity;
@@ -90,14 +106,24 @@ public final class DlgCariObat extends javax.swing.JDialog {
     private boolean sukses=true;
     private String planSOAPTerakhir="";
     private boolean draftResepSOAPTableChecked=false;
+    private String catatanResepDokter="";
+    private boolean catatanResepDokterTableChecked=false;
+    private java.util.List<String[]> pilihanMetodeRacikFarmasi=new java.util.ArrayList<String[]>();
+    private java.util.List<String> pilihanAturanPakaiFarmasi=new java.util.ArrayList<String>();
     private javax.swing.JPanel panelUmumObat;
     private javax.swing.JPanel panelRacikanObat;
     private javax.swing.JPanel panelPlanSOAP;
     private javax.swing.JPanel panelPlanSOAPRacikan;
+    private javax.swing.JPanel panelCatatanDokter;
+    private javax.swing.JPanel panelCatatanDokterRacikan;
     private widget.ScrollPane scrollPlanSOAP;
     private widget.ScrollPane scrollPlanSOAPRacikan;
+    private widget.ScrollPane scrollCatatanDokter;
+    private widget.ScrollPane scrollCatatanDokterRacikan;
     private javax.swing.JTextArea areaPlanSOAP;
     private javax.swing.JTextArea areaPlanSOAPRacikan;
+    private javax.swing.JTextArea areaCatatanDokter;
+    private javax.swing.JTextArea areaCatatanDokterRacikan;
     private javax.swing.JPanel panelTindakanPasien;
     private javax.swing.JPanel panelTindakanPasienRacikan;
     private widget.ScrollPane scrollTindakanPasien;
@@ -108,6 +134,9 @@ public final class DlgCariObat extends javax.swing.JDialog {
     private widget.Label labelTindakanPasienRacikan;
     private widget.Label labelPlanSOAP;
     private widget.Label labelPlanSOAPRacikan;
+    private widget.Label labelCatatanDokter;
+    private widget.Label labelCatatanDokterRacikan;
+    private widget.Label labelDetailRacikanFarmasi;
 
     public static DlgCariObat buatDari(java.awt.Component parent) {
         java.awt.Window owner = parent instanceof java.awt.Window ? (java.awt.Window)parent : javax.swing.SwingUtilities.getWindowAncestor(parent);
@@ -222,7 +251,7 @@ public final class DlgCariObat extends javax.swing.JDialog {
             }){
              @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = true;
-                if ((colIndex==0)||(colIndex==2)||(colIndex==3)) {
+                if ((colIndex==0)||(colIndex==2)) {
                     a=false;
                 }
                 return a;
@@ -263,6 +292,20 @@ public final class DlgCariObat extends javax.swing.JDialog {
 
         warna2.kolom=4;
         tbObatRacikan.setDefaultRenderer(Object.class,warna2);
+        pasangEditorRacikanFarmasi();
+        tabModeObatRacikan.addTableModelListener(new javax.swing.event.TableModelListener() {
+            @Override
+            public void tableChanged(javax.swing.event.TableModelEvent e) {
+                if(e.getType()==javax.swing.event.TableModelEvent.UPDATE && e.getFirstRow()>=0){
+                    if(e.getColumn()==3){
+                        isiKodeMetodeRacikFarmasi(e.getFirstRow());
+                    }
+                    if(e.getColumn()==1 || e.getColumn()==3){
+                        tampilkanLabelDetailRacikanFarmasi();
+                    }
+                }
+            }
+        });
         tbObatRacikan.getSelectionModel().addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             @Override
             public void valueChanged(javax.swing.event.ListSelectionEvent e) {
@@ -274,7 +317,7 @@ public final class DlgCariObat extends javax.swing.JDialog {
         
         tabModeDetailObatRacikan=new DefaultTableModel(null,new Object[]{
                 "No","Kode Barang","Nama Barang","Satuan","Harga(Rp)","H.Beli",
-                "Jenis Obat","Stok","Kps","Kandungan","Jml",
+                "Jenis Obat","Stok","Kps","Kandungan","Jumlah",
                 "Emb","Tsl","I.F.","Kategori","Golongan","No.Batch","No.Faktur","Kadaluarsa"
             }){
              @Override public boolean isCellEditable(int rowIndex, int colIndex){
@@ -347,8 +390,9 @@ public final class DlgCariObat extends javax.swing.JDialog {
             }
         }
 
-        warna3.kolom=9;
+        warna3.kolom=10;
         tbDetailObatRacikan.setDefaultRenderer(Object.class,warna3);
+        aturTampilanDetailRacikanFarmasi(true);
         
         TCari.setDocument(new batasInput((byte)100).getKata(TCari));
         if(koneksiDB.CARICEPAT().equals("aktif")){
@@ -754,9 +798,10 @@ public final class DlgCariObat extends javax.swing.JDialog {
 
         BtnTambah1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
         BtnTambah1.setMnemonic('3');
-        BtnTambah1.setToolTipText("Alt+3");
+        BtnTambah1.setText("Tambah Racikan");
+        BtnTambah1.setToolTipText("Tambah Racikan (Alt+3)");
         BtnTambah1.setName("BtnTambah1"); // NOI18N
-        BtnTambah1.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnTambah1.setPreferredSize(new java.awt.Dimension(128, 23));
         BtnTambah1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnTambah1ActionPerformed(evt);
@@ -778,9 +823,10 @@ public final class DlgCariObat extends javax.swing.JDialog {
 
         BtnHapus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/stop_f2.png"))); // NOI18N
         BtnHapus.setMnemonic('H');
-        BtnHapus.setToolTipText("Alt+H");
+        BtnHapus.setText("Hapus");
+        BtnHapus.setToolTipText("Hapus Racikan (Alt+H)");
         BtnHapus.setName("BtnHapus"); // NOI18N
-        BtnHapus.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnHapus.setPreferredSize(new java.awt.Dimension(82, 23));
         BtnHapus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnHapusActionPerformed(evt);
@@ -1144,6 +1190,7 @@ public final class DlgCariObat extends javax.swing.JDialog {
         if(TabRawat.getSelectedIndex()==0){
             tampilobat();
         }else if(TabRawat.getSelectedIndex()==1){
+            hentikanEditRacikanFarmasi();
             if(tbObatRacikan.getRowCount()!=0){
                 if(tbObatRacikan.getSelectedRow()!= -1){
                     setNoRacikAktifDariPilihan();
@@ -1152,8 +1199,7 @@ public final class DlgCariObat extends javax.swing.JDialog {
                             tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),2).toString().equals("")||
                             tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),3).toString().equals("")||
                             tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),4).toString().equals("")||
-                            tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),5).toString().equals("")||
-                            tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),6).toString().equals("")){
+                            tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),5).toString().equals("")){
                         JOptionPane.showMessageDialog(null,"Silahkan lengkapi data racikan..!!");
                     }else{
                         tampildetailracikanobat();
@@ -1311,6 +1357,8 @@ public final class DlgCariObat extends javax.swing.JDialog {
     }//GEN-LAST:event_BtnTambahActionPerformed
 
 private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanActionPerformed
+        hentikanEditRacikanFarmasi();
+        tampilkanSemuaDetailRacikan();
         if(VALIDASIULANGBERIOBAT.equals("yes")){
             for(i=0;i<tbObat.getRowCount();i++){ 
                 if(Valid.SetAngka(tbObat.getValueAt(i,1).toString())>0){
@@ -1557,12 +1605,22 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                         }
                     }
 
+                    gabungkanDuplikatDetailRacikan();
+                    java.util.HashSet<String> detailRacikanTersimpan=new java.util.HashSet<String>();
                     for(i=0;i<tbDetailObatRacikan.getRowCount();i++){ 
                         if(Valid.SetAngka(tbDetailObatRacikan.getValueAt(i,10).toString())>0){
-                            if(Sequel.menyimpantf2("detail_obat_racikan","?,?,?,?,?","Data",5,new String[]{
-                               Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),TNoRw.getText(),
-                               tbDetailObatRacikan.getValueAt(i,0).toString(),tbDetailObatRacikan.getValueAt(i,1).toString()
-                            })==true){
+                            String kunciDetail=tbDetailObatRacikan.getValueAt(i,0).toString()+"|"+tbDetailObatRacikan.getValueAt(i,1).toString();
+                            boolean detailRacikanBerhasil=true;
+                            if(!detailRacikanTersimpan.contains(kunciDetail)){
+                                detailRacikanBerhasil=Sequel.menyimpantf2("detail_obat_racikan","?,?,?,?,?","Data",5,new String[]{
+                                   Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),TNoRw.getText(),
+                                   tbDetailObatRacikan.getValueAt(i,0).toString(),tbDetailObatRacikan.getValueAt(i,1).toString()
+                                });
+                                if(detailRacikanBerhasil){
+                                    detailRacikanTersimpan.add(kunciDetail);
+                                }
+                            }
+                            if(detailRacikanBerhasil==true){
                                 if(Sequel.menyimpantf2("detail_pemberian_obat","?,?,?,?,?,?,?,?,?,?,?,?,?,?","data",14,new String[]{
                                     Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),TNoRw.getText(),
                                     tbDetailObatRacikan.getValueAt(i,1).toString(),tbDetailObatRacikan.getValueAt(i,5).toString(),
@@ -1737,6 +1795,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             BtnTambah1.setVisible(true);
             BtnHapus.setVisible(true);
             label13.setPreferredSize(new Dimension(1, 23));
+            setNoRacikAktifDariPilihan();
         }      
     }//GEN-LAST:event_formWindowActivated
 
@@ -1834,6 +1893,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             BtnTambah1.setVisible(true);
             BtnHapus.setVisible(true);
             label13.setPreferredSize(new Dimension(1, 23));
+            setNoRacikAktifDariPilihan();
         }
     }//GEN-LAST:event_TabRawatMouseClicked
 
@@ -1842,40 +1902,50 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         if(i==99){
             JOptionPane.showMessageDialog(null,"Maksimal 98 Racikan..!!");
         }else{
-            tabModeObatRacikan.addRow(new Object[]{""+i,"","","","","",""});
+            tabModeObatRacikan.addRow(new Object[]{""+i,"Racikan "+i,"","",1,"",""});
             tbObatRacikan.setRowSelectionInterval(tbObatRacikan.getRowCount()-1, tbObatRacikan.getRowCount()-1);
             setNoRacikAktifDariPilihan();
+            fokusKolomRacikanFarmasi(tbObatRacikan.getRowCount()-1,3);
         }            
     }//GEN-LAST:event_BtnTambah1ActionPerformed
 
     private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnHapusActionPerformed
-        if(tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),1).equals("")&&tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),4).equals("")&&tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),5).equals("")&&tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),6).equals("")){
-            tabModeObatRacikan.removeRow(tbObatRacikan.getSelectedRow());
-        }else{
-            JOptionPane.showMessageDialog(null,"Maaf sudah terisi, gak boleh dihapus..!!");
-        }
-        
+        hapusRacikanFarmasi();
     }//GEN-LAST:event_BtnHapusActionPerformed
+
+    private void hapusRacikanFarmasi() {
+        if(tbObatRacikan.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Silahkan pilih racikan yang mau dihapus..!!");
+            return;
+        }
+        String noRacik=tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString();
+        boolean adaObat=false;
+        for(int baris=0;baris<tabModeDetailObatRacikan.getRowCount();baris++){
+            if(tabModeDetailObatRacikan.getValueAt(baris,0).toString().equals(noRacik)&&
+                    Valid.SetAngka(tabModeDetailObatRacikan.getValueAt(baris,10).toString())>0){
+                adaObat=true;
+            }
+        }
+        if(adaObat){
+            JOptionPane.showMessageDialog(null,"Maaf racikan sudah memiliki obat, bersihkan jumlah obatnya dulu..!!");
+            return;
+        }
+        tampilkanSemuaDetailRacikan();
+        for(int baris=tabModeDetailObatRacikan.getRowCount()-1;baris>=0;baris--){
+            if(tabModeDetailObatRacikan.getValueAt(baris,0).toString().equals(noRacik)){
+                tabModeDetailObatRacikan.removeRow(baris);
+            }
+        }
+        tabModeObatRacikan.removeRow(tbObatRacikan.getSelectedRow());
+        setNoRacikAktifDariPilihan();
+    }
 
     private void tbObatRacikanKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbObatRacikanKeyPressed
         if(tbObatRacikan.getRowCount()!=0){
             i=tbObatRacikan.getSelectedColumn();
             if(evt.getKeyCode()==KeyEvent.VK_RIGHT){                
-                if(i==5){
-                    akses.setform("DlgCariObat");
-                    aturanpakai.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
-                    aturanpakai.setLocationRelativeTo(internalFrame1);
-                    aturanpakai.setVisible(true);
-                }else if(i==3){
-                    if(tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),1).equals("")){
-                        JOptionPane.showMessageDialog(null,"Silahkan masukkan nama racikan..!!");
-                        tbObatRacikan.requestFocus();
-                    }else{
-                        metoderacik.isCek();
-                        metoderacik.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
-                        metoderacik.setLocationRelativeTo(internalFrame1);
-                        metoderacik.setVisible(true);
-                    }                        
+                if(i==3 || i==5){
+                    bukaDropdownRacikanFarmasi(i);
                 }
             }else if(evt.getKeyCode()==KeyEvent.VK_SHIFT){
                 if((i==4)){
@@ -1884,6 +1954,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             }else if(evt.getKeyCode()==KeyEvent.VK_ENTER){
                 if((i==6)){
                     if(tbObatRacikan.getSelectedRow()!= -1){
+                        hentikanEditRacikanFarmasi();
                         setNoRacikAktifDariPilihan();
                         if(getNoRacikAktif().equals("")||
                                 tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),1).toString().equals("")||
@@ -2527,6 +2598,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
     
     public void tampilobat2(String no_resep) {     
         this.noresep=no_resep; 
+        tampilkanCatatanResepDokter(no_resep);
         try {
             Valid.tabelKosong(tabModeobat);
             Valid.tabelKosong(tabModeObatRacikan);
@@ -3235,9 +3307,80 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
                 getDatadetailobatracikan(i);
             }
             hitungObat();
+            aturTampilanDetailRacikanFarmasi(true);
+            if(tbObatRacikan.getRowCount()>0 && tbObatRacikan.getSelectedRow()==-1){
+                tbObatRacikan.setRowSelectionInterval(0,0);
+            }
+            setNoRacikAktifDariPilihan();
         } catch (Exception e) {
             System.out.println("Notifikasi : "+e);
         }            
+    }
+
+    private void gabungkanDuplikatDetailRacikan() {
+        try {
+            for(int awal=0;awal<tbDetailObatRacikan.getRowCount();awal++){
+                for(int banding=tbDetailObatRacikan.getRowCount()-1;banding>awal;banding--){
+                    if(kunciDetailRacikan(awal).equals(kunciDetailRacikan(banding))){
+                        double jumlahAwal=Valid.SetAngka(tbDetailObatRacikan.getValueAt(awal,10).toString());
+                        double jumlahBanding=Valid.SetAngka(tbDetailObatRacikan.getValueAt(banding,10).toString());
+                        tbDetailObatRacikan.setValueAt(""+(jumlahAwal+jumlahBanding),awal,10);
+                        tabModeDetailObatRacikan.removeRow(tbDetailObatRacikan.convertRowIndexToModel(banding));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Gabung Detail Racikan DlgCariObat : "+e);
+        }
+    }
+
+    private String kunciDetailRacikan(int baris) {
+        return tbDetailObatRacikan.getValueAt(baris,0).toString()+"|"+
+               tbDetailObatRacikan.getValueAt(baris,1).toString()+"|"+
+               tbDetailObatRacikan.getValueAt(baris,16).toString()+"|"+
+               tbDetailObatRacikan.getValueAt(baris,17).toString();
+    }
+
+    private boolean resepRacikanV2(String noResep) {
+        try {
+            int total=Sequel.cariInteger("select count(*) from resep_dokter_racikan_detail where no_resep=?",noResep);
+            if(total==0){
+                return false;
+            }
+            int totalV2=Sequel.cariInteger(
+                "select count(*) from resep_dokter_racikan_detail where no_resep=? and ifnull(kandungan,'')='' and ifnull(p1,1)=1 and ifnull(p2,1)=1",
+                noResep
+            );
+            return total==totalV2;
+        } catch (Exception e) {
+            System.out.println("Notifikasi Deteksi Racikan V2 DlgCariObat : "+e);
+            return false;
+        }
+    }
+
+    private void aturTampilanDetailRacikanFarmasi(boolean sederhana) {
+        aturLebarKolomDetailRacikan(8, sederhana ? 0 : 40);
+        aturLebarKolomDetailRacikan(9, sederhana ? 0 : 70);
+        aturLebarKolomDetailRacikan(10, sederhana ? 70 : 40);
+        aturLebarKolomDetailRacikan(11, sederhana ? 0 : 40);
+        aturLebarKolomDetailRacikan(12, 40);
+    }
+
+    private void aturLebarKolomDetailRacikan(int kolom, int lebar) {
+        try {
+            TableColumn column=tbDetailObatRacikan.getColumnModel().getColumn(kolom);
+            if(lebar==0){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+                column.setPreferredWidth(0);
+            }else{
+                column.setMinWidth(15);
+                column.setMaxWidth(1000);
+                column.setPreferredWidth(lebar);
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Kolom Detail Racikan DlgCariObat : "+e);
+        }
     }
 
     public void emptTeksobat() {
@@ -3477,6 +3620,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         TNoRM.setText(norm);
         TPasien.setText(nama);
         noresep="";
+        tampilkanCatatanResepDokter("");
         Tanggal.setText(tanggal);
         Jam.setText(jam);  
         KdPj.setText(Sequel.cariIsi("select reg_periksa.kd_pj from reg_periksa where reg_periksa.no_rawat=?",norwt));
@@ -3493,6 +3637,7 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         TNoRM.setText(norm);
         TPasien.setText(nama);
         noresep="";
+        tampilkanCatatanResepDokter("");
         DTPTgl.setDate(tanggal);
         cmbJam.setSelectedItem(jam); 
         cmbMnt.setSelectedItem(menit); 
@@ -3521,6 +3666,14 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         panelPlanSOAPRacikan.setName("panelPlanSOAPRacikan");
         panelPlanSOAPRacikan.setOpaque(false);
         panelPlanSOAPRacikan.setPreferredSize(new java.awt.Dimension(460,100));
+        panelCatatanDokter = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelCatatanDokter.setName("panelCatatanDokter");
+        panelCatatanDokter.setOpaque(false);
+        panelCatatanDokter.setPreferredSize(new java.awt.Dimension(230,260));
+        panelCatatanDokterRacikan = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelCatatanDokterRacikan.setName("panelCatatanDokterRacikan");
+        panelCatatanDokterRacikan.setOpaque(false);
+        panelCatatanDokterRacikan.setPreferredSize(new java.awt.Dimension(230,260));
 
         labelPlanSOAP = new widget.Label();
         labelPlanSOAP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -3530,6 +3683,14 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         labelPlanSOAPRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelPlanSOAPRacikan.setText("Plan SOAP Dokter :");
         labelPlanSOAPRacikan.setPreferredSize(new java.awt.Dimension(100,23));
+        labelCatatanDokter = new widget.Label();
+        labelCatatanDokter.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelCatatanDokter.setText("Catatan Dokter :");
+        labelCatatanDokter.setPreferredSize(new java.awt.Dimension(100,23));
+        labelCatatanDokterRacikan = new widget.Label();
+        labelCatatanDokterRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelCatatanDokterRacikan.setText("Catatan Dokter :");
+        labelCatatanDokterRacikan.setPreferredSize(new java.awt.Dimension(100,23));
 
         areaPlanSOAP = new javax.swing.JTextArea();
         areaPlanSOAP.setEditable(false);
@@ -3543,6 +3704,18 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         areaPlanSOAPRacikan.setWrapStyleWord(true);
         areaPlanSOAPRacikan.setMargin(new java.awt.Insets(6,6,6,6));
         areaPlanSOAPRacikan.setName("areaPlanSOAPRacikan");
+        areaCatatanDokter = new javax.swing.JTextArea();
+        areaCatatanDokter.setEditable(false);
+        areaCatatanDokter.setLineWrap(true);
+        areaCatatanDokter.setWrapStyleWord(true);
+        areaCatatanDokter.setMargin(new java.awt.Insets(6,6,6,6));
+        areaCatatanDokter.setName("areaCatatanDokter");
+        areaCatatanDokterRacikan = new javax.swing.JTextArea();
+        areaCatatanDokterRacikan.setEditable(false);
+        areaCatatanDokterRacikan.setLineWrap(true);
+        areaCatatanDokterRacikan.setWrapStyleWord(true);
+        areaCatatanDokterRacikan.setMargin(new java.awt.Insets(6,6,6,6));
+        areaCatatanDokterRacikan.setName("areaCatatanDokterRacikan");
 
         scrollPlanSOAP = new widget.ScrollPane();
         scrollPlanSOAP.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
@@ -3552,30 +3725,46 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         scrollPlanSOAPRacikan.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
         scrollPlanSOAPRacikan.setName("scrollPlanSOAPRacikan");
         scrollPlanSOAPRacikan.setViewportView(areaPlanSOAPRacikan);
+        scrollCatatanDokter = new widget.ScrollPane();
+        scrollCatatanDokter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollCatatanDokter.setName("scrollCatatanDokter");
+        scrollCatatanDokter.setPreferredSize(new java.awt.Dimension(230,235));
+        scrollCatatanDokter.setViewportView(areaCatatanDokter);
+        scrollCatatanDokterRacikan = new widget.ScrollPane();
+        scrollCatatanDokterRacikan.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollCatatanDokterRacikan.setName("scrollCatatanDokterRacikan");
+        scrollCatatanDokterRacikan.setPreferredSize(new java.awt.Dimension(230,235));
+        scrollCatatanDokterRacikan.setViewportView(areaCatatanDokterRacikan);
 
         javax.swing.JPanel panelIsiPlanSOAP=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelIsiPlanSOAP.setName("panelIsiPlanSOAP");
         panelIsiPlanSOAP.setOpaque(false);
         panelIsiPlanSOAP.add(labelPlanSOAP, java.awt.BorderLayout.PAGE_START);
         panelIsiPlanSOAP.add(scrollPlanSOAP, java.awt.BorderLayout.CENTER);
+        panelCatatanDokter.add(labelCatatanDokter, java.awt.BorderLayout.PAGE_START);
+        panelCatatanDokter.add(scrollCatatanDokter, java.awt.BorderLayout.CENTER);
         javax.swing.JSplitPane splitInfoSOAP=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelIsiPlanSOAP,panelTindakanPasien);
         splitInfoSOAP.setName("splitInfoSOAP");
         splitInfoSOAP.setBorder(null);
-        splitInfoSOAP.setResizeWeight(0.35);
-        splitInfoSOAP.setDividerLocation(210);
+        splitInfoSOAP.setResizeWeight(0.78);
+        splitInfoSOAP.setDividerLocation(260);
         panelPlanSOAP.add(splitInfoSOAP, java.awt.BorderLayout.CENTER);
+        panelPlanSOAP.add(panelCatatanDokter, java.awt.BorderLayout.PAGE_END);
 
         javax.swing.JPanel panelIsiPlanSOAPRacikan=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelIsiPlanSOAPRacikan.setName("panelIsiPlanSOAPRacikan");
         panelIsiPlanSOAPRacikan.setOpaque(false);
         panelIsiPlanSOAPRacikan.add(labelPlanSOAPRacikan, java.awt.BorderLayout.PAGE_START);
         panelIsiPlanSOAPRacikan.add(scrollPlanSOAPRacikan, java.awt.BorderLayout.CENTER);
+        panelCatatanDokterRacikan.add(labelCatatanDokterRacikan, java.awt.BorderLayout.PAGE_START);
+        panelCatatanDokterRacikan.add(scrollCatatanDokterRacikan, java.awt.BorderLayout.CENTER);
         javax.swing.JSplitPane splitInfoSOAPRacikan=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelIsiPlanSOAPRacikan,panelTindakanPasienRacikan);
         splitInfoSOAPRacikan.setName("splitInfoSOAPRacikan");
         splitInfoSOAPRacikan.setBorder(null);
-        splitInfoSOAPRacikan.setResizeWeight(0.35);
-        splitInfoSOAPRacikan.setDividerLocation(210);
+        splitInfoSOAPRacikan.setResizeWeight(0.78);
+        splitInfoSOAPRacikan.setDividerLocation(260);
         panelPlanSOAPRacikan.add(splitInfoSOAPRacikan, java.awt.BorderLayout.CENTER);
+        panelPlanSOAPRacikan.add(panelCatatanDokterRacikan, java.awt.BorderLayout.PAGE_END);
 
         int indexUmum = TabRawat.indexOfComponent(Scroll);
         if(indexUmum>-1) {
@@ -3587,14 +3776,16 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
 
         int indexRacikan = TabRawat.indexOfComponent(jPanel3);
         if(indexRacikan>-1) {
+            pasangPanelDetailRacikanFarmasi(Scroll2);
             TabRawat.remove(indexRacikan);
             panelRacikanObat.add(jPanel3, java.awt.BorderLayout.CENTER);
             panelRacikanObat.add(panelPlanSOAPRacikan, java.awt.BorderLayout.EAST);
-            TabRawat.insertTab("Racikan", null, panelRacikanObat, null, indexRacikan);
+            TabRawat.insertTab("Racikan / V2", null, panelRacikanObat, null, indexRacikan);
         }
 
         TabRawat.setSelectedIndex(0);
         refreshPanelPlanSOAP();
+        refreshPanelCatatanDokter();
     }
 
     private void inisialisasiPanelTindakanPasien() {
@@ -3666,6 +3857,113 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             }else if(kolom==6){
                 column.setPreferredWidth(90);
             }
+        }
+    }
+
+    private void pasangPanelDetailRacikanFarmasi(widget.ScrollPane scrollDetail) {
+        if(labelDetailRacikanFarmasi!=null){
+            return;
+        }
+        labelDetailRacikanFarmasi = new widget.Label();
+        labelDetailRacikanFarmasi.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelDetailRacikanFarmasi.setPreferredSize(new java.awt.Dimension(100,23));
+
+        javax.swing.JPanel panelDetail=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelDetail.setName("panelDetailRacikanFarmasi");
+        panelDetail.setOpaque(false);
+        panelDetail.add(labelDetailRacikanFarmasi, java.awt.BorderLayout.PAGE_START);
+        panelDetail.add(scrollDetail, java.awt.BorderLayout.CENTER);
+        jPanel3.remove(scrollDetail);
+        jPanel3.add(panelDetail, java.awt.BorderLayout.CENTER);
+        tampilkanLabelDetailRacikanFarmasi();
+    }
+
+    private void pasangEditorRacikanFarmasi() {
+        muatPilihanMetodeRacikFarmasi();
+        muatPilihanAturanPakaiFarmasi();
+
+        javax.swing.JComboBox<String> cmbMetode=new javax.swing.JComboBox<String>();
+        cmbMetode.addItem("");
+        for(String[] metode:pilihanMetodeRacikFarmasi){
+            cmbMetode.addItem(metode[1]);
+        }
+        tbObatRacikan.getColumnModel().getColumn(3).setCellEditor(new javax.swing.DefaultCellEditor(cmbMetode));
+
+        javax.swing.JComboBox<String> cmbAturan=new javax.swing.JComboBox<String>();
+        cmbAturan.setEditable(true);
+        cmbAturan.addItem("");
+        for(String aturan:pilihanAturanPakaiFarmasi){
+            cmbAturan.addItem(aturan);
+        }
+        tbObatRacikan.getColumnModel().getColumn(5).setCellEditor(new javax.swing.DefaultCellEditor(cmbAturan));
+    }
+
+    private void muatPilihanMetodeRacikFarmasi() {
+        pilihanMetodeRacikFarmasi.clear();
+        try(PreparedStatement psMetode=koneksi.prepareStatement("select kd_racik,nm_racik from metode_racik order by nm_racik");
+            ResultSet rsMetode=psMetode.executeQuery()){
+            while(rsMetode.next()){
+                pilihanMetodeRacikFarmasi.add(new String[]{rsMetode.getString("kd_racik"),rsMetode.getString("nm_racik")});
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Metode Racik Farmasi DlgCariObat : "+e);
+        }
+    }
+
+    private void muatPilihanAturanPakaiFarmasi() {
+        pilihanAturanPakaiFarmasi.clear();
+        try(PreparedStatement psAturan=koneksi.prepareStatement("select aturan from master_aturan_pakai order by aturan");
+            ResultSet rsAturan=psAturan.executeQuery()){
+            while(rsAturan.next()){
+                pilihanAturanPakaiFarmasi.add(rsAturan.getString("aturan"));
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Aturan Pakai Farmasi DlgCariObat : "+e);
+        }
+    }
+
+    private void isiKodeMetodeRacikFarmasi(int row) {
+        if(row<0 || row>=tbObatRacikan.getRowCount()){
+            return;
+        }
+        String metode=tbObatRacikan.getValueAt(row,3).toString();
+        for(String[] pilihan:pilihanMetodeRacikFarmasi){
+            if(pilihan[1].equals(metode)){
+                tbObatRacikan.setValueAt(pilihan[0],row,2);
+                return;
+            }
+        }
+        tbObatRacikan.setValueAt("",row,2);
+    }
+
+    private void hentikanEditRacikanFarmasi() {
+        try {
+            if(tbObatRacikan.isEditing()){
+                tbObatRacikan.getCellEditor().stopCellEditing();
+            }
+            if(tbDetailObatRacikan.isEditing()){
+                tbDetailObatRacikan.getCellEditor().stopCellEditing();
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    private void bukaDropdownRacikanFarmasi(int kolom) {
+        try {
+            int row=tbObatRacikan.getSelectedRow();
+            if(row==-1){
+                return;
+            }
+            tbObatRacikan.requestFocus();
+            tbObatRacikan.setColumnSelectionInterval(kolom,kolom);
+            tbObatRacikan.editCellAt(row,kolom);
+            if(tbObatRacikan.getEditorComponent()!=null){
+                tbObatRacikan.getEditorComponent().requestFocus();
+                if(tbObatRacikan.getEditorComponent() instanceof javax.swing.JComboBox){
+                    ((javax.swing.JComboBox)tbObatRacikan.getEditorComponent()).showPopup();
+                }
+            }
+        } catch (Exception e) {
         }
     }
 
@@ -3743,6 +4041,31 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         }
     }
 
+    private void tampilkanCatatanResepDokter(String noResep) {
+        catatanResepDokter="";
+        try {
+            if(noResep!=null && !noResep.trim().equals("")) {
+                pastikanTabelCatatanResepDokter();
+                catatanResepDokter=Sequel.cariIsi("select catatan from catatan_resep_dokter where no_resep=?",noResep);
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Catatan Resep Dokter DlgCariObat : "+e);
+        }
+        refreshPanelCatatanDokter();
+    }
+
+    private void refreshPanelCatatanDokter() {
+        String isi = catatanResepDokter.trim().equals("") ? "Tidak ada catatan dokter untuk resep ini." : catatanResepDokter;
+        if(areaCatatanDokter!=null) {
+            areaCatatanDokter.setText(isi);
+            areaCatatanDokter.setCaretPosition(0);
+        }
+        if(areaCatatanDokterRacikan!=null) {
+            areaCatatanDokterRacikan.setText(isi);
+            areaCatatanDokterRacikan.setCaretPosition(0);
+        }
+    }
+
     private void pastikanTabelDraftResepSOAP() {
         if(draftResepSOAPTableChecked){
             return;
@@ -3765,6 +4088,23 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             draftResepSOAPTableChecked=true;
         } catch (Exception e) {
             System.out.println("Notifikasi Plan SOAP DlgCariObat : "+e);
+        }
+    }
+
+    private void pastikanTabelCatatanResepDokter() {
+        if(catatanResepDokterTableChecked){
+            return;
+        }
+        try {
+            Sequel.queryu(
+                "create table if not exists catatan_resep_dokter ("+
+                "no_resep varchar(14) not null,"+
+                "catatan text,"+
+                "tanggal_update datetime not null,"+
+                "primary key (no_resep)) engine=InnoDB default charset=latin1");
+            catatanResepDokterTableChecked=true;
+        } catch (Exception e) {
+            System.out.println("Notifikasi Catatan Resep Dokter DlgCariObat : "+e);
         }
     }
 
@@ -3844,7 +4184,11 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
     private void setNoRacikAktifDariPilihan(){
         if(tbObatRacikan.getSelectedRow()!=-1 && tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0)!=null){
             noRacikAktif=tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString();
+        }else{
+            noRacikAktif="";
         }
+        tampilkanDetailRacikanAktifFarmasi();
+        tampilkanLabelDetailRacikanFarmasi();
     }
 
     private String getNoRacikAktif(){
@@ -3853,8 +4197,86 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
         }
         return noRacikAktif;
     }
+
+    private void tampilkanLabelDetailRacikanFarmasi() {
+        if(labelDetailRacikanFarmasi==null){
+            return;
+        }
+        String label="Informasi obat untuk racikan: pilih/isi racikan terlebih dahulu";
+        try {
+            if(tbObatRacikan.getSelectedRow()!=-1){
+                String no=tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),0).toString();
+                String nama=tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),1).toString();
+                String metode=tbObatRacikan.getValueAt(tbObatRacikan.getSelectedRow(),3).toString();
+                label="Informasi obat untuk racikan: "+no+". "+(nama.equals("") ? "Racikan" : nama);
+                if(!metode.equals("")){
+                    label=label+" ("+metode+")";
+                }
+            }
+        } catch (Exception e) {
+        }
+        labelDetailRacikanFarmasi.setText(label);
+    }
+
+    private void tampilkanDetailRacikanAktifFarmasi() {
+        try {
+            final String noRacik=noRacikAktif;
+            javax.swing.table.TableRowSorter sorter=(javax.swing.table.TableRowSorter)tbDetailObatRacikan.getRowSorter();
+            if(sorter==null){
+                sorter=new javax.swing.table.TableRowSorter(tabModeDetailObatRacikan);
+                tbDetailObatRacikan.setRowSorter(sorter);
+            }
+            if(noRacik.equals("")){
+                sorter.setRowFilter(new javax.swing.RowFilter<DefaultTableModel,Integer>() {
+                    @Override
+                    public boolean include(javax.swing.RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                        return false;
+                    }
+                });
+            }else{
+                sorter.setRowFilter(new javax.swing.RowFilter<DefaultTableModel,Integer>() {
+                    @Override
+                    public boolean include(javax.swing.RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                        return entry.getStringValue(0).equals(noRacik);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Filter Detail Racikan DlgCariObat : "+e);
+        }
+    }
+
+    private void tampilkanSemuaDetailRacikan() {
+        try {
+            javax.swing.table.TableRowSorter sorter=(javax.swing.table.TableRowSorter)tbDetailObatRacikan.getRowSorter();
+            if(sorter!=null){
+                sorter.setRowFilter(null);
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    private void fokusKolomRacikanFarmasi(int row,int kolom) {
+        try {
+            if(row<0 || row>=tbObatRacikan.getRowCount()){
+                return;
+            }
+            tbObatRacikan.requestFocus();
+            tbObatRacikan.setRowSelectionInterval(row,row);
+            tbObatRacikan.setColumnSelectionInterval(kolom,kolom);
+            tbObatRacikan.editCellAt(row,kolom);
+            if(tbObatRacikan.getEditorComponent()!=null){
+                tbObatRacikan.getEditorComponent().requestFocus();
+                if(tbObatRacikan.getEditorComponent() instanceof javax.swing.JComboBox){
+                    ((javax.swing.JComboBox)tbObatRacikan.getEditorComponent()).showPopup();
+                }
+            }
+        } catch (Exception e) {
+        }
+    }
     
     public void tampildetailracikanobat() {        
+        tampilkanSemuaDetailRacikan();
         z=0;
         for(i=0;i<tbDetailObatRacikan.getRowCount();i++){
             if(Valid.SetAngka(tbDetailObatRacikan.getValueAt(i,10).toString())>0){
@@ -4293,7 +4715,8 @@ private void JeniskelasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:even
             }
         } catch (Exception e) {
             System.out.println("Notifikasi : "+e);
-        }            
+        }
+        tampilkanDetailRacikanAktifFarmasi();
     }
     
     private void getDatadetailobatracikan() {

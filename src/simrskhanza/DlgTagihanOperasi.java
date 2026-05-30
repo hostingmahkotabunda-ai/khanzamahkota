@@ -2889,6 +2889,8 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                                 DikirimPA.getSelectedItem().toString(),Laporan.getText()
                             })==false){
                             sukses=false;
+                        }else{
+                            simpanDraftLaporanOperasiDariTagihan();
                         }
                     }
                 }   
@@ -3891,6 +3893,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         }
         tampil();
         tampil2();
+        muatDraftLaporanOperasi();
     }
     
     public void setNoRm(String norm,String nama,String posisi,String KodeOperator,String NamaOperator){
@@ -3917,10 +3920,73 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         }
         tampil();
         tampil2();
+        muatDraftLaporanOperasi();
         kdoperator1.setText(KodeOperator);
         nmoperator1.setText(NamaOperator);
     }
     
+    private void pastikanTabelDraftLaporanOperasi() {
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "create table if not exists draft_laporan_operasi ("+
+                "no_rawat varchar(17) not null,"+
+                "diagnosa_preop varchar(100) default '',"+
+                "diagnosa_postop varchar(100) default '',"+
+                "jaringan_dieksekusi varchar(100) default '',"+
+                "permintaan_pa varchar(5) default 'Ya',"+
+                "laporan_operasi text,"+
+                "tanggal_update datetime not null,"+
+                "primary key (no_rawat)) engine=InnoDB default charset=latin1")) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Notif : " + e);
+        }
+    }
+
+    private void muatDraftLaporanOperasi() {
+        pastikanTabelDraftLaporanOperasi();
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select diagnosa_preop,diagnosa_postop,jaringan_dieksekusi,permintaan_pa,laporan_operasi "+
+                "from draft_laporan_operasi where no_rawat=?")) {
+            ps.setString(1, TNoRw.getText());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    PreOp.setText(rs.getString("diagnosa_preop"));
+                    PostOp.setText(rs.getString("diagnosa_postop"));
+                    Jaringan.setText(rs.getString("jaringan_dieksekusi"));
+                    DikirimPA.setSelectedItem(rs.getString("permintaan_pa"));
+                    Laporan.setText(rs.getString("laporan_operasi"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif : " + e);
+        }
+    }
+
+    private void simpanDraftLaporanOperasiDariTagihan() {
+        pastikanTabelDraftLaporanOperasi();
+        String sql;
+        boolean ada = Sequel.cariInteger("select count(no_rawat) from draft_laporan_operasi where no_rawat=?", TNoRw.getText()) > 0;
+        if (ada) {
+            sql = "update draft_laporan_operasi set diagnosa_preop=?,diagnosa_postop=?,jaringan_dieksekusi=?,"+
+                  "permintaan_pa=?,laporan_operasi=?,tanggal_update=now() where no_rawat=?";
+        } else {
+            sql = "insert into draft_laporan_operasi(diagnosa_preop,diagnosa_postop,jaringan_dieksekusi,"+
+                  "permintaan_pa,laporan_operasi,tanggal_update,no_rawat) values(?,?,?,?,?,now(),?)";
+        }
+
+        try (PreparedStatement ps = koneksi.prepareStatement(sql)) {
+            ps.setString(1, PreOp.getText());
+            ps.setString(2, PostOp.getText());
+            ps.setString(3, Jaringan.getText());
+            ps.setString(4, DikirimPA.getSelectedItem().toString());
+            ps.setString(5, Laporan.getText());
+            ps.setString(6, TNoRw.getText());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Notif : " + e);
+        }
+    }
+
     
     private void isForm(){
         if(ChkInput.isSelected()==true){

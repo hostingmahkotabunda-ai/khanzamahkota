@@ -18,11 +18,15 @@ import fungsi.sekuel;
 import fungsi.validasi;
 import fungsi.akses;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -67,7 +71,7 @@ public final class DlgKunjunganRanap extends javax.swing.JDialog {
         initComponents();
         this.setLocation(8,1);
         setSize(885,674);
-        tabMode=new DefaultTableModel(null,new String[]{"No.","Lama","Baru","Nama Pasien","L","P","Alamat","Kode","Diagnosa","Ruang","Stts.Pulang","Tgl.Masuk","DPJP"}){
+        tabMode=new DefaultTableModel(null,new String[]{"No.","Lama","Baru","Nama Pasien","L","P","Alamat","Kode","Diagnosa","Ruang","Stts.Pulang","Tgl.Masuk","Tgl.Keluar","DPJP"}){
               @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
         };
         tbBangsal.setModel(tabMode);
@@ -75,7 +79,7 @@ public final class DlgKunjunganRanap extends javax.swing.JDialog {
         tbBangsal.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbBangsal.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 13; i++) {
+        for (i = 0; i < 14; i++) {
             TableColumn column = tbBangsal.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(35);
@@ -102,6 +106,8 @@ public final class DlgKunjunganRanap extends javax.swing.JDialog {
             }else if(i==11){
                 column.setPreferredWidth(75);
             }else if(i==12){
+                column.setPreferredWidth(75);
+            }else if(i==13){
                 column.setPreferredWidth(250);
             }
         }
@@ -911,83 +917,185 @@ public final class DlgKunjunganRanap extends javax.swing.JDialog {
 
     private void BtnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnPrintActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        Map<String, Object> param = new HashMap<>();         
+        try {
+            DefaultTableModel model = modelKunjunganAktif();
+            if(model.getRowCount()==0){
+                JOptionPane.showMessageDialog(null,"Maaf, data sudah habis. Tidak ada data yang bisa anda print...!!!!");
+                return;
+            }
+
+            String pilihan = (String)JOptionPane.showInputDialog(null,"Silahkan pilih laporan..!","Pilihan Cetak",JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Laporan 1 (HTML)","Laporan 2 (WPS)","Laporan 3 (CSV)","Laporan 4 (Jasper)"},"Laporan 1 (HTML)");
+            if(pilihan==null){
+                return;
+            }
+
+            switch (pilihan) {
+                case "Laporan 1 (HTML)":
+                    tulisKunjunganRanapHtml("KunjunganRanap.html",model);
+                    break;
+                case "Laporan 2 (WPS)":
+                    tulisKunjunganRanapHtml("KunjunganRanap.wps",model);
+                    break;
+                case "Laporan 3 (CSV)":
+                    tulisKunjunganRanapCsv("KunjunganRanap.csv",model);
+                    break;
+                case "Laporan 4 (Jasper)":
+                    cetakKunjunganRanapJasper(model);
+                    break;
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi : "+e);
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+}//GEN-LAST:event_BtnPrintActionPerformed
+
+    private DefaultTableModel modelKunjunganAktif() {
+        return TabRawat.getSelectedIndex()==0 ? tabMode : tabMode2;
+    }
+
+    private String csvValue(Object value) {
+        if(value==null){
+            return "";
+        }
+        return value.toString().replace("\"", "\"\"").replace("\r", " ").replace("\n", " ");
+    }
+
+    private String htmlValue(Object value) {
+        if(value==null){
+            return "";
+        }
+        return value.toString().replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
+    private String sqlValue(Object value) {
+        if(value==null){
+            return "";
+        }
+        return value.toString().replace("'", "''");
+    }
+
+    private void tulisKunjunganRanapHtml(String namaFile, DefaultTableModel model) throws Exception {
+        File g = new File("file2.css");
+        BufferedWriter bg = new BufferedWriter(new FileWriter(g));
+        bg.write(
+                ".isi td{border-right: 1px solid #e2e7dd;font: 11px tahoma;height:12px;border-bottom: 1px solid #e2e7dd;background: #ffffff;color:#323232;}"+
+                ".isi2 td{font: 11px tahoma;height:12px;background: #ffffff;color:#323232;}"
+        );
+        bg.close();
+
+        StringBuilder htmlContent = new StringBuilder();
+        htmlContent.append("<tr class='isi'>");
+        for(int kolom=0;kolom<model.getColumnCount();kolom++){
+            htmlContent.append("<td valign='middle' bgcolor='#FFFAFA' align='center'><b>").append(model.getColumnName(kolom)).append("</b></td>");
+        }
+        htmlContent.append("</tr>");
+
+        for(int baris=0;baris<model.getRowCount();baris++){
+            htmlContent.append("<tr class='isi'>");
+            for(int kolom=0;kolom<model.getColumnCount();kolom++){
+                htmlContent.append("<td valign='top'>").append(htmlValue(model.getValueAt(baris,kolom))).append("</td>");
+            }
+            htmlContent.append("</tr>");
+        }
+
+        File f = new File(namaFile);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+        bw.write("<html>"+
+                    "<head><link href=\"file2.css\" rel=\"stylesheet\" type=\"text/css\" /></head>"+
+                    "<body>"+
+                        "<table width='100%' border='0' align='center' cellpadding='3px' cellspacing='0' class='tbl_form'>"+
+                            "<tr class='isi2'>"+
+                                "<td valign='top' align='center'>"+
+                                    "<font size='4' face='Tahoma'>"+akses.getnamars()+"</font><br>"+
+                                    akses.getalamatrs()+", "+akses.getkabupatenrs()+", "+akses.getpropinsirs()+"<br>"+
+                                    akses.getkontakrs()+", E-mail : "+akses.getemailrs()+"<br><br>"+
+                                    "<font size='2' face='Tahoma'>LAPORAN KUNJUNGAN RAWAT INAP PERIODE "+Tgl1.getSelectedItem()+" s.d. "+Tgl2.getSelectedItem()+"<br><br></font>"+
+                                "</td>"+
+                           "</tr>"+
+                        "</table>"+
+                        "<table width='100%' border='0' align='center' cellpadding='3px' cellspacing='0' class='tbl_form'>"+
+                            htmlContent.toString()+
+                        "</table>"+
+                    "</body>"+
+                 "</html>"
+        );
+        bw.close();
+        Desktop.getDesktop().browse(f.toURI());
+    }
+
+    private void tulisKunjunganRanapCsv(String namaFile, DefaultTableModel model) throws Exception {
+        StringBuilder csvContent = new StringBuilder("sep=;\n");
+        for(int kolom=0;kolom<model.getColumnCount();kolom++){
+            if(kolom>0){
+                csvContent.append(";");
+            }
+            csvContent.append("\"").append(csvValue(model.getColumnName(kolom))).append("\"");
+        }
+        csvContent.append("\n");
+
+        for(int baris=0;baris<model.getRowCount();baris++){
+            for(int kolom=0;kolom<model.getColumnCount();kolom++){
+                if(kolom>0){
+                    csvContent.append(";");
+                }
+                csvContent.append("\"").append(csvValue(model.getValueAt(baris,kolom))).append("\"");
+            }
+            csvContent.append("\n");
+        }
+
+        File f = new File(namaFile);
+        BufferedWriter bw = new BufferedWriter(new FileWriter(f));
+        bw.write(csvContent.toString());
+        bw.close();
+        Desktop.getDesktop().browse(f.toURI());
+    }
+
+    private void cetakKunjunganRanapJasper(DefaultTableModel model) {
+        Map<String, Object> param = new HashMap<>();
         param.put("namars",akses.getnamars());
         param.put("alamatrs",akses.getalamatrs());
         param.put("kotars",akses.getkabupatenrs());
         param.put("propinsirs",akses.getpropinsirs());
         param.put("kontakrs",akses.getkontakrs());
-        param.put("emailrs",akses.getemailrs());   
-        param.put("periode",Tgl1.getSelectedItem()+" s.d. "+Tgl2.getSelectedItem());   
-        param.put("lama",lama);   
-        param.put("baru",baru);   
-        param.put("total",(lama+baru));   
-        param.put("laki",laki);   
-        param.put("perempuan",per);   
-        param.put("tanggal",Tgl2.getDate());  
-        if(TabRawat.getSelectedIndex()==0){
-            if(tabMode.getRowCount()==0){
-                JOptionPane.showMessageDialog(null,"Maaf, data sudah habis. Tidak ada data yang bisa anda print...!!!!");
-                //TCari.requestFocus();
-            }else if(tabMode.getRowCount()!=0){
-                Sequel.queryu("delete from temporary where temp37='"+akses.getalamatip()+"'");
-                for(int r=0;r<tabMode.getRowCount();r++){ 
-                    if(!tbBangsal.getValueAt(r,0).toString().contains(">>")){
-                        try {
-                            Sequel.menyimpan("temporary","'"+r+"','"+
-                                        tabMode.getValueAt(r,0).toString()+"','"+
-                                        tabMode.getValueAt(r,1).toString()+"','"+
-                                        tabMode.getValueAt(r,2).toString()+"','"+
-                                        tabMode.getValueAt(r,3).toString()+"','"+
-                                        tabMode.getValueAt(r,4).toString()+"','"+
-                                        tabMode.getValueAt(r,5).toString()+"','"+
-                                        tabMode.getValueAt(r,6).toString()+"','"+
-                                        tabMode.getValueAt(r,7).toString()+"','"+
-                                        tabMode.getValueAt(r,8).toString()+"','"+
-                                        tabMode.getValueAt(r,9).toString()+"','"+
-                                        tabMode.getValueAt(r,10).toString()+"','"+
-                                        tabMode.getValueAt(r,11).toString()+"','"+
-                                        tabMode.getValueAt(r,12).toString()+"','','','','','','','','','','','','','','','','','','','','','','','','"+akses.getalamatip()+"'","Rekap Nota Pembayaran");
-                        } catch (Exception e) {
-                        }   
-                    }                    
-                }
-                 
-                Valid.MyReportqry("rptKunjunganRanap.jasper","report","::[ Laporan Kunjungan Rawat Inap ]::","select * from temporary where temporary.temp37='"+akses.getalamatip()+"' order by temporary.no",param);
+        param.put("emailrs",akses.getemailrs());
+        param.put("periode",Tgl1.getSelectedItem()+" s.d. "+Tgl2.getSelectedItem());
+        param.put("lama",lama);
+        param.put("baru",baru);
+        param.put("total",(lama+baru));
+        param.put("laki",laki);
+        param.put("perempuan",per);
+        param.put("tanggal",Tgl2.getDate());
+
+        Sequel.queryu("delete from temporary where temp37='"+akses.getalamatip()+"'");
+        for(int r=0;r<model.getRowCount();r++){
+            if(!model.getValueAt(r,0).toString().contains(">>")){
+                simpanTemporaryKunjunganRanap(model,r);
             }
-        }else if(TabRawat.getSelectedIndex()==1){
-            if(tabMode2.getRowCount()==0){
-                JOptionPane.showMessageDialog(null,"Maaf, data sudah habis. Tidak ada data yang bisa anda print...!!!!");
-                //TCari.requestFocus();
-            }else if(tabMode2.getRowCount()!=0){
-                Sequel.queryu("delete from temporary where temp37='"+akses.getalamatip()+"'");
-                for(int r=0;r<tabMode2.getRowCount();r++){ 
-                    if(!tbBangsal2.getValueAt(r,0).toString().contains(">>")){
-                        try{
-                            Sequel.menyimpan("temporary","'"+r+"','"+
-                                        tabMode2.getValueAt(r,0).toString()+"','"+
-                                        tabMode2.getValueAt(r,1).toString()+"','"+
-                                        tabMode2.getValueAt(r,2).toString()+"','"+
-                                        tabMode2.getValueAt(r,3).toString()+"','"+
-                                        tabMode2.getValueAt(r,4).toString()+"','"+
-                                        tabMode2.getValueAt(r,5).toString()+"','"+
-                                        tabMode2.getValueAt(r,6).toString()+"','"+
-                                        tabMode2.getValueAt(r,7).toString()+"','"+
-                                        tabMode2.getValueAt(r,8).toString()+"','"+
-                                        tabMode2.getValueAt(r,9).toString()+"','"+
-                                        tabMode2.getValueAt(r,10).toString()+"','"+
-                                        tabMode2.getValueAt(r,11).toString()+"','"+
-                                        tabMode2.getValueAt(r,12).toString()+"','','','','','','','','','','','','','','','','','','','','','','','','"+akses.getalamatip()+"'","Rekap Nota Pembayaran");
-                        } catch (Exception e) {
-                        }  
-                    }                    
-                }
-                 
-                Valid.MyReportqry("rptKunjunganRanap.jasper","report","::[ Laporan Kunjungan Rawat Inap ]::","select * from temporary where temporary.temp37='"+akses.getalamatip()+"' order by temporary.no",param);
-            }            
-        }        
-        this.setCursor(Cursor.getDefaultCursor());
-}//GEN-LAST:event_BtnPrintActionPerformed
+        }
+        Valid.MyReportqry("rptKunjunganRanap.jasper","report","::[ Laporan Kunjungan Rawat Inap ]::","select * from temporary where temporary.temp37='"+akses.getalamatip()+"' order by temporary.no",param);
+    }
+
+    private void simpanTemporaryKunjunganRanap(DefaultTableModel model, int row) {
+        String tanggal = model.getValueAt(row,11).toString();
+        String dpjp = model.getValueAt(row,12).toString();
+        if(model.getColumnCount()>13){
+            tanggal = model.getValueAt(row,11).toString()+" s.d. "+model.getValueAt(row,12).toString();
+            dpjp = model.getValueAt(row,13).toString();
+        }
+
+        StringBuilder dataTemporary = new StringBuilder("'").append(row).append("'");
+        for(int kolom=0;kolom<=10;kolom++){
+            dataTemporary.append(",'").append(sqlValue(model.getValueAt(row,kolom))).append("'");
+        }
+        dataTemporary.append(",'").append(sqlValue(tanggal)).append("'");
+        dataTemporary.append(",'").append(sqlValue(dpjp)).append("'");
+        for(int kolom=14;kolom<=36;kolom++){
+            dataTemporary.append(",''");
+        }
+        dataTemporary.append(",'").append(akses.getalamatip()).append("'");
+        Sequel.menyimpan("temporary",dataTemporary.toString(),"Rekap Nota Pembayaran");
+    }
 
     private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnPrintKeyPressed
         if(evt.getKeyCode()==KeyEvent.VK_SPACE){
@@ -1280,7 +1388,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             Valid.tabelKosong(tabMode);   
             ps=koneksi.prepareStatement(
                     "select reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.alamat,pasien.jk,concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur) as umur,pasien.tgl_daftar,reg_periksa.stts_daftar,"+
-                    "kamar_inap.kd_kamar,bangsal.nm_bangsal,concat(pasien.alamat,', ',kelurahan.nm_kel,', ',kecamatan.nm_kec,', ',kabupaten.nm_kab)as almt_pj,kamar_inap.stts_pulang,kamar_inap.tgl_masuk,dokter.nm_dokter "+
+                    "kamar_inap.kd_kamar,bangsal.nm_bangsal,concat(pasien.alamat,', ',kelurahan.nm_kel,', ',kecamatan.nm_kec,', ',kabupaten.nm_kab)as almt_pj,kamar_inap.stts_pulang,kamar_inap.tgl_masuk,kamar_inap.tgl_keluar,dokter.nm_dokter "+
                     "from reg_periksa inner join pasien inner join kamar_inap inner join kamar inner join bangsal inner join dokter inner join penjab " +
                     "inner join kabupaten inner join kecamatan inner join kelurahan on reg_periksa.no_rkm_medis=pasien.no_rkm_medis and reg_periksa.no_rawat=kamar_inap.no_rawat "+
                     "and reg_periksa.kd_pj=penjab.kd_pj and pasien.kd_kab=kabupaten.kd_kab and kamar_inap.kd_kamar=kamar.kd_kamar and kamar.kd_bangsal=bangsal.kd_bangsal "+
@@ -1407,7 +1515,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                         }
                         
                         tabMode.addRow(new Object[]{
-                            i,setlama,setbaru,rs.getString("nm_pasien"),umurlk,umurpr,rs.getString("almt_pj"),kddiagnosa,diagnosa,rs.getString("kd_kamar")+" "+rs.getString("nm_bangsal"),rs.getString("stts_pulang"),rs.getString("tgl_masuk"),dokterdpjp
+                            i,setlama,setbaru,rs.getString("nm_pasien"),umurlk,umurpr,rs.getString("almt_pj"),kddiagnosa,diagnosa,rs.getString("kd_kamar")+" "+rs.getString("nm_bangsal"),rs.getString("stts_pulang"),rs.getString("tgl_masuk"),rs.getString("tgl_keluar"),dokterdpjp
                         });                
                         i++;
                     }
@@ -1415,7 +1523,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 }
                 if(i>=2){
                     tabMode.addRow(new Object[]{
-                        ">>",lama,baru,"",laki,per,"","","",""
+                        ">>",lama,baru,"",laki,per,"","","","","","","",""
                     });
                 }
             } catch (Exception e) {
@@ -1572,7 +1680,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 }
                 if(i>=2){
                     tabMode2.addRow(new Object[]{
-                        ">>",lama,baru,"",laki,per,"","","",""
+                        ">>",lama,baru,"",laki,per,"","","","","","",""
                     });
                 }
             } catch (Exception e) {

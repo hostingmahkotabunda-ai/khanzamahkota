@@ -1361,6 +1361,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         BtnRiwayat = new widget.Button();
         BtnResepObat = new widget.Button();
         BtnCopyResep = new widget.Button();
+        BtnLaporanOperasi = new widget.Button();
         BtnPermintaanStok = new widget.Button();
         BtnPermintaanResepPulang = new widget.Button();
         BtnInputObat = new widget.Button();
@@ -3551,6 +3552,23 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             }
         });
         FormMenu.add(BtnCopyResep);
+
+        BtnLaporanOperasi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png"))); // NOI18N
+        BtnLaporanOperasi.setText("Laporan Operasi");
+        BtnLaporanOperasi.setFocusPainted(false);
+        BtnLaporanOperasi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        BtnLaporanOperasi.setGlassColor(new java.awt.Color(255, 255, 255));
+        BtnLaporanOperasi.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        BtnLaporanOperasi.setMargin(new java.awt.Insets(1, 1, 1, 1));
+        BtnLaporanOperasi.setName("BtnLaporanOperasi"); // NOI18N
+        BtnLaporanOperasi.setPreferredSize(new java.awt.Dimension(190, 23));
+        BtnLaporanOperasi.setRoundRect(false);
+        BtnLaporanOperasi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnLaporanOperasiActionPerformed(evt);
+            }
+        });
+        FormMenu.add(BtnLaporanOperasi);
 
         BtnPermintaanStok.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png"))); // NOI18N
         BtnPermintaanStok.setText("Permintaan Stok Pasien");
@@ -7305,6 +7323,21 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         }
     }//GEN-LAST:event_BtnPermintaanLabActionPerformed
 
+    private void BtnLaporanOperasiActionPerformed(java.awt.event.ActionEvent evt) {
+        if(TPasien.getText().trim().equals("")||TNoRw.getText().trim().equals("")){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
+            TCari.requestFocus();
+        }else{
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            DlgLaporanOperasiPemeriksaan laporanoperasi=new DlgLaporanOperasiPemeriksaan(null,false);
+            laporanoperasi.setSize(720,480);
+            laporanoperasi.setLocationRelativeTo(internalFrame1);
+            laporanoperasi.setNoRm(TNoRw.getText(),TPasien.getText());
+            laporanoperasi.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
     private void BtnPermintaanRadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnPermintaanRadActionPerformed
         if(TPasien.getText().trim().equals("")||TNoRw.getText().trim().equals("")){
             JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
@@ -8914,6 +8947,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     private widget.Button BtnJadwalOperasi;
     private widget.Button BtnKeluar;
     private widget.Button BtnKonselingFarmasi;
+    private widget.Button BtnLaporanOperasi;
     private widget.Button BtnMonitoringAsuhanGizi;
     private widget.Button BtnMonitoringReaksiTranfusi;
     private widget.Button BtnObatBhp;
@@ -10067,8 +10101,12 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         }
         BtnResepObat.setVisible(akses.getresep_dokter());
         BtnCopyResep.setVisible(akses.getresep_dokter());
+        BtnLaporanOperasi.setVisible(akses.getoperasi());
         if(akses.getresep_dokter()==true){
             tinggi=tinggi+48;
+        }
+        if(akses.getoperasi()==true){
+            tinggi=tinggi+24;
         }
         BtnPermintaanStok.setVisible(akses.getpermintaan_stok_obat_pasien());
         if(akses.getpermintaan_stok_obat_pasien()==true){
@@ -11020,6 +11058,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         FormMenu.add(BtnRiwayat);
         FormMenu.add(BtnResepObat);
         FormMenu.add(BtnCopyResep);
+        FormMenu.add(BtnLaporanOperasi);
         FormMenu.add(BtnPermintaanStok);
         FormMenu.add(BtnPermintaanResepPulang);
         FormMenu.add(BtnInputObat);

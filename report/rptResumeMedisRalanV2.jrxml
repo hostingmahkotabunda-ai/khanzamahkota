@@ -119,99 +119,99 @@
 				<text><![CDATA[No. Rm]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="322" y="74" width="115" height="12"/>
+				<reportElement x="322" y="74" width="64" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{no_rkm_medis}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="390" y="74" width="50" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
-				<text><![CDATA[Tgl Masuk]]></text>
+				<reportElement x="392" y="74" width="52" height="12"/>
+				<textElement><font fontName="Tahoma" size="7"/></textElement>
+				<text><![CDATA[Tgl/Jam Masuk]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="438" y="74" width="55" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
+				<reportElement x="444" y="74" width="55" height="12"/>
+				<textElement><font fontName="Tahoma" size="6"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{tgl_masuk_format}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="244" y="90" width="62" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
-				<text><![CDATA[Nama]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="322" y="90" width="115" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
-				<textFieldExpression><![CDATA[": " + $F{nama_pasien}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement x="390" y="90" width="50" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
-				<text><![CDATA[Tgl Keluar]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="438" y="90" width="55" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
-				<textFieldExpression><![CDATA[": " + $F{tgl_keluar_format}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="244" y="106" width="62" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
+				<text><![CDATA[Nama]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true">
+				<reportElement x="322" y="104" width="171" height="28"/>
+				<textElement verticalAlignment="Top"><font fontName="Tahoma" size="7"/></textElement>
+				<textFieldExpression><![CDATA[": " + $F{nama_pasien}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="392" y="90" width="52" height="12"/>
+				<textElement><font fontName="Tahoma" size="7"/></textElement>
+				<text><![CDATA[Tgl/Jam Keluar]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="444" y="90" width="55" height="12"/>
+				<textElement><font fontName="Tahoma" size="6"/></textElement>
+				<textFieldExpression><![CDATA[": " + $F{tgl_keluar_format}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="244" y="134" width="62" height="12"/>
+				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<text><![CDATA[Tgl. Lahir / Jk]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="322" y="106" width="120" height="12"/>
+				<reportElement x="322" y="134" width="171" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{tgl_lahir_format} + " / " + $F{jk_singkat}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="244" y="122" width="62" height="12"/>
+				<reportElement x="244" y="148" width="62" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<text><![CDATA[Alamat]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true">
-				<reportElement x="322" y="122" width="171" height="24"/>
+				<reportElement x="322" y="148" width="171" height="22"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{alamat_lengkap}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="244" y="148" width="62" height="12"/>
+				<reportElement x="244" y="174" width="62" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<text><![CDATA[DPJP]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="322" y="148" width="171" height="12"/>
+				<reportElement x="322" y="174" width="171" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[": dr. " + $F{dpjp}]]></textFieldExpression>
 			</textField>
 			<staticText>
-				<reportElement x="244" y="164" width="78" height="12"/>
+				<reportElement x="244" y="188" width="78" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<text><![CDATA[Rawat tim dokter]]></text>
 			</staticText>
 			<textField>
-				<reportElement x="322" y="164" width="171" height="12"/>
+				<reportElement x="322" y="188" width="171" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{rawat_tim_dokter} + ", " + $F{tim_dokter1}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="322" y="176" width="171" height="12"/>
+				<reportElement x="322" y="199" width="171" height="9"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[$F{tim_dokter2}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="322" y="188" width="171" height="12"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
+				<reportElement x="244" y="199" width="78" height="9"/>
+				<textElement><font fontName="Tahoma" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{tim_dokter3}]]></textFieldExpression>
 			</textField>
 			<line>
-				<reportElement x="236" y="185" width="263" height="1"/>
+				<reportElement x="236" y="207" width="263" height="1"/>
 			</line>
 			<staticText>
-				<reportElement x="330" y="191" width="156" height="12"/>
+				<reportElement x="330" y="207" width="156" height="1"/>
 				<textElement textAlignment="Center">
 					<font fontName="Tahoma" size="6"/>
 				</textElement>
-				<text><![CDATA[* TELITI LENGKAP *]]></text>
+				<text><![CDATA[]]></text>
 			</staticText>
 
 			<rectangle><reportElement x="10" y="224" width="489" height="26"/></rectangle>

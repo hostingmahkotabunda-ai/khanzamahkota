@@ -3050,13 +3050,32 @@ private void MnHapusObatOperasiActionPerformed(java.awt.event.ActionEvent evt) {
 
     private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanActionPerformed
         if(!Laporan.getText().equals("")){
-            Sequel.queryu("delete from laporan_operasi where no_rawat='"+tbDokter.getValueAt(tbDokter.getSelectedRow(),1)+"' and tanggal='"+tbDokter.getValueAt(tbDokter.getSelectedRow(),0) +"'");
-            Sequel.menyimpan("laporan_operasi","?,?,?,?,?,?,?,?","laporan operasi",8,new String[]{
-                tbDokter.getValueAt(tbDokter.getSelectedRow(),1).toString(),tbDokter.getValueAt(tbDokter.getSelectedRow(),0).toString(),PreOp.getText(),
-                PostOp.getText(),Jaringan.getText(),Valid.SetTgl(tgl2.getSelectedItem()+"")+" "+tgl2.getSelectedItem().toString().substring(11,19),
-                DikirimPA.getSelectedItem().toString(),Laporan.getText()
-            });
-            JOptionPane.showMessageDialog(null,"Proses update selesai...!!!!");
+            try (PreparedStatement ps = koneksi.prepareStatement(
+                    "update laporan_operasi set diagnosa_preop=?,diagnosa_postop=?,jaringan_dieksekusi=?,"+
+                    "selesaioperasi=?,permintaan_pa=?,laporan_operasi=? where no_rawat=? and tanggal=?")) {
+                ps.setString(1, PreOp.getText());
+                ps.setString(2, PostOp.getText());
+                ps.setString(3, Jaringan.getText());
+                ps.setString(4, Valid.SetTgl(tgl2.getSelectedItem()+"")+" "+tgl2.getSelectedItem().toString().substring(11,19));
+                ps.setString(5, DikirimPA.getSelectedItem().toString());
+                ps.setString(6, Laporan.getText());
+                ps.setString(7, tbDokter.getValueAt(tbDokter.getSelectedRow(),1).toString());
+                ps.setString(8, tbDokter.getValueAt(tbDokter.getSelectedRow(),0).toString());
+                if(ps.executeUpdate()>0){
+                    sinkronDraftLaporanOperasi(
+                            tbDokter.getValueAt(tbDokter.getSelectedRow(),1).toString(),
+                            PreOp.getText(),PostOp.getText(),Jaringan.getText(),
+                            DikirimPA.getSelectedItem().toString(),Laporan.getText()
+                    );
+                    tampil();
+                    JOptionPane.showMessageDialog(null,"Proses update selesai...!!!!");
+                }else{
+                    JOptionPane.showMessageDialog(null,"Data laporan operasi tidak ditemukan untuk diupdate.");
+                }
+            } catch (Exception e) {
+                System.out.println("Notif : "+e);
+                JOptionPane.showMessageDialog(null,"Gagal update laporan operasi : "+e.getMessage());
+            }
         }
     }//GEN-LAST:event_BtnSimpanActionPerformed
 
@@ -3097,6 +3116,48 @@ private void MnHapusObatOperasiActionPerformed(java.awt.event.ActionEvent evt) {
     private void DikirimPAKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_DikirimPAKeyPressed
         Valid.pindah(evt,Jaringan,Laporan);
     }//GEN-LAST:event_DikirimPAKeyPressed
+
+    private void pastikanTabelDraftLaporanOperasi() {
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "create table if not exists draft_laporan_operasi ("+
+                "no_rawat varchar(17) not null,"+
+                "diagnosa_preop varchar(100) default '',"+
+                "diagnosa_postop varchar(100) default '',"+
+                "jaringan_dieksekusi varchar(100) default '',"+
+                "permintaan_pa varchar(5) default 'Ya',"+
+                "laporan_operasi text,"+
+                "tanggal_update datetime not null,"+
+                "primary key (no_rawat)) engine=InnoDB default charset=latin1")) {
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Notif : "+e);
+        }
+    }
+
+    private void sinkronDraftLaporanOperasi(String noRawat, String preOp, String postOp, String jaringan, String pa, String laporan) {
+        pastikanTabelDraftLaporanOperasi();
+        String sql;
+        boolean ada = Sequel.cariInteger("select count(no_rawat) from draft_laporan_operasi where no_rawat=?", noRawat) > 0;
+        if (ada) {
+            sql = "update draft_laporan_operasi set diagnosa_preop=?,diagnosa_postop=?,jaringan_dieksekusi=?,"+
+                  "permintaan_pa=?,laporan_operasi=?,tanggal_update=now() where no_rawat=?";
+        } else {
+            sql = "insert into draft_laporan_operasi(diagnosa_preop,diagnosa_postop,jaringan_dieksekusi,"+
+                  "permintaan_pa,laporan_operasi,tanggal_update,no_rawat) values(?,?,?,?,?,now(),?)";
+        }
+
+        try (PreparedStatement ps = koneksi.prepareStatement(sql)) {
+            ps.setString(1, preOp);
+            ps.setString(2, postOp);
+            ps.setString(3, jaringan);
+            ps.setString(4, pa);
+            ps.setString(5, laporan);
+            ps.setString(6, noRawat);
+            ps.executeUpdate();
+        } catch (Exception e) {
+            System.out.println("Notif : "+e);
+        }
+    }
 
     private void ppBerkasDigitalBtnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppBerkasDigitalBtnPrintActionPerformed
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));

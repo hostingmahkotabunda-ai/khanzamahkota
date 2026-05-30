@@ -47,6 +47,7 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import kepegawaian.DlgCariDokter;
@@ -58,6 +59,7 @@ import widget.Button;
  */
 public final class DlgPeresepanDokter extends javax.swing.JDialog {
     private final DefaultTableModel tabModeResep,tabModeDetailResepRacikan,tabModeResepRacikan;
+    private DefaultTableModel tabModeResepRacikanV2,tabModeDetailResepRacikanV2;
     private DefaultTableModel tabModeTindakan;
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
@@ -82,28 +84,50 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
     private String TANGGALMUNDUR="yes";
     private String draftTerapiSOAP="";
     private String planSOAPDokter="";
+    private String catatanResepDokter="";
+    private List<String[]> pilihanMetodeRacikV2=new ArrayList<>();
+    private List<String> pilihanAturanPakaiV2=new ArrayList<>();
     private boolean draftResepSOAPTableChecked=false;
     private boolean draftTerapiSOAPSudahDiterapkan=false;
     private boolean resepBerhasilDisimpan=false;
+    private boolean sedangSinkronCatatanDokter=false;
     private String noResepTersimpan="";
     private javax.swing.JPanel panelUmumResep;
     private javax.swing.JPanel panelRacikanResep;
     private javax.swing.JPanel panelDraftSOAP;
     private javax.swing.JPanel panelDraftSOAPRacikan;
+    private javax.swing.JPanel panelDraftSOAPRacikanV2;
     private javax.swing.JScrollPane scrollDraftSOAP;
     private javax.swing.JScrollPane scrollDraftSOAPRacikan;
+    private javax.swing.JScrollPane scrollDraftSOAPRacikanV2;
     private javax.swing.JTextArea areaDraftSOAP;
     private javax.swing.JTextArea areaDraftSOAPRacikan;
+    private javax.swing.JTextArea areaDraftSOAPRacikanV2;
+    private javax.swing.JTextArea areaCatatanDokter;
+    private javax.swing.JTextArea areaCatatanDokterRacikanV2;
+    private widget.ScrollPane scrollCatatanDokter;
+    private widget.ScrollPane scrollCatatanDokterRacikanV2;
+    private widget.Label labelCatatanDokter;
+    private widget.Label labelCatatanDokterRacikanV2;
     private javax.swing.JPanel panelTindakanPasien;
     private javax.swing.JPanel panelTindakanPasienRacikan;
+    private javax.swing.JPanel panelTindakanPasienRacikanV2;
     private widget.ScrollPane scrollTindakanPasien;
     private widget.ScrollPane scrollTindakanPasienRacikan;
+    private widget.ScrollPane scrollTindakanPasienRacikanV2;
     private widget.Table tbTindakanPasien;
     private widget.Table tbTindakanPasienRacikan;
+    private widget.Table tbTindakanPasienRacikanV2;
     private widget.Label labelTindakanPasien;
     private widget.Label labelTindakanPasienRacikan;
+    private widget.Label labelTindakanPasienRacikanV2;
     private widget.Label labelDraftSOAP;
     private widget.Label labelDraftSOAPRacikan;
+    private widget.Label labelDraftSOAPRacikanV2;
+    private javax.swing.JPanel panelRacikanV2;
+    private widget.Table tbRacikanV2;
+    private widget.Table tbDetailRacikanV2;
+    private widget.Label labelRacikanAktifV2;
     private boolean modeEmbedded=false;
     private static final Pattern POLA_JUMLAH_RESEP=Pattern.compile("(?i)(?:\\b(?:qty|jumlah|jml|jlh|no\\.?|#)\\s*[:=]?\\s*)(\\d+(?:[\\.,]\\d+)?)");
     private static final Pattern POLA_AWAL_LIST=Pattern.compile("^\\s*(?:[-*]+|\\d+[\\.)])\\s*");
@@ -315,6 +339,8 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         warna3.kolom=9;
         tbDetailResepObatRacikan.setDefaultRenderer(Object.class,warna3);
+        inisialisasiRacikanV2();
+        sembunyikanTabRacikanLama();
         
         TCari.setDocument(new batasInput((byte)100).getKata(TCari));
         if(koneksiDB.CARICEPAT().equals("aktif")){
@@ -518,8 +544,8 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
         internalFrame1.setLayout(new java.awt.BorderLayout(1, 1));
 
         panelisi3.setName("panelisi3"); // NOI18N
-        panelisi3.setPreferredSize(new java.awt.Dimension(100, 43));
-        panelisi3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 9));
+        panelisi3.setPreferredSize(new java.awt.Dimension(100, 72));
+        panelisi3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 4, 5));
 
         label9.setText("Key Word :");
         label9.setName("label9"); // NOI18N
@@ -538,9 +564,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnCari.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/accept.png"))); // NOI18N
         BtnCari.setMnemonic('1');
-        BtnCari.setToolTipText("Alt+1");
+        BtnCari.setText("Cari");
+        BtnCari.setToolTipText("Cari (Alt+1)");
         BtnCari.setName("BtnCari"); // NOI18N
-        BtnCari.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnCari.setPreferredSize(new java.awt.Dimension(70, 23));
         BtnCari.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnCariActionPerformed(evt);
@@ -555,9 +582,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnAll.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/Search-16x16.png"))); // NOI18N
         BtnAll.setMnemonic('2');
-        BtnAll.setToolTipText("Alt+2");
+        BtnAll.setText("Semua");
+        BtnAll.setToolTipText("Tampilkan Semua (Alt+2)");
         BtnAll.setName("BtnAll"); // NOI18N
-        BtnAll.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnAll.setPreferredSize(new java.awt.Dimension(82, 23));
         BtnAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnAllActionPerformed(evt);
@@ -592,9 +620,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnTambah.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/plus_16.png"))); // NOI18N
         BtnTambah.setMnemonic('3');
-        BtnTambah.setToolTipText("Alt+3");
+        BtnTambah.setText("Tambah Obat");
+        BtnTambah.setToolTipText("Tambah Obat (Alt+3)");
         BtnTambah.setName("BtnTambah"); // NOI18N
-        BtnTambah.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnTambah.setPreferredSize(new java.awt.Dimension(112, 23));
         BtnTambah.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnTambahActionPerformed(evt);
@@ -604,9 +633,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnSeek5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/011.png"))); // NOI18N
         BtnSeek5.setMnemonic('4');
-        BtnSeek5.setToolTipText("Alt+4");
+        BtnSeek5.setText("Konversi");
+        BtnSeek5.setToolTipText("Konversi Satuan (Alt+4)");
         BtnSeek5.setName("BtnSeek5"); // NOI18N
-        BtnSeek5.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnSeek5.setPreferredSize(new java.awt.Dimension(92, 23));
         BtnSeek5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnSeek5ActionPerformed(evt);
@@ -621,9 +651,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnSimpan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/save-16x16.png"))); // NOI18N
         BtnSimpan.setMnemonic('S');
-        BtnSimpan.setToolTipText("Alt+S");
+        BtnSimpan.setText("Simpan");
+        BtnSimpan.setToolTipText("Simpan (Alt+S)");
         BtnSimpan.setName("BtnSimpan"); // NOI18N
-        BtnSimpan.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnSimpan.setPreferredSize(new java.awt.Dimension(88, 23));
         BtnSimpan.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnSimpanActionPerformed(evt);
@@ -633,9 +664,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnTambah1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
         BtnTambah1.setMnemonic('3');
-        BtnTambah1.setToolTipText("Alt+3");
+        BtnTambah1.setText("Tambah Racikan");
+        BtnTambah1.setToolTipText("Tambah Racikan (Alt+3)");
         BtnTambah1.setName("BtnTambah1"); // NOI18N
-        BtnTambah1.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnTambah1.setPreferredSize(new java.awt.Dimension(128, 23));
         BtnTambah1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnTambah1ActionPerformed(evt);
@@ -645,9 +677,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnHapus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/stop_f2.png"))); // NOI18N
         BtnHapus.setMnemonic('H');
-        BtnHapus.setToolTipText("Alt+H");
+        BtnHapus.setText("Hapus");
+        BtnHapus.setToolTipText("Hapus Racikan (Alt+H)");
         BtnHapus.setName("BtnHapus"); // NOI18N
-        BtnHapus.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnHapus.setPreferredSize(new java.awt.Dimension(82, 23));
         BtnHapus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnHapusActionPerformed(evt);
@@ -657,9 +690,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 
         BtnKeluar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/exit.png"))); // NOI18N
         BtnKeluar.setMnemonic('5');
-        BtnKeluar.setToolTipText("Alt+5");
+        BtnKeluar.setText("Keluar");
+        BtnKeluar.setToolTipText("Keluar (Alt+5)");
         BtnKeluar.setName("BtnKeluar"); // NOI18N
-        BtnKeluar.setPreferredSize(new java.awt.Dimension(28, 23));
+        BtnKeluar.setPreferredSize(new java.awt.Dimension(82, 23));
         BtnKeluar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 BtnKeluarActionPerformed(evt);
@@ -972,9 +1006,9 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
 }//GEN-LAST:event_TCariKeyPressed
 
     private void BtnCariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCariActionPerformed
-        if(TabRawat.getSelectedIndex()==0){
+        if(tabUmumAktif()){
             tampilcacheresep();
-        }else if(TabRawat.getSelectedIndex()==1){
+        }else if(tabRacikanLamaAktif()){
             if(tbObatResepRacikan.getRowCount()!=0){
                 if(tbObatResepRacikan.getSelectedRow()!= -1){
                     if(tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),0).toString().equals("")||
@@ -994,8 +1028,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
             }else{
                 JOptionPane.showMessageDialog(null,"Silahkan masukkan racikan..!!");
             }
-        }else if(TabRawat.getSelectedIndex()==2){
-            tampilkanTindakanPasien(TNoRw.getText());
+        }else if(tabRacikanV2Aktif()){
+            if(validasiRacikanAktifV2()){
+                tampilCacheResepRacikanV2();
+            }
         }  
 }//GEN-LAST:event_BtnCariActionPerformed
 
@@ -1059,10 +1095,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
                             @Override
                             public void windowClosed(WindowEvent e) {
                                 if(aturanpakai.getTable().getSelectedRow()!= -1){  
-                                    if(TabRawat.getSelectedIndex()==0){
+                                    if(tabUmumAktif()){
                                         tbResep.setValueAt(aturanpakai.getTable().getValueAt(aturanpakai.getTable().getSelectedRow(),0).toString(),tbResep.getSelectedRow(),2);
                                         tbResep.requestFocus();
-                                    }else if(TabRawat.getSelectedIndex()==1){
+                                    }else if(tabRacikanLamaAktif()){
                                         tbObatResepRacikan.setValueAt(aturanpakai.getTable().getValueAt(aturanpakai.getTable().getSelectedRow(),0).toString(),tbObatResepRacikan.getSelectedRow(),5);
                                         tbObatResepRacikan.requestFocus();
                                     }   
@@ -1116,6 +1152,8 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
     }//GEN-LAST:event_BtnTambahActionPerformed
 
 private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanActionPerformed
+        selesaiEditRacikanV2();
+        hitungResep();
         if(TNoRw.getText().trim().equals("")||TPasien.getText().trim().equals("")){
             Valid.textKosong(TNoRw,"pasien");
         }else if(KdDokter.getText().trim().equals("")||NmDokter.getText().trim().equals("")){
@@ -1128,6 +1166,7 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }else{
             int reply = JOptionPane.showConfirmDialog(rootPane,"Eeiiiiiits, udah bener belum data yang mau disimpan..??","Konfirmasi",JOptionPane.YES_NO_OPTION);
             if (reply == JOptionPane.YES_OPTION) {
+                pastikanTabelCatatanResepDokter();
                 ChkJln.setSelected(false);    
                 Sequel.AutoComitFalse();
                 sukses=true;
@@ -1269,6 +1308,11 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     }
                     Valid.tabelKosong(tabModeResepRacikan);
                     Valid.tabelKosong(tabModeDetailResepRacikan);
+                    Valid.tabelKosong(tabModeResepRacikanV2);
+                    Valid.tabelKosong(tabModeDetailResepRacikanV2);
+                    kosongkanCatatanDokter();
+                    tampilkanLabelRacikanAktifV2();
+                    tampilkanDetailRacikanV2Aktif();
                     if(!modeEmbedded){
                         dispose();
                     }
@@ -1294,18 +1338,26 @@ private void BtnSeek5KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
 }//GEN-LAST:event_BtnSeek5KeyPressed
 
 private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppBersihkanActionPerformed
-    if(TabRawat.getSelectedIndex()==0){
+    if(tabUmumAktif()){
         for(i=0;i<tbResep.getRowCount();i++){ 
             tbResep.setValueAt(false,i,0);
             tbResep.setValueAt("",i,1);
             tbResep.setValueAt("",i,2);
         }
-    }else if(TabRawat.getSelectedIndex()==1){
+    }else if(tabRacikanLamaAktif()){
         for(i=0;i<tbDetailResepObatRacikan.getRowCount();i++){ 
             tbDetailResepObatRacikan.setValueAt(1,i,9);
             tbDetailResepObatRacikan.setValueAt(1,i,11);
             tbDetailResepObatRacikan.setValueAt("",i,12);
             tbDetailResepObatRacikan.setValueAt(0,i,13);
+        }
+    }else if(tabRacikanV2Aktif()){
+        String racikanAktif=ambilNomorRacikanAktifV2();
+        for(i=0;i<tbDetailRacikanV2.getRowCount();i++){
+            if(tbDetailRacikanV2.getValueAt(i,0).toString().startsWith(racikanAktif+" - ")){
+                tbDetailRacikanV2.setValueAt(false,i,1);
+                tbDetailRacikanV2.setValueAt("",i,2);
+            }
         }
     }  
     hitungResep();
@@ -1401,19 +1453,19 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }//GEN-LAST:event_JeniskelasKeyPressed
 
     private void TabRawatMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabRawatMouseClicked
-        if(TabRawat.getSelectedIndex()==0){
+        if(tabUmumAktif()){
             BtnTambah1.setVisible(false);
             BtnHapus.setVisible(false);
             TCari.setPreferredSize(new Dimension(245, 23));
-        }else if(TabRawat.getSelectedIndex()==1){
+        }else if(tabRacikanV2Aktif()){
             BtnTambah1.setVisible(true);
             BtnHapus.setVisible(true);
             TCari.setPreferredSize(new Dimension(181, 23));
-        }else if(TabRawat.getSelectedIndex()==2){
-            BtnTambah1.setVisible(false);
-            BtnHapus.setVisible(false);
-            TCari.setPreferredSize(new Dimension(245, 23));
-            tampilkanTindakanPasien(TNoRw.getText());
+            tampilkanLabelRacikanAktifV2();
+        }else if(tabRacikanLamaAktif()){
+            BtnTambah1.setVisible(true);
+            BtnHapus.setVisible(true);
+            TCari.setPreferredSize(new Dimension(181, 23));
         }
     }//GEN-LAST:event_TabRawatMouseClicked
 
@@ -1433,10 +1485,10 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                             @Override
                             public void windowClosed(WindowEvent e) {
                                 if(aturanpakai.getTable().getSelectedRow()!= -1){  
-                                    if(TabRawat.getSelectedIndex()==0){
+                                    if(tabUmumAktif()){
                                         tbResep.setValueAt(aturanpakai.getTable().getValueAt(aturanpakai.getTable().getSelectedRow(),0).toString(),tbResep.getSelectedRow(),2);
                                         tbResep.requestFocus();
-                                    }else if(TabRawat.getSelectedIndex()==1){
+                                    }else if(tabRacikanLamaAktif()){
                                         tbObatResepRacikan.setValueAt(aturanpakai.getTable().getValueAt(aturanpakai.getTable().getSelectedRow(),0).toString(),tbObatResepRacikan.getSelectedRow(),5);
                                         tbObatResepRacikan.requestFocus();
                                     }   
@@ -1517,7 +1569,9 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }//GEN-LAST:event_tbObatResepRacikanKeyPressed
 
     private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnHapusActionPerformed
-        if(tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),1).equals("")&&tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),4).equals("")&&tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),5).equals("")&&tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),6).equals("")){
+        if(tabRacikanV2Aktif()){
+            hapusRacikanV2();
+        }else if(tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),1).equals("")&&tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),4).equals("")&&tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),5).equals("")&&tbObatResepRacikan.getValueAt(tbObatResepRacikan.getSelectedRow(),6).equals("")){
             tabModeResepRacikan.removeRow(tbObatResepRacikan.getSelectedRow());
         }else{
             JOptionPane.showMessageDialog(null,"Maaf sudah terisi, gak boleh dihapus..!!");
@@ -1525,11 +1579,15 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }//GEN-LAST:event_BtnHapusActionPerformed
 
     private void BtnTambah1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnTambah1ActionPerformed
-        i=tabModeResepRacikan.getRowCount()+1;
-        if(i==99){
-            JOptionPane.showMessageDialog(null,"Maksimal 98 Racikan..!!");
+        if(tabRacikanV2Aktif()){
+            tambahRacikanV2();
         }else{
-            tabModeResepRacikan.addRow(new Object[]{""+i,"","","","","",""});
+            i=tabModeResepRacikan.getRowCount()+1;
+            if(i==99){
+                JOptionPane.showMessageDialog(null,"Maksimal 98 Racikan..!!");
+            }else{
+                tabModeResepRacikan.addRow(new Object[]{""+i,"","","","","",""});
+            }
         }
     }//GEN-LAST:event_BtnTambah1ActionPerformed
 
@@ -2116,6 +2174,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         modeEmbedded=true;
         BtnKeluar.setVisible(false);
         internalFrame1.setBorder(null);
+        sembunyikanTabRacikanLama();
         TabRawatMouseClicked(null);
     }
     
@@ -2185,6 +2244,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         draftTerapiSOAPSudahDiterapkan=false;
         resepBerhasilDisimpan=false;
         noResepTersimpan="";
+        kosongkanCatatanDokter();
     }
     
     public void setNoRm(String norwt,String KodeDokter,String NamaDokter,String Pasien,String kodepj,String status) {        
@@ -2204,6 +2264,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         draftTerapiSOAPSudahDiterapkan=false;
         resepBerhasilDisimpan=false;
         noResepTersimpan="";
+        kosongkanCatatanDokter();
     }
     
     public void setNoRm(String norwt,Date tanggal,String status) {        
@@ -2230,6 +2291,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         draftTerapiSOAPSudahDiterapkan=false;
         resepBerhasilDisimpan=false;
         noResepTersimpan="";
+        kosongkanCatatanDokter();
     }
 
     public void setDraftTerapiSOAP(String draftTerapiSOAP) {
@@ -2262,6 +2324,10 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         panelDraftSOAPRacikan.setName("panelDraftSOAPRacikan");
         panelDraftSOAPRacikan.setOpaque(false);
         panelDraftSOAPRacikan.setPreferredSize(new java.awt.Dimension(460,100));
+        panelDraftSOAPRacikanV2 = new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelDraftSOAPRacikanV2.setName("panelDraftSOAPRacikanV2");
+        panelDraftSOAPRacikanV2.setOpaque(false);
+        panelDraftSOAPRacikanV2.setPreferredSize(new java.awt.Dimension(460,100));
 
         labelDraftSOAP = new widget.Label();
         labelDraftSOAP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -2271,6 +2337,18 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         labelDraftSOAPRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelDraftSOAPRacikan.setText("Plan SOAP Dokter :");
         labelDraftSOAPRacikan.setPreferredSize(new java.awt.Dimension(100,23));
+        labelDraftSOAPRacikanV2 = new widget.Label();
+        labelDraftSOAPRacikanV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelDraftSOAPRacikanV2.setText("Plan SOAP Dokter :");
+        labelDraftSOAPRacikanV2.setPreferredSize(new java.awt.Dimension(100,23));
+        labelCatatanDokter = new widget.Label();
+        labelCatatanDokter.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelCatatanDokter.setText("Catatan Dokter :");
+        labelCatatanDokter.setPreferredSize(new java.awt.Dimension(100,23));
+        labelCatatanDokterRacikanV2 = new widget.Label();
+        labelCatatanDokterRacikanV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelCatatanDokterRacikanV2.setText("Catatan Dokter :");
+        labelCatatanDokterRacikanV2.setPreferredSize(new java.awt.Dimension(100,23));
 
         areaDraftSOAP = new javax.swing.JTextArea();
         areaDraftSOAP.setEditable(false);
@@ -2284,6 +2362,24 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         areaDraftSOAPRacikan.setWrapStyleWord(true);
         areaDraftSOAPRacikan.setMargin(new java.awt.Insets(6,6,6,6));
         areaDraftSOAPRacikan.setName("areaDraftSOAPRacikan");
+        areaDraftSOAPRacikanV2 = new javax.swing.JTextArea();
+        areaDraftSOAPRacikanV2.setEditable(false);
+        areaDraftSOAPRacikanV2.setLineWrap(true);
+        areaDraftSOAPRacikanV2.setWrapStyleWord(true);
+        areaDraftSOAPRacikanV2.setMargin(new java.awt.Insets(6,6,6,6));
+        areaDraftSOAPRacikanV2.setName("areaDraftSOAPRacikanV2");
+        areaCatatanDokter = new javax.swing.JTextArea();
+        areaCatatanDokter.setLineWrap(true);
+        areaCatatanDokter.setWrapStyleWord(true);
+        areaCatatanDokter.setMargin(new java.awt.Insets(6,6,6,6));
+        areaCatatanDokter.setName("areaCatatanDokter");
+        areaCatatanDokterRacikanV2 = new javax.swing.JTextArea();
+        areaCatatanDokterRacikanV2.setLineWrap(true);
+        areaCatatanDokterRacikanV2.setWrapStyleWord(true);
+        areaCatatanDokterRacikanV2.setMargin(new java.awt.Insets(6,6,6,6));
+        areaCatatanDokterRacikanV2.setName("areaCatatanDokterRacikanV2");
+        pasangSinkronCatatanDokter(areaCatatanDokter);
+        pasangSinkronCatatanDokter(areaCatatanDokterRacikanV2);
 
         scrollDraftSOAP = new widget.ScrollPane();
         scrollDraftSOAP.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
@@ -2293,6 +2389,20 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         scrollDraftSOAPRacikan.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
         scrollDraftSOAPRacikan.setName("scrollDraftSOAPRacikan");
         scrollDraftSOAPRacikan.setViewportView(areaDraftSOAPRacikan);
+        scrollDraftSOAPRacikanV2 = new widget.ScrollPane();
+        scrollDraftSOAPRacikanV2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollDraftSOAPRacikanV2.setName("scrollDraftSOAPRacikanV2");
+        scrollDraftSOAPRacikanV2.setViewportView(areaDraftSOAPRacikanV2);
+        scrollCatatanDokter = new widget.ScrollPane();
+        scrollCatatanDokter.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollCatatanDokter.setName("scrollCatatanDokter");
+        scrollCatatanDokter.setPreferredSize(new java.awt.Dimension(230,185));
+        scrollCatatanDokter.setViewportView(areaCatatanDokter);
+        scrollCatatanDokterRacikanV2 = new widget.ScrollPane();
+        scrollCatatanDokterRacikanV2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollCatatanDokterRacikanV2.setName("scrollCatatanDokterRacikanV2");
+        scrollCatatanDokterRacikanV2.setPreferredSize(new java.awt.Dimension(230,185));
+        scrollCatatanDokterRacikanV2.setViewportView(areaCatatanDokterRacikanV2);
 
         javax.swing.JPanel panelPlanSOAP=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelPlanSOAP.setName("panelPlanSOAP");
@@ -2302,9 +2412,16 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         javax.swing.JSplitPane splitInfoSOAP=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelPlanSOAP,panelTindakanPasien);
         splitInfoSOAP.setName("splitInfoSOAP");
         splitInfoSOAP.setBorder(null);
-        splitInfoSOAP.setResizeWeight(0.35);
-        splitInfoSOAP.setDividerLocation(210);
+        splitInfoSOAP.setResizeWeight(0.68);
+        splitInfoSOAP.setDividerLocation(225);
+        javax.swing.JPanel panelCatatanSOAP=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelCatatanSOAP.setName("panelCatatanSOAP");
+        panelCatatanSOAP.setOpaque(false);
+        panelCatatanSOAP.setPreferredSize(new java.awt.Dimension(230,210));
+        panelCatatanSOAP.add(labelCatatanDokter, java.awt.BorderLayout.PAGE_START);
+        panelCatatanSOAP.add(scrollCatatanDokter, java.awt.BorderLayout.CENTER);
         panelDraftSOAP.add(splitInfoSOAP, java.awt.BorderLayout.CENTER);
+        panelDraftSOAP.add(panelCatatanSOAP, java.awt.BorderLayout.PAGE_END);
 
         javax.swing.JPanel panelPlanSOAPRacikan=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelPlanSOAPRacikan.setName("panelPlanSOAPRacikan");
@@ -2317,6 +2434,25 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         splitInfoSOAPRacikan.setResizeWeight(0.35);
         splitInfoSOAPRacikan.setDividerLocation(210);
         panelDraftSOAPRacikan.add(splitInfoSOAPRacikan, java.awt.BorderLayout.CENTER);
+
+        javax.swing.JPanel panelPlanSOAPRacikanV2=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelPlanSOAPRacikanV2.setName("panelPlanSOAPRacikanV2");
+        panelPlanSOAPRacikanV2.setOpaque(false);
+        panelPlanSOAPRacikanV2.add(labelDraftSOAPRacikanV2, java.awt.BorderLayout.PAGE_START);
+        panelPlanSOAPRacikanV2.add(scrollDraftSOAPRacikanV2, java.awt.BorderLayout.CENTER);
+        javax.swing.JSplitPane splitInfoSOAPRacikanV2=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelPlanSOAPRacikanV2,panelTindakanPasienRacikanV2);
+        splitInfoSOAPRacikanV2.setName("splitInfoSOAPRacikanV2");
+        splitInfoSOAPRacikanV2.setBorder(null);
+        splitInfoSOAPRacikanV2.setResizeWeight(0.68);
+        splitInfoSOAPRacikanV2.setDividerLocation(225);
+        javax.swing.JPanel panelCatatanSOAPRacikanV2=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelCatatanSOAPRacikanV2.setName("panelCatatanSOAPRacikanV2");
+        panelCatatanSOAPRacikanV2.setOpaque(false);
+        panelCatatanSOAPRacikanV2.setPreferredSize(new java.awt.Dimension(230,210));
+        panelCatatanSOAPRacikanV2.add(labelCatatanDokterRacikanV2, java.awt.BorderLayout.PAGE_START);
+        panelCatatanSOAPRacikanV2.add(scrollCatatanDokterRacikanV2, java.awt.BorderLayout.CENTER);
+        panelDraftSOAPRacikanV2.add(splitInfoSOAPRacikanV2, java.awt.BorderLayout.CENTER);
+        panelDraftSOAPRacikanV2.add(panelCatatanSOAPRacikanV2, java.awt.BorderLayout.PAGE_END);
 
         int indexUmum = TabRawat.indexOfComponent(Scroll);
         if(indexUmum>-1) {
@@ -2331,11 +2467,633 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             TabRawat.remove(indexRacikan);
             panelRacikanResep.add(jPanel3, java.awt.BorderLayout.CENTER);
             panelRacikanResep.add(panelDraftSOAPRacikan, java.awt.BorderLayout.EAST);
-            TabRawat.insertTab("Racikan", null, panelRacikanResep, null, indexRacikan);
         }
 
         TabRawat.setSelectedIndex(0);
         tampilkanDraftTerapiSOAP();
+    }
+
+    private void inisialisasiRacikanV2() {
+        tabModeResepRacikanV2=new DefaultTableModel(null,new Object[]{
+            "No","Nama Racikan","Kode Racik","Metode Racik","Jml.Racik","Aturan Pakai","Keterangan"
+        }){
+            @Override public boolean isCellEditable(int rowIndex, int colIndex){
+                return !((colIndex==0)||(colIndex==2));
+            }
+            Class[] types = new Class[] {
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class,
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class
+            };
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        };
+
+        tabModeDetailResepRacikanV2=new DefaultTableModel(null,new Object[]{
+            "Racikan","K","Jumlah","Aturan Pakai","Kode Barang","Nama Barang","Satuan",
+            "Komposisi","Harga(Rp)","Jenis Obat","I.F.","H.Beli","Stok"
+        }){
+            @Override public boolean isCellEditable(int rowIndex, int colIndex){
+                return colIndex==2;
+            }
+            Class[] types = new Class[] {
+                java.lang.Object.class, java.lang.Boolean.class, java.lang.Object.class, java.lang.Object.class,
+                java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class,
+                java.lang.Double.class, java.lang.Object.class, java.lang.Object.class, java.lang.Double.class,
+                java.lang.Double.class
+            };
+            @Override
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        };
+
+        tbRacikanV2=new widget.Table();
+        tbRacikanV2.setName("tbRacikanV2");
+        tbRacikanV2.setModel(tabModeResepRacikanV2);
+        tbRacikanV2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        aturKolomRacikanV2();
+        pasangEditorRacikanV2();
+        tbRacikanV2.setDefaultRenderer(Object.class,warna2);
+        tabModeResepRacikanV2.addTableModelListener((javax.swing.event.TableModelEvent e) -> {
+            if(e.getType()==javax.swing.event.TableModelEvent.UPDATE && e.getFirstRow()>=0){
+                if(e.getColumn()==1 || e.getColumn()==3){
+                    sinkronLabelDetailRacikanV2(e.getFirstRow());
+                    tampilkanLabelRacikanAktifV2();
+                    tampilkanDetailRacikanV2Aktif();
+                }
+                if(e.getColumn()==3){
+                    isiKodeMetodeRacikV2(e.getFirstRow());
+                }
+            }
+        });
+        tbRacikanV2.getSelectionModel().addListSelectionListener((ListSelectionEvent e) -> {
+            if(!e.getValueIsAdjusting()){
+                tampilkanLabelRacikanAktifV2();
+                tampilkanDetailRacikanV2Aktif();
+            }
+        });
+        tbRacikanV2.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyPressed(KeyEvent evt) {
+                tbRacikanV2KeyPressed(evt);
+            }
+        });
+
+        tbDetailRacikanV2=new widget.Table();
+        tbDetailRacikanV2.setName("tbDetailRacikanV2");
+        tbDetailRacikanV2.setModel(tabModeDetailResepRacikanV2);
+        tbDetailRacikanV2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tbDetailRacikanV2.setComponentPopupMenu(Popup);
+        tbDetailRacikanV2.setRowSorter(new javax.swing.table.TableRowSorter<DefaultTableModel>(tabModeDetailResepRacikanV2));
+        aturKolomDetailRacikanV2();
+        tbDetailRacikanV2.setDefaultRenderer(Object.class,warna);
+        tbDetailRacikanV2.addPropertyChangeListener(evt -> {
+            if(this.isVisible()==true || modeEmbedded){
+                hitungResep();
+            }
+        });
+
+        labelRacikanAktifV2=new widget.Label();
+        labelRacikanAktifV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelRacikanAktifV2.setText("Obat untuk racikan: pilih/isi racikan terlebih dahulu");
+        labelRacikanAktifV2.setPreferredSize(new java.awt.Dimension(100,23));
+
+        widget.ScrollPane scrollHeader=new widget.ScrollPane();
+        scrollHeader.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollHeader.setName("scrollRacikanV2");
+        scrollHeader.setOpaque(true);
+        scrollHeader.setPreferredSize(new java.awt.Dimension(454, 92));
+        scrollHeader.setViewportView(tbRacikanV2);
+
+        widget.ScrollPane scrollDetail=new widget.ScrollPane();
+        scrollDetail.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollDetail.setName("scrollDetailRacikanV2");
+        scrollDetail.setOpaque(true);
+        scrollDetail.setViewportView(tbDetailRacikanV2);
+
+        javax.swing.JPanel panelDetail=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelDetail.setName("panelDetailRacikanV2");
+        panelDetail.setOpaque(false);
+        panelDetail.add(labelRacikanAktifV2, java.awt.BorderLayout.PAGE_START);
+        panelDetail.add(scrollDetail, java.awt.BorderLayout.CENTER);
+
+        javax.swing.JPanel panelTabelRacikanV2=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelTabelRacikanV2.setName("panelTabelRacikanV2");
+        panelTabelRacikanV2.setOpaque(false);
+        panelTabelRacikanV2.add(scrollHeader, java.awt.BorderLayout.PAGE_START);
+        panelTabelRacikanV2.add(panelDetail, java.awt.BorderLayout.CENTER);
+
+        panelRacikanV2=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelRacikanV2.setName("panelRacikanV2");
+        panelRacikanV2.setOpaque(false);
+        panelRacikanV2.add(panelTabelRacikanV2, java.awt.BorderLayout.CENTER);
+        panelRacikanV2.add(panelDraftSOAPRacikanV2, java.awt.BorderLayout.EAST);
+        TabRawat.addTab("Racikan V2", panelRacikanV2);
+        sembunyikanTabRacikanLama();
+        tampilkanDetailRacikanV2Aktif();
+    }
+
+    private void sembunyikanTabRacikanLama() {
+        int index=TabRawat.indexOfComponent(jPanel3);
+        if(index>-1) {
+            TabRawat.remove(index);
+        }
+
+        index=TabRawat.indexOfComponent(panelRacikanResep);
+        if(index>-1) {
+            TabRawat.remove(index);
+        }
+
+        if(TabRawat.getSelectedIndex()<0 && TabRawat.getTabCount()>0) {
+            TabRawat.setSelectedIndex(0);
+        }
+    }
+
+    private boolean tabUmumAktif() {
+        return TabRawat.getSelectedComponent()==panelUmumResep || TabRawat.getSelectedComponent()==Scroll;
+    }
+
+    private boolean tabRacikanLamaAktif() {
+        return TabRawat.getSelectedComponent()==panelRacikanResep || TabRawat.getSelectedComponent()==jPanel3;
+    }
+
+    private boolean tabRacikanV2Aktif() {
+        return TabRawat.getSelectedComponent()==panelRacikanV2;
+    }
+
+    private void pasangSinkronCatatanDokter(javax.swing.JTextArea area) {
+        area.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                sinkronCatatanDokter(area);
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                sinkronCatatanDokter(area);
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                sinkronCatatanDokter(area);
+            }
+        });
+    }
+
+    private void sinkronCatatanDokter(javax.swing.JTextArea sumber) {
+        if(sedangSinkronCatatanDokter){
+            return;
+        }
+        sedangSinkronCatatanDokter=true;
+        try {
+            catatanResepDokter=sumber.getText();
+            if(areaCatatanDokter!=null && sumber!=areaCatatanDokter && !areaCatatanDokter.getText().equals(catatanResepDokter)){
+                areaCatatanDokter.setText(catatanResepDokter);
+            }
+            if(areaCatatanDokterRacikanV2!=null && sumber!=areaCatatanDokterRacikanV2 && !areaCatatanDokterRacikanV2.getText().equals(catatanResepDokter)){
+                areaCatatanDokterRacikanV2.setText(catatanResepDokter);
+            }
+        } finally {
+            sedangSinkronCatatanDokter=false;
+        }
+    }
+
+    private void kosongkanCatatanDokter() {
+        catatanResepDokter="";
+        sedangSinkronCatatanDokter=true;
+        try {
+            if(areaCatatanDokter!=null){
+                areaCatatanDokter.setText("");
+            }
+            if(areaCatatanDokterRacikanV2!=null){
+                areaCatatanDokterRacikanV2.setText("");
+            }
+        } finally {
+            sedangSinkronCatatanDokter=false;
+        }
+    }
+
+    private void muatCatatanResepDokter(String noResep) {
+        pastikanTabelCatatanResepDokter();
+        catatanResepDokter=Sequel.cariIsi("select catatan from catatan_resep_dokter where no_resep=?",noResep);
+        sedangSinkronCatatanDokter=true;
+        try {
+            if(areaCatatanDokter!=null){
+                areaCatatanDokter.setText(catatanResepDokter);
+            }
+            if(areaCatatanDokterRacikanV2!=null){
+                areaCatatanDokterRacikanV2.setText(catatanResepDokter);
+            }
+        } finally {
+            sedangSinkronCatatanDokter=false;
+        }
+    }
+
+    private void aturKolomRacikanV2() {
+        for (int kolom = 0; kolom < 7; kolom++) {
+            TableColumn column = tbRacikanV2.getColumnModel().getColumn(kolom);
+            if(kolom==0){
+                column.setPreferredWidth(25);
+            }else if(kolom==1){
+                column.setPreferredWidth(250);
+            }else if(kolom==2){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(kolom==3){
+                column.setPreferredWidth(100);
+            }else if(kolom==4){
+                column.setPreferredWidth(60);
+            }else if(kolom==5){
+                column.setPreferredWidth(200);
+            }else if(kolom==6){
+                column.setPreferredWidth(250);
+            }
+        }
+    }
+
+    private void pasangEditorRacikanV2() {
+        muatPilihanMetodeRacikV2();
+        muatPilihanAturanPakaiV2();
+
+        javax.swing.JComboBox<String> cmbMetode=new javax.swing.JComboBox<>();
+        cmbMetode.addItem("");
+        for(String[] metode:pilihanMetodeRacikV2){
+            cmbMetode.addItem(metode[1]);
+        }
+        tbRacikanV2.getColumnModel().getColumn(3).setCellEditor(new javax.swing.DefaultCellEditor(cmbMetode));
+
+        javax.swing.JComboBox<String> cmbAturan=new javax.swing.JComboBox<>();
+        cmbAturan.setEditable(true);
+        cmbAturan.addItem("");
+        for(String aturan:pilihanAturanPakaiV2){
+            cmbAturan.addItem(aturan);
+        }
+        tbRacikanV2.getColumnModel().getColumn(5).setCellEditor(new javax.swing.DefaultCellEditor(cmbAturan));
+    }
+
+    private void muatPilihanMetodeRacikV2() {
+        pilihanMetodeRacikV2.clear();
+        try(PreparedStatement psMetode=koneksi.prepareStatement("select kd_racik,nm_racik from metode_racik order by nm_racik");
+            ResultSet rsMetode=psMetode.executeQuery()){
+            while(rsMetode.next()){
+                pilihanMetodeRacikV2.add(new String[]{rsMetode.getString("kd_racik"),rsMetode.getString("nm_racik")});
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Metode Racik V2 : "+e);
+        }
+    }
+
+    private void muatPilihanAturanPakaiV2() {
+        pilihanAturanPakaiV2.clear();
+        try(PreparedStatement psAturan=koneksi.prepareStatement("select aturan from master_aturan_pakai order by aturan");
+            ResultSet rsAturan=psAturan.executeQuery()){
+            while(rsAturan.next()){
+                pilihanAturanPakaiV2.add(rsAturan.getString("aturan"));
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Aturan Pakai V2 : "+e);
+        }
+    }
+
+    private void isiKodeMetodeRacikV2(int row) {
+        if(row<0 || row>=tbRacikanV2.getRowCount()){
+            return;
+        }
+        String metode=tbRacikanV2.getValueAt(row,3).toString();
+        for(String[] pilihan:pilihanMetodeRacikV2){
+            if(pilihan[1].equals(metode)){
+                tbRacikanV2.setValueAt(pilihan[0],row,2);
+                return;
+            }
+        }
+        tbRacikanV2.setValueAt("",row,2);
+    }
+
+    private void aturKolomDetailRacikanV2() {
+        for (int kolom = 0; kolom < 13; kolom++) {
+            TableColumn column = tbDetailRacikanV2.getColumnModel().getColumn(kolom);
+            if(kolom==0){
+                column.setPreferredWidth(155);
+            }else if(kolom==1){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(kolom==2){
+                column.setPreferredWidth(55);
+            }else if(kolom==3){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(kolom==4){
+                column.setPreferredWidth(75);
+            }else if(kolom==5){
+                column.setPreferredWidth(240);
+            }else if(kolom==6){
+                column.setPreferredWidth(70);
+            }else if(kolom==7){
+                column.setPreferredWidth(110);
+            }else if(kolom==8){
+                column.setPreferredWidth(85);
+            }else if(kolom==9){
+                column.setPreferredWidth(110);
+            }else if(kolom==10){
+                column.setPreferredWidth(100);
+            }else if(kolom==11){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+            }else if(kolom==12){
+                column.setPreferredWidth(50);
+            }
+        }
+    }
+
+    private void tambahRacikanV2() {
+        int nomor=tabModeResepRacikan.getRowCount()+tabModeResepRacikanV2.getRowCount()+1;
+        if(nomor==99){
+            JOptionPane.showMessageDialog(null,"Maksimal 98 Racikan..!!");
+        }else{
+            tabModeResepRacikanV2.addRow(new Object[]{""+nomor,"Racikan "+nomor,"","",1,"",""});
+            tbRacikanV2.setRowSelectionInterval(tabModeResepRacikanV2.getRowCount()-1,tabModeResepRacikanV2.getRowCount()-1);
+            fokusKolomRacikanV2(tabModeResepRacikanV2.getRowCount()-1,3);
+            tampilkanLabelRacikanAktifV2();
+            tampilkanDetailRacikanV2Aktif();
+        }
+    }
+
+    private void hapusRacikanV2() {
+        selesaiEditRacikanV2();
+        if(tbRacikanV2.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Silahkan pilih racikan V2 yang mau dihapus..!!");
+            return;
+        }
+        String noRacik=tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),0).toString();
+        boolean adaObat=false;
+        for(int baris=0;baris<tabModeDetailResepRacikanV2.getRowCount();baris++){
+            if(tabModeDetailResepRacikanV2.getValueAt(baris,0).toString().startsWith(noRacik+" - ")&&Valid.SetAngka(tabModeDetailResepRacikanV2.getValueAt(baris,2).toString())>0){
+                adaObat=true;
+            }
+        }
+        if(adaObat){
+            JOptionPane.showMessageDialog(null,"Maaf racikan sudah memiliki obat, bersihkan jumlah obatnya dulu..!!");
+            return;
+        }
+        for(int baris=tabModeDetailResepRacikanV2.getRowCount()-1;baris>=0;baris--){
+            if(tabModeDetailResepRacikanV2.getValueAt(baris,0).toString().startsWith(noRacik+" - ")){
+                tabModeDetailResepRacikanV2.removeRow(baris);
+            }
+        }
+        tabModeResepRacikanV2.removeRow(tbRacikanV2.getSelectedRow());
+        tampilkanLabelRacikanAktifV2();
+        tampilkanDetailRacikanV2Aktif();
+    }
+
+    private boolean validasiRacikanAktifV2() {
+        selesaiEditRacikanV2();
+        if(tbRacikanV2.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Silahkan tambah racikan V2 dulu..!!");
+            return false;
+        }
+        if(tbRacikanV2.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Silahkan pilih racikan V2 yang akan diisi obat..!!");
+            return false;
+        }
+        if(tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),1).toString().trim().equals("")||
+                tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),2).toString().trim().equals("")||
+                tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),3).toString().trim().equals("")||
+                tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),4).toString().trim().equals("")||
+                tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),5).toString().trim().equals("")){
+            JOptionPane.showMessageDialog(null,"Lengkapi Nama Racikan, Metode Racik, Jml.Racik, dan Aturan Pakai dulu..!!");
+            fokusKolomRacikanV2(tbRacikanV2.getSelectedRow(),kolomRacikanV2BelumLengkap(tbRacikanV2.getSelectedRow()));
+            return false;
+        }
+        return true;
+    }
+
+    private int kolomRacikanV2BelumLengkap(int row) {
+        int[] kolomCek=new int[]{1,3,4,5};
+        for(int kolom:kolomCek){
+            if(tbRacikanV2.getValueAt(row,kolom).toString().trim().equals("")){
+                return kolom;
+            }
+        }
+        if(tbRacikanV2.getValueAt(row,2).toString().trim().equals("")){
+            return 3;
+        }
+        return 1;
+    }
+
+    private void fokusKolomRacikanV2(int row,int kolom) {
+        if(row<0 || row>=tbRacikanV2.getRowCount()){
+            return;
+        }
+        tbRacikanV2.requestFocus();
+        tbRacikanV2.setRowSelectionInterval(row,row);
+        tbRacikanV2.setColumnSelectionInterval(kolom,kolom);
+        tbRacikanV2.editCellAt(row,kolom);
+        if(tbRacikanV2.getEditorComponent()!=null){
+            tbRacikanV2.getEditorComponent().requestFocus();
+            if(tbRacikanV2.getEditorComponent() instanceof javax.swing.JComboBox){
+                ((javax.swing.JComboBox)tbRacikanV2.getEditorComponent()).showPopup();
+            }
+        }
+    }
+
+    private void selesaiEditRacikanV2() {
+        try {
+            if(tbRacikanV2!=null && tbRacikanV2.isEditing()){
+                tbRacikanV2.getCellEditor().stopCellEditing();
+            }
+            if(tbDetailRacikanV2!=null && tbDetailRacikanV2.isEditing()){
+                tbDetailRacikanV2.getCellEditor().stopCellEditing();
+            }
+        } catch (Exception e) {
+        }
+    }
+
+    private void sinkronLabelDetailRacikanV2(int row) {
+        if(row<0 || row>=tbRacikanV2.getRowCount() || tabModeDetailResepRacikanV2==null){
+            return;
+        }
+        String noRacik=tbRacikanV2.getValueAt(row,0).toString();
+        String labelBaru=noRacik+" - "+tbRacikanV2.getValueAt(row,1).toString();
+        for(int baris=0;baris<tabModeDetailResepRacikanV2.getRowCount();baris++){
+            if(tabModeDetailResepRacikanV2.getValueAt(baris,0).toString().startsWith(noRacik+" - ")){
+                tabModeDetailResepRacikanV2.setValueAt(labelBaru,baris,0);
+            }
+        }
+    }
+
+    private void tampilkanDetailRacikanV2Aktif() {
+        if(tbDetailRacikanV2==null || tbDetailRacikanV2.getRowSorter()==null){
+            return;
+        }
+        final String noRacik=ambilNomorRacikanAktifV2();
+        javax.swing.table.TableRowSorter sorter=(javax.swing.table.TableRowSorter)tbDetailRacikanV2.getRowSorter();
+        if(noRacik.equals("")){
+            sorter.setRowFilter(new javax.swing.RowFilter<DefaultTableModel,Integer>() {
+                @Override
+                public boolean include(javax.swing.RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                    return false;
+                }
+            });
+        }else{
+            sorter.setRowFilter(new javax.swing.RowFilter<DefaultTableModel,Integer>() {
+                @Override
+                public boolean include(javax.swing.RowFilter.Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                    return entry.getStringValue(0).startsWith(noRacik+" - ");
+                }
+            });
+        }
+    }
+
+    private void tampilkanLabelRacikanAktifV2() {
+        if(labelRacikanAktifV2==null){
+            return;
+        }
+        if(tbRacikanV2.getSelectedRow()==-1){
+            labelRacikanAktifV2.setText("Obat untuk racikan: pilih/isi racikan terlebih dahulu");
+        }else{
+            labelRacikanAktifV2.setText("Obat untuk Racikan "+tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),0)+" - "+tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),1));
+        }
+    }
+
+    private String ambilNomorRacikanAktifV2() {
+        if(tbRacikanV2.getSelectedRow()==-1){
+            return "";
+        }
+        return tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),0).toString();
+    }
+
+    private String labelRacikanV2Aktif() {
+        return ambilNomorRacikanAktifV2()+" - "+tbRacikanV2.getValueAt(tbRacikanV2.getSelectedRow(),1).toString();
+    }
+
+    private String ambilNoRacikDariLabelV2(String label) {
+        if(label==null){
+            return "";
+        }
+        int batas=label.indexOf(" - ");
+        return batas>-1 ? label.substring(0,batas).trim() : label.trim();
+    }
+
+    private void tbRacikanV2KeyPressed(KeyEvent evt) {
+        if(tbRacikanV2.getRowCount()!=0){
+            try {
+                i=tbRacikanV2.getSelectedColumn();
+                if(evt.getKeyCode()==KeyEvent.VK_ENTER){
+                    if(tbRacikanV2.isEditing()){
+                        tbRacikanV2.getCellEditor().stopCellEditing();
+                    }
+                    if(i<5){
+                        fokusKolomRacikanV2(tbRacikanV2.getSelectedRow(),kolomRacikanV2Berikutnya(i));
+                    }else if(validasiRacikanAktifV2()){
+                        tampilCacheResepRacikanV2();
+                    }
+                    evt.consume();
+                }else if(evt.getKeyCode()==KeyEvent.VK_RIGHT){
+                    if(i<5){
+                        fokusKolomRacikanV2(tbRacikanV2.getSelectedRow(),kolomRacikanV2Berikutnya(i));
+                    }
+                    evt.consume();
+                }
+            } catch (Exception e) {
+            }
+        }
+    }
+
+    private int kolomRacikanV2Berikutnya(int kolomSaatIni) {
+        if(kolomSaatIni<3){
+            return 3;
+        }else if(kolomSaatIni<4){
+            return 4;
+        }else if(kolomSaatIni<5){
+            return 5;
+        }
+        return 5;
+    }
+
+    private void tampilCacheResepRacikanV2() {
+        selesaiEditRacikanV2();
+        String labelRacikan=labelRacikanV2Aktif();
+        String noRacik=ambilNomorRacikanAktifV2();
+        List<Object[]> pilihanLama=new ArrayList<>();
+        for(int baris=tabModeDetailResepRacikanV2.getRowCount()-1;baris>=0;baris--){
+            if(tabModeDetailResepRacikanV2.getValueAt(baris,0).toString().startsWith(noRacik+" - ")){
+                if(Valid.SetAngka(tabModeDetailResepRacikanV2.getValueAt(baris,2).toString())>0){
+                    pilihanLama.add(new Object[]{
+                        tabModeDetailResepRacikanV2.getValueAt(baris,4).toString(),
+                        tabModeDetailResepRacikanV2.getValueAt(baris,1),
+                        tabModeDetailResepRacikanV2.getValueAt(baris,2)
+                    });
+                }
+                tabModeDetailResepRacikanV2.removeRow(baris);
+            }
+        }
+        try{
+            File cache=new File("./cache/peresepandokter.iyem");
+            if(!cache.exists()){
+                buatcacheresep();
+            }
+            myObj = new FileReader("./cache/peresepandokter.iyem");
+            root = mapper.readTree(myObj);
+            response = root.path("peresepandokter");
+            if(response.isArray()){
+                for(JsonNode list:response){
+                    if(TCari.getText().trim().equals("")||list.path("KodeBarang").asText().toLowerCase().contains(TCari.getText().toLowerCase())||
+                            list.path("NamaBarang").asText().toLowerCase().contains(TCari.getText().toLowerCase())||
+                            list.path("Jenis").asText().toLowerCase().contains(TCari.getText().toLowerCase())||
+                            list.path("Kandungan").asText().toLowerCase().contains(TCari.getText().toLowerCase())){
+                        Object[] nilaiPilihan=pilihanRacikanV2(pilihanLama,list.path("KodeBarang").asText());
+                        tabModeDetailResepRacikanV2.addRow(new Object[] {
+                            labelRacikan,nilaiPilihan[0],nilaiPilihan[1],"",list.path("KodeBarang").asText(),list.path("NamaBarang").asText(),
+                            list.path("Satuan").asText(),list.path("Kandungan").asText(),ambilHargaCacheResep(list),
+                            list.path("Jenis").asText(),list.path("IndustriFarmasi").asText(),Double.parseDouble(list.path("HargaBeli").asText()),
+                            Double.parseDouble(list.path("Stok").asText())
+                        });
+                    }
+                }
+            }
+            myObj.close();
+        }catch(Exception e){
+            System.out.println("Notifikasi Racikan V2 : "+e);
+        }
+        tampilkanDetailRacikanV2Aktif();
+        hitungResep();
+    }
+
+    private Object[] pilihanRacikanV2(List<Object[]> pilihanLama, String kodeBarang) {
+        for(Object[] pilihanData:pilihanLama){
+            if(pilihanData[0].toString().equals(kodeBarang)){
+                return new Object[]{pilihanData[1],pilihanData[2]};
+            }
+        }
+        return new Object[]{false,""};
+    }
+
+    private double ambilHargaCacheResep(JsonNode list) {
+        try {
+            if(Jeniskelas.getSelectedItem().equals("Karyawan")){
+                return Double.parseDouble(list.path("HargaKaryawan").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("Rawat Jalan")){
+                return Double.parseDouble(list.path("HargaRalan").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("Beli Luar")){
+                return Double.parseDouble(list.path("HargaBeliLuar").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("Utama/BPJS")){
+                return Double.parseDouble(list.path("HargaUtama").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("Kelas 1")){
+                return Double.parseDouble(list.path("HargaKelas1").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("Kelas 2")){
+                return Double.parseDouble(list.path("HargaKelas2").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("Kelas 3")){
+                return Double.parseDouble(list.path("HargaKelas3").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("VIP")){
+                return Double.parseDouble(list.path("HargaVIP").asText());
+            }else if(Jeniskelas.getSelectedItem().equals("VVIP")){
+                return Double.parseDouble(list.path("HargaVVIP").asText());
+            }
+        } catch (Exception e) {
+        }
+        return 0;
     }
 
     private void inisialisasiPanelTindakanPasien() {
@@ -2363,8 +3121,18 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         tbTindakanPasienRacikan.setModel(tabModeTindakan);
         tbTindakanPasienRacikan.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbTindakanPasienRacikan.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        labelTindakanPasienRacikanV2 = new widget.Label();
+        labelTindakanPasienRacikanV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelTindakanPasienRacikanV2.setText("Tindakan yang sudah diinput :");
+        labelTindakanPasienRacikanV2.setPreferredSize(new java.awt.Dimension(100,23));
+        tbTindakanPasienRacikanV2=new widget.Table();
+        tbTindakanPasienRacikanV2.setName("tbTindakanPasienRacikanV2");
+        tbTindakanPasienRacikanV2.setModel(tabModeTindakan);
+        tbTindakanPasienRacikanV2.setPreferredScrollableViewportSize(new Dimension(500,500));
+        tbTindakanPasienRacikanV2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         aturKolomTindakanPasien(tbTindakanPasien);
         aturKolomTindakanPasien(tbTindakanPasienRacikan);
+        aturKolomTindakanPasien(tbTindakanPasienRacikanV2);
 
         scrollTindakanPasien=new widget.ScrollPane();
         scrollTindakanPasien.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
@@ -2376,6 +3144,11 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         scrollTindakanPasienRacikan.setName("scrollTindakanPasienRacikan");
         scrollTindakanPasienRacikan.setOpaque(true);
         scrollTindakanPasienRacikan.setViewportView(tbTindakanPasienRacikan);
+        scrollTindakanPasienRacikanV2=new widget.ScrollPane();
+        scrollTindakanPasienRacikanV2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(255,255,255)));
+        scrollTindakanPasienRacikanV2.setName("scrollTindakanPasienRacikanV2");
+        scrollTindakanPasienRacikanV2.setOpaque(true);
+        scrollTindakanPasienRacikanV2.setViewportView(tbTindakanPasienRacikanV2);
 
         panelTindakanPasien=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelTindakanPasien.setName("panelTindakanPasien");
@@ -2387,6 +3160,11 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         panelTindakanPasienRacikan.setOpaque(false);
         panelTindakanPasienRacikan.add(labelTindakanPasienRacikan, java.awt.BorderLayout.PAGE_START);
         panelTindakanPasienRacikan.add(scrollTindakanPasienRacikan, java.awt.BorderLayout.CENTER);
+        panelTindakanPasienRacikanV2=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        panelTindakanPasienRacikanV2.setName("panelTindakanPasienRacikanV2");
+        panelTindakanPasienRacikanV2.setOpaque(false);
+        panelTindakanPasienRacikanV2.add(labelTindakanPasienRacikanV2, java.awt.BorderLayout.PAGE_START);
+        panelTindakanPasienRacikanV2.add(scrollTindakanPasienRacikanV2, java.awt.BorderLayout.CENTER);
     }
 
     private void aturKolomTindakanPasien(JTable table){
@@ -2498,6 +3276,10 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         if(areaDraftSOAPRacikan!=null) {
             areaDraftSOAPRacikan.setText(isi);
             areaDraftSOAPRacikan.setCaretPosition(0);
+        }
+        if(areaDraftSOAPRacikanV2!=null) {
+            areaDraftSOAPRacikanV2.setText(isi);
+            areaDraftSOAPRacikanV2.setCaretPosition(0);
         }
     }
 
@@ -2945,6 +3727,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     public void tampilobat(String no_resep) {
         NoResep.setText(no_resep);
         ubah=true;
+        muatCatatanResepDokter(no_resep);
         try {
             Valid.tabelKosong(tabModeResep);
             Valid.tabelKosong(tabModeResepRacikan);
@@ -3751,6 +4534,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
     
     public void tampilobat2(String no_resep) {
+        kosongkanCatatanDokter();
         try {
             Valid.tabelKosong(tabModeResep);
             Valid.tabelKosong(tabModeResepRacikan);
@@ -4510,6 +5294,18 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                 }
             }
 
+            for(i=0;i<tbRacikanV2.getRowCount();i++){
+                if(Valid.SetAngka(tbRacikanV2.getValueAt(i,4).toString())>0){
+                    if(Sequel.menyimpantf2("resep_dokter_racikan","?,?,?,?,?,?,?","resep obat racikan v2",7,new String[]{
+                       NoResep.getText(),tbRacikanV2.getValueAt(i,0).toString(),tbRacikanV2.getValueAt(i,1).toString(),
+                       tbRacikanV2.getValueAt(i,2).toString(),tbRacikanV2.getValueAt(i,4).toString(),
+                       tbRacikanV2.getValueAt(i,5).toString(),tbRacikanV2.getValueAt(i,6).toString()
+                    })==false){
+                        sukses=false;
+                    }
+                }
+            }
+
             for(i=0;i<tbDetailResepObatRacikan.getRowCount();i++){ 
                 if(Valid.SetAngka(tbDetailResepObatRacikan.getValueAt(i,13).toString())>0){
                     if(Sequel.menyimpantf2("resep_dokter_racikan_detail","?,?,?,?,?,?,?","resep dokter racikan detail",7,new String[]{
@@ -4521,9 +5317,52 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     } 
                 }
             }
+
+            for(i=0;i<tabModeDetailResepRacikanV2.getRowCount();i++){
+                if(Valid.SetAngka(tabModeDetailResepRacikanV2.getValueAt(i,2).toString())>0){
+                    if(Sequel.menyimpantf2("resep_dokter_racikan_detail","?,?,?,?,?,?,?","resep dokter racikan v2 detail",7,new String[]{
+                        NoResep.getText(),ambilNoRacikDariLabelV2(tabModeDetailResepRacikanV2.getValueAt(i,0).toString()),tabModeDetailResepRacikanV2.getValueAt(i,4).toString(),
+                        "1","1","",tabModeDetailResepRacikanV2.getValueAt(i,2).toString()
+                    })==false){
+                        sukses=false;
+                    }
+                }
+            }
+            simpanCatatanResepDokter();
         } catch (Exception e) {
             System.out.println("Notif : "+e);
         } 
+    }
+
+    private void pastikanTabelCatatanResepDokter() {
+        try {
+            Sequel.queryu2(
+                "create table if not exists catatan_resep_dokter ("+
+                "no_resep varchar(14) not null,"+
+                "catatan text,"+
+                "tanggal_update datetime not null,"+
+                "primary key (no_resep)) engine=InnoDB default charset=latin1"
+            );
+        } catch (Exception e) {
+            System.out.println("Notifikasi Catatan Resep Dokter : "+e);
+        }
+    }
+
+    private void simpanCatatanResepDokter() {
+        try {
+            Sequel.queryu2("delete from catatan_resep_dokter where no_resep=?",1,new String[]{NoResep.getText()});
+            if(catatanResepDokter.trim().equals("")){
+                return;
+            }
+            if(Sequel.menyimpantf2("catatan_resep_dokter","?,?,now()","Catatan Resep Dokter",2,new String[]{
+                NoResep.getText(),catatanResepDokter.trim()
+            })==false){
+                sukses=false;
+            }
+        } catch (Exception e) {
+            sukses=false;
+            System.out.println("Notifikasi Catatan Resep Dokter : "+e);
+        }
     }
     
     public void MatikanJam(){
@@ -4593,6 +5432,20 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     y=0;
                 }
                 ttl=ttl+y;
+            }
+        }
+        if(tabModeDetailResepRacikanV2!=null){
+            row2=tabModeDetailResepRacikanV2.getRowCount();
+            for(r=0;r<row2;r++){
+                if(Valid.SetAngka(tabModeDetailResepRacikanV2.getValueAt(r,2).toString())>0){
+                    try {
+                        y=Math.round(Double.parseDouble(tabModeDetailResepRacikanV2.getValueAt(r,2).toString())*
+                          Double.parseDouble(tabModeDetailResepRacikanV2.getValueAt(r,8).toString()));
+                    } catch (Exception e) {
+                        y=0;
+                    }
+                    ttl=ttl+y;
+                }
             }
         }
         LTotal.setText(Valid.SetAngka(ttl));

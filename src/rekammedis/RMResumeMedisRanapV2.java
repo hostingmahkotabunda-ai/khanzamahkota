@@ -29,6 +29,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
@@ -56,6 +57,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
@@ -162,6 +164,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
     private final TextBox TCari = buatTextBox(28);
     private final Table tbData = new Table();
     private final JTabbedPane TabUtama = new JTabbedPane();
+    private JScrollPane ScrollFormUtama;
     private final JPopupMenu PopupData = new JPopupMenu();
     private final JMenuItem MnBukaForm = new JMenuItem("Buka/Edit Form");
     private final JMenuItem MnPreviewJasper = new JMenuItem("Preview Jasper");
@@ -245,9 +248,9 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         panelUtama.add(buatPanelHero(), BorderLayout.NORTH);
         panelUtama.add(TabUtama, BorderLayout.CENTER);
 
-        JScrollPane scrollForm = new JScrollPane(bangunFormPanel());
-        aturScrollPane(scrollForm, true);
-        TabUtama.addTab("Form Resume", scrollForm);
+        ScrollFormUtama = new JScrollPane(bangunFormPanel());
+        aturScrollPane(ScrollFormUtama, true);
+        TabUtama.addTab("Form Resume", ScrollFormUtama);
         TabUtama.addTab("Data Tersimpan", bangunPanelList());
 
         getContentPane().add(panelUtama, BorderLayout.CENTER);
@@ -520,10 +523,6 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         aturTextReadonly(TPasien);
         aturTextReadonly(TRuang);
         aturTextReadonly(TPenjab);
-        aturTextReadonly(TTglMasuk);
-        aturTextReadonly(TJamMasuk);
-        aturTextReadonly(TTglKeluar);
-        aturTextReadonly(TJamKeluar);
         aturTextReadonly(TKodeDokter);
         aturTextReadonly(TNamaDokter);
     }
@@ -805,6 +804,12 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         }
         if (ambil(TDiagnosaKeluar).isEmpty()) {
             Valid.textKosong(TDiagnosaKeluar, "Diagnosa Keluar");
+            return false;
+        }
+        if (!validasiTanggalJamMasuk()) {
+            return false;
+        }
+        if (!validasiTanggalJamKeluar()) {
             return false;
         }
         if (DTPTanggalResume.getDate() == null) {
@@ -1144,8 +1149,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             "if(kelurahan.nm_kel is null or kelurahan.nm_kel='', '', concat(', ',kelurahan.nm_kel))," +
             "if(kecamatan.nm_kec is null or kecamatan.nm_kec='', '', concat(', ',kecamatan.nm_kec))," +
             "if(kabupaten.nm_kab is null or kabupaten.nm_kab='', '', concat(', ',kabupaten.nm_kab))) as alamat_lengkap," +
-            "ifnull(date_format(m.tgl_masuk,'%d-%m-%Y'),'') as tgl_masuk_format," +
-            "ifnull(date_format(m.tgl_keluar,'%d-%m-%Y'),'') as tgl_keluar_format," +
+            "if(m.tgl_masuk is null,'',concat(date_format(m.tgl_masuk,'%d-%m-%Y'),' ',left(ifnull(m.jam_masuk,''),5))) as tgl_masuk_format," +
+            "if(m.tgl_keluar is null,'',concat(date_format(m.tgl_keluar,'%d-%m-%Y'),' ',left(ifnull(m.jam_keluar,''),5))) as tgl_keluar_format," +
             "ifnull(m.alasan_rawat,'') as alasan_rawat," +
             "ifnull(m.diagnosa_masuk,'') as diagnosa_masuk," +
             "ifnull(m.icd10_masuk,'') as icd10_masuk," +
@@ -1471,6 +1476,83 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         }
     }
 
+    private boolean validasiTanggalJamKeluar() {
+        String tanggal = normalisasiTanggal(TTglKeluar.getText());
+        if (tanggal.equals("")) {
+            JOptionPane.showMessageDialog(this, "Format tanggal keluar tidak valid. Gunakan yyyy-MM-dd atau dd-MM-yyyy.");
+            TTglKeluar.requestFocus();
+            return false;
+        }
+        String jam = normalisasiJam(TJamKeluar.getText());
+        if (jam.equals("")) {
+            JOptionPane.showMessageDialog(this, "Format jam keluar tidak valid. Gunakan HH:mm atau HH:mm:ss.");
+            TJamKeluar.requestFocus();
+            return false;
+        }
+        TTglKeluar.setText(tanggal);
+        TJamKeluar.setText(jam);
+        return true;
+    }
+
+    private boolean validasiTanggalJamMasuk() {
+        String tanggal = normalisasiTanggal(TTglMasuk.getText());
+        if (tanggal.equals("")) {
+            JOptionPane.showMessageDialog(this, "Format tanggal masuk tidak valid. Gunakan yyyy-MM-dd atau dd-MM-yyyy.");
+            TTglMasuk.requestFocus();
+            return false;
+        }
+        String jam = normalisasiJam(TJamMasuk.getText());
+        if (jam.equals("")) {
+            JOptionPane.showMessageDialog(this, "Format jam masuk tidak valid. Gunakan HH:mm atau HH:mm:ss.");
+            TJamMasuk.requestFocus();
+            return false;
+        }
+        TTglMasuk.setText(tanggal);
+        TJamMasuk.setText(jam);
+        return true;
+    }
+
+    private String normalisasiTanggal(String input) {
+        if (input == null || input.trim().equals("")) {
+            return "";
+        }
+        input = input.trim().replace("/", "-");
+        try {
+            if (input.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                java.sql.Date.valueOf(input);
+                return input;
+            }
+            if (input.matches("\\d{2}-\\d{2}-\\d{4}")) {
+                String tanggal = Valid.SetTgl(input);
+                java.sql.Date.valueOf(tanggal);
+                return tanggal;
+            }
+        } catch (Exception e) {
+            return "";
+        }
+        return "";
+    }
+
+    private String normalisasiJam(String input) {
+        if (input == null || input.trim().equals("")) {
+            return "";
+        }
+        input = input.trim().replace(".", ":");
+        try {
+            if (input.matches("\\d{2}:\\d{2}")) {
+                java.sql.Time.valueOf(input + ":00");
+                return input + ":00";
+            }
+            if (input.matches("\\d{2}:\\d{2}:\\d{2}")) {
+                java.sql.Time.valueOf(input);
+                return input;
+            }
+        } catch (Exception e) {
+            return "";
+        }
+        return "";
+    }
+
     private void setBlob(PreparedStatement statement, int index, byte[] data) throws SQLException {
         if (data == null || data.length == 0) {
             statement.setNull(index, Types.LONGVARBINARY);
@@ -1627,6 +1709,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         JScrollPane scroll = new JScrollPane(area);
         scroll.setPreferredSize(new Dimension(100, tinggi));
         aturScrollPane(scroll, false);
+        area.addMouseWheelListener(evt -> teruskanScrollKeFormJikaPerlu(scroll, evt));
         return scroll;
     }
 
@@ -1800,6 +1883,35 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         scroll.setBorder(BorderFactory.createLineBorder(WARNA_BORDER));
         scroll.getViewport().setBackground(gunakanLatarAplikasi ? WARNA_BG : WARNA_SURFACE);
         scroll.setBackground(gunakanLatarAplikasi ? WARNA_BG : WARNA_SURFACE);
+        scroll.getVerticalScrollBar().setUnitIncrement(gunakanLatarAplikasi ? 24 : 18);
+        scroll.getVerticalScrollBar().setBlockIncrement(gunakanLatarAplikasi ? 180 : 120);
+        scroll.getHorizontalScrollBar().setUnitIncrement(18);
+        scroll.getHorizontalScrollBar().setBlockIncrement(120);
+    }
+
+    private void teruskanScrollKeFormJikaPerlu(JScrollPane sumber, MouseWheelEvent evt) {
+        if (ScrollFormUtama == null || sumber == ScrollFormUtama) {
+            return;
+        }
+
+        JScrollBar barSumber = sumber.getVerticalScrollBar();
+        int arah = evt.getWheelRotation();
+        boolean bisaScrollSendiri = barSumber.isVisible() && barSumber.getMaximum() > barSumber.getVisibleAmount();
+        boolean mentokAtas = barSumber.getValue() <= barSumber.getMinimum() && arah < 0;
+        boolean mentokBawah = barSumber.getValue() + barSumber.getVisibleAmount() >= barSumber.getMaximum() && arah > 0;
+
+        if (!bisaScrollSendiri || mentokAtas || mentokBawah) {
+            geserScrollFormUtama(evt);
+            evt.consume();
+        }
+    }
+
+    private void geserScrollFormUtama(MouseWheelEvent evt) {
+        JScrollBar barUtama = ScrollFormUtama.getVerticalScrollBar();
+        int langkah = Math.max(Math.abs(evt.getUnitsToScroll()) * barUtama.getUnitIncrement(), barUtama.getUnitIncrement());
+        int nilaiBaru = barUtama.getValue() + (evt.getWheelRotation() < 0 ? -langkah : langkah);
+        int nilaiMaksimum = barUtama.getMaximum() - barUtama.getVisibleAmount();
+        barUtama.setValue(Math.max(barUtama.getMinimum(), Math.min(nilaiBaru, nilaiMaksimum)));
     }
 
     private void aturTemaVisual() {

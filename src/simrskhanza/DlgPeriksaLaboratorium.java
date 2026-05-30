@@ -41,6 +41,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import keuangan.Jurnal;
@@ -117,6 +118,11 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
         };
         
         tbPemeriksaan.setModel(tabMode);
+        tabMode.addTableModelListener(e -> {
+            if (e.getType() == TableModelEvent.UPDATE && (e.getColumn() == 2 || e.getColumn() == 4) && e.getFirstRow() >= 0) {
+                isiKeteranganOtomatis(e.getFirstRow());
+            }
+        });
         //tampilPr();
 
         tbPemeriksaan.setPreferredScrollableViewportSize(new Dimension(500,500));
@@ -413,6 +419,92 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
         } catch (Exception ex) {            
             aktifkanparsial="no";
         }
+    }
+
+    private void isiKeteranganOtomatis(int baris) {
+        if (baris < 0 || baris >= tbPemeriksaan.getRowCount()) {
+            return;
+        }
+
+        String hasilLab = nilaiTabel(baris, 2);
+        String nilaiRujukan = nilaiTabel(baris, 4);
+        String statusNilai = evaluasiNilaiRujukan(hasilLab, nilaiRujukan);
+        String keteranganSaatIni = nilaiTabel(baris, 5);
+
+        if (!keteranganSaatIni.equals(statusNilai)) {
+            tbPemeriksaan.setValueAt(statusNilai, baris, 5);
+        }
+    }
+
+    private String evaluasiNilaiRujukan(String hasilLab, String nilaiRujukan) {
+        Double hasil = ambilAngka(hasilLab, nilaiRujukan);
+        if (hasil == null || nilaiRujukan == null || nilaiRujukan.trim().isEmpty()) {
+            return "";
+        }
+
+        String rujukan = nilaiRujukan.trim().replace(',', '.');
+        if (rujukan.matches("^[<>]=?\\s*[-+]?\\d+(\\.\\d+)?\\s*$")) {
+            double batas = parseAngkaRujukan(rujukan.replaceAll("[<>=\\s]", ""));
+            if (rujukan.startsWith("<")) {
+                return hasil < batas || (rujukan.startsWith("<=") && hasil <= batas) ? "" : "High";
+            }
+            return hasil > batas || (rujukan.startsWith(">=") && hasil >= batas) ? "" : "Low";
+        }
+
+        String[] rentang = rujukan.split("\\s*-\\s*");
+        if (rentang.length == 2 && isAngkaRujukan(rentang[0]) && isAngkaRujukan(rentang[1])) {
+            double bawah = parseAngkaRujukan(rentang[0]);
+            double atas = parseAngkaRujukan(rentang[1]);
+            if (hasil < bawah) {
+                return "Low";
+            }
+            if (hasil > atas) {
+                return "High";
+            }
+        }
+
+        return "";
+    }
+
+    private String nilaiTabel(int baris, int kolom) {
+        Object nilai = tbPemeriksaan.getValueAt(baris, kolom);
+        return nilai == null ? "" : nilai.toString().trim();
+    }
+
+    private Double ambilAngka(String teks, String nilaiRujukan) {
+        if (teks == null) {
+            return null;
+        }
+
+        String angka = teks.trim().replace(',', '.').replaceAll("[^0-9+\\-.]", "");
+        if (angka.isEmpty() || angka.equals("-") || angka.equals("+")) {
+            return null;
+        }
+
+        try {
+            if (rujukanMenggunakanTitikRibuan(nilaiRujukan) && angka.matches("^[-+]?\\d+\\.\\d{3}$")) {
+                angka = angka.replace(".", "");
+            }
+            return Double.parseDouble(angka);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean isAngkaRujukan(String teks) {
+        return teks != null && teks.trim().replace(',', '.').matches("^[-+]?\\d+(\\.\\d+)?$");
+    }
+
+    private double parseAngkaRujukan(String teks) {
+        String angka = teks.trim().replace(',', '.');
+        if (angka.matches("^\\d+\\.\\d{3}$")) {
+            return Double.parseDouble(angka.replace(".", ""));
+        }
+        return Double.parseDouble(angka);
+    }
+
+    private boolean rujukanMenggunakanTitikRibuan(String nilaiRujukan) {
+        return nilaiRujukan != null && nilaiRujukan.trim().replace(',', '.').matches(".*\\d+\\.\\d{3}\\s*-\\s*\\d+\\.\\d{3}.*");
     }
 
     /** This method is called from within the constructor to
