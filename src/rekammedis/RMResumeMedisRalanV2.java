@@ -307,7 +307,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 1", TDiagnosaSekunder1, "ICD 10 Sek. 1", TICD10Sekunder1);
         row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 2", TDiagnosaSekunder2, "ICD 10 Sek. 2", TICD10Sekunder2);
         row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 3", TDiagnosaSekunder3, "ICD 10 Sek. 3", TICD10Sekunder3);
-        row = tambahDuaKolom(panel, row, "Kode ICD 9 CM", TICD9CM, "Penyebab Kematian", scrollArea(AreaPenyebabKematian, 74));
+        row = tambahSatuKolom(panel, row, "Kode ICD 9 CM", TICD9CM);
         return panel;
     }
 
@@ -320,7 +320,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         row = tambahArea(panel, row, "Laboratorium", AreaLaboratorium, 84);
         row = tambahArea(panel, row, "Radiologi", AreaRadiologi, 84);
         row = tambahArea(panel, row, "Penunjang Lainnya", AreaPenunjangLain, 84);
-        row = tambahAreaDenganTombol(panel, row, "Plan / Terapi / Obat", AreaTerapiObat, 90, BtnAmbilTerapiObatSoap);
+        row = tambahAreaDenganTombol(panel, row, "Plan / Terapi / Obat", AreaTerapiObat, 220, BtnAmbilTerapiObatSoap);
         row = tambahArea(panel, row, "Instruksi Untuk Tindak Lanjut", AreaInstruksi, 96);
         return panel;
     }
