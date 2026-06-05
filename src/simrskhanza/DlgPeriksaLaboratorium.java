@@ -428,7 +428,10 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
 
         String hasilLab = nilaiTabel(baris, 2);
         String nilaiRujukan = nilaiTabel(baris, 4);
-        String statusNilai = evaluasiNilaiRujukan(hasilLab, nilaiRujukan);
+        String statusNilai = evaluasiNilaiKritis(baris, hasilLab);
+        if (statusNilai.equals("")) {
+            statusNilai = evaluasiNilaiRujukan(hasilLab, nilaiRujukan);
+        }
         String keteranganSaatIni = nilaiTabel(baris, 5);
 
         if (!keteranganSaatIni.equals(statusNilai)) {
@@ -464,6 +467,75 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
         }
 
         return "";
+    }
+
+    private String evaluasiNilaiKritis(int baris, String hasilLab) {
+        Double hasil = ambilAngka(hasilLab, "");
+        if (hasil == null) {
+            return "";
+        }
+
+        String pemeriksaan = normalisasiNamaPemeriksaan(nilaiTabel(baris, 1));
+        if (pemeriksaan.equals("")) {
+            return "";
+        }
+
+        if (pemeriksaan.contains("hematocrit") || pemeriksaan.contains("hematokrit") || pemeriksaan.equals("hct")) {
+            return statusKritis(hasil, 15d, 60d);
+        }
+        if (pemeriksaan.contains("hemoglobin") || pemeriksaan.contains("hemaglobin") || pemeriksaan.equals("hb")) {
+            return statusKritis(hasil, 7d, 20d);
+        }
+        if (pemeriksaan.contains("trombosit") || pemeriksaan.contains("platelet") || pemeriksaan.equals("plt")) {
+            return statusKritis(hasil, pasienAnak() ? 20d : 50d, 1000d);
+        }
+        if (pemeriksaan.contains("leukosit") || pemeriksaan.contains("wbc") || pemeriksaan.contains("white blood cell")) {
+            return statusKritis(hasil, 2d, 30d);
+        }
+        if (pemeriksaan.equals("aptt") || pemeriksaan.contains("activated partial thromboplastin")) {
+            return statusKritis(hasil, null, 100d);
+        }
+        if (pemeriksaan.equals("pt") || pemeriksaan.contains("prothrombin time")) {
+            return statusKritis(hasil, null, 30d);
+        }
+        if (pemeriksaan.contains("bilirubin") && pemeriksaan.contains("total")) {
+            return statusKritis(hasil, null, 20d);
+        }
+        if (pemeriksaan.contains("creatinin") || pemeriksaan.contains("creatinine") || pemeriksaan.contains("kreatinin")) {
+            return statusKritis(hasil, null, 4d);
+        }
+        if (pemeriksaan.contains("glukosa") || pemeriksaan.contains("glucose") || pemeriksaan.contains("gula darah")) {
+            if (pasienBayiBaruLahir()) {
+                return statusKritis(hasil, 30d, 300d);
+            }
+            if (pasienAnak()) {
+                return statusKritis(hasil, 40d, 300d);
+            }
+            return statusKritis(hasil, 50d, 400d);
+        }
+        if (pemeriksaan.contains("ureum") || pemeriksaan.equals("urea")) {
+            return statusKritis(hasil, 2d, 80d);
+        }
+
+        return "";
+    }
+
+    private String statusKritis(double hasil, Double batasBawah, Double batasAtas) {
+        if (batasBawah != null && hasil < batasBawah) {
+            return "Critical Low";
+        }
+        if (batasAtas != null && hasil > batasAtas) {
+            return "Critical High";
+        }
+        return "";
+    }
+
+    private String normalisasiNamaPemeriksaan(String pemeriksaan) {
+        return pemeriksaan == null ? "" : pemeriksaan.toLowerCase()
+                .replace("(", " ")
+                .replace(")", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     private String nilaiTabel(int baris, int kolom) {
@@ -505,6 +577,35 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
 
     private boolean rujukanMenggunakanTitikRibuan(String nilaiRujukan) {
         return nilaiRujukan != null && nilaiRujukan.trim().replace(',', '.').matches(".*\\d+\\.\\d{3}\\s*-\\s*\\d+\\.\\d{3}.*");
+    }
+
+    private boolean pasienAnak() {
+        int hari = umurPasienDalamHari();
+        return hari >= 0 && hari < (18 * 365);
+    }
+
+    private boolean pasienBayiBaruLahir() {
+        int hari = umurPasienDalamHari();
+        return hari >= 0 && hari <= 28;
+    }
+
+    private int umurPasienDalamHari() {
+        String umur = (TUmur.getText() + " " + Umur.getText()).trim().toLowerCase();
+        if (umur.equals("")) {
+            return -1;
+        }
+
+        boolean adaUmur = umur.matches(".*\\d+\\s*(th|tahun|thn|bl|bulan|bln|hr|hari).*");
+        int hari = 0;
+        hari += ambilBagianUmur(umur, "(\\d+)\\s*(th|tahun|thn)") * 365;
+        hari += ambilBagianUmur(umur, "(\\d+)\\s*(bl|bulan|bln)") * 30;
+        hari += ambilBagianUmur(umur, "(\\d+)\\s*(hr|hari)");
+        return adaUmur ? hari : -1;
+    }
+
+    private int ambilBagianUmur(String umur, String pola) {
+        java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(pola).matcher(umur);
+        return matcher.find() ? Integer.parseInt(matcher.group(1)) : 0;
     }
 
     /** This method is called from within the constructor to
@@ -1244,6 +1345,8 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
             param.put("jkel",Jk.getText());
             param.put("umur",Umur.getText());
             param.put("lahir",Sequel.cariIsi("select DATE_FORMAT(pasien.tgl_lahir,'%d-%m-%Y') from pasien where pasien.no_rkm_medis=? ",TNoRM.getText()));
+            param.put("notelp",Sequel.cariIsi("select pasien.no_tlp from pasien where pasien.no_rkm_medis=? ",TNoRM.getText()));
+            param.put("jenispasien",Sequel.cariIsi("select penjab.png_jawab from penjab inner join reg_periksa on penjab.kd_pj=reg_periksa.kd_pj where reg_periksa.no_rawat=?",TNoRw.getText()));
             param.put("pengirim",NmPerujuk.getText());
             param.put("tanggal",Tanggal.getSelectedItem());
             param.put("penjab",NmDokterPj.getText());
@@ -1266,10 +1369,13 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
             param.put("finger2","Dikeluarkan di "+akses.getnamars()+", Kabupaten/Kota "+akses.getkabupatenrs()+"\nDitandatangani secara elektronik oleh "+NmPtg.getText()+"\nID "+(finger.equals("")?KdPtg.getText():finger)+"\n"+Tanggal.getSelectedItem());  
 
             if(noorder.equals("")){
-                pilihan = (String)JOptionPane.showInputDialog(null,"Silahkan pilih hasil pemeriksaan..!","Hasil Pemeriksaan",JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Model 1","Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7", "Model 8", "Model 9", "Model 10", "Model 11"},"Model 1");
+                pilihan = (String)JOptionPane.showInputDialog(null,"Silahkan pilih hasil pemeriksaan..!","Hasil Pemeriksaan",JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Cetak PDF","Model 1","Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7", "Model 8", "Model 9", "Model 10", "Model 11"},"Cetak PDF");
                 switch (pilihan) {
+                    case "Cetak PDF":
+                          Valid.MyReportPDF("rptPeriksaLab.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);
+                          break;
                     case "Model 1":
-                          Valid.MyReport("rptPeriksaLab.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);            
+                          Valid.MyReport("rptPeriksaLab.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);
                           break;
                     case "Model 2":
                           Valid.MyReport("rptPeriksaLab2.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);            
@@ -1306,10 +1412,13 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
                 param.put("nopermintaan",noorder);   
                 param.put("tanggalpermintaan",Sequel.cariIsi("select DATE_FORMAT(permintaan_lab.tgl_permintaan,'%d-%m-%Y') from permintaan_lab where permintaan_lab.noorder=?",noorder));  
                 param.put("jampermintaan",Sequel.cariIsi("select permintaan_lab.jam_permintaan from permintaan_lab where permintaan_lab.noorder=?",noorder)); 
-                pilihan = (String)JOptionPane.showInputDialog(null,"Silahkan pilih hasil pemeriksaan..!","Hasil Pemeriksaan",JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Model 1","Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7", "Model 8", "Model 9", "Model 10", "Model 11"},"Model 1");
+                pilihan = (String)JOptionPane.showInputDialog(null,"Silahkan pilih hasil pemeriksaan..!","Hasil Pemeriksaan",JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Cetak PDF","Model 1","Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7", "Model 8", "Model 9", "Model 10", "Model 11"},"Cetak PDF");
                 switch (pilihan) {
+                    case "Cetak PDF":
+                          Valid.MyReportPDF("rptPeriksaLabPermintaan.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);
+                          break;
                     case "Model 1":
-                          Valid.MyReport("rptPeriksaLabPermintaan.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);            
+                          Valid.MyReport("rptPeriksaLabPermintaan.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);
                           break;
                     case "Model 2":
                           Valid.MyReport("rptPeriksaLab2Permintaan.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);            
