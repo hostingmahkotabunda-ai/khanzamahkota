@@ -3025,12 +3025,20 @@ private void KapasitasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     
     public void tampil4(String NoRetur) {
         if(akses.getform().equals("DlgReturJual")){
+            // Picker retur jual: kolom index 9 (Kandungan) dipakai untuk menampilkan
+            // jumlah obat yang dimiliki pasien (sum jml dari detail_pemberian_obat).
+            try{
+                tbObat.getColumnModel().getColumn(9).setHeaderValue("Jml Dimiliki");
+                tbObat.getTableHeader().repaint();
+            }catch(Exception eHeader){
+                System.out.println("Notifikasi : "+eHeader);
+            }
             if(aktifkanbatch.equals("yes")){
                 Valid.tabelKosong(tabMode);
                 try {
                     ps4 = koneksi.prepareStatement(
                             "select databarang.kode_brng, databarang.nama_brng,databarang.kode_satbesar,satuanbesar.satuan as satuanbesar, "
-                            + " databarang.isi,databarang.kode_sat,kodesatuan.satuan,databarang.letak_barang,data_batch.dasar,data_batch.h_beli,"
+                            + " databarang.isi,databarang.kode_sat,kodesatuan.satuan,sum(detail_pemberian_obat.jml) as letak_barang,data_batch.dasar,data_batch.h_beli,"
                             + " data_batch.ralan,data_batch.kelas1,data_batch.kelas2,data_batch.kelas3,detail_pemberian_obat.no_batch,"
                             + " data_batch.utama,databarang.vip,data_batch.vvip,data_batch.beliluar,data_batch.jualbebas,"
                             + " data_batch.karyawan,databarang.stokminimal, databarang.kdjns,detail_pemberian_obat.no_faktur,"
@@ -3107,7 +3115,7 @@ private void KapasitasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                 try {
                     ps4 = koneksi.prepareStatement(
                             "select databarang.kode_brng, databarang.nama_brng,databarang.kode_satbesar,satuanbesar.satuan as satuanbesar, "
-                            + " databarang.isi,databarang.kode_sat,kodesatuan.satuan,databarang.letak_barang,databarang.dasar,databarang.h_beli,"
+                            + " databarang.isi,databarang.kode_sat,kodesatuan.satuan,sum(detail_pemberian_obat.jml) as letak_barang,databarang.dasar,databarang.h_beli,"
                             + " databarang.ralan,databarang.kelas1,databarang.kelas2,databarang.kelas3,"
                             + " databarang.utama,databarang.vip,databarang.vvip,databarang.beliluar,databarang.jualbebas,"
                             + " databarang.karyawan,databarang.stokminimal, databarang.kdjns,"

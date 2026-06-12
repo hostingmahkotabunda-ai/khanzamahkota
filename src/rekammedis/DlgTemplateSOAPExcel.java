@@ -5,15 +5,22 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,6 +35,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.RowFilter;
@@ -56,7 +64,7 @@ public class DlgTemplateSOAPExcel extends JDialog {
         setLayout(new BorderLayout(8, 8));
 
         tabMode = new DefaultTableModel(null, new Object[]{
-            "Judul", "Subjek", "Objek", "Asesmen", "Plan", "Instruksi", "Evaluasi", "Revisi", "Asal"
+            "Judul", "Subjek", "Objek", "Asesmen", "Plan", "Instruksi", "Evaluasi"
         }) {
             @Override
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -82,6 +90,16 @@ public class DlgTemplateSOAPExcel extends JDialog {
         btnMuatUlang.addActionListener(evt -> loadTemplates());
         panelCari.add(btnMuatUlang);
 
+        JButton btnTambah = new JButton("Tambah");
+        JButton btnUbah = new JButton("Ubah");
+        JButton btnHapus = new JButton("Hapus");
+        btnTambah.addActionListener(evt -> tambahTemplate());
+        btnUbah.addActionListener(evt -> ubahTemplate());
+        btnHapus.addActionListener(evt -> hapusTemplate());
+        panelCari.add(btnTambah);
+        panelCari.add(btnUbah);
+        panelCari.add(btnHapus);
+
         panelAtas.add(panelCari, BorderLayout.NORTH);
 
         lblPath.setText(csvPath);
@@ -95,7 +113,7 @@ public class DlgTemplateSOAPExcel extends JDialog {
         tbTemplate.setDefaultRenderer(Object.class, new WarnaTable());
         tbTemplate.setRowSorter(sorter);
 
-        int[] widths = new int[]{180, 250, 250, 180, 180, 180, 180, 180, 100};
+        int[] widths = new int[]{180, 250, 250, 180, 180, 180, 180};
         for (int i = 0; i < widths.length; i++) {
             TableColumn column = tbTemplate.getColumnModel().getColumn(i);
             column.setPreferredWidth(widths[i]);
@@ -217,9 +235,7 @@ public class DlgTemplateSOAPExcel extends JDialog {
                     template.getAssessment(),
                     template.getPlan(),
                     template.getImplementation(),
-                    template.getEvaluation(),
-                    template.getRevision(),
-                    template.getAsalInput()
+                    template.getEvaluation()
                 });
             }
 
@@ -336,6 +352,188 @@ public class DlgTemplateSOAPExcel extends JDialog {
 
     private void updateCount() {
         lblCount.setText(String.valueOf(tbTemplate.getRowCount()));
+    }
+
+    private void tambahTemplate() {
+        SoapTemplateExcel baru = inputTemplate(null);
+        if (baru == null) {
+            return;
+        }
+        templates.add(baru);
+        simpanDanMuatUlang();
+    }
+
+    private void ubahTemplate() {
+        int viewRow = tbTemplate.getSelectedRow();
+        if (viewRow < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Silahkan pilih template yang akan diubah terlebih dahulu.",
+                    "Template SOAP CSV",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int modelRow = tbTemplate.convertRowIndexToModel(viewRow);
+        if (modelRow < 0 || modelRow >= templates.size()) {
+            return;
+        }
+        SoapTemplateExcel baru = inputTemplate(templates.get(modelRow));
+        if (baru == null) {
+            return;
+        }
+        templates.set(modelRow, baru);
+        simpanDanMuatUlang();
+    }
+
+    private void hapusTemplate() {
+        int viewRow = tbTemplate.getSelectedRow();
+        if (viewRow < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Silahkan pilih template yang akan dihapus terlebih dahulu.",
+                    "Template SOAP CSV",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int modelRow = tbTemplate.convertRowIndexToModel(viewRow);
+        if (modelRow < 0 || modelRow >= templates.size()) {
+            return;
+        }
+        int konfirmasi = JOptionPane.showConfirmDialog(this,
+                "Hapus template \"" + templates.get(modelRow).getTitle() + "\" ?",
+                "Template SOAP CSV",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE);
+        if (konfirmasi != JOptionPane.YES_OPTION) {
+            return;
+        }
+        templates.remove(modelRow);
+        simpanDanMuatUlang();
+    }
+
+    private void simpanDanMuatUlang() {
+        try {
+            writeCsv(new File(csvPath), templates);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this,
+                    "Gagal menyimpan file template SOAP CSV.\n" + e.getMessage(),
+                    "Template SOAP CSV",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+        // Selalu muat ulang dari file agar tabel mencerminkan isi file sebenarnya
+        // (sekaligus rollback tampilan bila penyimpanan gagal).
+        loadTemplates();
+    }
+
+    private SoapTemplateExcel inputTemplate(SoapTemplateExcel existing) {
+        JTextField fTitle = new JTextField(existing != null ? existing.getTitle() : "", 40);
+        JTextArea fSubject = new JTextArea(existing != null ? existing.getSubject() : "", 3, 40);
+        JTextArea fObject = new JTextArea(existing != null ? existing.getObjectText() : "", 3, 40);
+        JTextArea fAssessment = new JTextArea(existing != null ? existing.getAssessment() : "", 3, 40);
+        JTextArea fPlan = new JTextArea(existing != null ? existing.getPlan() : "", 3, 40);
+        JTextArea fImplementation = new JTextArea(existing != null ? existing.getImplementation() : "", 3, 40);
+        JTextArea fEvaluation = new JTextArea(existing != null ? existing.getEvaluation() : "", 3, 40);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        addBaris(panel, 0, "Judul :", fTitle);
+        addBaris(panel, 1, "Subjek :", new JScrollPane(fSubject));
+        addBaris(panel, 2, "Objek :", new JScrollPane(fObject));
+        addBaris(panel, 3, "Asesmen :", new JScrollPane(fAssessment));
+        addBaris(panel, 4, "Plan :", new JScrollPane(fPlan));
+        addBaris(panel, 5, "Instruksi :", new JScrollPane(fImplementation));
+        addBaris(panel, 6, "Evaluasi :", new JScrollPane(fEvaluation));
+
+        JScrollPane scrollInput = new JScrollPane(panel);
+        scrollInput.setPreferredSize(new Dimension(720, 520));
+        scrollInput.getVerticalScrollBar().setUnitIncrement(16);
+
+        String judul = existing == null ? "Tambah Template SOAP" : "Ubah Template SOAP";
+        int hasil = JOptionPane.showConfirmDialog(this, scrollInput, judul,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (hasil != JOptionPane.OK_OPTION) {
+            return null;
+        }
+
+        String title = fTitle.getText().trim();
+        if (title.equals("")) {
+            JOptionPane.showMessageDialog(this,
+                    "Judul template tidak boleh kosong.",
+                    "Template SOAP CSV",
+                    JOptionPane.WARNING_MESSAGE);
+            return null;
+        }
+
+        // Kolom Revisi & Asal sengaja tidak ditampilkan, selalu disimpan kosong.
+        return new SoapTemplateExcel(
+                title,
+                fSubject.getText().trim(),
+                fObject.getText().trim(),
+                fAssessment.getText().trim(),
+                fPlan.getText().trim(),
+                fImplementation.getText().trim(),
+                fEvaluation.getText().trim(),
+                "",
+                ""
+        );
+    }
+
+    private void addBaris(JPanel panel, int baris, String label, java.awt.Component field) {
+        GridBagConstraints labelC = new GridBagConstraints();
+        labelC.gridx = 0;
+        labelC.gridy = baris;
+        labelC.anchor = GridBagConstraints.NORTHWEST;
+        labelC.insets = new Insets(4, 4, 4, 8);
+        panel.add(new JLabel(label), labelC);
+
+        GridBagConstraints fieldC = new GridBagConstraints();
+        fieldC.gridx = 1;
+        fieldC.gridy = baris;
+        fieldC.fill = GridBagConstraints.HORIZONTAL;
+        fieldC.weightx = 1.0;
+        fieldC.insets = new Insets(4, 0, 4, 4);
+        panel.add(field, fieldC);
+    }
+
+    private void writeCsv(File file, List<SoapTemplateExcel> data) throws Exception {
+        String[] header = new String[]{
+            "soaptemplate_title", "soaptemplate_subject", "soaptemplate_object",
+            "soaptemplate_asessment", "soaptemplate_plan", "soaptemplate_implementation",
+            "soaptemplate_evaluation", "soaptemplate_revision", "soaptemplate_asal_input"
+        };
+        try (Writer output = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            output.write(barisCsv(header));
+            for (SoapTemplateExcel t : data) {
+                output.write(barisCsv(new String[]{
+                    t.getTitle(), t.getSubject(), t.getObjectText(), t.getAssessment(),
+                    t.getPlan(), t.getImplementation(), t.getEvaluation(),
+                    t.getRevision(), t.getAsalInput()
+                }));
+            }
+        }
+    }
+
+    private String barisCsv(String[] fields) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < fields.length; i++) {
+            if (i > 0) {
+                sb.append(',');
+            }
+            sb.append(escapeCsv(fields[i]));
+        }
+        sb.append("\r\n");
+        return sb.toString();
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) {
+            value = "";
+        }
+        boolean perluKutip = value.indexOf(',') >= 0
+                || value.indexOf('"') >= 0
+                || value.indexOf('\r') >= 0
+                || value.indexOf('\n') >= 0;
+        if (perluKutip) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 
     private void pilihTemplate() {
