@@ -1244,6 +1244,11 @@ public final class DlgResepObat extends javax.swing.JDialog {
         }else if(NoResep.getText().trim().equals("")){
             Valid.textKosong(NoResep,"No.Resep");
         }else{
+            if(ChkRM.isSelected()==true){
+                // ambil nomor resep final secara atomik tepat saat simpan (anti-duplikat)
+                NoResep.setText(Valid.nomorResepAtomik(Valid.SetTgl(DTPBeri.getSelectedItem()+""),
+                    DTPBeri.getSelectedItem().toString().substring(6,10)+DTPBeri.getSelectedItem().toString().substring(3,5)+DTPBeri.getSelectedItem().toString().substring(0,2),4));
+            }
             if(Sequel.menyimpantf("resep_obat","?,?,?,?,?,?,?,?,?,?","Nomer Resep",10,new String[]{
                     NoResep.getText(),Valid.SetTgl(DTPBeri.getSelectedItem()+""),
                     cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),

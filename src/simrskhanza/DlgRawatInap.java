@@ -9473,7 +9473,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 while(rsGrup.next()){
                     if(nomor == 0){
                         htmlContent.append("<div class='judul'>Pemeriksaan Laboratorium PK & MB</div><table>")
-                                .append("<tr><th>No.</th><th>No.Rawat</th><th>Tanggal</th><th>Kode</th><th>Nama Pemeriksaan</th><th>Dokter PJ</th><th>Petugas</th><th>Biaya</th></tr>");
+                                .append("<tr><th>No.</th><th>No.Rawat</th><th>Tanggal</th><th>Kode</th><th>Nama Pemeriksaan</th><th>Dokter PJ</th><th>Petugas</th><th>Keterangan</th></tr>");
                     }
                     nomor++;
                     appendDetailLaboratPkMb(htmlContent, nomor, rsGrup.getString("no_rawat"), rsGrup.getString("tgl_periksa"), rsGrup.getString("jam"));
@@ -9510,7 +9510,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                             .append("<td>").append(html(rsItem.getString("nm_perawatan"))).append("</td>")
                             .append("<td>").append(html(rsItem.getString("nm_dokter"))).append("</td>")
                             .append("<td>").append(html(rsItem.getString("nama"))).append("</td>")
-                            .append("<td align='right'>").append(Valid.SetAngka(rsItem.getDouble("biaya"))).append("</td></tr>");
+                            .append("<td></td></tr>");
                     appendNilaiLaboratPkMb(htmlContent, noRawat, rsItem.getString("kd_jenis_prw"), tglPeriksa, jamPeriksa);
                 }
             }
@@ -9539,20 +9539,30 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                                 .append("<td class='subjudul'>Detail Pemeriksaan</td>")
                                 .append("<td class='subjudul'>Hasil</td>")
                                 .append("<td class='subjudul'>Nilai Rujukan</td>")
-                                .append("<td></td></tr>");
+                                .append("<td class='subjudul'>Keterangan</td></tr>");
                         adaDetail = true;
                     }
-                    String keterangan = nilai(rsNilai.getString("keterangan")).toLowerCase();
-                    String kelas = keterangan.equals("l") ? " class='low'" : (keterangan.equals("h") ? " class='high'" : "");
+                    String ketRaw = nilai(rsNilai.getString("keterangan")).trim();
+                    boolean isK = ketRaw.equalsIgnoreCase("K");
+                    boolean isLow = ketRaw.equalsIgnoreCase("Low") || ketRaw.equalsIgnoreCase("L");
+                    boolean isHigh = ketRaw.equalsIgnoreCase("High") || ketRaw.equalsIgnoreCase("H");
                     String hasil = html(rsNilai.getString("nilai")) + " " + html(rsNilai.getString("satuan"));
-                    if(keterangan.equals("t")){
+                    String ketTampil = "";
+                    if(isK){
+                        hasil = "<font color='red'><b>" + hasil + "</b></font>";
+                        ketTampil = "<font color='red'><b>K</b></font>";
+                    }else if(isLow){
                         hasil = "<b>" + hasil + "</b>";
+                        ketTampil = "<b>L</b>";
+                    }else if(isHigh){
+                        hasil = "<b>" + hasil + "</b>";
+                        ketTampil = "<b>H</b>";
                     }
                     htmlContent.append("<tr><td></td><td></td><td></td><td></td>")
                             .append("<td>").append(html(rsNilai.getString("Pemeriksaan"))).append("</td>")
-                            .append("<td").append(kelas).append(">").append(hasil).append("</td>")
+                            .append("<td>").append(hasil).append("</td>")
                             .append("<td>").append(html(rsNilai.getString("nilai_rujukan"))).append("</td>")
-                            .append("<td align='right'>").append(Valid.SetAngka(rsNilai.getDouble("biaya_item"))).append("</td></tr>");
+                            .append("<td align='center'>").append(ketTampil).append("</td></tr>");
                 }
             }
         } catch (Exception e) {
@@ -10505,7 +10515,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     private void tampilPemeriksaan() {
         Valid.tabelKosong(tabModePemeriksaan);
         kunciSoapRalan.clear();
-        try{  
+        try{
             String filterCariRanap=TCari.getText().trim().equals("")?"":"and (pemeriksaan_ranap.no_rawat like ? or reg_periksa.no_rkm_medis like ? or pasien.nm_pasien like ? or "+
                 "pemeriksaan_ranap.alergi like ? or pemeriksaan_ranap.keluhan like ? or pemeriksaan_ranap.penilaian like ? or "+
                 "pemeriksaan_ranap.rtl like ? or pemeriksaan_ranap.pemeriksaan like ? or pegawai.nama like ?) ";

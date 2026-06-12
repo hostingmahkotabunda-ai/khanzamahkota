@@ -388,8 +388,56 @@ public final class validasi {
         } catch (Exception e) {
             System.out.println("Notifikasi : "+e);
         }
-            
+
         return auto;
+    }
+
+    /**
+     * Alokasi nomor resep secara ATOMIK (anti-duplikat) lewat tabel penghitung nomor_resep.
+     * Dijamin tidak ada dua pemanggil yang dapat nomor sama walau bersamaan, karena
+     * INSERT ... ON DUPLICATE KEY UPDATE dikunci per-baris (per-tanggal) oleh MySQL.
+     * Self-healing: pemakaian pertama untuk suatu tanggal otomatis menyemai dari MAX
+     * nomor lama, jadi tidak menabrak data yang sudah ada.
+     *
+     * @param tgl     tanggal peresepan format 'yyyy-MM-dd' (sekaligus kunci penghitung)
+     * @param strAwal awalan nomor (mis. 'yyyyMMdd')
+     * @param pnj     panjang digit urutan (mis. 4)
+     * @return nomor resep lengkap, atau jatuh ke cara lama (MAX+1) bila tabel belum ada
+     */
+    public String nomorResepAtomik(String tgl,String strAwal,Integer pnj){
+        String hasil=strAwal;
+        java.sql.PreparedStatement pAlokasi=null,pAmbil=null;
+        java.sql.ResultSet rsAmbil=null;
+        try {
+            pAlokasi=connect.prepareStatement(
+                "insert into nomor_resep(tgl,no) "+
+                "select ?,last_insert_id(ifnull(max(convert(right(no_resep,4),signed)),0)+1) from resep_obat where tgl_peresepan=? or tgl_perawatan=? "+
+                "on duplicate key update no=last_insert_id(no+1)");
+            pAlokasi.setString(1,tgl);
+            pAlokasi.setString(2,tgl);
+            pAlokasi.setString(3,tgl);
+            pAlokasi.executeUpdate();
+            pAmbil=connect.prepareStatement("select last_insert_id()");
+            rsAmbil=pAmbil.executeQuery();
+            String noUrut="1";
+            if(rsAmbil.next()){
+                noUrut=Integer.toString(rsAmbil.getInt(1));
+            }
+            String pad="";
+            for(int k=1;k<=pnj-noUrut.length();k++){
+                pad=pad+"0";
+            }
+            hasil=strAwal+pad+noUrut;
+        } catch (Exception e) {
+            System.out.println("Notifikasi nomorResepAtomik : "+e);
+            // fallback aman bila tabel nomor_resep belum dibuat -> pakai cara lama (MAX+1)
+            hasil=autoNomer3("select ifnull(MAX(CONVERT(RIGHT(resep_obat.no_resep,4),signed)),0) from resep_obat where resep_obat.tgl_peresepan='"+tgl+"' or resep_obat.tgl_perawatan='"+tgl+"'",strAwal,pnj);
+        } finally {
+            try{ if(rsAmbil!=null) rsAmbil.close(); }catch(Exception e){}
+            try{ if(pAmbil!=null) pAmbil.close(); }catch(Exception e){}
+            try{ if(pAlokasi!=null) pAlokasi.close(); }catch(Exception e){}
+        }
+        return hasil;
     }
 
     public void editTable(DefaultTableModel tabMode,String table,String field_acuan,JTextField nilai_field,String update) {

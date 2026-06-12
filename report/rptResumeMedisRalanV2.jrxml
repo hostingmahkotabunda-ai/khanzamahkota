@@ -121,16 +121,16 @@
 				<textElement><font fontName="Tahoma" size="9"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{no_rkm_medis}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="350" y="74" width="58" height="12"/>
-				<textElement><font fontName="Tahoma" size="7"/></textElement>
-				<text><![CDATA[Tgl/Jam Masuk]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="408" y="74" width="91" height="12"/>
-				<textElement><font fontName="Tahoma" size="6"/></textElement>
-				<textFieldExpression><![CDATA[": " + $F{tgl_masuk_format}]]></textFieldExpression>
-			</textField>
+				<staticText>
+					<reportElement x="350" y="74" width="58" height="12"/>
+					<textElement><font fontName="Tahoma" size="7"/></textElement>
+					<text><![CDATA[Tgl Masuk]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="408" y="74" width="91" height="12"/>
+					<textElement><font fontName="Tahoma" size="6"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{tgl_masuk_format}]]></textFieldExpression>
+				</textField>
 			<staticText>
 				<reportElement x="188" y="106" width="72" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>
@@ -141,16 +141,16 @@
 				<textElement verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
 				<textFieldExpression><![CDATA[": " + $F{nama_pasien}]]></textFieldExpression>
 			</textField>
-			<staticText>
-				<reportElement x="350" y="90" width="58" height="12"/>
-				<textElement><font fontName="Tahoma" size="7"/></textElement>
-				<text><![CDATA[Tgl/Jam Keluar]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="408" y="90" width="91" height="12"/>
-				<textElement><font fontName="Tahoma" size="6"/></textElement>
-				<textFieldExpression><![CDATA[": " + $F{tgl_keluar_format}]]></textFieldExpression>
-			</textField>
+				<staticText>
+					<reportElement x="350" y="90" width="58" height="12"/>
+					<textElement><font fontName="Tahoma" size="7"/></textElement>
+					<text><![CDATA[Tgl Keluar]]></text>
+				</staticText>
+				<textField>
+					<reportElement x="408" y="90" width="91" height="12"/>
+					<textElement><font fontName="Tahoma" size="6"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{tgl_keluar_format}]]></textFieldExpression>
+				</textField>
 			<staticText>
 				<reportElement x="188" y="134" width="72" height="12"/>
 				<textElement><font fontName="Tahoma" size="8"/></textElement>

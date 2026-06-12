@@ -101,8 +101,31 @@ public final class DlgUbahNilaiLab extends javax.swing.JDialog {
             }
         }
         
-        tbPemeriksaan.setDefaultRenderer(Object.class, new WarnaTable());
-        
+        tbPemeriksaan.setDefaultRenderer(Object.class, new WarnaTable(){
+            @Override public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column){
+                java.awt.Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Object ket = table.getValueAt(row, CR_KETERANGAN);
+                if(ket!=null && ket.toString().trim().equalsIgnoreCase("K") && column==CR_HASIL){ c.setForeground(java.awt.Color.RED); } else { c.setForeground(java.awt.Color.BLACK); }
+                return c;
+            }
+        });
+        tabMode.addTableModelListener(e -> {
+            if (e.getType()==javax.swing.event.TableModelEvent.UPDATE && (e.getColumn()==CR_HASIL || e.getColumn()==CR_RUJUKAN) && e.getFirstRow()>=0) {
+                isiKeteranganOtomatis(e.getFirstRow());
+            }
+        });
+        javax.swing.JPopupMenu popupCritical = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem ppLow = new javax.swing.JMenuItem("Tandai sebagai Critical Low");
+        ppLow.addActionListener(evt -> tandaiCritical());
+        popupCritical.add(ppLow);
+        javax.swing.JMenuItem ppHigh = new javax.swing.JMenuItem("Tandai sebagai Critical High");
+        ppHigh.addActionListener(evt -> tandaiCritical());
+        popupCritical.add(ppHigh);
+        javax.swing.JMenuItem ppHapus = new javax.swing.JMenuItem("Hapus tanda Critical");
+        ppHapus.addActionListener(evt -> hapusCritical());
+        popupCritical.add(ppHapus);
+        tbPemeriksaan.setComponentPopupMenu(popupCritical);
+
         jam();
     }
 
@@ -404,6 +427,85 @@ public final class DlgUbahNilaiLab extends javax.swing.JDialog {
     
     public void isCek(){
         BtnSimpan.setEnabled(akses.getperiksa_lab());
+    }
+
+    // ===== Auto High/Low + Critical (disamakan dengan halaman input) =====
+    private static final int CR_HASIL=1, CR_RUJUKAN=3, CR_KETERANGAN=4, CR_NAMA=0;
+
+    private void isiKeteranganOtomatis(int baris){
+        if(baris<0 || baris>=tbPemeriksaan.getRowCount()) return;
+        String statusNilai = evaluasiNilaiRujukan(nilaiTabel(baris,CR_HASIL), nilaiTabel(baris,CR_RUJUKAN));
+        String keteranganSaatIni = nilaiTabel(baris,CR_KETERANGAN);
+        if(keteranganSaatIni.equalsIgnoreCase("K")) return;
+        if(!keteranganSaatIni.equals(statusNilai)){
+            tbPemeriksaan.setValueAt(statusNilai,baris,CR_KETERANGAN);
+        }
+    }
+
+    private void tandaiCritical(){
+        int[] rows = tbPemeriksaan.getSelectedRows();
+        if(rows.length==0){ JOptionPane.showMessageDialog(null,"Pilih dulu item pemeriksaan pada tabel...!!!"); return; }
+        for(int r:rows){ if(!nilaiTabel(r,CR_NAMA).equals("")){ tbPemeriksaan.setValueAt("K",r,CR_KETERANGAN); } }
+        tbPemeriksaan.repaint();
+    }
+
+    private void hapusCritical(){
+        int[] rows = tbPemeriksaan.getSelectedRows();
+        if(rows.length==0) return;
+        for(int r:rows){ if(nilaiTabel(r,CR_KETERANGAN).equalsIgnoreCase("K")){ tbPemeriksaan.setValueAt(evaluasiNilaiRujukan(nilaiTabel(r,CR_HASIL),nilaiTabel(r,CR_RUJUKAN)),r,CR_KETERANGAN); } }
+        tbPemeriksaan.repaint();
+    }
+
+    private String nilaiTabel(int baris,int kolom){
+        Object nilai = tbPemeriksaan.getValueAt(baris,kolom);
+        return nilai==null?"":nilai.toString().trim();
+    }
+
+    private String evaluasiNilaiRujukan(String hasilLab, String nilaiRujukan){
+        Double hasil = ambilAngka(hasilLab, nilaiRujukan);
+        if(hasil==null || nilaiRujukan==null || nilaiRujukan.trim().isEmpty()){ return ""; }
+        String rujukan = nilaiRujukan.trim().replace(',', '.');
+        if(rujukan.matches("^[<>]=?\\s*[-+]?\\d+(\\.\\d+)?\\s*$")){
+            double batas = parseAngkaRujukan(rujukan.replaceAll("[<>=\\s]", ""));
+            if(rujukan.startsWith("<")){
+                return hasil < batas || (rujukan.startsWith("<=") && hasil <= batas) ? "" : "High";
+            }
+            return hasil > batas || (rujukan.startsWith(">=") && hasil >= batas) ? "" : "Low";
+        }
+        String[] rentang = rujukan.split("\\s*-\\s*");
+        if(rentang.length==2 && isAngkaRujukan(rentang[0]) && isAngkaRujukan(rentang[1])){
+            double bawah = parseAngkaRujukan(rentang[0]);
+            double atas = parseAngkaRujukan(rentang[1]);
+            if(hasil < bawah){ return "Low"; }
+            if(hasil > atas){ return "High"; }
+        }
+        return "";
+    }
+
+    private Double ambilAngka(String teks, String nilaiRujukan){
+        if(teks==null){ return null; }
+        String angka = teks.trim().replace(',', '.').replaceAll("[^0-9+\\-.]", "");
+        if(angka.isEmpty() || angka.equals("-") || angka.equals("+")){ return null; }
+        try{
+            if(rujukanMenggunakanTitikRibuan(nilaiRujukan) && angka.matches("^[-+]?\\d+\\.\\d{3}$")){
+                angka = angka.replace(".", "");
+            }
+            return Double.parseDouble(angka);
+        }catch(Exception e){ return null; }
+    }
+
+    private boolean isAngkaRujukan(String teks){
+        return teks!=null && teks.trim().replace(',', '.').matches("^[-+]?\\d+(\\.\\d+)?$");
+    }
+
+    private double parseAngkaRujukan(String teks){
+        String angka = teks.trim().replace(',', '.');
+        if(angka.matches("^\\d+\\.\\d{3}$")){ return Double.parseDouble(angka.replace(".", "")); }
+        return Double.parseDouble(angka);
+    }
+
+    private boolean rujukanMenggunakanTitikRibuan(String nilaiRujukan){
+        return nilaiRujukan!=null && nilaiRujukan.trim().replace(',', '.').matches(".*\\d+\\.\\d{3}\\s*-\\s*\\d+\\.\\d{3}.*");
     }
     
     private void jam(){

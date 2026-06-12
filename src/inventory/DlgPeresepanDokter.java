@@ -1167,7 +1167,12 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             int reply = JOptionPane.showConfirmDialog(rootPane,"Eeiiiiiits, udah bener belum data yang mau disimpan..??","Konfirmasi",JOptionPane.YES_NO_OPTION);
             if (reply == JOptionPane.YES_OPTION) {
                 pastikanTabelCatatanResepDokter();
-                ChkJln.setSelected(false);    
+                ChkJln.setSelected(false);
+                if(ubah==false){
+                    // ambil nomor resep final secara atomik tepat saat simpan (anti-duplikat), sebelum transaksi dibuka
+                    NoResep.setText(Valid.nomorResepAtomik(Valid.SetTgl(DTPBeri.getSelectedItem()+""),
+                        DTPBeri.getSelectedItem().toString().substring(6,10)+DTPBeri.getSelectedItem().toString().substring(3,5)+DTPBeri.getSelectedItem().toString().substring(0,2),4));
+                }
                 Sequel.AutoComitFalse();
                 sukses=true;
                 if(ubah==false){

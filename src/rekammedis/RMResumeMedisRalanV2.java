@@ -291,8 +291,8 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         row = tambahJudul(panel, row, "Identitas Rawat Jalan");
         row = tambahDuaKolom(panel, row, "No. Rawat *", TNoRw, "No. RM *", TNoRM);
         row = tambahDuaKolom(panel, row, "Nama Pasien *", TPasien, "Poliklinik", TRuang);
-        row = tambahDuaKolom(panel, row, "Penjamin", TPenjab, "Tanggal Registrasi", flowPanel(TTglMasuk, labelKiri("Jam"), TJamMasuk));
-        row = tambahDuaKolom(panel, row, "Tanggal Keluar", flowPanel(TTglKeluar, labelKiri("Jam"), TJamKeluar), "Dokter *", flowPanel(TKodeDokter, TNamaDokter, BtnDokter));
+        row = tambahDuaKolom(panel, row, "Penjamin", TPenjab, "Tanggal Registrasi", TTglMasuk);
+        row = tambahDuaKolom(panel, row, "Tanggal Keluar", TTglKeluar, "Dokter *", flowPanel(TKodeDokter, TNamaDokter, BtnDokter));
         return panel;
     }
 
@@ -1147,8 +1147,8 @@ public final class RMResumeMedisRalanV2 extends JDialog {
             "if(kelurahan.nm_kel is null or kelurahan.nm_kel='', '', concat(', ',kelurahan.nm_kel))," +
             "if(kecamatan.nm_kec is null or kecamatan.nm_kec='', '', concat(', ',kecamatan.nm_kec))," +
             "if(kabupaten.nm_kab is null or kabupaten.nm_kab='', '', concat(', ',kabupaten.nm_kab))) as alamat_lengkap," +
-            "if(m.tgl_masuk is null,'',concat(date_format(m.tgl_masuk,'%d-%m-%Y'),' ',left(ifnull(m.jam_masuk,''),5))) as tgl_masuk_format," +
-            "if(m.tgl_keluar is null,'',concat(date_format(m.tgl_keluar,'%d-%m-%Y'),' ',left(ifnull(m.jam_keluar,''),5))) as tgl_keluar_format," +
+            "ifnull(date_format(m.tgl_masuk,'%d-%m-%Y'),'') as tgl_masuk_format," +
+            "ifnull(date_format(m.tgl_keluar,'%d-%m-%Y'),'') as tgl_keluar_format," +
             "ifnull(m.alasan_rawat,'') as alasan_rawat," +
             "ifnull(m.diagnosa_masuk,'') as diagnosa_masuk," +
             "ifnull(m.icd10_masuk,'') as icd10_masuk," +

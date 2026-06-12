@@ -48,6 +48,7 @@ public final class DlgUbahPeriksaLab extends javax.swing.JDialog {
     private double[] total,bagian_rs,bhp,tarif_perujuk,tarif_tindakan_dokter,tarif_tindakan_petugas,kso,menejemen,
             biaya_item2,bagian_rs2,bhp2,bagian_perujuk2,bagian_dokter2,bagian_laborat2,kso2,menejemen2;
     private int jml=0,i=0,index=0,jml2=0,i2=0,index2=0;
+    private java.util.HashMap<String,String> kategoriPerItem = new java.util.HashMap<>();
     private String cara_bayar_lab="Yes";
     private double ttl=0,item=0;    
     private Jurnal jur=new Jurnal();
@@ -123,8 +124,31 @@ public final class DlgUbahPeriksaLab extends javax.swing.JDialog {
             }
         }
         
-        tbPemeriksaan.setDefaultRenderer(Object.class, new WarnaTable());
-        
+        tbPemeriksaan.setDefaultRenderer(Object.class, new WarnaTable(){
+            @Override public java.awt.Component getTableCellRendererComponent(javax.swing.JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column){
+                java.awt.Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Object ket = table.getValueAt(row, CR_KETERANGAN);
+                if(ket!=null && ket.toString().trim().equalsIgnoreCase("K") && column==CR_HASIL){ c.setForeground(java.awt.Color.RED); } else { c.setForeground(java.awt.Color.BLACK); }
+                return c;
+            }
+        });
+        tabMode.addTableModelListener(e -> {
+            if (e.getType()==javax.swing.event.TableModelEvent.UPDATE && (e.getColumn()==CR_HASIL || e.getColumn()==CR_RUJUKAN) && e.getFirstRow()>=0) {
+                isiKeteranganOtomatis(e.getFirstRow());
+            }
+        });
+        javax.swing.JPopupMenu popupCritical = new javax.swing.JPopupMenu();
+        javax.swing.JMenuItem ppLow = new javax.swing.JMenuItem("Tandai sebagai Critical Low");
+        ppLow.addActionListener(evt -> tandaiCritical());
+        popupCritical.add(ppLow);
+        javax.swing.JMenuItem ppHigh = new javax.swing.JMenuItem("Tandai sebagai Critical High");
+        ppHigh.addActionListener(evt -> tandaiCritical());
+        popupCritical.add(ppHigh);
+        javax.swing.JMenuItem ppHapus = new javax.swing.JMenuItem("Hapus tanda Critical");
+        ppHapus.addActionListener(evt -> hapusCritical());
+        popupCritical.add(ppHapus);
+        tbPemeriksaan.setComponentPopupMenu(popupCritical);
+
         Object[] row2={"P","Kode Periksa","Nama Pemeriksaan","Tarif","bagian_rs","bhp","tarif_perujuk","tarif_tindakan_dokter","tarif_tindakan_petugas","K.S.O.","Menejemen"};
         tabMode2=new DefaultTableModel(null,row2){
               @Override public boolean isCellEditable(int rowIndex, int colIndex){
@@ -934,9 +958,10 @@ public final class DlgUbahPeriksaLab extends javax.swing.JDialog {
                                         pscariperawatan.setString(1,tbPemeriksaan.getValueAt(i,6).toString());
                                         rscari=pscariperawatan.executeQuery();
                                         if(rscari.next()){  
-                                            if(Sequel.menyimpantf2("detail_periksa_lab","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","ID Template",16,new String[]{
+                                            if(Sequel.menyimpantf2("detail_periksa_lab","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","ID Template",17,new String[]{
                                                     TNoRw.getText(),rscari.getString(1),Tanggal.getText(),Jam.getText(),
                                                     tbPemeriksaan.getValueAt(i,6).toString(),tbPemeriksaan.getValueAt(i,2).toString(),tbPemeriksaan.getValueAt(i,4).toString(),tbPemeriksaan.getValueAt(i,5).toString(),
+                                                    kategoriPerItem.getOrDefault(tbPemeriksaan.getValueAt(i,6).toString(),""),
                                                     tbPemeriksaan.getValueAt(i,8).toString(),tbPemeriksaan.getValueAt(i,9).toString(),tbPemeriksaan.getValueAt(i,10).toString(),tbPemeriksaan.getValueAt(i,11).toString(),
                                                     tbPemeriksaan.getValueAt(i,12).toString(),tbPemeriksaan.getValueAt(i,13).toString(),tbPemeriksaan.getValueAt(i,14).toString(),tbPemeriksaan.getValueAt(i,7).toString()
                                                 })==true){
@@ -1545,7 +1570,7 @@ private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
             
             pscaridetailperiksa=koneksi.prepareStatement(
                     "select detail_periksa_lab.id_template,template_laboratorium.Pemeriksaan, detail_periksa_lab.nilai,template_laboratorium.satuan,detail_periksa_lab.nilai_rujukan,detail_periksa_lab.biaya_item,"+
-                    "detail_periksa_lab.bagian_rs,detail_periksa_lab.bhp,detail_periksa_lab.bagian_perujuk,detail_periksa_lab.bagian_dokter,detail_periksa_lab.bagian_laborat,detail_periksa_lab.kso,detail_periksa_lab.menejemen,detail_periksa_lab.keterangan "+
+                    "detail_periksa_lab.bagian_rs,detail_periksa_lab.bhp,detail_periksa_lab.bagian_perujuk,detail_periksa_lab.bagian_dokter,detail_periksa_lab.bagian_laborat,detail_periksa_lab.kso,detail_periksa_lab.menejemen,detail_periksa_lab.keterangan,detail_periksa_lab.kategori "+
                     "from detail_periksa_lab inner join template_laboratorium on detail_periksa_lab.id_template=template_laboratorium.id_template "+
                     "where detail_periksa_lab.no_rawat=? and detail_periksa_lab.tgl_periksa=? and detail_periksa_lab.jam=?");
             try {
@@ -1554,9 +1579,10 @@ private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                 pscaridetailperiksa.setString(3,jam);
                 rstampil=pscaridetailperiksa.executeQuery();
                 while(rstampil.next()){
+                    kategoriPerItem.put(rstampil.getString("id_template"),rstampil.getString("kategori")==null?"":rstampil.getString("kategori"));
                     tabMode.addRow(new Object[]{true,"   "+rstampil.getString("Pemeriksaan"),rstampil.getString("nilai"),
                          rstampil.getString("satuan"),
-                         rstampil.getString("nilai_rujukan"),"",
+                         rstampil.getString("nilai_rujukan"),rstampil.getString("keterangan"),
                          rstampil.getString("id_template"),
                          rstampil.getDouble("biaya_item"),
                          rstampil.getDouble("bagian_rs"),
@@ -1587,6 +1613,85 @@ private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         BtnSimpan.setEnabled(akses.getperiksa_lab());
         BtnHapus.setEnabled(akses.getperiksa_lab());
         btnTarif.setEnabled(akses.gettarif_lab());
+    }
+
+    // ===== Auto High/Low + Critical (disamakan dengan halaman input) =====
+    private static final int CR_HASIL=2, CR_RUJUKAN=4, CR_KETERANGAN=5, CR_NAMA=1;
+
+    private void isiKeteranganOtomatis(int baris){
+        if(baris<0 || baris>=tbPemeriksaan.getRowCount()) return;
+        String statusNilai = evaluasiNilaiRujukan(nilaiTabel(baris,CR_HASIL), nilaiTabel(baris,CR_RUJUKAN));
+        String keteranganSaatIni = nilaiTabel(baris,CR_KETERANGAN);
+        if(keteranganSaatIni.equalsIgnoreCase("K")) return;
+        if(!keteranganSaatIni.equals(statusNilai)){
+            tbPemeriksaan.setValueAt(statusNilai,baris,CR_KETERANGAN);
+        }
+    }
+
+    private void tandaiCritical(){
+        int[] rows = tbPemeriksaan.getSelectedRows();
+        if(rows.length==0){ JOptionPane.showMessageDialog(null,"Pilih dulu item pemeriksaan pada tabel...!!!"); return; }
+        for(int r:rows){ if(!nilaiTabel(r,CR_NAMA).equals("")){ tbPemeriksaan.setValueAt("K",r,CR_KETERANGAN); } }
+        tbPemeriksaan.repaint();
+    }
+
+    private void hapusCritical(){
+        int[] rows = tbPemeriksaan.getSelectedRows();
+        if(rows.length==0) return;
+        for(int r:rows){ if(nilaiTabel(r,CR_KETERANGAN).equalsIgnoreCase("K")){ tbPemeriksaan.setValueAt(evaluasiNilaiRujukan(nilaiTabel(r,CR_HASIL),nilaiTabel(r,CR_RUJUKAN)),r,CR_KETERANGAN); } }
+        tbPemeriksaan.repaint();
+    }
+
+    private String nilaiTabel(int baris,int kolom){
+        Object nilai = tbPemeriksaan.getValueAt(baris,kolom);
+        return nilai==null?"":nilai.toString().trim();
+    }
+
+    private String evaluasiNilaiRujukan(String hasilLab, String nilaiRujukan){
+        Double hasil = ambilAngka(hasilLab, nilaiRujukan);
+        if(hasil==null || nilaiRujukan==null || nilaiRujukan.trim().isEmpty()){ return ""; }
+        String rujukan = nilaiRujukan.trim().replace(',', '.');
+        if(rujukan.matches("^[<>]=?\\s*[-+]?\\d+(\\.\\d+)?\\s*$")){
+            double batas = parseAngkaRujukan(rujukan.replaceAll("[<>=\\s]", ""));
+            if(rujukan.startsWith("<")){
+                return hasil < batas || (rujukan.startsWith("<=") && hasil <= batas) ? "" : "High";
+            }
+            return hasil > batas || (rujukan.startsWith(">=") && hasil >= batas) ? "" : "Low";
+        }
+        String[] rentang = rujukan.split("\\s*-\\s*");
+        if(rentang.length==2 && isAngkaRujukan(rentang[0]) && isAngkaRujukan(rentang[1])){
+            double bawah = parseAngkaRujukan(rentang[0]);
+            double atas = parseAngkaRujukan(rentang[1]);
+            if(hasil < bawah){ return "Low"; }
+            if(hasil > atas){ return "High"; }
+        }
+        return "";
+    }
+
+    private Double ambilAngka(String teks, String nilaiRujukan){
+        if(teks==null){ return null; }
+        String angka = teks.trim().replace(',', '.').replaceAll("[^0-9+\\-.]", "");
+        if(angka.isEmpty() || angka.equals("-") || angka.equals("+")){ return null; }
+        try{
+            if(rujukanMenggunakanTitikRibuan(nilaiRujukan) && angka.matches("^[-+]?\\d+\\.\\d{3}$")){
+                angka = angka.replace(".", "");
+            }
+            return Double.parseDouble(angka);
+        }catch(Exception e){ return null; }
+    }
+
+    private boolean isAngkaRujukan(String teks){
+        return teks!=null && teks.trim().replace(',', '.').matches("^[-+]?\\d+(\\.\\d+)?$");
+    }
+
+    private double parseAngkaRujukan(String teks){
+        String angka = teks.trim().replace(',', '.');
+        if(angka.matches("^\\d+\\.\\d{3}$")){ return Double.parseDouble(angka.replace(".", "")); }
+        return Double.parseDouble(angka);
+    }
+
+    private boolean rujukanMenggunakanTitikRibuan(String nilaiRujukan){
+        return nilaiRujukan!=null && nilaiRujukan.trim().replace(',', '.').matches(".*\\d+\\.\\d{3}\\s*-\\s*\\d+\\.\\d{3}.*");
     }
     
     private void isForm(){
