@@ -153,6 +153,10 @@ public class DlgPemesanan extends javax.swing.JDialog {
         tppn.setDocument(new batasInput((byte)5).getKata(tppn));
         Meterai.setDocument(new batasInput((byte)15).getOnlyAngka(Meterai));
         TCari.setDocument(new batasInput((byte)100).getKata(TCari));
+        // Cache penerimaan obat ditulis sebagai JSON manual yang kadang memuat karakter
+        // kontrol (mis. TAB/CTRL-CHAR code 9) di nama barang. Tanpa ini, parser Jackson di
+        // tampil2() gagal membaca cache sehingga list obat tidak tampil.
+        mapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
         if(koneksiDB.CARICEPAT().equals("aktif")){
             TCari.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){
                 @Override

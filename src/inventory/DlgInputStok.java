@@ -130,7 +130,11 @@ public class DlgInputStok extends javax.swing.JDialog {
 
         kdgudang.setDocument(new batasInput((byte)5).getKata(kdgudang));
         catatan.setDocument(new batasInput((byte)60).getKata(catatan));  
-        TCari.setDocument(new batasInput((byte)100).getKata(TCari)); 
+        TCari.setDocument(new batasInput((byte)100).getKata(TCari));
+        // Cache stok opname ditulis sebagai JSON manual yang kadang memuat karakter
+        // kontrol (mis. TAB/CTRL-CHAR code 9) di nama/kategori/satuan barang. Tanpa ini,
+        // parser Jackson di tampil2() gagal membaca cache sehingga pencarian tidak berfungsi.
+        mapper.configure(com.fasterxml.jackson.core.JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true);
         if(koneksiDB.CARICEPAT().equals("aktif")){
             TCari.getDocument().addDocumentListener(new javax.swing.event.DocumentListener(){
                 @Override
