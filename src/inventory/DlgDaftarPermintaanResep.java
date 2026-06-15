@@ -54,6 +54,10 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
     private int jmlparsial=0,nilai_detik,resepbaru=0,i=0;
     private BackgroundMusic music;
     private boolean aktif=false,semua;
+    private javax.swing.Timer timerResepBaru;
+    private final java.util.Set<String> noResepDikenal = new java.util.HashSet<String>();
+    private boolean baselineResepBaruSiap = false;
+    private final java.util.List<javax.swing.JWindow> bannerAktif = new java.util.ArrayList<javax.swing.JWindow>();
     private boolean draftResepSOAPTableChecked=false;
     private final javax.swing.JPopupMenu PopupResepRalan=new javax.swing.JPopupMenu();
     private final javax.swing.JPopupMenu PopupResepRanap=new javax.swing.JPopupMenu();
@@ -635,6 +639,9 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
             }
             public void windowOpened(java.awt.event.WindowEvent evt) {
                 formWindowOpened(evt);
+            }
+            public void windowClosed(java.awt.event.WindowEvent evt) {
+                hentikanNotifResepBaru();
             }
         });
 
@@ -1722,6 +1729,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         pilihTab();
+        mulaiNotifResepBaru();
     }//GEN-LAST:event_formWindowOpened
 
     private void TabRawatJalanMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabRawatJalanMouseClicked
@@ -5593,19 +5601,155 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                         }
                     }
 
-                    if(resepbaru>0){
-                        try {
-                            music = new BackgroundMusic("./suara/alarm.mp3");
-                            music.start();
-                        } catch (Exception ex) {
-                            System.out.println(ex);
-                        }
-                    }
+                    // Alarm lama (berdengung selama masih ada antrian) dinonaktifkan.
+                    // Suara kini hanya berbunyi saat ada resep BARU, lihat cekResepBaru().
                 }
-            }                
+            }
         };
         // Timer
         new Timer(1000, taskPerformer).start();
+    }
+
+    // ===== Notifikasi resep baru (banner non-blocking + auto-refresh) =====
+    private void mulaiNotifResepBaru(){
+        if(timerResepBaru!=null){
+            return; // sudah berjalan
+        }
+        // Baseline: tandai semua resep belum-terlayani yang ADA saat ini sebagai 'dikenal'
+        // supaya tidak dianggap baru. Menghormati filter depo/tanggal yang berlaku di tampil().
+        try{
+            if(formalarm.contains("ralan")){
+                tampil();
+                kumpulkanResepBaru(tbResepRalan, null);
+            }
+            if(formalarm.contains("ranap")){
+                tampil3();
+                kumpulkanResepBaru(tbResepRanap, null);
+            }
+        }catch(Exception e){
+            System.out.println("Notif baseline resep baru : "+e);
+        }
+        baselineResepBaruSiap = true;
+
+        timerResepBaru = new javax.swing.Timer(12000, new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent e){ cekResepBaru(); }
+        });
+        timerResepBaru.setRepeats(true);
+        timerResepBaru.start();
+    }
+
+    private void hentikanNotifResepBaru(){
+        if(timerResepBaru!=null){
+            timerResepBaru.stop();
+            timerResepBaru=null;
+        }
+        for(javax.swing.JWindow w : new java.util.ArrayList<javax.swing.JWindow>(bannerAktif)){
+            tutupBanner(w);
+        }
+    }
+
+    private void cekResepBaru(){
+        if(!baselineResepBaruSiap || !isShowing()){
+            return;
+        }
+        java.util.List<String> baruRalan = new java.util.ArrayList<String>();
+        java.util.List<String> baruRanap = new java.util.ArrayList<String>();
+        try{
+            if(formalarm.contains("ralan")){
+                tampil();
+                kumpulkanResepBaru(tbResepRalan, baruRalan);
+            }
+            if(formalarm.contains("ranap")){
+                tampil3();
+                kumpulkanResepBaru(tbResepRanap, baruRanap);
+            }
+        }catch(Exception e){
+            System.out.println("Notif cek resep baru : "+e);
+            return;
+        }
+        if(baruRalan.isEmpty() && baruRanap.isEmpty()){
+            return;
+        }
+        for(String no : baruRalan){
+            tampilkanBannerResepBaru("Ada resep baru No.Resep "+no+" (Rawat Jalan)");
+        }
+        for(String no : baruRanap){
+            tampilkanBannerResepBaru("Ada resep baru No.Resep "+no+" (Rawat Inap)");
+        }
+        // Suara dibunyikan setiap ada resep BARU (tidak tergantung setting ALARMAPOTEK).
+        try{
+            music = new BackgroundMusic("./suara/alarm.mp3");
+            music.start();
+        }catch(Exception ex){
+            System.out.println("Notif suara resep baru : "+ex);
+        }
+    }
+
+    // Scan tabel: untuk tiap baris berstatus "Belum Terlayani" yang no_resep-nya belum dikenal,
+    // tandai dikenal. Bila 'keluaran' != null, no_resep baru dikumpulkan ke situ.
+    private void kumpulkanResepBaru(widget.Table tabel, java.util.List<String> keluaran){
+        if(tabel==null){
+            return;
+        }
+        for(int r=0;r<tabel.getRowCount();r++){
+            Object st = tabel.getValueAt(r,7);
+            if(st!=null && "Belum Terlayani".equals(st.toString())){
+                Object kode = tabel.getValueAt(r,0);
+                if(kode!=null){
+                    String no = kode.toString();
+                    if(noResepDikenal.add(no) && keluaran!=null){
+                        keluaran.add(no);
+                    }
+                }
+            }
+        }
+    }
+
+    private void tampilkanBannerResepBaru(final String pesan){
+        final javax.swing.JWindow w = new javax.swing.JWindow(this);
+        javax.swing.JPanel p = new javax.swing.JPanel(new java.awt.BorderLayout());
+        p.setBackground(new java.awt.Color(33,33,33));
+        p.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createLineBorder(new java.awt.Color(105,190,40),3),
+                javax.swing.BorderFactory.createEmptyBorder(18,24,18,24)));
+        javax.swing.JLabel l = new javax.swing.JLabel("<html><div style='width:380px;'>"
+                + "<span style='color:#8bc34a; font-weight:bold;'>&#9679;&nbsp;RESEP BARU MASUK</span><br>"
+                + "<span>"+pesan+"</span><br>"
+                + "<span style='color:#9e9e9e;'>(klik untuk menutup)</span>"
+                + "</div></html>");
+        l.setForeground(java.awt.Color.WHITE);
+        l.setFont(new java.awt.Font("Tahoma",0,16));
+        p.add(l, java.awt.BorderLayout.CENTER);
+        w.setContentPane(p);
+        w.pack();
+
+        java.awt.Rectangle scr = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+        int x = scr.x + scr.width - w.getWidth() - 20;
+        int y = scr.y + scr.height - w.getHeight() - 20 - (bannerAktif.size()*(w.getHeight()+8));
+        if(y < scr.y + 20){
+            y = scr.y + 20;
+        }
+        w.setLocation(x, y);
+        w.setAlwaysOnTop(true);
+        bannerAktif.add(w);
+        w.setVisible(true);
+
+        p.addMouseListener(new java.awt.event.MouseAdapter(){
+            @Override public void mouseClicked(java.awt.event.MouseEvent e){ tutupBanner(w); }
+        });
+        javax.swing.Timer t = new javax.swing.Timer(15000, new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent ev){ tutupBanner(w); }
+        });
+        t.setRepeats(false);
+        t.start();
+    }
+
+    private void tutupBanner(javax.swing.JWindow w){
+        if(w!=null){
+            w.setVisible(false);
+            w.dispose();
+            bannerAktif.remove(w);
+        }
     }
     
     private void isMenu(){

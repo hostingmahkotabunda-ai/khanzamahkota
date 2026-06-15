@@ -129,6 +129,7 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
     private widget.Table tbDetailRacikanV2;
     private widget.Label labelRacikanAktifV2;
     private boolean modeEmbedded=false;
+    private final widget.Button BtnPaketResep = new widget.Button();
     private static final Pattern POLA_JUMLAH_RESEP=Pattern.compile("(?i)(?:\\b(?:qty|jumlah|jml|jlh|no\\.?|#)\\s*[:=]?\\s*)(\\d+(?:[\\.,]\\d+)?)");
     private static final Pattern POLA_AWAL_LIST=Pattern.compile("^\\s*(?:[-*]+|\\d+[\\.)])\\s*");
 
@@ -158,6 +159,7 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
         initComponents();
         inisialisasiPanelTindakanPasien();
         inisialisasiPanelDraftSOAP();
+        pasangTombolPaketResep();
         this.setLocation(10,2);
         setSize(656,250);
         tabModeResep=new DefaultTableModel(null,new Object[]{
@@ -1148,8 +1150,107 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
         barang.setLocationRelativeTo(internalFrame1);
         barang.setAlwaysOnTop(false);
         barang.setVisible(true);
-        this.setCursor(Cursor.getDefaultCursor());           
+        this.setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_BtnTambahActionPerformed
+
+    // ===== Paket Resep (paket obat) =====
+    private void pasangTombolPaketResep(){
+        BtnPaketResep.setText("Tambah Paket");
+        try{
+            BtnPaketResep.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        }catch(Exception e){
+            System.out.println("Notif ikon paket : "+e);
+        }
+        BtnPaketResep.setToolTipText("Tambah obat dari paket resep");
+        BtnPaketResep.setPreferredSize(new java.awt.Dimension(124,23));
+        BtnPaketResep.addActionListener(new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){ BtnPaketResepActionPerformed(evt); }
+        });
+        // sisipkan tepat setelah tombol "Tambah Racikan" (BtnTambah1) bila ada
+        int idx=-1;
+        java.awt.Component[] comps=panelisi3.getComponents();
+        for(int k=0;k<comps.length;k++){
+            if(comps[k]==BtnTambah1){ idx=k+1; break; }
+        }
+        if(idx>=0){
+            panelisi3.add(BtnPaketResep, idx);
+        }else{
+            panelisi3.add(BtnPaketResep);
+        }
+        panelisi3.revalidate();
+        panelisi3.repaint();
+    }
+
+    private void BtnPaketResepActionPerformed(java.awt.event.ActionEvent evt){
+        if(!tabUmumAktif()){
+            JOptionPane.showMessageDialog(null,"Paket resep hanya untuk tab obat umum (bukan racikan).");
+            return;
+        }
+        if(TNoRw.getText().trim().equals("")||TPasien.getText().trim().equals("")){
+            Valid.textKosong(TNoRw,"pasien");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        DlgPaketResep paket=new DlgPaketResep(null,true);
+        paket.setSelectionMode(true);
+        paket.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+        paket.setLocationRelativeTo(internalFrame1);
+        paket.setVisible(true);
+        this.setCursor(Cursor.getDefaultCursor());
+        String kd=paket.getSelectedPackageCode();
+        if(kd!=null && !kd.trim().equals("")){
+            terapkanPaketResep(kd.trim());
+        }
+    }
+
+    private void terapkanPaketResep(String kdPaket){
+        java.util.List<String[]> items=new java.util.ArrayList<String[]>();
+        try(java.sql.PreparedStatement ps=koneksi.prepareStatement(
+                "select kode_brng,jml from paket_resep_detail where kd_paket=? order by urut")){
+            ps.setString(1,kdPaket);
+            try(java.sql.ResultSet rs=ps.executeQuery()){
+                while(rs.next()){
+                    double j=rs.getDouble("jml");
+                    String js=(j==Math.floor(j))?String.valueOf((long)j):String.valueOf(j);
+                    items.add(new String[]{rs.getString("kode_brng"),js});
+                }
+            }
+        }catch(Exception e){
+            System.out.println("Notif Paket Resep : "+e);
+        }
+        if(items.isEmpty()){
+            JOptionPane.showMessageDialog(null,"Paket kosong / tidak ada obat di paket tersebut.");
+            return;
+        }
+        // muat katalog penuh agar obat paket pasti tersedia (baris yang sudah diisi jumlah tetap dipertahankan)
+        TCari.setText("");
+        tampilcacheresep();
+        int terpasang=0;
+        StringBuilder gagal=new StringBuilder();
+        for(String[] it:items){
+            String kode=it[0];
+            boolean found=false;
+            for(int r=0;r<tbResep.getRowCount();r++){
+                if(tbResep.getValueAt(r,3)!=null && tbResep.getValueAt(r,3).toString().equals(kode)){
+                    tbResep.setValueAt(Boolean.TRUE,r,0);
+                    tbResep.setValueAt(it[1],r,1);
+                    found=true;
+                    terpasang++;
+                    break;
+                }
+            }
+            if(!found){
+                gagal.append("- ").append(kode).append("\n");
+            }
+        }
+        hitungResep();
+        String pesan="Paket diterapkan: "+terpasang+" obat masuk ke daftar resep.";
+        if(gagal.length()>0){
+            pesan=pesan+"\n\nObat berikut tidak ditemukan di katalog (mungkin nonaktif / stok kosong) dan dilewati:\n"+gagal.toString();
+        }
+        JOptionPane.showMessageDialog(null,pesan);
+        TCari.requestFocus();
+    }
 
 private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanActionPerformed
         selesaiEditRacikanV2();
