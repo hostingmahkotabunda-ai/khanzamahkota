@@ -2089,10 +2089,23 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                         TCari.requestFocus();
                     }else if(NoRawat.equals("")){
                         JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih data resep dokter yang mau diserahkan..!!");
+                    }else if(!Status.equals("Sudah Terlayani")){
+                        JOptionPane.showMessageDialog(null,"Maaf, resep belum divalidasi/terlayani.\nSilahkan validasi resep terlebih dahulu sebelum penyerahan..!!");
                     }else{
-                        Sequel.queryu("delete from antriapotek3");
-                        Sequel.queryu("insert into antriapotek3 values('"+NoResep+"','1','"+NoRawat+"')");
-                        Sequel.queryu("delete from bukti_penyerahan_resep_obat where no_resep='"+NoResep+"'");
+                        String jamDefault=new java.text.SimpleDateFormat("HH:mm:ss").format(new Date());
+                        String jam=JOptionPane.showInputDialog(rootPane,"Masukkan jam penyerahan (HH:mm:ss) untuk No.Resep "+NoResep+" :",jamDefault);
+                        if(jam==null){
+                            return;
+                        }
+                        jam=jam.trim().replaceAll("[^0-9:]","");
+                        if(jam.equals("")){
+                            JOptionPane.showMessageDialog(null,"Maaf, jam penyerahan tidak boleh kosong..!!");
+                            return;
+                        }
+                        String tgl=new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                        Sequel.queryu("update resep_obat set tgl_penyerahan='"+tgl+"',jam_penyerahan='"+jam+"' where no_resep='"+NoResep+"'");
+                        JOptionPane.showMessageDialog(null,"Penyerahan resep "+NoResep+" berhasil dicatat.\nTanggal : "+tgl+"   Jam : "+jam);
+                        tampil();
                     }
                 }else{
                     JOptionPane.showMessageDialog(null,"Maaf, Anda tidak punya hak akses untuk mengvalidasi...!!!!");

@@ -211,9 +211,54 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     /** Creates new form DlgPerawatan
      * @param parent
      * @param modal */
+    private rekammedis.PanelSBAR panelSBAR;
+
+    private void pasangTabSBAR(){
+        panelSBAR = new rekammedis.PanelSBAR("ralan");
+        TabRawat.addTab("SBAR", panelSBAR);
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener(){
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e){
+                if(TabRawat.getSelectedComponent()==panelSBAR){
+                    panelSBAR.setKonteks(TNoRw.getText());
+                }
+            }
+        });
+        tambahTombolMenu("Validasi SBAR", new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){
+                rekammedis.DlgValidasiSBAR d=new rekammedis.DlgValidasiSBAR(null,true,"ralan");
+                d.setNoRawat(TNoRw.getText());
+                d.setVisible(true);
+            }
+        });
+        tambahTombolMenu("Validasi SOAP", new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){
+                rekammedis.DlgValidasiSOAP d=new rekammedis.DlgValidasiSOAP(null,true,"ralan");
+                d.setNoRawat(TNoRw.getText());
+                d.setVisible(true);
+            }
+        });
+    }
+
+    private void tambahTombolMenu(String teks, java.awt.event.ActionListener aksi){
+        widget.Button b = new widget.Button();
+        b.setText(teks);
+        b.setFont(new java.awt.Font("Tahoma", 0, 11));
+        b.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        b.setMargin(new java.awt.Insets(1,1,1,1));
+        b.setPreferredSize(new java.awt.Dimension(190,23));
+        try{ b.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png"))); }catch(Exception e){}
+        b.addActionListener(aksi);
+        FormMenu.add(b);
+        FormMenu.revalidate();
+        FormMenu.repaint();
+    }
+
     public DlgRawatJalan(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        rekammedis.DlgValidasiSOAP.pastikanKolom("pemeriksaan_ralan");
+        pasangTabSBAR();
+        pasangTabLaborat();
         initRawatJalan();
         initTableSOAP();
         rapikanPanelInputSOAP();
@@ -459,7 +504,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         tabModePemeriksaan=new DefaultTableModel(null,new Object[]{
             "P","No.Rawat","No.R.M.","Nama Pasien","Tgl.Rawat","Jam","Suhu(C)","Tensi","Nadi(/menit)",
             "Respirasi(/menit)","Tinggi(Cm)","Berat(Kg)","SpO2(%)","GCS(E,V,M)","Kesadaran","Subjek","Objek","Alergi",
-            "L.P.(Cm)","Plan","Asesmen","Instruksi","Evaluasi","NIP","Dokter/Paramedis","Profesi/Jabatan"}){
+            "L.P.(Cm)","Plan","Asesmen","Instruksi","Evaluasi","NIP","Dokter/Paramedis","Profesi/Jabatan","Validasi"}){
              @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
                 if (colIndex==0) {
@@ -5576,17 +5621,17 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                             Valid.textKosong(KdPeg,"Dokter/Paramedis masih kosong...!!");
                         }else{
                             if(akses.getkode().equals("Admin Utama")){
-                                if(Sequel.menyimpantf("pemeriksaan_ralan","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","Data",21,new String[]{
+                                if(Sequel.menyimpantf("pemeriksaan_ralan","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","Data",25,new String[]{
                                     TNoRw.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),
                                     TSuhu.getText(),TTensi.getText(),TNadi.getText(),TRespirasi.getText(),TTinggi.getText(),TBerat.getText(),
                                     SpO2.getText(),TGCS.getText(),cmbKesadaran.getSelectedItem().toString(),TKeluhan.getText(),TPemeriksaan.getText(),TAlergi.getText(),
-                                    LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),KdPeg.getText()})==true){
+                                    LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),KdPeg.getText(),"Belum","",null,null})==true){
                                         sinkronDraftResepSOAP(TNoRw.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),KdPeg.getText(),TindakLanjut.getText());
                                         tabModePemeriksaan.addRow(new Object[]{
                                             false,TNoRw.getText(),TNoRM.getText(),TPasien.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),
                                             TSuhu.getText(),TTensi.getText(),TNadi.getText(),TRespirasi.getText(),TTinggi.getText(),TBerat.getText(),SpO2.getText(),TGCS.getText(),cmbKesadaran.getSelectedItem().toString(),
                                             TKeluhan.getText(),TPemeriksaan.getText(),TAlergi.getText(),LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),
-                                            KdPeg.getText(),TPegawai.getText(),Jabatan.getText()
+                                            KdPeg.getText(),TPegawai.getText(),Jabatan.getText(),"Belum"
                                         });
                                         TSuhu.setText("");TTensi.setText("");TNadi.setText("");TRespirasi.setText("");
                                         TTinggi.setText("");TBerat.setText("");TGCS.setText("");TKeluhan.setText("");
@@ -5597,17 +5642,17 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                 }
                             }else{
                                 if(akses.getkode().equals(KdPeg.getText())){
-                                    if(Sequel.menyimpantf("pemeriksaan_ralan","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","Data",21,new String[]{
+                                    if(Sequel.menyimpantf("pemeriksaan_ralan","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","Data",25,new String[]{
                                         TNoRw.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),
                                         TSuhu.getText(),TTensi.getText(),TNadi.getText(),TRespirasi.getText(),TTinggi.getText(),TBerat.getText(),
                                         SpO2.getText(),TGCS.getText(),cmbKesadaran.getSelectedItem().toString(),TKeluhan.getText(),TPemeriksaan.getText(),TAlergi.getText(),
-                                        LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),KdPeg.getText()})==true){
+                                        LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),KdPeg.getText(),"Belum","",null,null})==true){
                                             sinkronDraftResepSOAP(TNoRw.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),KdPeg.getText(),TindakLanjut.getText());
                                             tabModePemeriksaan.addRow(new Object[]{
                                                 false,TNoRw.getText(),TNoRM.getText(),TPasien.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),
                                                 TSuhu.getText(),TTensi.getText(),TNadi.getText(),TRespirasi.getText(),TTinggi.getText(),TBerat.getText(),SpO2.getText(),TGCS.getText(),cmbKesadaran.getSelectedItem().toString(),
                                                 TKeluhan.getText(),TPemeriksaan.getText(),TAlergi.getText(),LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),
-                                                KdPeg.getText(),TPegawai.getText(),Jabatan.getText()
+                                                KdPeg.getText(),TPegawai.getText(),Jabatan.getText(),"Belum"
                                             });
                                             TSuhu.setText("");TTensi.setText("");TNadi.setText("");TRespirasi.setText("");
                                             TTinggi.setText("");TBerat.setText("");TGCS.setText("");TKeluhan.setText("");
@@ -10111,13 +10156,14 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         konteksResepTerintegrasi="";
         sinkronkanTabResepTerintegrasi(true);
         TabRawatMouseClicked(null);
+        refreshNotifValidasi();
     }
-    
+
     private void isForm(){
         if(ChkInput.isSelected()==true){
             ChkInput.setVisible(false);
             PanelInput.setPreferredSize(new Dimension(WIDTH,470));
-            panelGlass12.setVisible(true);      
+            panelGlass12.setVisible(true);
             ChkInput.setVisible(true);
         }else if(ChkInput.isSelected()==false){           
             ChkInput.setVisible(false);            
@@ -12322,7 +12368,7 @@ private String nvl(String value) {
             "pemeriksaan_ralan.berat,pemeriksaan_ralan.spo2,pemeriksaan_ralan.gcs,pemeriksaan_ralan.kesadaran,pemeriksaan_ralan.keluhan, " +
             "pemeriksaan_ralan.pemeriksaan,pemeriksaan_ralan.alergi,pemeriksaan_ralan.lingkar_perut,pemeriksaan_ralan.rtl," +
             "pemeriksaan_ralan.penilaian,pemeriksaan_ralan.instruksi,pemeriksaan_ralan.evaluasi," +
-            "pemeriksaan_ralan.nip,pegawai.nama,pegawai.jbtn " +
+            "pemeriksaan_ralan.nip,pegawai.nama,pegawai.jbtn,pemeriksaan_ralan.validasi " +
             "from pasien inner join reg_periksa on reg_periksa.no_rkm_medis=pasien.no_rkm_medis " +
             "inner join pemeriksaan_ralan on pemeriksaan_ralan.no_rawat=reg_periksa.no_rawat " +
             "inner join pegawai on pemeriksaan_ralan.nip=pegawai.nik " +
@@ -12378,7 +12424,8 @@ private String nvl(String value) {
                     rs.getString(22), // evaluasi
                     rs.getString(23), // nip
                     rs.getString(24), // nama
-                    rs.getString(25)  // jbtn
+                    rs.getString(25), // jbtn
+                    (rs.getString(26) != null && rs.getString(26).equalsIgnoreCase("Sudah")) ? "Sudah" : "Belum" // validasi
                 });
 
                 // ====== TABEL SOAP DOKTER & PERAWAT ======
@@ -12480,15 +12527,353 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
 }
 }
 
-    private void rapikanPanelInputSOAP() {
-        jScrollPane1.setVisible(false);
-        jScrollPane2.setVisible(false);
-        jLabel1.setVisible(false);
-        jLabel2.setVisible(false);
-        PanelInput.setPreferredSize(new Dimension(WIDTH, 470));
-        panelGlass12.setPreferredSize(new Dimension(44, 440));
+    private boolean soapListenerDipasang = false;
+    private boolean notifValidasiSiap = false;
+    private final javax.swing.JLabel lblNotifSBAR = new javax.swing.JLabel();
+    private final javax.swing.JLabel lblNotifSOAP = new javax.swing.JLabel();
+    private widget.editorpane LoadHTMLLaborat;
 
-        Font fontInputSOAP = new Font("Tahoma", Font.PLAIN, 13);
+    /** Pasang tab "Laboratorium" (HTML hasil lab) ke TabRawat + listener refresh saat dibuka. */
+    private void pasangTabLaborat() {
+        LoadHTMLLaborat = new widget.editorpane();
+        LoadHTMLLaborat.setContentType("text/html");
+        LoadHTMLLaborat.setEditable(false);
+        LoadHTMLLaborat.setBorder(null);
+        widget.ScrollPane sc = new widget.ScrollPane();
+        sc.setViewportView(LoadHTMLLaborat);
+        final widget.InternalFrame frame = new widget.InternalFrame();
+        frame.setLayout(new java.awt.BorderLayout(1, 1));
+        frame.add(sc, java.awt.BorderLayout.CENTER);
+        TabRawat.addTab("Laboratorium", frame);
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e) {
+                if (TabRawat.getSelectedComponent() == frame) {
+                    tampilLaboratPasien();
+                }
+            }
+        });
+        tampilLaboratKosong("Pilih pasien atau klik Cari untuk menampilkan data laboratorium.");
+    }
+
+    private void tampilLaboratKosong(String pesan) {
+        LoadHTMLLaborat.setText(
+            "<html><head><style>" +
+            "body{font-family:tahoma;font-size:11px;color:#333;background:#fff;margin:10px;}" +
+            ".info{padding:10px;border:1px solid #d8e7d8;background:#f8fff8;}" +
+            "</style></head><body><div class='info'>" + html(pesan) + "</div></body></html>"
+        );
+        LoadHTMLLaborat.setCaretPosition(0);
+    }
+
+    private void tampilLaboratPasien() {
+        String noRM = TNoRM.getText().trim();
+        if (noRM.equals("")) {
+            noRM = TCariPasien.getText().trim();
+        }
+        if (noRM.equals("") && !TNoRw.getText().trim().equals("")) {
+            noRM = Sequel.cariIsi("select reg_periksa.no_rkm_medis from reg_periksa where reg_periksa.no_rawat=?", TNoRw.getText().trim());
+        }
+        if (noRM.equals("")) {
+            tampilLaboratKosong("Pilih pasien dulu untuk menampilkan hasil laboratorium.");
+            return;
+        }
+        StringBuilder htmlContent = new StringBuilder();
+        htmlContent.append("<html><head><style>")
+                .append("body{font-family:tahoma;font-size:11px;color:#333;background:#fff;margin:8px;}")
+                .append("table{width:100%;border-collapse:collapse;margin-bottom:10px;}")
+                .append("th{background:#FFFAF8;border:1px solid #e2e7dd;padding:4px;text-align:center;}")
+                .append("td{border:1px solid #e2e7dd;padding:4px;vertical-align:top;}")
+                .append(".judul{font-weight:bold;background:#edf7ed;padding:6px;border:1px solid #d8e7d8;margin:8px 0 0 0;}")
+                .append(".subjudul{background:#fff8f4;font-weight:bold;}")
+                .append(".muted{color:#666;}")
+                .append("</style></head><body>")
+                .append("<div class='muted'>No.RM: ").append(html(noRM)).append("</div>");
+        int total = 0;
+        total += appendLaboratPkMb(htmlContent, noRM);
+        total += appendLaboratPa(htmlContent, noRM);
+        if (total == 0) {
+            htmlContent.append("<div class='judul'>Data laboratorium tidak ditemukan untuk pasien ini.</div>");
+        }
+        htmlContent.append("</body></html>");
+        LoadHTMLLaborat.setText(htmlContent.toString());
+        LoadHTMLLaborat.setCaretPosition(0);
+    }
+
+    private int appendLaboratPkMb(StringBuilder htmlContent, String noRM) {
+        int nomor = 0;
+        try (PreparedStatement psGrup = koneksi.prepareStatement(
+                "select periksa_lab.no_rawat,periksa_lab.tgl_periksa,periksa_lab.jam "+
+                "from periksa_lab inner join reg_periksa on periksa_lab.no_rawat=reg_periksa.no_rawat "+
+                "where periksa_lab.kategori<>'PA' and reg_periksa.no_rkm_medis=? "+
+                "group by periksa_lab.no_rawat,periksa_lab.tgl_periksa,periksa_lab.jam "+
+                "order by periksa_lab.tgl_periksa,periksa_lab.jam")) {
+            psGrup.setString(1, noRM);
+            try (ResultSet rsGrup = psGrup.executeQuery()) {
+                while (rsGrup.next()) {
+                    if (nomor == 0) {
+                        htmlContent.append("<div class='judul'>Pemeriksaan Laboratorium PK & MB</div><table>")
+                                .append("<tr><th>No.</th><th>No.Rawat</th><th>Tanggal</th><th>Kode</th><th>Nama Pemeriksaan</th><th>Dokter PJ</th><th>Petugas</th><th>Keterangan</th></tr>");
+                    }
+                    nomor++;
+                    appendDetailLaboratPkMb(htmlContent, nomor, rsGrup.getString("no_rawat"), rsGrup.getString("tgl_periksa"), rsGrup.getString("jam"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Lab : " + e);
+        }
+        if (nomor > 0) {
+            htmlContent.append("</table>");
+        }
+        return nomor;
+    }
+
+    private void appendDetailLaboratPkMb(StringBuilder htmlContent, int nomor, String noRawat, String tglPeriksa, String jamPeriksa) {
+        try (PreparedStatement psItem = koneksi.prepareStatement(
+                "select periksa_lab.kd_jenis_prw,jns_perawatan_lab.nm_perawatan,petugas.nama,periksa_lab.biaya,dokter.nm_dokter "+
+                "from periksa_lab inner join jns_perawatan_lab on periksa_lab.kd_jenis_prw=jns_perawatan_lab.kd_jenis_prw "+
+                "inner join petugas on periksa_lab.nip=petugas.nip inner join dokter on periksa_lab.kd_dokter=dokter.kd_dokter "+
+                "where periksa_lab.kategori<>'PA' and periksa_lab.no_rawat=? and periksa_lab.tgl_periksa=? and periksa_lab.jam=? "+
+                "order by periksa_lab.kd_jenis_prw")) {
+            psItem.setString(1, noRawat);
+            psItem.setString(2, tglPeriksa);
+            psItem.setString(3, jamPeriksa);
+            int urutItem = 0;
+            try (ResultSet rsItem = psItem.executeQuery()) {
+                while (rsItem.next()) {
+                    urutItem++;
+                    htmlContent.append("<tr>")
+                            .append("<td align='center'>").append(urutItem == 1 ? nomor : "").append("</td>")
+                            .append("<td>").append(urutItem == 1 ? html(noRawat) : "").append("</td>")
+                            .append("<td>").append(urutItem == 1 ? html(tglPeriksa) + " " + html(jamPeriksa) : "").append("</td>")
+                            .append("<td>").append(html(rsItem.getString("kd_jenis_prw"))).append("</td>")
+                            .append("<td>").append(html(rsItem.getString("nm_perawatan"))).append("</td>")
+                            .append("<td>").append(html(rsItem.getString("nm_dokter"))).append("</td>")
+                            .append("<td>").append(html(rsItem.getString("nama"))).append("</td>")
+                            .append("<td></td></tr>");
+                    appendNilaiLaboratPkMb(htmlContent, noRawat, rsItem.getString("kd_jenis_prw"), tglPeriksa, jamPeriksa);
+                }
+            }
+            appendSaranKesanLaborat(htmlContent, noRawat, tglPeriksa, jamPeriksa);
+            appendLaporKritisLaborat(htmlContent, noRawat, tglPeriksa, jamPeriksa);
+        } catch (Exception e) {
+            System.out.println("Notifikasi Lab : " + e);
+        }
+    }
+
+    private void appendNilaiLaboratPkMb(StringBuilder htmlContent, String noRawat, String kdJenisPrw, String tglPeriksa, String jamPeriksa) {
+        try (PreparedStatement psNilai = koneksi.prepareStatement(
+                "select template_laboratorium.Pemeriksaan,detail_periksa_lab.nilai,template_laboratorium.satuan,"+
+                "detail_periksa_lab.nilai_rujukan,detail_periksa_lab.biaya_item,detail_periksa_lab.keterangan "+
+                "from detail_periksa_lab inner join template_laboratorium on detail_periksa_lab.id_template=template_laboratorium.id_template "+
+                "where detail_periksa_lab.no_rawat=? and detail_periksa_lab.kd_jenis_prw=? and detail_periksa_lab.tgl_periksa=? and detail_periksa_lab.jam=? "+
+                "order by detail_periksa_lab.kd_jenis_prw,template_laboratorium.urut")) {
+            psNilai.setString(1, noRawat);
+            psNilai.setString(2, kdJenisPrw);
+            psNilai.setString(3, tglPeriksa);
+            psNilai.setString(4, jamPeriksa);
+            boolean adaDetail = false;
+            try (ResultSet rsNilai = psNilai.executeQuery()) {
+                while (rsNilai.next()) {
+                    if (!adaDetail) {
+                        htmlContent.append("<tr><td></td><td></td><td></td><td></td>")
+                                .append("<td class='subjudul'>Detail Pemeriksaan</td>")
+                                .append("<td class='subjudul'>Hasil</td>")
+                                .append("<td class='subjudul'>Nilai Rujukan</td>")
+                                .append("<td class='subjudul'>Keterangan</td></tr>");
+                        adaDetail = true;
+                    }
+                    String ketRaw = nilai(rsNilai.getString("keterangan")).trim();
+                    boolean isK = ketRaw.equalsIgnoreCase("K");
+                    boolean isLow = ketRaw.equalsIgnoreCase("Low") || ketRaw.equalsIgnoreCase("L");
+                    boolean isHigh = ketRaw.equalsIgnoreCase("High") || ketRaw.equalsIgnoreCase("H");
+                    String hasil = html(rsNilai.getString("nilai")) + " " + html(rsNilai.getString("satuan"));
+                    String ketTampil = "";
+                    if (isK) {
+                        hasil = "<font color='red'><b>" + hasil + "</b></font>";
+                        ketTampil = "<font color='red'><b>K</b></font>";
+                    } else if (isLow) {
+                        hasil = "<b>" + hasil + "</b>";
+                        ketTampil = "<b>L</b>";
+                    } else if (isHigh) {
+                        hasil = "<b>" + hasil + "</b>";
+                        ketTampil = "<b>H</b>";
+                    }
+                    htmlContent.append("<tr><td></td><td></td><td></td><td></td>")
+                            .append("<td>").append(html(rsNilai.getString("Pemeriksaan"))).append("</td>")
+                            .append("<td>").append(hasil).append("</td>")
+                            .append("<td>").append(html(rsNilai.getString("nilai_rujukan"))).append("</td>")
+                            .append("<td align='center'>").append(ketTampil).append("</td></tr>");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi : " + e);
+        }
+    }
+
+    private void appendSaranKesanLaborat(StringBuilder htmlContent, String noRawat, String tglPeriksa, String jamPeriksa) {
+        try (PreparedStatement psSaran = koneksi.prepareStatement(
+                "select saran,kesan from saran_kesan_lab where no_rawat=? and tgl_periksa=? and jam=?")) {
+            psSaran.setString(1, noRawat);
+            psSaran.setString(2, tglPeriksa);
+            psSaran.setString(3, jamPeriksa);
+            try (ResultSet rsSaran = psSaran.executeQuery()) {
+                if (rsSaran.next()) {
+                    htmlContent.append("<tr><td></td><td></td><td>Kesan</td><td colspan='5'>: ").append(br(rsSaran.getString("kesan"))).append("</td></tr>")
+                            .append("<tr><td></td><td></td><td>Saran</td><td colspan='5'>: ").append(br(rsSaran.getString("saran"))).append("</td></tr>");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif : " + e);
+        }
+    }
+
+    /** Jika pemeriksaan punya nilai kritis (keterangan 'K'), tampilkan jam lapor &
+     *  jam respon Dokter PJ dari lapor_kritis_lab di bagian bawah blok lab. */
+    private void appendLaporKritisLaborat(StringBuilder htmlContent, String noRawat, String tglPeriksa, String jamPeriksa) {
+        try {
+            boolean adaKritis = false;
+            try (PreparedStatement ps = koneksi.prepareStatement(
+                    "select count(*) from detail_periksa_lab where no_rawat=? and tgl_periksa=? and jam=? and trim(keterangan)='K'")) {
+                ps.setString(1, noRawat);
+                ps.setString(2, tglPeriksa);
+                ps.setString(3, jamPeriksa);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) { adaKritis = rs.getInt(1) > 0; }
+                }
+            }
+            if (!adaKritis) {
+                return;
+            }
+            String jamLapor = "";
+            String jamRespon = "";
+            try (PreparedStatement ps = koneksi.prepareStatement(
+                    "select jam_lapor,jam_respon from lapor_kritis_lab where no_rawat=? and tgl_periksa=? and jam=?")) {
+                ps.setString(1, noRawat);
+                ps.setString(2, tglPeriksa);
+                ps.setString(3, jamPeriksa);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String jl = rs.getString("jam_lapor");
+                        String jr = rs.getString("jam_respon");
+                        jamLapor = (jl == null || jl.startsWith("0000") || jl.length() < 19) ? "" : jl.substring(0, 19);
+                        jamRespon = (jr == null || jr.startsWith("0000") || jr.length() < 19) ? "" : jr.substring(0, 19);
+                    }
+                }
+            }
+            htmlContent.append("<tr><td></td><td></td><td><font color='red'><b>Nilai Kritis</b></font></td><td colspan='5'><font color='red'>: Perlu pelaporan ke Dokter PJ</font></td></tr>")
+                    .append("<tr><td></td><td></td><td>Jam Lapor Dokter PJ</td><td colspan='5'>: ").append(jamLapor.equals("") ? "<i>belum diisi</i>" : html(jamLapor)).append("</td></tr>")
+                    .append("<tr><td></td><td></td><td>Jam Respon Dokter PJ</td><td colspan='5'>: ").append(jamRespon.equals("") ? "<i>belum diisi</i>" : html(jamRespon)).append("</td></tr>");
+        } catch (Exception e) {
+            System.out.println("Notif lapor kritis lab : " + e);
+        }
+    }
+
+    private int appendLaboratPa(StringBuilder htmlContent, String noRM) {
+        int nomor = 0;
+        try (PreparedStatement psPa = koneksi.prepareStatement(
+                "select periksa_lab.no_rawat,periksa_lab.tgl_periksa,periksa_lab.jam,periksa_lab.kd_jenis_prw,"+
+                "jns_perawatan_lab.nm_perawatan,petugas.nama,periksa_lab.biaya,dokter.nm_dokter "+
+                "from periksa_lab inner join reg_periksa on periksa_lab.no_rawat=reg_periksa.no_rawat "+
+                "inner join jns_perawatan_lab on periksa_lab.kd_jenis_prw=jns_perawatan_lab.kd_jenis_prw "+
+                "inner join petugas on periksa_lab.nip=petugas.nip inner join dokter on periksa_lab.kd_dokter=dokter.kd_dokter "+
+                "where periksa_lab.kategori='PA' and reg_periksa.no_rkm_medis=? "+
+                "order by periksa_lab.tgl_periksa,periksa_lab.jam")) {
+            psPa.setString(1, noRM);
+            try (ResultSet rsPa = psPa.executeQuery()) {
+                while (rsPa.next()) {
+                    if (nomor == 0) {
+                        htmlContent.append("<div class='judul'>Pemeriksaan Laboratorium PA</div><table>")
+                                .append("<tr><th>No.</th><th>No.Rawat</th><th>Tanggal</th><th>Kode</th><th>Nama Pemeriksaan</th><th>Dokter PJ</th><th>Petugas</th><th>Biaya</th></tr>");
+                    }
+                    nomor++;
+                    htmlContent.append("<tr><td align='center'>").append(nomor).append("</td>")
+                            .append("<td>").append(html(rsPa.getString("no_rawat"))).append("</td>")
+                            .append("<td>").append(html(rsPa.getString("tgl_periksa"))).append(" ").append(html(rsPa.getString("jam"))).append("</td>")
+                            .append("<td>").append(html(rsPa.getString("kd_jenis_prw"))).append("</td>")
+                            .append("<td>").append(html(rsPa.getString("nm_perawatan"))).append("</td>")
+                            .append("<td>").append(html(rsPa.getString("nm_dokter"))).append("</td>")
+                            .append("<td>").append(html(rsPa.getString("nama"))).append("</td>")
+                            .append("<td align='right'>").append(Valid.SetAngka(rsPa.getDouble("biaya"))).append("</td></tr>");
+                    appendDetailLaboratPa(htmlContent, rsPa.getString("no_rawat"), rsPa.getString("kd_jenis_prw"), rsPa.getString("tgl_periksa"), rsPa.getString("jam"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Lab : " + e);
+        }
+        if (nomor > 0) {
+            htmlContent.append("</table>");
+        }
+        return nomor;
+    }
+
+    private void appendDetailLaboratPa(StringBuilder htmlContent, String noRawat, String kdJenisPrw, String tglPeriksa, String jamPeriksa) {
+        try (PreparedStatement psDetailPa = koneksi.prepareStatement(
+                "select diagnosa_klinik,makroskopik,mikroskopik,kesimpulan,kesan from detail_periksa_labpa "+
+                "where no_rawat=? and kd_jenis_prw=? and tgl_periksa=? and jam=?")) {
+            psDetailPa.setString(1, noRawat);
+            psDetailPa.setString(2, kdJenisPrw);
+            psDetailPa.setString(3, tglPeriksa);
+            psDetailPa.setString(4, jamPeriksa);
+            try (ResultSet rsDetailPa = psDetailPa.executeQuery()) {
+                if (rsDetailPa.next()) {
+                    htmlContent.append("<tr><td></td><td></td><td>Diagnosa Klinis</td><td colspan='5'>: ").append(br(rsDetailPa.getString("diagnosa_klinik"))).append("</td></tr>")
+                            .append("<tr><td></td><td></td><td>Makroskopik</td><td colspan='5'>: ").append(br(rsDetailPa.getString("makroskopik"))).append("</td></tr>")
+                            .append("<tr><td></td><td></td><td>Mikroskopik</td><td colspan='5'>: ").append(br(rsDetailPa.getString("mikroskopik"))).append("</td></tr>")
+                            .append("<tr><td></td><td></td><td>Kesimpulan</td><td colspan='5'>: ").append(br(rsDetailPa.getString("kesimpulan"))).append("</td></tr>")
+                            .append("<tr><td></td><td></td><td>Kesan</td><td colspan='5'>: ").append(br(rsDetailPa.getString("kesan"))).append("</td></tr>");
+                }
+            }
+            appendGambarLaboratPa(htmlContent, noRawat, kdJenisPrw, tglPeriksa, jamPeriksa);
+        } catch (Exception e) {
+            System.out.println("Notifikasi : " + e);
+        }
+    }
+
+    private void appendGambarLaboratPa(StringBuilder htmlContent, String noRawat, String kdJenisPrw, String tglPeriksa, String jamPeriksa) {
+        try (PreparedStatement psGambarPa = koneksi.prepareStatement(
+                "select photo from detail_periksa_labpa_gambar where no_rawat=? and kd_jenis_prw=? and tgl_periksa=? and jam=?")) {
+            psGambarPa.setString(1, noRawat);
+            psGambarPa.setString(2, kdJenisPrw);
+            psGambarPa.setString(3, tglPeriksa);
+            psGambarPa.setString(4, jamPeriksa);
+            try (ResultSet rsGambarPa = psGambarPa.executeQuery()) {
+                while (rsGambarPa.next()) {
+                    if (!nilai(rsGambarPa.getString("photo")).equals("")) {
+                        String urlGambar = urlGambarLaboratPa(rsGambarPa.getString("photo"));
+                        htmlContent.append("<tr><td></td><td></td><td colspan='6' align='center'>")
+                                .append("<img alt='Gambar PA' src='").append(html(urlGambar)).append("' width='450' height='450'/><br>")
+                                .append(html(rsGambarPa.getString("photo"))).append("</td></tr>");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi : " + e);
+        }
+    }
+
+    private String urlGambarLaboratPa(String lokasiGambar) {
+        return "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/" + koneksiDB.HYBRIDWEB() + "/labpa/" + nilai(lokasiGambar);
+    }
+
+    private String br(String text) {
+        return html(text).replaceAll("(\\r\\n|\\r|\\n|\\n\\r)", "<br>");
+    }
+
+    private String html(String text) {
+        String hasil = nilai(text);
+        return hasil.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;");
+    }
+
+    private String nilai(String text) {
+        return text == null ? "" : text;
+    }
+
+    private void rapikanPanelInputSOAP() {
+        Font fontInputSOAP = new Font("Tahoma", Font.PLAIN, 15);
         TKeluhan.setFont(fontInputSOAP);
         TPemeriksaan.setFont(fontInputSOAP);
         TPenilaian.setFont(fontInputSOAP);
@@ -12496,38 +12881,195 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         TInstruksi.setFont(fontInputSOAP);
         TEvaluasi.setFont(fontInputSOAP);
 
-        TAlergi.setBounds(685, 10, 248, 23);
-        scrollPane1.setBounds(73, 70, 390, 90);
-        scrollPane2.setBounds(73, 170, 390, 120);
-        scrollPane3.setBounds(543, 40, 390, 90);
-        scrollPane6.setBounds(543, 140, 390, 110);
-        scrollPane7.setBounds(543, 260, 390, 80);
-        scrollPane8.setBounds(543, 350, 390, 90);
+        Font fontJudulSOAP = new Font("Tahoma", Font.BOLD, 12);
+        jLabel8.setFont(fontJudulSOAP);   // Subjek
+        jLabel9.setFont(fontJudulSOAP);   // Objek
+        jLabel28.setFont(fontJudulSOAP);  // Asesmen
+        jLabel26.setFont(fontJudulSOAP);  // Plan
+        jLabel53.setFont(fontJudulSOAP);  // Instruksi
+        jLabel56.setFont(fontJudulSOAP);  // Evaluasi
 
-        jLabel9.setBounds(0, 170, 70, 23);
-        jLabel26.setBounds(450, 140, 90, 23);
-        jLabel53.setBounds(450, 260, 90, 23);
-        jLabel56.setBounds(450, 350, 90, 23);
-        jLabel7.setBounds(0, 305, 70, 23);
-        jLabel17.setBounds(0, 340, 70, 23);
-        jLabel54.setBounds(0, 375, 70, 23);
-        jLabel4.setBounds(130, 305, 90, 23);
-        jLabel13.setBounds(130, 340, 88, 23);
-        jLabel22.setBounds(120, 375, 70, 23);
-        jLabel16.setBounds(296, 305, 79, 23);
-        jLabel18.setBounds(296, 340, 79, 23);
-        jLabel29.setBounds(234, 375, 70, 23);
-        jLabel20.setBounds(130, 340, 88, 23);
+        jScrollPane1.setVisible(false);
+        jScrollPane2.setVisible(false);
+        jLabel1.setVisible(false);
+        jLabel2.setVisible(false);
+        PanelInput.setPreferredSize(new Dimension(WIDTH, 470));
+        panelGlass12.setPreferredSize(new Dimension(44, 440));
 
-        TSuhu.setBounds(73, 305, 55, 23);
-        TTensi.setBounds(223, 305, 74, 23);
-        TBerat.setBounds(378, 305, 55, 23);
-        TTinggi.setBounds(73, 340, 55, 23);
-        TRespirasi.setBounds(220, 340, 58, 23);
-        TNadi.setBounds(378, 340, 55, 23);
-        SpO2.setBounds(73, 375, 42, 23);
-        TGCS.setBounds(193, 375, 42, 23);
-        cmbKesadaran.setBounds(307, 375, 126, 23);
+        siapkanNotifValidasi();
+        if (!soapListenerDipasang) {
+            soapListenerDipasang = true;
+            panelGlass12.addComponentListener(new java.awt.event.ComponentAdapter() {
+                @Override
+                public void componentResized(java.awt.event.ComponentEvent e) {
+                    susunLayoutSoapie3Kolom();
+                }
+            });
+        }
+        javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                susunLayoutSoapie3Kolom();
+            }
+        });
+    }
+
+    /** Tata letak input SOAPIE 3 kolom + TTV + tabel riwayat SOAP di bawahnya,
+     *  responsif mengikuti lebar/tinggi panelGlass12 (memaksimalkan ruang). */
+    private void susunLayoutSoapie3Kolom() {
+        int W = panelGlass12.getWidth();
+        int H = panelGlass12.getHeight();
+        if (W < 200) { W = 1860; }
+        if (H < 200) { H = 440; }
+        int M = 10, gap = 12, lblH = 20, fh = 23;
+
+        // ---- Baris atas: Dilakukan, Profesi/Jabatan/Departemen, Alergi ----
+        int hy = 8;
+        int x = M;
+        jLabel37.setBounds(x, hy, 70, fh); x += 72;
+        KdPeg.setBounds(x, hy, 80, fh); x += 84;
+        TPegawai.setBounds(x, hy, 175, fh); x += 179;
+        BtnSeekPegawai.setBounds(x, hy, 28, fh); x += 36;
+        jLabel41.setBounds(x, hy, 185, fh); x += 188;
+        Jabatan.setBounds(x, hy, 165, fh); x += 169;
+        Btn5Soap.setBounds(x, hy, 28, fh); x += 30;
+        BtnTemplatePemeriksaan.setBounds(x, hy, 28, fh); x += 30;
+        BtnTemplateSoapExcel.setBounds(x, hy, 28, fh); x += 40;
+        jLabel15.setBounds(x, hy, 45, fh); x += 48;
+        int alergiW = Math.max(150, W - M - x);
+        TAlergi.setBounds(x, hy, alergiW, fh);
+
+        // ---- Geometri band bawah (TTV, 2 baris) ----
+        int bottomMargin = 10;
+        int ttvBottom = H - bottomMargin;
+        int ttvTop = ttvBottom - 62;
+
+        // ---- 3 kolom area teks ----
+        int colsTop = 40;
+        int colsBottom = ttvTop - 10;
+        int colsH = colsBottom - colsTop;
+        if (colsH < 150) { colsH = 150; }
+        int cellH = (colsH - 2 * lblH - gap) / 2;
+        if (cellH < 55) { cellH = 55; }
+        int colW = (W - 2 * M - 2 * gap) / 3;
+        int c1 = M, c2 = M + colW + gap, c3 = M + 2 * (colW + gap);
+        int r1y = colsTop;
+        int r2y = colsTop + lblH + cellH + gap;
+
+        jLabel8.setBounds(c1, r1y, colW, lblH);  jLabel8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        scrollPane1.setBounds(c1, r1y + lblH, colW, cellH);
+        jLabel9.setBounds(c1, r2y, colW, lblH);  jLabel9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        scrollPane2.setBounds(c1, r2y + lblH, colW, cellH);
+
+        jLabel28.setBounds(c2, r1y, colW, lblH); jLabel28.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        scrollPane3.setBounds(c2, r1y + lblH, colW, cellH);
+        jLabel26.setBounds(c2, r2y, colW, lblH); jLabel26.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        scrollPane6.setBounds(c2, r2y + lblH, colW, cellH);
+
+        jLabel53.setBounds(c3, r1y, colW, lblH); jLabel53.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        scrollPane7.setBounds(c3, r1y + lblH, colW, cellH);
+        jLabel56.setBounds(c3, r2y, colW, lblH); jLabel56.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        scrollPane8.setBounds(c3, r2y + lblH, colW, cellH);
+
+        // ---- TTV (grid rapi: 2 baris, SpO2/GCS pindah ke kanan) ----
+        int t1 = ttvTop, t2 = ttvTop + 30;
+        int lw = 95, fo = lw + 3;                 // lebar label & jarak ke field
+        int la = M, lb = M + 185, lc = M + 370, ld = M + 555, le = M + 740;
+        int fa = la + fo, fb = lb + fo, fc = lc + fo, fd = ld + fo, fe = le + 78;
+
+        jLabel7.setBounds(la, t1, lw, fh);  TSuhu.setBounds(fa, t1, 55, fh);
+        jLabel4.setBounds(lb, t1, lw, fh);  TTensi.setBounds(fb, t1, 74, fh);
+        jLabel16.setBounds(lc, t1, lw, fh); TBerat.setBounds(fc, t1, 55, fh);
+        jLabel54.setBounds(ld, t1, lw, fh); SpO2.setBounds(fd, t1, 45, fh);
+        jLabel29.setBounds(le, t1, 75, fh); cmbKesadaran.setBounds(fe, t1, 126, fh);
+
+        jLabel17.setBounds(la, t2, lw, fh); TTinggi.setBounds(fa, t2, 55, fh);
+        jLabel20.setBounds(lb, t2, lw, fh); TRespirasi.setBounds(fb, t2, 58, fh);
+        jLabel18.setBounds(lc, t2, lw, fh); TNadi.setBounds(fc, t2, 55, fh);
+        jLabel22.setBounds(ld, t2, lw, fh); TGCS.setBounds(fd, t2, 45, fh);
+        jLabel25.setBounds(le, t2, 75, fh); LingkarPerut.setBounds(fe, t2, 55, fh);
+
+        // Tabel duplikat tbSoapDokter/tbSoapPerawat tidak dipakai (data SOAP
+        // sudah ada di tabel utama halaman pemeriksaan) -> tetap disembunyikan.
+        jScrollPane1.setVisible(false);
+        jScrollPane2.setVisible(false);
+        jLabel1.setVisible(false);
+        jLabel2.setVisible(false);
+
+        // ---- Notif validasi (ruang kosong kanan-bawah, sejajar TTV) ----
+        int notifX = M + 970;
+        int notifW = Math.max(220, W - M - notifX);
+        lblNotifSBAR.setBounds(notifX, t1, notifW, 26);
+        lblNotifSOAP.setBounds(notifX, t2, notifW, 26);
+
+        panelGlass12.revalidate();
+        panelGlass12.repaint();
+    }
+
+    /** Sekali pasang label notif validasi (SBAR & SOAP) ke panel. */
+    private void siapkanNotifValidasi() {
+        if (notifValidasiSiap) {
+            return;
+        }
+        notifValidasiSiap = true;
+        for (javax.swing.JLabel lbl : new javax.swing.JLabel[]{lblNotifSBAR, lblNotifSOAP}) {
+            lbl.setOpaque(true);
+            lbl.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                    javax.swing.BorderFactory.createLineBorder(new java.awt.Color(200, 120, 0)),
+                    javax.swing.BorderFactory.createEmptyBorder(2, 8, 2, 8)));
+            lbl.setBackground(new java.awt.Color(255, 244, 210));
+            lbl.setForeground(new java.awt.Color(160, 80, 0));
+            lbl.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+            lbl.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+            lbl.setVisible(false);
+            panelGlass12.add(lbl);
+        }
+        lblNotifSBAR.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                rekammedis.DlgValidasiSBAR d = new rekammedis.DlgValidasiSBAR(null, true, "ralan");
+                d.setNoRawat(TNoRw.getText());
+                d.setVisible(true);
+                refreshNotifValidasi();
+            }
+        });
+        lblNotifSOAP.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseClicked(java.awt.event.MouseEvent e) {
+                rekammedis.DlgValidasiSOAP d = new rekammedis.DlgValidasiSOAP(null, true, "ralan");
+                d.setNoRawat(TNoRw.getText());
+                d.setVisible(true);
+                refreshNotifValidasi();
+            }
+        });
+    }
+
+    /** Cek pending validasi SBAR & SOAP untuk pasien aktif; tampil hanya untuk dokter. */
+    private void refreshNotifValidasi() {
+        siapkanNotifValidasi();
+        String norw = TNoRw.getText().trim();
+        String nmDok = Sequel.cariIsi("select nm_dokter from dokter where kd_dokter=?", akses.getkode());
+        boolean dokter = nmDok != null && !nmDok.trim().equals("");
+        if (!dokter || norw.equals("")) {
+            lblNotifSBAR.setVisible(false);
+            lblNotifSOAP.setVisible(false);
+            return;
+        }
+        int nSbar = rekammedis.DlgValidasiSBAR.countBelum(norw, "ralan");
+        int nSoap = rekammedis.DlgValidasiSOAP.countBelum(norw, "ralan");
+        if (nSbar > 0) {
+            lblNotifSBAR.setText("⚠  " + nSbar + " SBAR belum divalidasi — klik untuk validasi");
+            lblNotifSBAR.setVisible(true);
+        } else {
+            lblNotifSBAR.setVisible(false);
+        }
+        if (nSoap > 0) {
+            lblNotifSOAP.setText("⚠  " + nSoap + " SOAP belum divalidasi — klik untuk validasi");
+            lblNotifSOAP.setVisible(true);
+        } else {
+            lblNotifSOAP.setVisible(false);
+        }
+        susunLayoutSoapie3Kolom();
     }
 
     private void pasangRendererListSOAP() {

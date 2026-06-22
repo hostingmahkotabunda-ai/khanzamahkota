@@ -316,10 +316,10 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         panel.setOpaque(false);
         int row = 0;
         row = tambahJudul(panel, row, "Pemeriksaan Dan Tindak Lanjut");
-        row = tambahAreaDenganTombol(panel, row, "Pemeriksaan Fisik", AreaPemeriksaanFisik, 84, BtnAmbilPemeriksaanSoap);
+        row = tambahAreaDenganTombol(panel, row, "Pemeriksaan Fisik", AreaPemeriksaanFisik, 180, BtnAmbilPemeriksaanSoap);
         row = tambahArea(panel, row, "Laboratorium", AreaLaboratorium, 84);
         row = tambahArea(panel, row, "Radiologi", AreaRadiologi, 84);
-        row = tambahArea(panel, row, "Penunjang Lainnya", AreaPenunjangLain, 84);
+        // Penunjang Lainnya disembunyikan dari form (data tetap tersimpan apa adanya)
         row = tambahAreaDenganTombol(panel, row, "Terapi / Obat Yang Diberikan", AreaTerapiObat, 220, BtnAmbilTerapiObatSoap);
         row = tambahArea(panel, row, "Instruksi Untuk Tindak Lanjut", AreaInstruksi, 96);
         return panel;

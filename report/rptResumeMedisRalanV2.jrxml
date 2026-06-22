@@ -190,47 +190,30 @@
 			<staticText><reportElement x="16" y="233" width="160" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Alasan / Indikasi Di Rawat]]></text></staticText>
 			<textField isStretchWithOverflow="true"><reportElement x="170" y="229" width="320" height="16"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{alasan_rawat}]]></textFieldExpression></textField>
 
-			<rectangle><reportElement x="10" y="250" width="489" height="38"/></rectangle>
-			<staticText><reportElement x="16" y="259" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Diagnosa Masuk]]></text></staticText>
-			<textField><reportElement x="165" y="259" width="245" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{diagnosa_masuk}]]></textFieldExpression></textField>
-			<staticText><reportElement x="418" y="259" width="60" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 10]]></text></staticText>
-			<textField><reportElement x="418" y="272" width="70" height="12"/><textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{icd10_masuk}]]></textFieldExpression></textField>
+			<rectangle><reportElement x="10" y="250" width="489" height="62"/></rectangle>
+			<staticText><reportElement x="16" y="260" width="120" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Diagnosa Keluar]]></text></staticText>
+			<textField><reportElement x="165" y="260" width="245" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": 1. " + $F{diagnosa_keluar}]]></textFieldExpression></textField>
+			<textField><reportElement x="165" y="274" width="245" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA["  2. " + $F{diagnosa_sekunder1}]]></textFieldExpression></textField>
+			<textField><reportElement x="165" y="288" width="245" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA["  3. " + $F{diagnosa_sekunder2}]]></textFieldExpression></textField>
+			<staticText><reportElement x="418" y="260" width="60" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 10]]></text></staticText>
+			<textField><reportElement x="418" y="274" width="70" height="12"/><textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{icd10_keluar}]]></textFieldExpression></textField>
+			<textField><reportElement x="418" y="288" width="70" height="12"/><textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{icd10_sekunder1} + " / " + $F{icd10_sekunder2}]]></textFieldExpression></textField>
 
-			<rectangle><reportElement x="10" y="288" width="489" height="38"/></rectangle>
-			<staticText><reportElement x="16" y="297" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Diagnose Keluar]]></text></staticText>
-			<textField><reportElement x="165" y="297" width="245" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{diagnosa_keluar}]]></textFieldExpression></textField>
-			<staticText><reportElement x="418" y="297" width="60" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 10]]></text></staticText>
-			<textField><reportElement x="418" y="310" width="70" height="12"/><textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{icd10_keluar}]]></textFieldExpression></textField>
+			<rectangle><reportElement x="10" y="312" width="489" height="26"/></rectangle>
+			<staticText><reportElement x="16" y="319" width="120" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 9 CM]]></text></staticText>
+			<textField><reportElement x="165" y="319" width="323" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{icd9_cm}]]></textFieldExpression></textField>
 
-			<rectangle><reportElement x="10" y="326" width="489" height="62"/></rectangle>
-			<staticText><reportElement x="16" y="336" width="110" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Diagnose Sekunder]]></text></staticText>
-			<staticText><reportElement x="16" y="348" width="78" height="12"/><textElement><font fontName="Tahoma" size="8" isItalic="true"/></textElement><text><![CDATA[(Komplikasi)]]></text></staticText>
-			<textField><reportElement x="165" y="336" width="230" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": 1. " + $F{diagnosa_sekunder1}]]></textFieldExpression></textField>
-			<textField><reportElement x="165" y="350" width="230" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA["  2. " + $F{diagnosa_sekunder2}]]></textFieldExpression></textField>
-			<textField><reportElement x="165" y="364" width="230" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA["  3. " + $F{diagnosa_sekunder3}]]></textFieldExpression></textField>
-			<staticText><reportElement x="418" y="336" width="60" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 10]]></text></staticText>
-			<textField><reportElement x="418" y="350" width="70" height="12"/><textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{icd10_sekunder1}]]></textFieldExpression></textField>
-			<textField><reportElement x="418" y="362" width="70" height="12"/><textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{icd10_sekunder2} + " / " + $F{icd10_sekunder3}]]></textFieldExpression></textField>
+			<rectangle><reportElement x="10" y="338" width="489" height="94"/></rectangle>
+			<staticText><reportElement x="16" y="346" width="120" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Pemeriksaan Fisik]]></text></staticText>
+			<textField isStretchWithOverflow="true"><reportElement x="165" y="350" width="323" height="78"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{pemeriksaan_fisik}]]></textFieldExpression></textField>
 
-			<rectangle><reportElement x="10" y="388" width="489" height="26"/></rectangle>
-			<staticText><reportElement x="16" y="395" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 9 CM]]></text></staticText>
-			<textField><reportElement x="165" y="395" width="323" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{icd9_cm}]]></textFieldExpression></textField>
+			<rectangle><reportElement x="10" y="432" width="489" height="71"/></rectangle>
+			<staticText><reportElement x="16" y="442" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Laboratorium]]></text></staticText>
+			<textField isStretchWithOverflow="true"><reportElement x="165" y="440" width="323" height="53"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{laboratorium}]]></textFieldExpression></textField>
 
-			<rectangle><reportElement x="10" y="414" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="426" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Pemeriksaan Fisik]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="424" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{pemeriksaan_fisik}]]></textFieldExpression></textField>
-
-			<rectangle><reportElement x="10" y="454" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="466" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Laboratorium]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="464" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{laboratorium}]]></textFieldExpression></textField>
-
-			<rectangle><reportElement x="10" y="494" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="506" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Radiologi]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="504" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{radiologi}]]></textFieldExpression></textField>
-
-			<rectangle><reportElement x="10" y="534" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="546" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Penunjang Lainnya]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="544" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{penunjang_lain}]]></textFieldExpression></textField>
+			<rectangle><reportElement x="10" y="503" width="489" height="71"/></rectangle>
+			<staticText><reportElement x="16" y="513" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Radiologi]]></text></staticText>
+			<textField isStretchWithOverflow="true"><reportElement x="165" y="511" width="323" height="53"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{radiologi}]]></textFieldExpression></textField>
 
 			<rectangle><reportElement x="10" y="574" width="489" height="80"/></rectangle>
 			<staticText><reportElement x="16" y="586" width="140" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Plan / Terapi / Obat]]></text></staticText>

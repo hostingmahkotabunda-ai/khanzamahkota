@@ -216,21 +216,17 @@
 			<staticText><reportElement x="16" y="395" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Kode ICD 9 CM]]></text></staticText>
 			<textField><reportElement x="165" y="395" width="323" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{icd9_cm}]]></textFieldExpression></textField>
 
-			<rectangle><reportElement x="10" y="414" width="489" height="40"/></rectangle>
+			<rectangle><reportElement x="10" y="414" width="489" height="80"/></rectangle>
 			<staticText><reportElement x="16" y="426" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Pemeriksaan Fisik]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="424" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{pemeriksaan_fisik}]]></textFieldExpression></textField>
-
-			<rectangle><reportElement x="10" y="454" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="466" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Laboratorium]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="464" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{laboratorium}]]></textFieldExpression></textField>
+			<textField isStretchWithOverflow="true"><reportElement x="165" y="424" width="323" height="72"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{pemeriksaan_fisik}]]></textFieldExpression></textField>
 
 			<rectangle><reportElement x="10" y="494" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="506" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Radiologi]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="504" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{radiologi}]]></textFieldExpression></textField>
+			<staticText><reportElement x="16" y="506" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Laboratorium]]></text></staticText>
+			<textField isStretchWithOverflow="true"><reportElement x="165" y="504" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{laboratorium}]]></textFieldExpression></textField>
 
 			<rectangle><reportElement x="10" y="534" width="489" height="40"/></rectangle>
-			<staticText><reportElement x="16" y="546" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Penunjang Lainnya]]></text></staticText>
-			<textField isStretchWithOverflow="true"><reportElement x="165" y="544" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{penunjang_lain}]]></textFieldExpression></textField>
+			<staticText><reportElement x="16" y="546" width="100" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Radiologi]]></text></staticText>
+			<textField isStretchWithOverflow="true"><reportElement x="165" y="544" width="323" height="18"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[": " + $F{radiologi}]]></textFieldExpression></textField>
 
 			<rectangle><reportElement x="10" y="574" width="489" height="80"/></rectangle>
 			<staticText><reportElement x="16" y="586" width="140" height="12"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Terapi / Obat Yang Diberikan]]></text></staticText>

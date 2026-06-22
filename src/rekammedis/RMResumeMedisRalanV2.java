@@ -302,12 +302,12 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         int row = 0;
         row = tambahJudul(panel, row, "Resume Medis");
         row = tambahAreaDenganTombol(panel, row, "Keluhan Utama", AreaAlasanRawat, 74, BtnAmbilAlasanSoap);
-        row = tambahDuaKolom(panel, row, "Diagnosa Masuk", TDiagnosaMasuk, "Kode ICD 10", TICD10Masuk);
-        row = tambahDuaKolom(panel, row, "Diagnosa Keluar *", TDiagnosaKeluar, "Kode ICD 10", TICD10Keluar);
-        row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 1", TDiagnosaSekunder1, "ICD 10 Sek. 1", TICD10Sekunder1);
-        row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 2", TDiagnosaSekunder2, "ICD 10 Sek. 2", TICD10Sekunder2);
-        row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 3", TDiagnosaSekunder3, "ICD 10 Sek. 3", TICD10Sekunder3);
+        // Diagnosa Masuk disembunyikan dari form (data tetap tersimpan apa adanya)
+        row = tambahDuaKolom(panel, row, "Diagnosa Keluar 1 *", TDiagnosaKeluar, "Kode ICD 10", TICD10Keluar);
+        row = tambahDuaKolom(panel, row, "Diagnosa Keluar 2", TDiagnosaSekunder1, "ICD 10 Keluar 2", TICD10Sekunder1);
+        row = tambahDuaKolom(panel, row, "Diagnosa Keluar 3", TDiagnosaSekunder2, "ICD 10 Keluar 3", TICD10Sekunder2);
         row = tambahSatuKolom(panel, row, "Kode ICD 9 CM", TICD9CM);
+        // Diagnosa Sekunder 3 disembunyikan dari form (data tetap tersimpan apa adanya)
         return panel;
     }
 
@@ -316,10 +316,10 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         panel.setOpaque(false);
         int row = 0;
         row = tambahJudul(panel, row, "Pemeriksaan Dan Tindak Lanjut");
-        row = tambahAreaDenganTombol(panel, row, "Pemeriksaan / Objek", AreaPemeriksaanFisik, 84, BtnAmbilPemeriksaanSoap);
+        row = tambahAreaDenganTombol(panel, row, "Pemeriksaan / Objek", AreaPemeriksaanFisik, 180, BtnAmbilPemeriksaanSoap);
         row = tambahArea(panel, row, "Laboratorium", AreaLaboratorium, 84);
         row = tambahArea(panel, row, "Radiologi", AreaRadiologi, 84);
-        row = tambahArea(panel, row, "Penunjang Lainnya", AreaPenunjangLain, 84);
+        // Penunjang Lainnya disembunyikan dari form (data tetap tersimpan apa adanya)
         row = tambahAreaDenganTombol(panel, row, "Plan / Terapi / Obat", AreaTerapiObat, 220, BtnAmbilTerapiObatSoap);
         row = tambahArea(panel, row, "Instruksi Untuk Tindak Lanjut", AreaInstruksi, 96);
         return panel;

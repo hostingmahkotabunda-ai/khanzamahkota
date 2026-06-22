@@ -1511,6 +1511,79 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
         }
     }//GEN-LAST:event_BtnAllKeyPressed
 
+    /** Klik-kanan tabel Data Permintaan: input Jam Lapor & Jam Respon Dokter PJ
+     *  (per pemeriksaan, kunci no_rawat + tgl_hasil + jam_hasil) ke lapor_kritis_lab. */
+    private void inputLaporKritisPermintaan(javax.swing.JTable tabel){
+        int r = tabel.getSelectedRow();
+        if (r == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih pemeriksaan lab terlebih dahulu.");
+            return;
+        }
+        String noRawat = tabel.getValueAt(r, 1).toString();
+        String pasien = tabel.getValueAt(r, 2).toString();
+        Object oTgl = tabel.getValueAt(r, 7);
+        Object oJam = tabel.getValueAt(r, 8);
+        String tglPeriksa = oTgl == null ? "" : oTgl.toString().trim();
+        String jam = oJam == null ? "" : oJam.toString().trim();
+        if (tglPeriksa.equals("") || jam.equals("")) {
+            JOptionPane.showMessageDialog(this, "Hasil pemeriksaan belum ada (tgl/jam hasil kosong),\ntidak bisa input jam lapor DPJP.");
+            return;
+        }
+
+        final widget.Tanggal pJamLapor = new widget.Tanggal();
+        final widget.Tanggal pJamRespon = new widget.Tanggal();
+        pJamLapor.setDisplayFormat("dd-MM-yyyy HH:mm:ss");
+        pJamRespon.setDisplayFormat("dd-MM-yyyy HH:mm:ss");
+        pJamLapor.setDate(new java.util.Date());
+        pJamRespon.setDate(new java.util.Date());
+
+        try (java.sql.PreparedStatement ps = koneksi.prepareStatement(
+                "select jam_lapor,jam_respon from lapor_kritis_lab where no_rawat=? and tgl_periksa=? and jam=?")) {
+            ps.setString(1, noRawat);
+            ps.setString(2, tglPeriksa);
+            ps.setString(3, jam);
+            try (java.sql.ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    String jl = rs.getString("jam_lapor");
+                    String jr = rs.getString("jam_respon");
+                    if (jl != null && jl.length() >= 19) { Valid.SetTgl2(pJamLapor, jl); }
+                    if (jr != null && jr.length() >= 19) { Valid.SetTgl2(pJamRespon, jr); }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif load lapor kritis lab : " + e);
+        }
+
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.GridLayout(0, 2, 6, 6));
+        panel.add(new javax.swing.JLabel("Pasien :"));
+        panel.add(new javax.swing.JLabel(pasien));
+        panel.add(new javax.swing.JLabel("Jam Lapor Dokter PJ :"));
+        panel.add(pJamLapor);
+        panel.add(new javax.swing.JLabel("Jam Respon Dokter PJ :"));
+        panel.add(pJamRespon);
+
+        int ok = JOptionPane.showConfirmDialog(this, panel, "Input Jam Lapor & Respon Dokter PJ - " + noRawat,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (ok != JOptionPane.OK_OPTION) {
+            return;
+        }
+        String jamLapor = Valid.SetTgl(pJamLapor.getSelectedItem() + "") + " " + pJamLapor.getSelectedItem().toString().substring(11, 19);
+        String jamRespon = Valid.SetTgl(pJamRespon.getSelectedItem() + "") + " " + pJamRespon.getSelectedItem().toString().substring(11, 19);
+        try (java.sql.PreparedStatement ps = koneksi.prepareStatement(
+                "replace into lapor_kritis_lab (no_rawat,tgl_periksa,jam,jam_lapor,jam_respon,pelapor) values (?,?,?,?,?,?)")) {
+            ps.setString(1, noRawat);
+            ps.setString(2, tglPeriksa);
+            ps.setString(3, jam);
+            ps.setString(4, jamLapor);
+            ps.setString(5, jamRespon);
+            ps.setString(6, akses.getkode());
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Jam lapor & respon DPJP tersimpan.");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan jam lapor/respon.\n" + e.getMessage());
+        }
+    }
+
     private void pasangMenuCetakPDF(final javax.swing.JTable tabel){
         javax.swing.JPopupMenu popup = new javax.swing.JPopupMenu();
         javax.swing.JMenuItem mnPDF = new javax.swing.JMenuItem("Cetak PDF");
@@ -1520,6 +1593,14 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             @Override public void actionPerformed(java.awt.event.ActionEvent evt){ cetakHasilPDF(tabel); }
         });
         popup.add(mnPDF);
+        javax.swing.JMenuItem mnLapor = new javax.swing.JMenuItem("Input Jam Lapor & Respon Dokter PJ");
+        mnLapor.setFont(new java.awt.Font("Tahoma",1,11));
+        try{ mnLapor.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); }catch(Exception e){}
+        mnLapor.addActionListener(new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){ inputLaporKritisPermintaan(tabel); }
+        });
+        popup.addSeparator();
+        popup.add(mnLapor);
         tabel.setComponentPopupMenu(popup);
         // pilih baris di bawah kursor saat klik-kanan
         tabel.addMouseListener(new java.awt.event.MouseAdapter(){
@@ -1633,7 +1714,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                     param.put("notelp",Sequel.cariIsi("select pasien.no_tlp from pasien inner join reg_periksa on pasien.no_rkm_medis=reg_periksa.no_rkm_medis where reg_periksa.no_rawat=?",rsA.getString("no_rawat")));
                     param.put("jenispasien",Sequel.cariIsi("select penjab.png_jawab from penjab inner join reg_periksa on penjab.kd_pj=reg_periksa.kd_pj where reg_periksa.no_rawat=?",rsA.getString("no_rawat")));
                     java.sql.PreparedStatement psP=koneksi.prepareStatement(
-                            "select noorder,DATE_FORMAT(tgl_permintaan,'%d-%m-%Y') as tgl_permintaan,jam_permintaan from permintaan_lab where no_rawat=? and tgl_hasil=? and jam_hasil=?");
+                            "select noorder,DATE_FORMAT(tgl_permintaan,'%d-%m-%Y') as tgl_permintaan,jam_permintaan,if(tgl_sampel='0000-00-00','',DATE_FORMAT(tgl_sampel,'%d-%m-%Y')) as tgl_sampel,if(jam_sampel='00:00:00','',jam_sampel) as jam_sampel from permintaan_lab where no_rawat=? and tgl_hasil=? and jam_hasil=?");
                     try{
                         psP.setString(1,rsA.getString("no_rawat"));
                         psP.setString(2,Valid.SetTgl(rsA.getString("tgl_periksa")));
@@ -1643,6 +1724,8 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                             param.put("nopermintaan",rsP.getString("noorder"));
                             param.put("tanggalpermintaan",rsP.getString("tgl_permintaan"));
                             param.put("jampermintaan",rsP.getString("jam_permintaan"));
+                            param.put("tanggalsampel",rsP.getString("tgl_sampel"));
+                            param.put("jamsampel",rsP.getString("jam_sampel"));
                             Valid.MyReportPDF("rptPeriksaLabPermintaan.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);
                         }else{
                             Valid.MyReportPDF("rptPeriksaLab.jasper","report","::[ Pemeriksaan Laboratorium ]::",param);

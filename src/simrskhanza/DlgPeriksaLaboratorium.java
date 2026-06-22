@@ -1441,6 +1441,8 @@ public final class DlgPeriksaLaboratorium extends javax.swing.JDialog {
                 param.put("nopermintaan",noorder);   
                 param.put("tanggalpermintaan",Sequel.cariIsi("select DATE_FORMAT(permintaan_lab.tgl_permintaan,'%d-%m-%Y') from permintaan_lab where permintaan_lab.noorder=?",noorder));  
                 param.put("jampermintaan",Sequel.cariIsi("select permintaan_lab.jam_permintaan from permintaan_lab where permintaan_lab.noorder=?",noorder)); 
+                param.put("tanggalsampel",Sequel.cariIsi("select if(permintaan_lab.tgl_sampel='0000-00-00','',DATE_FORMAT(permintaan_lab.tgl_sampel,'%d-%m-%Y')) from permintaan_lab where permintaan_lab.noorder=?",noorder));  
+                param.put("jamsampel",Sequel.cariIsi("select if(permintaan_lab.jam_sampel='00:00:00','',permintaan_lab.jam_sampel) from permintaan_lab where permintaan_lab.noorder=?",noorder)); 
                 pilihan = (String)JOptionPane.showInputDialog(null,"Silahkan pilih hasil pemeriksaan..!","Hasil Pemeriksaan",JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Cetak PDF","Model 1","Model 2", "Model 3", "Model 4", "Model 5", "Model 6", "Model 7", "Model 8", "Model 9", "Model 10", "Model 11"},"Cetak PDF");
                 if(pilihan!=null) switch (pilihan) {
                     case "Cetak PDF":

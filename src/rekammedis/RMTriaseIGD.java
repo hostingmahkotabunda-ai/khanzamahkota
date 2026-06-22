@@ -73,9 +73,13 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
     /** Creates new form DlgRujuk
      * @param parent
      * @param modal */
+    private final widget.Tanggal JamTibaIGD = new widget.Tanggal();
+    private final widget.Tanggal JamTriaseSelesai = new widget.Tanggal();
+
     public RMTriaseIGD(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        tambahFieldJamIGD();
         this.setLocation(8,1);
         tabMode=new DefaultTableModel(null,new Object[]{
                 "No.Rawat","No.RM","Nama Pasien","Tgl.Kunjungan","Cara Masuk","Transportasi",
@@ -2035,11 +2039,13 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
                     sukses=false;
                     Valid.textKosong(TCariPemeriksaan,"Skala 1 / Skala 2");
                 }else{
-                    if(Sequel.menyimpantf("data_triase_igd","?,?,?,?,?,?,?,?,?,?,?,?,?","No.Rawat",13,new String[]{
+                    if(Sequel.menyimpantf("data_triase_igd","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","No.Rawat",15,new String[]{
                             TNoRw.getText(),Valid.SetTgl(TanggalKunjungan.getSelectedItem()+"")+" "+TanggalKunjungan.getSelectedItem().toString().substring(11,19),
                             CaraMasuk.getSelectedItem().toString(),Transportasi.getSelectedItem().toString(),AlasanKedatangan.getSelectedItem().toString(), 
                             KeteranganKedatangan.getText(),KdKasus.getText(),PrimerTensi.getText(),PrimerNadi.getText(),PrimerRespirasi.getText(),PrimerSuhu.getText(),
-                            PrimerSaturasi.getText(),PrimerNyeri.getText()
+                            PrimerSaturasi.getText(),PrimerNyeri.getText(),
+                            Valid.SetTgl(JamTibaIGD.getSelectedItem()+"")+" "+JamTibaIGD.getSelectedItem().toString().substring(11,19),
+                            Valid.SetTgl(JamTriaseSelesai.getSelectedItem()+"")+" "+JamTriaseSelesai.getSelectedItem().toString().substring(11,19)
                         })==true){
                         if(PrimerResusitasi.isSelected()==true){
                             keputusan="Ruang Resusitasi";
@@ -2131,11 +2137,13 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
                     sukses=false;
                     Valid.textKosong(TCariPemeriksaan2,"Skala 3 / Skala 4 / Skala 5");
                 }else{
-                    if(Sequel.menyimpantf("data_triase_igd","?,?,?,?,?,?,?,?,?,?,?,?,?","No.Rawat",13,new String[]{
+                    if(Sequel.menyimpantf("data_triase_igd","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?","No.Rawat",15,new String[]{
                             TNoRw.getText(),Valid.SetTgl(TanggalKunjungan.getSelectedItem()+"")+" "+TanggalKunjungan.getSelectedItem().toString().substring(11,19),
                             CaraMasuk.getSelectedItem().toString(),Transportasi.getSelectedItem().toString(),AlasanKedatangan.getSelectedItem().toString(), 
                             KeteranganKedatangan.getText(),KdKasus.getText(),SekunderTensi.getText(),SekunderNadi.getText(),SekunderRespirasi.getText(),SekunderSuhu.getText(),
-                            SekunderSaturasi.getText(),SekunderNyeri.getText()
+                            SekunderSaturasi.getText(),SekunderNyeri.getText(),
+                            Valid.SetTgl(JamTibaIGD.getSelectedItem()+"")+" "+JamTibaIGD.getSelectedItem().toString().substring(11,19),
+                            Valid.SetTgl(JamTriaseSelesai.getSelectedItem()+"")+" "+JamTriaseSelesai.getSelectedItem().toString().substring(11,19)
                         })==true){
                         if(SekunderZonaKuning.isSelected()==true){
                             keputusan="Zona Kuning";
@@ -2964,6 +2972,10 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
                         KeteranganKedatangan.setText(tbTriase.getValueAt(tbTriase.getSelectedRow(),7).toString());
                         KdKasus.setText(tbTriase.getValueAt(tbTriase.getSelectedRow(),8).toString());
                         NmKasus.setText(tbTriase.getValueAt(tbTriase.getSelectedRow(),9).toString());
+                        String jamTibaDB=Sequel.cariIsi("select jam_tiba_igd from data_triase_igd where no_rawat=?",tbTriase.getValueAt(tbTriase.getSelectedRow(),0).toString());
+                        String jamSelesaiDB=Sequel.cariIsi("select jam_triase_selesai from data_triase_igd where no_rawat=?",tbTriase.getValueAt(tbTriase.getSelectedRow(),0).toString());
+                        if(jamTibaDB!=null && jamTibaDB.length()>=19){ Valid.SetTgl2(JamTibaIGD,jamTibaDB); }else{ JamTibaIGD.setDate(new Date()); }
+                        if(jamSelesaiDB!=null && jamSelesaiDB.length()>=19){ Valid.SetTgl2(JamTriaseSelesai,jamSelesaiDB); }else{ JamTriaseSelesai.setDate(new Date()); }
                         TabPilihan.setSelectedIndex(0);
                         ps=koneksi.prepareStatement(
                                 "select data_triase_igdprimer.keluhan_utama,data_triase_igdprimer.kebutuhan_khusus,data_triase_igdprimer.catatan,"+
@@ -4769,12 +4781,37 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
         tampil();
     }
     
+    /** Tambah field "Jam Tiba di IGD" & "Jam Triase Selesai" (date+time picker)
+     *  di header FormInput (null-layout), area kosong sebelah kanan. */
+    private void tambahFieldJamIGD() {
+        javax.swing.JLabel lblTiba = new javax.swing.JLabel("Jam Tiba di IGD :");
+        lblTiba.setBounds(745, 10, 120, 23);
+        javax.swing.JLabel lblSelesai = new javax.swing.JLabel("Jam Triase Selesai :");
+        lblSelesai.setBounds(745, 40, 120, 23);
+        JamTibaIGD.setDisplayFormat("dd-MM-yyyy HH:mm:ss");
+        JamTibaIGD.setOpaque(false);
+        JamTibaIGD.setDate(new Date());
+        JamTibaIGD.setBounds(870, 10, 160, 23);
+        JamTriaseSelesai.setDisplayFormat("dd-MM-yyyy HH:mm:ss");
+        JamTriaseSelesai.setOpaque(false);
+        JamTriaseSelesai.setDate(new Date());
+        JamTriaseSelesai.setBounds(870, 40, 160, 23);
+        FormInput.add(lblTiba);
+        FormInput.add(JamTibaIGD);
+        FormInput.add(lblSelesai);
+        FormInput.add(JamTriaseSelesai);
+        FormInput.revalidate();
+        FormInput.repaint();
+    }
+
     private void emptTeks(){
         TNoRw.setText("");
         TPasien.setText("");
         TNoRM.setText("");
         Transportasi.setSelectedIndex(0);
         TanggalKunjungan.setDate(new Date());
+        JamTibaIGD.setDate(new Date());
+        JamTriaseSelesai.setDate(new Date());
         AlasanKedatangan.setSelectedIndex(0);
         KdKasus.setText("");
         NmKasus.setText("");
