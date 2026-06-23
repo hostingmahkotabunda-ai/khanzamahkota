@@ -204,6 +204,17 @@ public class DlgKamarInap extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         initKamarInap();
+        javax.swing.JMenuItem MnKepBayi = new javax.swing.JMenuItem("Keperawatan Bayi");
+        MnKepBayi.setFont(new java.awt.Font("Tahoma", 0, 11));
+        MnKepBayi.setForeground(new java.awt.Color(50, 50, 50));
+        try{ MnKepBayi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); }catch(Exception e){}
+        MnKepBayi.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnKepBayi.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnKepBayi.setPreferredSize(new java.awt.Dimension(240, 26));
+        MnKepBayi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) { bukaKeperawatanBayi(); }
+        });
+        MnPenilaianAwal.insert(MnKepBayi, 1);
         tabMode=new DefaultTableModel(null,new Object[]{
             "No.Rawat","Nomer RM","Nama Pasien","Alamat Pasien","Penanggung Jawab","Hubungan P.J.","Jenis Bayar","Kamar","Tarif Kamar",
             "Diagnosa Awal","Diagnosa Akhir","Tgl.Masuk","Jam Masuk","Tgl.Keluar","Jam Keluar",
@@ -12602,6 +12613,32 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             }
         }
     }//GEN-LAST:event_MnPenilaianPsikologActionPerformed
+
+    /** Menu "Keperawatan Bayi" (di bawah Keperawatan Anak) -> buka form Asesmen Keperawatan Bayi. */
+    private void bukaKeperawatanBayi() {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else{
+            if(tbKamIn.getSelectedRow()>-1){
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                rekammedis.RMPenilaianAwalKeperawatanRanapBayi form=new rekammedis.RMPenilaianAwalKeperawatanRanapBayi(null,false);
+                form.isCek();
+                form.emptTeks();
+                if(R1.isSelected()==true){
+                    form.setNoRm(norawat.getText(),new Date(),tbKamIn.getValueAt(tbKamIn.getSelectedRow(),6).toString(),TNoRMCari.getText());
+                }else if(R2.isSelected()==true){
+                    form.setNoRm(norawat.getText(),DTPCari2.getDate(),tbKamIn.getValueAt(tbKamIn.getSelectedRow(),6).toString(),TNoRMCari.getText());
+                }else if(R3.isSelected()==true){
+                    form.setNoRm(norawat.getText(),DTPCari4.getDate(),tbKamIn.getValueAt(tbKamIn.getSelectedRow(),6).toString(),TNoRMCari.getText());
+                }
+                form.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                form.setLocationRelativeTo(internalFrame1);
+                form.setVisible(true);
+                this.setCursor(Cursor.getDefaultCursor());
+            }
+        }
+    }
 
     private void MnPenilaianAwalKeperawatanRanapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MnPenilaianAwalKeperawatanRanapActionPerformed
        if(tabMode.getRowCount()==0){

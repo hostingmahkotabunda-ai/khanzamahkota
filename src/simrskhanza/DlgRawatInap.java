@@ -211,12 +211,133 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         FormMenu.repaint();
     }
 
+    /** Sembunyikan tab tertentu di ranap & tambahkan tab Resep terintegrasi (embed DlgPeresepanDokter). */
+    private void aturTabRanap() {
+        // Hapus tab yang tidak dipakai. Dispatch lain memakai indeks ASLI lewat idxTab()
+        // sehingga penghapusan tab tidak merusak (Laboratorium dll. tetap berfungsi).
+        try { TabRawat.remove(internalFrame2); } catch (Exception e) {} // Penanganan Dokter
+        try { TabRawat.remove(internalFrame3); } catch (Exception e) {} // Penanganan Petugas
+        try { TabRawat.remove(internalFrame6); } catch (Exception e) {} // Pemeriksaan Obstetri
+        try { TabRawat.remove(internalFrame7); } catch (Exception e) {} // Pemeriksaan Ginekologi
+        try { TabRawat.setSelectedComponent(internalFrame5); } catch (Exception e) {}
+
+        PanelResepRanap = new widget.PanelBiasa();
+        PanelResepRanap.setLayout(new java.awt.BorderLayout(1, 1));
+        TabRawat.addTab("Resep", PanelResepRanap);
+        resepTerintegrasiRanap = new inventory.DlgPeresepanDokter((java.awt.Frame) null, false);
+        resepTerintegrasiRanap.aktifkanModeEmbedded();
+        PanelResepRanap.add(resepTerintegrasiRanap.ambilKontenUntukEmbed(), java.awt.BorderLayout.CENTER);
+        final widget.PanelBiasa frameResep = PanelResepRanap;
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e) {
+                if (TabRawat.getSelectedComponent() == frameResep) {
+                    sinkronkanResepRanap(true);
+                }
+            }
+        });
+        pasangTabPenilaianAwal();
+    }
+
+    /** Indeks ASLI tab yang sedang terpilih (sebelum ada tab yang dihapus),
+     *  supaya dispatch berbasis-indeks lama tetap benar walau beberapa tab dihapus. */
+    private int idxTab() {
+        java.awt.Component c = TabRawat.getSelectedComponent();
+        if (c == internalFrame4) { return 2; }          // Penanganan Dokter & Petugas
+        if (c == internalFrame5) { return 3; }          // Pemeriksaan
+        if (c == internalFrameRadiologi) { return 6; }  // Radiologi
+        if (c == internalFrameLaborat) { return 7; }    // Laboratorium
+        return -1; // SBAR / Resep / Penilaian Awal / lainnya -> tidak ikut dispatch index
+    }
+
+    /** Tab "Penilaian Awal" berisi dropdown jenis penilaian + tombol buka form. */
+    private void pasangTabPenilaianAwal() {
+        final javax.swing.JComboBox<String> cmbJenis = new javax.swing.JComboBox<>(new String[]{
+            "Awal Keperawatan Bayi", "Awal Keperawatan Anak", "Awal Keperawatan Dewasa"
+        });
+        cmbJenis.setPreferredSize(new java.awt.Dimension(340, 28));
+        widget.Button btnBuka = new widget.Button();
+        btnBuka.setText("Buka Form Penilaian Awal");
+        btnBuka.setPreferredSize(new java.awt.Dimension(340, 30));
+        btnBuka.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) {
+                bukaPenilaianAwal((String) cmbJenis.getSelectedItem());
+            }
+        });
+        javax.swing.JPanel isi = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        isi.setOpaque(false);
+        java.awt.GridBagConstraints g = new java.awt.GridBagConstraints();
+        g.insets = new java.awt.Insets(8, 8, 8, 8);
+        g.gridx = 0; g.gridy = 0; g.anchor = java.awt.GridBagConstraints.WEST;
+        isi.add(new javax.swing.JLabel("Pilih Jenis Penilaian Awal :"), g);
+        g.gridy = 1; isi.add(cmbJenis, g);
+        g.gridy = 2; isi.add(btnBuka, g);
+
+        javax.swing.JPanel wrap = new javax.swing.JPanel(new java.awt.GridBagLayout());
+        wrap.add(isi, new java.awt.GridBagConstraints());
+        TabRawat.addTab("Penilaian Awal", wrap);
+    }
+
+    /** Buka form penilaian awal sesuai jenis untuk pasien yang aktif. */
+    private void bukaPenilaianAwal(String jenis) {
+        if (jenis == null) { return; }
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        String norawat = TNoRw.getText();
+        String norm = TNoRM.getText();
+        String carabayar = "";
+        java.util.Date now = new java.util.Date();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            if (jenis.toLowerCase().contains("bayi")) {
+                rekammedis.RMPenilaianAwalKeperawatanRanapBayi f = new rekammedis.RMPenilaianAwalKeperawatanRanapBayi(null, false);
+                f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
+                f.setLocationRelativeTo(this); f.setVisible(true);
+            } else if (jenis.toLowerCase().contains("anak")) {
+                rekammedis.RMPenilaianAwalKeperawatanRanapAnak f = new rekammedis.RMPenilaianAwalKeperawatanRanapAnak(null, false);
+                f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
+                f.setLocationRelativeTo(this); f.setVisible(true);
+            } else {
+                rekammedis.RMPenilaianAwalKeperawatanRanap f = new rekammedis.RMPenilaianAwalKeperawatanRanap(null, false);
+                f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
+                f.setLocationRelativeTo(this); f.setVisible(true);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private void sinkronkanResepRanap(boolean paksa) {
+        if (resepTerintegrasiRanap == null) {
+            return;
+        }
+        String konteksBaru = TNoRw.getText() + "|" + Valid.SetTgl(DTPTgl.getSelectedItem() + "") + "|"
+                + cmbJam.getSelectedItem() + "|" + cmbMnt.getSelectedItem() + "|" + cmbDtk.getSelectedItem() + "|" + KdDok.getText();
+        if (!paksa && konteksBaru.equals(konteksResepRanap)) {
+            return;
+        }
+        konteksResepRanap = konteksBaru;
+        if (TNoRw.getText().trim().equals("") || TPasien.getText().trim().equals("")) {
+            return;
+        }
+        resepTerintegrasiRanap.setNoRm(
+                TNoRw.getText(), DTPTgl.getDate(),
+                cmbJam.getSelectedItem().toString(), cmbMnt.getSelectedItem().toString(), cmbDtk.getSelectedItem().toString(),
+                KdDok.getText(), TDokter.getText(), "ranap");
+        resepTerintegrasiRanap.isCek();
+        resepTerintegrasiRanap.tampilobat();
+        resepTerintegrasiRanap.emptTeksobat();
+    }
+
     public DlgRawatInap(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
         rekammedis.DlgValidasiSOAP.pastikanKolom("pemeriksaan_ranap");
         rekammedis.DlgValidasiSOAP.pastikanKolom("pemeriksaan_ralan");
         pasangTabSBAR();
+        aturTabRanap();
         initRawatInap();
         initTableSOAP();
         rapikanPanelInputSOAP();
@@ -770,21 +891,21 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 @Override
                 public void insertUpdate(DocumentEvent e) {
                     if(TCari.getText().length()>2){
-                        if(TabRawat.getSelectedIndex()==0){
+                        if(idxTab()==0){
                             tampilDr();
-                        }else if(TabRawat.getSelectedIndex()==1){
+                        }else if(idxTab()==1){
                             tampilPr();
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             tampilDrPr();
-                        }else if(TabRawat.getSelectedIndex()==3){
+                        }else if(idxTab()==3){
                             tampilPemeriksaan();
-                        }else if(TabRawat.getSelectedIndex()==4){
+                        }else if(idxTab()==4){
                             tampilPemeriksaanObstetri();
-                        }else if(TabRawat.getSelectedIndex()==5){
+                        }else if(idxTab()==5){
                             tampilPemeriksaanGinekologi();
-                        }else if(TabRawat.getSelectedIndex()==6){
+                        }else if(idxTab()==6){
                             tampilRadiologiPasien();
-                        }else if(TabRawat.getSelectedIndex()==7){
+                        }else if(idxTab()==7){
                             tampilLaboratPasien();
                         }
                     }                        
@@ -792,21 +913,21 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 @Override
                 public void removeUpdate(DocumentEvent e) {
                     if(TCari.getText().length()>2){
-                        if(TabRawat.getSelectedIndex()==0){
+                        if(idxTab()==0){
                             tampilDr();
-                        }else if(TabRawat.getSelectedIndex()==1){
+                        }else if(idxTab()==1){
                             tampilPr();
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             tampilDrPr();
-                        }else if(TabRawat.getSelectedIndex()==3){
+                        }else if(idxTab()==3){
                             tampilPemeriksaan();
-                        }else if(TabRawat.getSelectedIndex()==4){
+                        }else if(idxTab()==4){
                             tampilPemeriksaanObstetri();
-                        }else if(TabRawat.getSelectedIndex()==5){
+                        }else if(idxTab()==5){
                             tampilPemeriksaanGinekologi();
-                        }else if(TabRawat.getSelectedIndex()==6){
+                        }else if(idxTab()==6){
                             tampilRadiologiPasien();
-                        }else if(TabRawat.getSelectedIndex()==7){
+                        }else if(idxTab()==7){
                             tampilLaboratPasien();
                         }
                     }
@@ -814,21 +935,21 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 @Override
                 public void changedUpdate(DocumentEvent e) {
                     if(TCari.getText().length()>2){
-                        if(TabRawat.getSelectedIndex()==0){
+                        if(idxTab()==0){
                             tampilDr();
-                        }else if(TabRawat.getSelectedIndex()==1){
+                        }else if(idxTab()==1){
                             tampilPr();
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             tampilDrPr();
-                        }else if(TabRawat.getSelectedIndex()==3){
+                        }else if(idxTab()==3){
                             tampilPemeriksaan();
-                        }else if(TabRawat.getSelectedIndex()==4){
+                        }else if(idxTab()==4){
                             tampilPemeriksaanObstetri();
-                        }else if(TabRawat.getSelectedIndex()==5){
+                        }else if(idxTab()==5){
                             tampilPemeriksaanGinekologi();
-                        }else if(TabRawat.getSelectedIndex()==6){
+                        }else if(idxTab()==6){
                             tampilRadiologiPasien();
-                        }else if(TabRawat.getSelectedIndex()==7){
+                        }else if(idxTab()==7){
                             tampilLaboratPasien();
                         }
                     }
@@ -937,11 +1058,11 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             public void windowClosed(WindowEvent e) {
                 if(akses.getform().equals("DlgRawatInap")){
                     if(perawatan.dokter.getTable().getSelectedRow()!= -1){
-                        if(TabRawat.getSelectedIndex()==0){
+                        if(idxTab()==0){
                             KdDok.setText(perawatan.dokter.getTable().getValueAt(perawatan.dokter.getTable().getSelectedRow(),0).toString());
                             TDokter.setText(perawatan.dokter.getTable().getValueAt(perawatan.dokter.getTable().getSelectedRow(),1).toString());
                             KdDok.requestFocus();
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             KdDok2.setText(perawatan.dokter.getTable().getValueAt(perawatan.dokter.getTable().getSelectedRow(),0).toString());
                             TDokter2.setText(perawatan.dokter.getTable().getValueAt(perawatan.dokter.getTable().getSelectedRow(),1).toString());
                             KdDok2.requestFocus();
@@ -968,11 +1089,11 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             public void windowClosed(WindowEvent e) {
                 if(akses.getform().equals("DlgRawatInap")){
                     if(perawatan.petugas.getTable().getSelectedRow()!= -1){                   
-                        if(TabRawat.getSelectedIndex()==1){
+                        if(idxTab()==1){
                             kdptg.setText(perawatan.petugas.getTable().getValueAt(perawatan.petugas.getTable().getSelectedRow(),0).toString());
                             TPerawat.setText(perawatan.petugas.getTable().getValueAt(perawatan.petugas.getTable().getSelectedRow(),1).toString());
                             kdptg.requestFocus();
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             kdptg2.setText(perawatan.petugas.getTable().getValueAt(perawatan.petugas.getTable().getSelectedRow(),0).toString());
                             TPerawat2.setText(perawatan.petugas.getTable().getValueAt(perawatan.petugas.getTable().getSelectedRow(),1).toString());
                             kdptg2.requestFocus();
@@ -999,7 +1120,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             public void windowClosed(WindowEvent e) {
                 if(akses.getform().equals("DlgRawatInap")){
                     if(perawatan.getTable().getSelectedRow()!= -1){   
-                        if(TabRawat.getSelectedIndex()==0){
+                        if(idxTab()==0){
                             TKdPrw.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),1).toString());   
                             TNmPrw.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),2).toString());
                             BagianRS.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),5).toString());
@@ -1010,7 +1131,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                             Menejemen.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),10).toString());
                             TTnd.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),4).toString());
                             TKdPrw.requestFocus();  
-                        }else if(TabRawat.getSelectedIndex()==1){
+                        }else if(idxTab()==1){
                             TKdPrwPetugas.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),1).toString());   
                             TNmPrwPetugas.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),2).toString());
                             BagianRS.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),5).toString());
@@ -1021,7 +1142,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                             Menejemen.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),10).toString());
                             TTnd.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),4).toString());
                             TKdPrwPetugas.requestFocus(); 
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             TKdPrwDokterPetugas.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),1).toString());   
                             TNmPrwDokterPetugas.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),2).toString());
                             BagianRS.setText(perawatan.getTable().getValueAt(perawatan.getTable().getSelectedRow(),5).toString());
@@ -1056,7 +1177,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             public void windowClosed(WindowEvent e) {
                 if(akses.getform().equals("DlgRawatInap")){
                     if(perawatan2.getTable().getSelectedRow()!= -1){ 
-                        if(TabRawat.getSelectedIndex()==0){
+                        if(idxTab()==0){
                             TKdPrw.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),4).toString());   
                             TNmPrw.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),5).toString());
                             BagianRS.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),8).toString());
@@ -1067,7 +1188,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                             Menejemen.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),13).toString());
                             TTnd.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),7).toString());
                             TKdPrw.requestFocus();
-                        }else if(TabRawat.getSelectedIndex()==1){
+                        }else if(idxTab()==1){
                             TKdPrwPetugas.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),4).toString());   
                             TNmPrwPetugas.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),5).toString());
                             BagianRS.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),8).toString());
@@ -1078,7 +1199,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                             Menejemen.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),13).toString());
                             TTnd.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),7).toString());
                             TKdPrwPetugas.requestFocus();
-                        }else if(TabRawat.getSelectedIndex()==2){
+                        }else if(idxTab()==2){
                             TKdPrwDokterPetugas.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),4).toString());   
                             TNmPrwDokterPetugas.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),5).toString());
                             BagianRS.setText(perawatan2.getTable().getValueAt(perawatan2.getTable().getSelectedRow(),8).toString());
@@ -4940,17 +5061,17 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             isRawat();
             isPsien();
         }else{         
-            if(TabRawat.getSelectedIndex()==0){
+            if(idxTab()==0){
                 Valid.pindah(evt,DTPTgl,KdDok);
-            }else if(TabRawat.getSelectedIndex()==1){
+            }else if(idxTab()==1){
                 Valid.pindah(evt,DTPTgl,kdptg);
-            }else if(TabRawat.getSelectedIndex()==2){
+            }else if(idxTab()==2){
                 Valid.pindah(evt,DTPTgl,KdDok2);
-            }else if(TabRawat.getSelectedIndex()==3){
+            }else if(idxTab()==3){
                 Valid.pindah(evt,DTPTgl,KdPeg);
-            }else if(TabRawat.getSelectedIndex()==4){
+            }else if(idxTab()==4){
                 Valid.pindah(evt,DTPTgl,TTinggi_uteri);
-            }else if(TabRawat.getSelectedIndex()==5){
+            }else if(idxTab()==5){
                 Valid.pindah(evt,DTPTgl,TInspeksi);
             }
         }
@@ -4960,7 +5081,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         if(TNoRw.getText().trim().equals("")||TPasien.getText().trim().equals("")){
             Valid.textKosong(TNoRw,"No.Rawat");
         }else{            
-            switch (TabRawat.getSelectedIndex()) {
+            switch (idxTab()) {
                 case 0:
                     if(KdDok.getText().trim().equals("")||TDokter.getText().trim().equals("")){
                         Valid.textKosong(KdDok,"Dokter");
@@ -5284,17 +5405,17 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         if(evt.getKeyCode()==KeyEvent.VK_SPACE){
             BtnSimpanActionPerformed(null);
         }else{
-            if(TabRawat.getSelectedIndex()==0){
+            if(idxTab()==0){
                 Valid.pindah(evt,TKdPrw,BtnBatal);
-            }else if(TabRawat.getSelectedIndex()==1){
+            }else if(idxTab()==1){
                 Valid.pindah(evt,TKdPrwPetugas,BtnBatal);
-            }else if(TabRawat.getSelectedIndex()==2){
+            }else if(idxTab()==2){
                 Valid.pindah(evt,TKdPrwDokterPetugas,BtnBatal);
-            }else if(TabRawat.getSelectedIndex()==3){
+            }else if(idxTab()==3){
                 Valid.pindah(evt,TEvaluasi,BtnBatal);
-            }else if(TabRawat.getSelectedIndex()==4){
+            }else if(idxTab()==4){
                 Valid.pindah(evt,cmbFeto,BtnBatal);
-            }else if(TabRawat.getSelectedIndex()==5){
+            }else if(idxTab()==5){
                 Valid.pindah(evt,TCavumDouglas,BtnBatal);
             }
         }
@@ -5369,7 +5490,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
 }//GEN-LAST:event_BtnBatalKeyPressed
 
     private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnHapusActionPerformed
-        switch (TabRawat.getSelectedIndex()) {
+        switch (idxTab()) {
             case 0:
                 if(tabModeDr.getRowCount()==0){
                     JOptionPane.showMessageDialog(null,"Maaf, data sudah habis...!!!!");
@@ -5692,7 +5813,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         if(! TCari.getText().trim().equals("")){
             BtnCariActionPerformed(evt);
         }
-        switch (TabRawat.getSelectedIndex()) {
+        switch (idxTab()) {
             case 0:
                 if(tabModeDr.getRowCount()==0){
                     JOptionPane.showMessageDialog(null,"Maaf, data sudah habis. Tidak ada data yang bisa anda print...!!!!");
@@ -5972,7 +6093,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
 }//GEN-LAST:event_TCariKeyPressed
 
     private void BtnCariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnCariActionPerformed
-        switch (TabRawat.getSelectedIndex()) {
+        switch (idxTab()) {
             case 0:
                 tampilDr();
                 break;
@@ -6012,7 +6133,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
 
     private void TabRawatMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabRawatMouseClicked
         isJns();
-        switch (TabRawat.getSelectedIndex()) {
+        switch (idxTab()) {
             case 0:
                 tampilDr();
                 break;
@@ -6099,7 +6220,7 @@ private void BtnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         if(TNoRw.getText().trim().equals("")||TPasien.getText().trim().equals("")){
             Valid.textKosong(TNoRw,"No.Rawat");
         }else{
-            switch (TabRawat.getSelectedIndex()) {
+            switch (idxTab()) {
                 case 0:
                     if(KdDok.getText().trim().equals("")||TDokter.getText().trim().equals("")){
                         Valid.textKosong(KdDok,"Dokter");
@@ -10073,7 +10194,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     }
 
     private void isJns(){
-        if(TabRawat.getSelectedIndex()==0){
+        if(idxTab()==0){
             if(!TKdPrw.getText().equals("")){
                 Sequel.cariIsi("select jns_perawatan_inap.nm_perawatan from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",TNmPrw,TKdPrw.getText());
                 Sequel.cariIsi("select jns_perawatan_inap.bhp from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",Bhp,TKdPrw.getText());
@@ -10084,7 +10205,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 Sequel.cariIsi("select jns_perawatan_inap.menejemen from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",Menejemen,TKdPrw.getText());
                 Sequel.cariIsi("select jns_perawatan_inap.total_byrdr from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",TTnd,TKdPrw.getText());
             }
-        }else if(TabRawat.getSelectedIndex()==1){
+        }else if(idxTab()==1){
             if(!TKdPrwPetugas.getText().equals("")){
                 Sequel.cariIsi("select jns_perawatan_inap.nm_perawatan from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",TNmPrwPetugas,TKdPrwPetugas.getText());
                 Sequel.cariIsi("select jns_perawatan_inap.bhp from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",Bhp,TKdPrwPetugas.getText());
@@ -10095,7 +10216,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 Sequel.cariIsi("select jns_perawatan_inap.menejemen from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",Menejemen,TKdPrwPetugas.getText());
                 Sequel.cariIsi("select jns_perawatan_inap.total_byrpr from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",TTnd,TKdPrwPetugas.getText());
             }
-        }else if(TabRawat.getSelectedIndex()==2){
+        }else if(idxTab()==2){
             if(!TKdPrwDokterPetugas.getText().equals("")){
                 Sequel.cariIsi("select jns_perawatan_inap.nm_perawatan from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",TNmPrwDokterPetugas,TKdPrwDokterPetugas.getText());
                 Sequel.cariIsi("select jns_perawatan_inap.bhp from jns_perawatan_inap where jns_perawatan_inap.kd_jenis_prw=? ",Bhp,TKdPrwDokterPetugas.getText());
@@ -10133,6 +10254,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             fokusTabPemeriksaanTerintegrasi();
         }
         refreshNotifValidasi();
+        sinkronkanResepRanap(true);
     }
 
     public java.awt.Component ambilKontenPemeriksaanUntukEmbed() {
@@ -11291,6 +11413,9 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
     private boolean notifValidasiSiap = false;
     private final javax.swing.JLabel lblNotifSBAR = new javax.swing.JLabel();
     private final javax.swing.JLabel lblNotifSOAP = new javax.swing.JLabel();
+    private inventory.DlgPeresepanDokter resepTerintegrasiRanap;
+    private widget.PanelBiasa PanelResepRanap;
+    private String konteksResepRanap = "";
 
     private void rapikanPanelInputSOAP() {
         Font fontInputBesar=new Font("Tahoma", Font.BOLD, 13);
