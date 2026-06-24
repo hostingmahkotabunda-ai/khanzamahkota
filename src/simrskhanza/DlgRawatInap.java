@@ -252,7 +252,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
     /** Tab "Penilaian Awal" berisi dropdown jenis penilaian + tombol buka form. */
     private void pasangTabPenilaianAwal() {
         final javax.swing.JComboBox<String> cmbJenis = new javax.swing.JComboBox<>(new String[]{
-            "Awal Keperawatan Bayi", "Awal Keperawatan Anak", "Awal Keperawatan Dewasa"
+            "Awal Keperawatan Bayi", "Awal Keperawatan Anak", "Awal Keperawatan Dewasa", "Awal Kebidanan"
         });
         cmbJenis.setPreferredSize(new java.awt.Dimension(340, 28));
         widget.Button btnBuka = new widget.Button();
@@ -295,11 +295,15 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
                 f.setLocationRelativeTo(this); f.setVisible(true);
             } else if (jenis.toLowerCase().contains("anak")) {
-                rekammedis.RMPenilaianAwalKeperawatanRanapAnak f = new rekammedis.RMPenilaianAwalKeperawatanRanapAnak(null, false);
+                rekammedis.RMAsesmenKeperawatanAnak f = new rekammedis.RMAsesmenKeperawatanAnak(null, false);
+                f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
+                f.setLocationRelativeTo(this); f.setVisible(true);
+            } else if (jenis.toLowerCase().contains("kebidanan")) {
+                rekammedis.RMAsesmenKebidanan f = new rekammedis.RMAsesmenKebidanan(null, false);
                 f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
                 f.setLocationRelativeTo(this); f.setVisible(true);
             } else {
-                rekammedis.RMPenilaianAwalKeperawatanRanap f = new rekammedis.RMPenilaianAwalKeperawatanRanap(null, false);
+                rekammedis.RMAsesmenKeperawatanDewasa f = new rekammedis.RMAsesmenKeperawatanDewasa(null, false);
                 f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
                 f.setLocationRelativeTo(this); f.setVisible(true);
             }

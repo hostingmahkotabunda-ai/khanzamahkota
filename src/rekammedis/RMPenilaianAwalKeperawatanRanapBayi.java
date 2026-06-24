@@ -541,9 +541,11 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
         try (PreparedStatement ps = koneksi.prepareStatement(
                 "select p.nm_pasien,p.no_rkm_medis,p.jk,p.tgl_lahir,p.alamat,"
                 + "ifnull(poliklinik.nm_poli,'') as unit,"
-                + "ifnull(rp.p_jawab,'') as p_jawab,ifnull(rp.almt_pj,'') as almt_pj,ifnull(rp.hubunganpj,'') as hubunganpj "
+                + "ifnull(rp.p_jawab,'') as p_jawab,ifnull(rp.almt_pj,'') as almt_pj,ifnull(rp.hubunganpj,'') as hubunganpj,"
+                + "ifnull(pj.png_jawab,'') as carabayar "
                 + "from reg_periksa rp inner join pasien p on rp.no_rkm_medis=p.no_rkm_medis "
-                + "left join poliklinik on rp.kd_poli=poliklinik.kd_poli where rp.no_rawat=?")) {
+                + "left join poliklinik on rp.kd_poli=poliklinik.kd_poli "
+                + "left join penjab pj on rp.kd_pj=pj.kd_pj where rp.no_rawat=?")) {
             ps.setString(1, norwt);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -553,6 +555,9 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
                     TTglLahir.setText(rs.getString("tgl_lahir"));
                     TAlamat.setText(rs.getString("alamat"));
                     TUnit.setText(rs.getString("unit"));
+                    if (rs.getString("carabayar") != null && !rs.getString("carabayar").trim().equals("")) {
+                        TCaraBayar.setText(rs.getString("carabayar"));
+                    }
                     // Identitas penanggung jawab dari data pasien (kosong bila tidak ada)
                     pjNama.setText(rs.getString("p_jawab"));
                     pjAlamat.setText(rs.getString("almt_pj"));
