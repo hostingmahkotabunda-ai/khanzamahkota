@@ -903,18 +903,43 @@ public final class DlgPetugas extends javax.swing.JDialog {
                 Sequel.menyimpanignore("resiko_kerja","?,?,?",3,new String[]{"-","-","0"});
                 Sequel.menyimpanignore("emergency_index","?,?,?",3,new String[]{"-","-","0"});
                 Sequel.menyimpanignore("pendidikan","?,?,?,?,?",5,new String[]{"-","0","0","0","0"});
-                Sequel.menyimpanignore("pegawai","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?",34,new String[]{
+                String kolomPegawai="id,nik,nama,jk,jbtn,jnj_jabatan,kode_kelompok,kode_resiko,kode_emergency,departemen,bidang,stts_wp,stts_kerja,npwp,pendidikan,gapok,tmp_lahir,tgl_lahir,alamat,kota,mulai_kerja,ms_kerja,indexins,bpd,rekening,stts_aktif,wajibmasuk,pengurang,indek,mulai_kontrak,cuti_diambil,dankes,photo,no_ktp";
+                String valuePegawai="?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?";
+                String[] dataPegawai=new String[]{
                     "0",TNip.getText(),TNm.getText(),CmbJk.getSelectedItem().toString().replaceAll("PEREMPUAN","Wanita").replaceAll("LAKI-LAKI","Pria"),
                     "-","-","-","-","-","-","-","-","-","-","-","0",TTmp.getText(),Valid.SetTgl(DTPLahir.getSelectedItem()+""),TAlmt.getText(),"-","1900-01-01","<1",
                     "-","T","-","AKTIF","0","0","0","1900-01-01","0","0","pages/pegawai/photo/","-"
-                });
+                };
+                if(Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() and table_name='pegawai' and column_name='email'")>0){
+                    kolomPegawai+=",email";
+                    valuePegawai+=",?";
+                    dataPegawai=new String[]{
+                        "0",TNip.getText(),TNm.getText(),CmbJk.getSelectedItem().toString().replaceAll("PEREMPUAN","Wanita").replaceAll("LAKI-LAKI","Pria"),
+                        "-","-","-","-","-","-","-","-","-","-","-","0",TTmp.getText(),Valid.SetTgl(DTPLahir.getSelectedItem()+""),TAlmt.getText(),"-","1900-01-01","<1",
+                        "-","T","-","AKTIF","0","0","0","1900-01-01","0","0","pages/pegawai/photo/","-",""
+                    };
+                }
+                Sequel.menyimpanignore("pegawai ("+kolomPegawai+")",valuePegawai,dataPegawai.length,dataPegawai);
                 
-                Sequel.menyimpan("petugas","?,?,?,?,?,?,?,?,?,?,?,?","NIP",12,new String[]{
+                String kolomPetugas="nip,nama,jk,tmp_lahir,tgl_lahir,gol_darah,agama,stts_nikah,alamat,kd_jbtn,no_telp,status";
+                String valuePetugas="?,?,?,?,?,?,?,?,?,?,?,?";
+                String[] dataPetugas=new String[]{
                     TNip.getText(),TNm.getText(),CmbJk.getSelectedItem().toString().replaceAll("LAKI-LAKI","L").replaceAll("PEREMPUAN","P").trim(),
                     TTmp.getText(),Valid.SetTgl(DTPLahir.getSelectedItem()+""),CMbGd.getSelectedItem().toString(),
                     cmbAgama.getSelectedItem().toString(),CmbStts.getSelectedItem().toString(),
                     TAlmt.getText(),KdJbtn.getText(),TTlp.getText(),"1"
-                });
+                };
+                if(Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() and table_name='petugas' and column_name='email'")>0){
+                    kolomPetugas="nip,nama,jk,tmp_lahir,tgl_lahir,gol_darah,agama,stts_nikah,alamat,kd_jbtn,no_telp,email,status";
+                    valuePetugas="?,?,?,?,?,?,?,?,?,?,?,?,?";
+                    dataPetugas=new String[]{
+                        TNip.getText(),TNm.getText(),CmbJk.getSelectedItem().toString().replaceAll("LAKI-LAKI","L").replaceAll("PEREMPUAN","P").trim(),
+                        TTmp.getText(),Valid.SetTgl(DTPLahir.getSelectedItem()+""),CMbGd.getSelectedItem().toString(),
+                        cmbAgama.getSelectedItem().toString(),CmbStts.getSelectedItem().toString(),
+                        TAlmt.getText(),KdJbtn.getText(),TTlp.getText(),"","1"
+                    };
+                }
+                Sequel.menyimpan("petugas ("+kolomPetugas+")",valuePetugas,"NIP",dataPetugas.length,dataPetugas);
                 Sequel.Commit();
                 Sequel.AutoComitTrue();
                 tampil();

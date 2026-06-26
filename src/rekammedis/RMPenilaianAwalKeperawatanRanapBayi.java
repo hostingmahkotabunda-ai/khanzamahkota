@@ -175,6 +175,7 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
     private final widget.Button BtnBaru = new widget.Button();
     private final widget.Button BtnSimpan = new widget.Button();
     private final widget.Button BtnHapus = new widget.Button();
+    private final widget.Button BtnCetak = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
 
     public RMPenilaianAwalKeperawatanRanapBayi(Frame parent, boolean modal) {
@@ -302,9 +303,11 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
         BtnKeluar.setText("Keluar");
         BtnDokter.setText("...");
         BtnDokter.setPreferredSize(new Dimension(34, 23));
+        BtnCetak.setText("Cetak");
         BtnBaru.addActionListener(e -> emptTeks());
         BtnSimpan.addActionListener(e -> simpan());
         BtnHapus.addActionListener(e -> hapus());
+        BtnCetak.addActionListener(e -> cetak());
         BtnKeluar.addActionListener(e -> dispose());
         BtnDokter.addActionListener(e -> {
             dokter.emptTeks();
@@ -317,6 +320,7 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
         bawah.add(BtnSimpan);
         bawah.add(BtnBaru);
         bawah.add(BtnHapus);
+        bawah.add(BtnCetak);
         bawah.add(BtnKeluar);
         getContentPane().add(bawah, BorderLayout.SOUTH);
 
@@ -803,6 +807,103 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
             System.out.println("Notif ambil gambar : " + e);
         }
         return null;
+    }
+
+    private void cetak() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        StringBuilder b = new StringBuilder();
+        CetakAsesmen.h(b, "Identitas Pasien");
+        CetakAsesmen.r(b, "No. Rawat", TNoRw.getText());
+        CetakAsesmen.r(b, "No. RM", TNoRM.getText());
+        CetakAsesmen.r(b, "Nama Pasien", TPasien.getText());
+        CetakAsesmen.r(b, "Jenis Kelamin", TJK.getText());
+        CetakAsesmen.r(b, "Tanggal Lahir", TTglLahir.getText());
+        CetakAsesmen.r(b, "Alamat", TAlamat.getText());
+        CetakAsesmen.r(b, "Unit", TUnit.getText());
+        CetakAsesmen.r(b, "Cara Bayar", TCaraBayar.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Asesmen Keperawatan Bayi");
+        CetakAsesmen.r(b, "Ruang / Lantai / Kelas", tRuang.getText() + " / " + tLantai.getText() + " / " + tKelas.getText());
+        CetakAsesmen.r(b, "Gelang Identitas", s(cmbGelang));
+        CetakAsesmen.r(b, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "A. Identitas Penanggung Jawab");
+        CetakAsesmen.r(b, "Nama / Hubungan", pjNama.getText() + " / " + pjHubungan.getText());
+        CetakAsesmen.r(b, "Alamat", pjAlamat.getText());
+        CetakAsesmen.r(b, "Umur / Pendidikan", pjUmur.getText() + " / " + pjPendidikan.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "B. Riwayat Ibu");
+        CetakAsesmen.r(b, "Nama / Umur", ibuNama.getText() + " / " + ibuUmur.getText());
+        CetakAsesmen.r(b, "Pendidikan / Suku", ibuPendidikan.getText() + " / " + ibuSuku.getText());
+        CetakAsesmen.r(b, "Agama / Penyakit", ibuAgama.getText() + " / " + ibuPenyakit.getText());
+        CetakAsesmen.r(b, "Perkawinan Ke", ibuPerkawinan.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "C. Riwayat Penyakit");
+        CetakAsesmen.r(b, "Keluhan Utama", taKeluhan.getText());
+        CetakAsesmen.r(b, "Riwayat Kesehatan Sekarang", taRiwSekarang.getText());
+        CetakAsesmen.r(b, "Riwayat Kesehatan Dahulu", taRiwDahulu.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "D. Riwayat Kehamilan");
+        CetakAsesmen.r(b, "Komplikasi Kehamilan", grpKomplikasi.get());
+        CetakAsesmen.r(b, "Lain-lain", taKomplikasiLain.getText());
+        for (int i = 0; i < modePersalinan.getRowCount(); i++) {
+            StringBuilder row = new StringBuilder();
+            for (int c = 0; c < 7; c++) {
+                Object o = modePersalinan.getValueAt(i, c);
+                if (c > 0) { row.append(" | "); }
+                row.append(o == null ? "" : o.toString());
+            }
+            CetakAsesmen.r(b, "Persalinan Lalu " + (i + 1), row.toString());
+        }
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "F. Riwayat Psikososial Orang Tua");
+        CetakAsesmen.r(b, "Perkembangan Interpersonal", taPsiko.getText());
+        CetakAsesmen.r(b, "Pengasuh", grpPengasuh.get());
+        CetakAsesmen.r(b, "Dukungan Sibling / Keluarga", s(cmbSibling) + " / " + gabung(cmbDukKeluarga, tDukKeluargaSebut));
+        CetakAsesmen.r(b, "Budaya Dianut", gabung(cmbBudaya, tBudayaSebut));
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "G. Pemeriksaan Fisik");
+        CetakAsesmen.r(b, "APGAR / Score Down", tApgar.getText() + " / " + tDown.getText());
+        CetakAsesmen.r(b, "Suhu / RR / Nadi", tSuhu.getText() + " / " + tRR.getText() + " / " + tNadi.getText());
+        CetakAsesmen.r(b, "Tingkat Kesadaran", tKesadaran.getText());
+        CetakAsesmen.r(b, "BB / PB", tBB.getText() + " / " + tPB.getText());
+        CetakAsesmen.r(b, "Tangisan / CRT", grpTangisan.get() + " / " + s(cmbCrt));
+        CetakAsesmen.r(b, "Kulit", grpKulit.get());
+        CetakAsesmen.r(b, "Lingkar Kepala / Ubun-ubun", tLingkarKepala.getText() + " / " + grpUbun.get());
+        CetakAsesmen.r(b, "Mata", grpMata.get());
+        CetakAsesmen.r(b, "Hidung", grpHidung.get());
+        CetakAsesmen.r(b, "Telinga", grpTelinga.get());
+        CetakAsesmen.r(b, "Mulut", grpMulut.get());
+        CetakAsesmen.r(b, "Frekuensi Nafas", tFreqNafas.getText());
+        CetakAsesmen.r(b, "Dada & Sirkulasi", grpDada.get());
+        CetakAsesmen.r(b, "Abdomen", grpAbdomen.get());
+        CetakAsesmen.r(b, "Jenis Kelamin / Testis / Labia / Anus", s(cmbJK) + " / " + s(cmbTestis) + " / " + s(cmbLabia) + " / " + s(cmbAnus));
+        CetakAsesmen.r(b, "BAB", tBabFreq.getText() + " " + grpBab.get());
+        CetakAsesmen.r(b, "BAK", tBak.getText());
+        CetakAsesmen.r(b, "Ekstremitas Atas", grpEkstrAtas.get());
+        CetakAsesmen.r(b, "Ekstremitas Bawah", grpEkstrBawah.get());
+        CetakAsesmen.r(b, "Reflek Moro / Mengisap / Rooting", s(cmbReflekMoro) + " / " + s(cmbReflekMengisap) + " / " + s(cmbReflekRooting));
+        CetakAsesmen.r(b, "Reflek Babinski", tBabinski.getText());
+        CetakAsesmen.r(b, "Aktifitas & Istirahat", grpAktifitas.get());
+        CetakAsesmen.r(b, "Personal Hygiene", grpHygiene.get());
+        CetakAsesmen.r(b, "Nutrisi", grpNutrisi.get());
+        CetakAsesmen.r(b, "Kontak Ibu / Bayi Diharapkan", s(cmbKontakIbu) + " / " + s(cmbBayiDiharapkan));
+        CetakAsesmen.r(b, "Obat / Therapi", taObat.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Discharge Planning & Perencanaan Pulang");
+        CetakAsesmen.r(b, "Kriteria", cekHambatan.isSelected() ? "Memiliki Hambatan Mobilisasi" : "-");
+        CetakAsesmen.r(b, "Pasien Tinggal Dengan", gabung(cmbTinggal, tTinggalSebut));
+        CetakAsesmen.r(b, "Keluarga Perokok", gabung(cmbPerokok, tPerokokSebut));
+        CetakAsesmen.r(b, "Kondisi Rumah", grpKondisiRumah.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Resume");
+        CetakAsesmen.r(b, "Masalah Keperawatan", taMasalah.getText());
+        CetakAsesmen.r(b, "Rencana Keperawatan", taRencana.getText());
+        CetakAsesmen.cetak("ASESMEN KEPERAWATAN BAYI", "RM 5b", b.toString(),
+                dtpTtd.getSelectedItem() + "", "Perawat Pengkaji", KdPetugas.getText(), NmPetugas.getText());
     }
 
     private void hapus() {

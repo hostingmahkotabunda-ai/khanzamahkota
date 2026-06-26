@@ -234,6 +234,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         initKasirRalan();
+        pasangSuratKontrolV2();
 
         this.setLocation(8,1);
         setSize(885,674);
@@ -10281,6 +10282,53 @@ private void MnDataPemberianObatActionPerformed(java.awt.event.ActionEvent evt) 
             this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_MnGelang7ActionPerformed
+
+    /** Sembunyikan menu "Surat Kontrol" lama, pasang menu baru "Surat Kontrol V2"
+     *  di posisi paling atas submenu Surat-Surat (form SuratKontrolV2). */
+    private void pasangSuratKontrolV2() {
+        try { MnSuratKontrol.setVisible(false); } catch (Exception e) {}
+        final javax.swing.JMenuItem mi = new javax.swing.JMenuItem("Surat Kontrol V2");
+        mi.setBackground(new java.awt.Color(255, 255, 254));
+        mi.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mi.setForeground(new java.awt.Color(50, 50, 50));
+        try { mi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); } catch (Exception e) {}
+        mi.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mi.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mi.setPreferredSize(new java.awt.Dimension(190, 26));
+        mi.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) { bukaSuratKontrolV2(); }
+        });
+        try { MnSuratSurat.insert(mi, 0); } catch (Exception e) { MnSuratSurat.add(mi); }
+    }
+
+    private void bukaSuratKontrolV2() {
+        if (tabModekasir.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+            return;
+        }
+        if (TPasienCari.getText().trim().equals("") || tbKasirRalan.getSelectedRow() == -1) {
+            JOptionPane.showMessageDialog(null, "Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
+            tbKasirRalan.requestFocus();
+            return;
+        }
+        if (Sequel.cariInteger("select count(kamar_inap.no_rawat) from kamar_inap where kamar_inap.no_rawat=?", TNoRw.getText()) > 0) {
+            JOptionPane.showMessageDialog(null, "Maaf, Pasien sudah masuk Kamar Inap. Gunakan billing Ranap..!!!");
+            return;
+        }
+        String norawat = TNoRw.getText();
+        String kdpoli = Sequel.cariIsi("select kd_poli from reg_periksa where no_rawat=?", norawat);
+        String nmpoli = Sequel.cariIsi("select poliklinik.nm_poli from poliklinik where kd_poli=?", kdpoli);
+        String kddok = Sequel.cariIsi("select kd_dokter from reg_periksa where no_rawat=?", norawat);
+        String nmdok = Sequel.cariIsi("select nm_dokter from dokter where kd_dokter=?", kddok);
+        surat.SuratKontrolV2 form = new surat.SuratKontrolV2(null, false);
+        form.isCek();
+        form.setSize(internalFrame1.getWidth() - 20, internalFrame1.getHeight() - 20);
+        form.setLocationRelativeTo(internalFrame1);
+        form.emptTeks();
+        form.setData(norawat, TNoRMCari.getText(), TPasienCari.getText(), kdpoli, nmpoli, kddok, nmdok);
+        form.setVisible(true);
+    }
 
     private void MnSuratKontrolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MnSuratKontrolActionPerformed
         if(tabModekasir.getRowCount()==0){

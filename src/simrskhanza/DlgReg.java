@@ -288,6 +288,7 @@ public final class DlgReg extends javax.swing.JDialog {
         initComponents();
         initRegistrasi();
         initHostKerjaRalan();
+        pasangSuratKontrolV2();
 
         this.setLocation(8,1);
         setSize(885,674);
@@ -11225,6 +11226,46 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
             }
         }
     }//GEN-LAST:event_MnJadwalOperasiActionPerformed
+
+    /** Sembunyikan menu "Surat Kontrol" lama, pasang "Surat Kontrol V2" di posisi
+     *  paling atas submenu Surat-Surat (form SuratKontrolV2). */
+    private void pasangSuratKontrolV2() {
+        try { MnSuratKontrol.setVisible(false); } catch (Exception e) {}
+        final javax.swing.JMenuItem mi = new javax.swing.JMenuItem("Surat Kontrol V2");
+        mi.setBackground(new java.awt.Color(255, 255, 254));
+        mi.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mi.setForeground(new java.awt.Color(50, 50, 50));
+        try { mi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); } catch (Exception e) {}
+        mi.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mi.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mi.setPreferredSize(new java.awt.Dimension(250, 26));
+        mi.addActionListener(new java.awt.event.ActionListener() {
+            @Override public void actionPerformed(java.awt.event.ActionEvent e) { bukaSuratKontrolV2(); }
+        });
+        try { MnSuratSurat.insert(mi, 0); } catch (Exception e) { MnSuratSurat.add(mi); }
+    }
+
+    private void bukaSuratKontrolV2() {
+        if (tabMode.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(null, "Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+            return;
+        }
+        if (tbPetugas.getSelectedRow() == -1) {
+            return;
+        }
+        if (Sequel.cariInteger("select count(no_rawat) from kamar_inap where no_rawat=?", TNoRw.getText()) > 0) {
+            JOptionPane.showMessageDialog(null, "Maaf, Pasien sudah masuk Kamar Inap. Gunakan billing Ranap..!!!");
+            return;
+        }
+        surat.SuratKontrolV2 form = new surat.SuratKontrolV2(null, false);
+        form.isCek();
+        form.setSize(internalFrame1.getWidth() - 20, internalFrame1.getHeight() - 20);
+        form.setLocationRelativeTo(internalFrame1);
+        form.emptTeks();
+        form.setData(TNoRw.getText(), TNoRM.getText(), TPasien.getText(), kdpoli.getText(), TPoli.getText(), KdDokter.getText(), TDokter.getText());
+        form.setVisible(true);
+    }
 
     private void MnSuratKontrolActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MnSuratKontrolActionPerformed
         if(tabMode.getRowCount()==0){

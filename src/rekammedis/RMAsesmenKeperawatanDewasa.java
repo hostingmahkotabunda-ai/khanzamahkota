@@ -227,6 +227,7 @@ public final class RMAsesmenKeperawatanDewasa extends JDialog {
     private final widget.Button BtnBaru = new widget.Button();
     private final widget.Button BtnSimpan = new widget.Button();
     private final widget.Button BtnHapus = new widget.Button();
+    private final widget.Button BtnCetak = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
 
     public RMAsesmenKeperawatanDewasa(Frame parent, boolean modal) {
@@ -391,9 +392,11 @@ public final class RMAsesmenKeperawatanDewasa extends JDialog {
         BtnKeluar.setText("Keluar");
         BtnDokter.setText("...");
         BtnDokter.setPreferredSize(new Dimension(34, 23));
+        BtnCetak.setText("Cetak");
         BtnBaru.addActionListener(e -> emptTeks());
         BtnSimpan.addActionListener(e -> simpan());
         BtnHapus.addActionListener(e -> hapus());
+        BtnCetak.addActionListener(e -> cetak());
         BtnKeluar.addActionListener(e -> dispose());
         BtnDokter.addActionListener(e -> {
             dokter.emptTeks();
@@ -406,6 +409,7 @@ public final class RMAsesmenKeperawatanDewasa extends JDialog {
         bawah.add(BtnSimpan);
         bawah.add(BtnBaru);
         bawah.add(BtnHapus);
+        bawah.add(BtnCetak);
         bawah.add(BtnKeluar);
         getContentPane().add(bawah, BorderLayout.SOUTH);
 
@@ -770,6 +774,136 @@ public final class RMAsesmenKeperawatanDewasa extends JDialog {
         } catch (Exception e) {
             System.out.println("Notif muat dewasa : " + e);
         }
+    }
+
+    private void cetak() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        StringBuilder b = new StringBuilder();
+        CetakAsesmen.h(b, "Identitas Pasien");
+        CetakAsesmen.r(b, "No. Rawat", TNoRw.getText());
+        CetakAsesmen.r(b, "No. RM", TNoRM.getText());
+        CetakAsesmen.r(b, "Nama Pasien", TPasien.getText());
+        CetakAsesmen.r(b, "Jenis Kelamin", TJK.getText());
+        CetakAsesmen.r(b, "Tanggal Lahir", TTglLahir.getText());
+        CetakAsesmen.r(b, "Alamat", TAlamat.getText());
+        CetakAsesmen.r(b, "Unit", TUnit.getText());
+        CetakAsesmen.r(b, "Cara Bayar", TCaraBayar.getText());
+        CetakAsesmen.r(b, "Ruang / Lantai / Kelas", tRuang.getText() + " / " + tLantai.getText() + " / " + tKelas.getText());
+        CetakAsesmen.r(b, "Diagnosa Medis", tDiagnosaMedis.getText());
+        CetakAsesmen.r(b, "Gelang Identitas", s(cmbGelang));
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Bagian 1 : Data Umum");
+        CetakAsesmen.r(b, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
+        CetakAsesmen.r(b, "Kondisi Saat Masuk", grpKondisiMasuk.get());
+        CetakAsesmen.r(b, "Via", grpVia.get());
+        CetakAsesmen.r(b, "Nadi / Respirasi", tNadi.getText() + " / " + tRespirasi.getText());
+        CetakAsesmen.r(b, "Suhu / SpO2", tSuhu.getText() + " / " + tSpo2.getText());
+        CetakAsesmen.r(b, "Tekanan Darah / Posisi", tTD.getText() + " (" + grpTdPosisi.get() + ")");
+        CetakAsesmen.r(b, "TB / BB", tTB.getText() + " / " + tBB.getText());
+        CetakAsesmen.r(b, "GCS (E/M/V)", tGcsE.getText() + " / " + tGcsM.getText() + " / " + tGcsV.getText());
+        CetakAsesmen.r(b, "Diagnosis Masuk", taDiagnosaMasuk.getText());
+        CetakAsesmen.r(b, "Keluhan Utama", taKeluhan.getText());
+        CetakAsesmen.r(b, "Alergi", s(cmbAlergi));
+        CetakAsesmen.r(b, "Jenis Alergi (Lateks)", grpLateks.get());
+        CetakAsesmen.r(b, "Obat / Jenis / Reaksi", tAlergiObat.getText());
+        CetakAsesmen.r(b, "Snap Alert", cekSnapAlert.isSelected() ? "Ya" : "-");
+        CetakAsesmen.r(b, "Barang Berharga", grpBarang.get());
+        CetakAsesmen.r(b, "Tindakan Barang", grpBarangTindakan.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Bagian 2 : Riwayat Pasien");
+        CetakAsesmen.r(b, "Riwayat Penyakit/Operasi/Cedera", grpRiwayatPasien.get());
+        CetakAsesmen.r(b, "Masalah Anastesi", cekMasalahAnastesi.isSelected() ? "Panggil dokter" : "-");
+        CetakAsesmen.r(b, "Deskripsi Penyakit & Operasi", taDeskripsiPenyakit.getText());
+        CetakAsesmen.r(b, "Alkohol/Obat", s(cmbAlkohol) + " | Jumlah: " + tAlkoholJumlah.getText() + " | Jenis: " + tAlkoholJenis.getText());
+        CetakAsesmen.r(b, "Merokok", s(cmbMerokok) + " | Jumlah: " + tMerokokJumlah.getText() + " | Jenis: " + tMerokokJenis.getText());
+        CetakAsesmen.r(b, "Influenza 12 bln / Pneumonia 5 thn", s(cmbInfluenza) + " / " + s(cmbPneumonia));
+        CetakAsesmen.r(b, "Vaksinasi Lainnya", tVaksinasiLain.getText());
+        CetakAsesmen.r(b, "Riwayat Keluarga", grpRiwayatKeluarga.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Psikososial / Ekonomi / Spiritual");
+        CetakAsesmen.r(b, "Status Pernikahan / Keluarga", s(cmbStatusNikah) + " / " + s(cmbKeluargaTinggal));
+        CetakAsesmen.r(b, "Tempat Tinggal / Pekerjaan", s(cmbTempatTinggal) + " / " + s(cmbPekerjaan));
+        CetakAsesmen.r(b, "Agama / Nilai Keyakinan", tAgama.getText());
+        CetakAsesmen.r(b, "Aktivitas", grpAktivitasPsiko.get());
+        CetakAsesmen.r(b, "Curiga Penganiayaan", grpAniaya.get());
+        CetakAsesmen.r(b, "Status Emosional", grpEmosional.get());
+        CetakAsesmen.r(b, "Keluarga Terdekat / Hubungan", tKeluargaTerdekat.getText() + " / " + tHubungan.getText());
+        CetakAsesmen.r(b, "Telepon", tTelepon.getText());
+        CetakAsesmen.r(b, "Informasi Didapat Dari", grpInformasi.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Bagian 3 : Pemeriksaan Fisik");
+        CetakAsesmen.r(b, "Mata/Telinga/Hidung/Tenggorokan", grpFisikMata.get());
+        CetakAsesmen.r(b, "Catatan (THT)", tFisikMataKet.getText());
+        CetakAsesmen.r(b, "Kardiovaskular", grpFisikKardio.get());
+        CetakAsesmen.r(b, "Catatan (Kardio)", tFisikKardioKet.getText());
+        CetakAsesmen.r(b, "Gastrointestinal", grpFisikGastro.get());
+        CetakAsesmen.r(b, "Catatan (Gastro)", tFisikGastroKet.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Skrining Gizi (MST)");
+        CetakAsesmen.r(b, "Penurunan BB 6 bln", s(cmbMst1));
+        CetakAsesmen.r(b, "Asupan makan berkurang", s(cmbMst2));
+        CetakAsesmen.r(b, "Skor Total MST", tMstTotal.getText());
+        CetakAsesmen.r(b, "Genitourinaria & Ginekologi", grpFisikGenito.get());
+        CetakAsesmen.r(b, "Catatan (Genito)", tFisikGenitoKet.getText());
+        CetakAsesmen.r(b, "Neurologi", grpFisikNeuro.get());
+        CetakAsesmen.r(b, "Catatan (Neuro)", tFisikNeuroKet.getText());
+        CetakAsesmen.r(b, "Muskuloskeletal & Kulit", grpFisikMusculo.get());
+        CetakAsesmen.r(b, "Catatan (Muskulo) / Luka", tFisikMusculoKet.getText() + (cekLukaRujuk.isSelected() ? " (Rujuk Penanganan Luka)" : ""));
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Norton Scale (Risiko Kulit)");
+        CetakAsesmen.r(b, "Kondisi Fisik / Mental", s(cmbNortonFisik) + " / " + s(cmbNortonMental));
+        CetakAsesmen.r(b, "Aktivitas / Mobilitas", s(cmbNortonAktivitas) + " / " + s(cmbNortonMobilitas));
+        CetakAsesmen.r(b, "Inkontinensia", s(cmbNortonInkontinensia));
+        CetakAsesmen.r(b, "Total Skor / Catatan", tNortonTotal.getText() + " / " + tNortonCatatan.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "ADL / Indeks Barthel");
+        CetakAsesmen.r(b, "Makan / Mandi", s(cmbAdlMakan) + " | " + s(cmbAdlMandi));
+        CetakAsesmen.r(b, "Perawatan Diri / Berpakaian", s(cmbAdlGrooming) + " | " + s(cmbAdlBerpakaian));
+        CetakAsesmen.r(b, "BAK / BAB", s(cmbAdlBak) + " | " + s(cmbAdlBab));
+        CetakAsesmen.r(b, "Toilet / Transfer", s(cmbAdlToilet) + " | " + s(cmbAdlTransfer));
+        CetakAsesmen.r(b, "Mobilitas / Tangga", s(cmbAdlMobilitas) + " | " + s(cmbAdlTangga));
+        CetakAsesmen.r(b, "Total Skor / Interpretasi", tAdlTotal.getText() + " / " + tAdlInterpretasi.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Faktor Resiko Jatuh (Morse)");
+        CetakAsesmen.r(b, "Riwayat Jatuh / Diagnosis Sekunder", s(cmbMorseJatuh) + " / " + s(cmbMorseDiagnosis));
+        CetakAsesmen.r(b, "Alat Bantu / Infus", s(cmbMorseAlat) + " / " + s(cmbMorseInfus));
+        CetakAsesmen.r(b, "Gaya Berjalan / Status Mental", s(cmbMorseJalan) + " / " + s(cmbMorseMental));
+        CetakAsesmen.r(b, "Total Skor / Tingkat Resiko", tMorseTotal.getText() + " / " + tMorseResiko.getText());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Pemeriksaan Nyeri (NRS)");
+        CetakAsesmen.r(b, "Skala Nyeri", tNyeriSkala.getText());
+        CetakAsesmen.r(b, "Lokasi / Onset", tNyeriLokasi.getText() + " / " + tNyeriOnset.getText());
+        CetakAsesmen.r(b, "Variasi", tNyeriVariasi.getText());
+        CetakAsesmen.r(b, "Kualitas", grpNyeriKualitas.get());
+        CetakAsesmen.r(b, "Faktor Pemberat", grpNyeriPemberat.get());
+        CetakAsesmen.r(b, "Faktor Pencetus", grpNyeriPencetus.get());
+        CetakAsesmen.r(b, "Obat-obatan", tNyeriObat.getText());
+        CetakAsesmen.r(b, "Efek Nyeri", grpNyeriEfek.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Restraint");
+        CetakAsesmen.r(b, "Pernah / Perlu Restraint", s(cmbRestraintPernah) + " / " + s(cmbRestraintPerlu));
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Komunikasi & Edukasi");
+        CetakAsesmen.r(b, "Komunikasi", grpKomunikasi.get());
+        CetakAsesmen.r(b, "Bahasa Sehari-hari", grpBahasa.get());
+        CetakAsesmen.r(b, "Hambatan Belajar", grpHambatanBelajar.get());
+        CetakAsesmen.r(b, "Cara Belajar", grpCaraBelajar.get());
+        CetakAsesmen.r(b, "Tingkat Pendidikan", grpPendidikan.get());
+        CetakAsesmen.r(b, "Kebutuhan Edukasi", grpEdukasi.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Discharge Planning / Pasien Kritis");
+        CetakAsesmen.r(b, "Kriteria", grpKriteria.get());
+        CetakAsesmen.sp(b);
+        CetakAsesmen.h(b, "Resume");
+        CetakAsesmen.r(b, "Umum", grpResumeUmum.get());
+        CetakAsesmen.r(b, "Rujuk", grpResumeRujuk.get());
+        CetakAsesmen.r(b, "Rencana Keperawatan", grpRencana.get());
+        CetakAsesmen.r(b, "Masalah Keperawatan", grpMasalah.get());
+        CetakAsesmen.cetak("ASESMEN KEPERAWATAN DEWASA", "RM 5d", b.toString(),
+                dtpTtd.getSelectedItem() + "", "Pelaksana Asesmen", KdPetugas.getText(), NmPetugas.getText());
     }
 
     private void hapus() {

@@ -3511,7 +3511,7 @@ public class DlgUser extends javax.swing.JDialog {
         }else if(TPass.getText().trim().equals("")){
             Valid.textKosong(TPass,"Password");
         }else{
-            if(Sequel.menyimpantf("user","AES_ENCRYPT('"+TKd.getText()+"','nur'),AES_ENCRYPT('"+TPass.getText()+"','windi'),'false','false','false','false','false','false','false','false',"+
+            if(simpanUserBaru()){ /*
                     "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false',"+
                     "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false',"+
                     "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false',"+
@@ -3535,7 +3535,7 @@ public class DlgUser extends javax.swing.JDialog {
                     "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false',"+
                     "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false',"+
                     "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false',"+
-                    "'false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false','false'","User")==true){
+                    */
                 tabMode.addRow(new Object[]{
                     TKd.getText(),TNmUser.getText(),Jabatan.getText(),TPass.getText(),false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
                     false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,
@@ -5928,6 +5928,67 @@ private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private widget.panelisi panelGlass7;
     private widget.Table tbUser;
     // End of variables declaration//GEN-END:variables
+
+    private boolean simpanUserBaru(){
+        StringBuilder kolom=new StringBuilder();
+        StringBuilder nilai=new StringBuilder();
+        PreparedStatement psKolom=null, psSimpan=null;
+        ResultSet rsKolom=null;
+        int jumlah=0,idUserIndex=0,passwordIndex=0;
+        try {
+            psKolom=koneksi.prepareStatement(
+                "select column_name from information_schema.columns where table_schema=database() and table_name='user' order by ordinal_position");
+            rsKolom=psKolom.executeQuery();
+            while(rsKolom.next()){
+                if(jumlah>0){
+                    kolom.append(",");
+                    nilai.append(",");
+                }
+                kolom.append("`").append(rsKolom.getString("column_name")).append("`");
+                if(rsKolom.getString("column_name").equals("id_user")){
+                    idUserIndex=jumlah+1;
+                    nilai.append("AES_ENCRYPT(?,'nur')");
+                }else if(rsKolom.getString("column_name").equals("password")){
+                    passwordIndex=jumlah+1;
+                    nilai.append("AES_ENCRYPT(?,'windi')");
+                }else{
+                    nilai.append("?");
+                }
+                jumlah++;
+            }
+
+            psSimpan=koneksi.prepareStatement("insert into user ("+kolom+") values ("+nilai+")");
+            for(int urut=1;urut<=jumlah;urut++){
+                psSimpan.setString(urut,"false");
+            }
+            psSimpan.setString(idUserIndex,TKd.getText());
+            psSimpan.setString(passwordIndex,TPass.getText());
+            psSimpan.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            System.out.println("Notifikasi : "+e);
+            if(e.toString().contains("Duplicate")){
+                JOptionPane.showMessageDialog(null,"Maaf, gagal menyimpan data. Kemungkinan ada User yang sama dimasukkan sebelumnya...!");
+            }else{
+                JOptionPane.showMessageDialog(null,"Maaf, gagal menyimpan data. Ada kesalahan Query...!");
+            }
+            return false;
+        } finally {
+            try {
+                if(rsKolom!=null){
+                    rsKolom.close();
+                }
+                if(psKolom!=null){
+                    psKolom.close();
+                }
+                if(psSimpan!=null){
+                    psSimpan.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notifikasi : "+e);
+            }
+        }
+    }
 
     private void tampil() {        
         try{    

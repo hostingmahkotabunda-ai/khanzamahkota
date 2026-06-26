@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptSuratKontrol" language="groovy" pageWidth="595" pageHeight="842" columnWidth="543" leftMargin="26" rightMargin="26" topMargin="20" bottomMargin="20" uuid="c2d3e4f5-aaaa-bbbb-cccc-1234567890ab">
+	<parameter name="namars" class="java.lang.String"/>
+	<parameter name="alamatrs" class="java.lang.String"/>
+	<parameter name="kotars" class="java.lang.String"/>
+	<parameter name="propinsirs" class="java.lang.String"/>
+	<parameter name="kontakrs" class="java.lang.String"/>
+	<parameter name="emailrs" class="java.lang.String"/>
+	<parameter name="logo" class="java.io.InputStream"/>
+	<parameter name="kota_ttd" class="java.lang.String"/>
+	<parameter name="finger" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[select current_date()]]>
+	</queryString>
+	<field name="no_rawat" class="java.lang.String"/>
+	<field name="no_rkm_medis" class="java.lang.String"/>
+	<field name="nm_pasien" class="java.lang.String"/>
+	<field name="tgl_lahir" class="java.lang.String"/>
+	<field name="alamat" class="java.lang.String"/>
+	<field name="diagnosa" class="java.lang.String"/>
+	<field name="terapi" class="java.lang.String"/>
+	<field name="jadwal_kontrol" class="java.lang.String"/>
+	<field name="rencana" class="java.lang.String"/>
+	<field name="tanggal_surat" class="java.lang.String"/>
+	<field name="nm_dokter" class="java.lang.String"/>
+	<field name="kd_dokter" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="250" splitType="Stretch">
+			<rectangle>
+				<reportElement x="0" y="0" width="543" height="96"/>
+			</rectangle>
+			<line>
+				<reportElement x="315" y="0" width="1" height="96"/>
+			</line>
+			<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+				<reportElement x="6" y="12" width="50" height="44"/>
+				<imageExpression class="java.io.InputStream"><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+			<staticText>
+				<reportElement x="60" y="8" width="250" height="10"/>
+				<textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement>
+				<text><![CDATA[Rumah Sakit Khusus Ibu Dan Anak]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="60" y="17" width="250" height="17"/>
+				<textElement><font fontName="Tahoma" size="13" isBold="true" pdfFontName="Helvetica-Bold"/></textElement>
+				<textFieldExpression><![CDATA[$P{namars}]]></textFieldExpression>
+			</textField>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="60" y="34" width="250" height="18"/>
+				<textElement><font fontName="Tahoma" size="6"/></textElement>
+				<textFieldExpression><![CDATA[($P{alamatrs}==null?"":$P{alamatrs}) + ( ($P{kotars}==null||$P{kotars}.equals("")) ? "" : ", " + $P{kotars} )]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="60" y="64" width="250" height="9"/>
+				<textElement><font fontName="Tahoma" size="6"/></textElement>
+				<text><![CDATA[IG: mahkotabunda.bjm    WA: 0852-4908-5858 (Chat Only)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="60" y="73" width="250" height="9"/>
+				<textElement><font fontName="Tahoma" size="6"/></textElement>
+				<text><![CDATA[Email: rskia.mahkotabunda@gmail.com]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="321" y="8" width="62" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[No. RM]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="383" y="8" width="156" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": " + $F{no_rkm_medis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="321" y="26" width="62" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[Nama]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="383" y="26" width="156" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": " + $F{nm_pasien}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="321" y="44" width="62" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[Tanggal Lahir]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="383" y="44" width="156" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": " + $F{tgl_lahir}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="321" y="62" width="62" height="12"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[Alamat]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="383" y="62" width="156" height="28"/>
+				<textElement><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": " + $F{alamat}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="106" width="543" height="20"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="13" isBold="true" isUnderline="true" pdfFontName="Helvetica-Bold"/></textElement>
+				<text><![CDATA[SURAT KETERANGAN KONTROL]]></text>
+			</staticText>
+			<frame>
+				<reportElement x="14" y="138" width="519" height="16"/>
+				<staticText>
+					<reportElement x="0" y="0" width="160" height="14"/>
+					<textElement><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+					<text><![CDATA[Diagnosa]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="164" y="0" width="355" height="14"/>
+					<textElement><font fontName="Tahoma" size="10"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{diagnosa}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="14" y="160" width="519" height="16"/>
+				<staticText>
+					<reportElement x="0" y="0" width="160" height="14"/>
+					<textElement><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+					<text><![CDATA[Terapi]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="164" y="0" width="355" height="14"/>
+					<textElement><font fontName="Tahoma" size="10"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{terapi}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="14" y="182" width="519" height="16"/>
+				<staticText>
+					<reportElement x="0" y="0" width="160" height="14"/>
+					<textElement><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+					<text><![CDATA[Jadwal Kembali Kontrol]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="164" y="0" width="355" height="14"/>
+					<textElement><font fontName="Tahoma" size="10"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{jadwal_kontrol}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<frame>
+				<reportElement positionType="Float" x="14" y="204" width="519" height="16"/>
+				<staticText>
+					<reportElement x="0" y="0" width="160" height="14"/>
+					<textElement><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+					<text><![CDATA[Rencana Tindak Lanjut]]></text>
+				</staticText>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="164" y="0" width="355" height="14"/>
+					<textElement><font fontName="Tahoma" size="10"/></textElement>
+					<textFieldExpression><![CDATA[": " + $F{rencana}]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+	<summary>
+		<band height="120" splitType="Stretch">
+			<textField isBlankWhenNull="true">
+				<reportElement x="320" y="10" width="217" height="14"/>
+				<textElement textAlignment="Center"><font fontName="Tahoma" size="10"/></textElement>
+				<textFieldExpression><![CDATA[$P{kota_ttd} + ", " + $F{tanggal_surat}]]></textFieldExpression>
+			</textField>
+			<componentElement>
+				<reportElement x="399" y="26" width="58" height="58"/>
+				<jr:QRCode xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd" errorCorrectionLevel="M">
+					<jr:codeExpression><![CDATA[$P{finger}]]></jr:codeExpression>
+				</jr:QRCode>
+			</componentElement>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="320" y="88" width="217" height="16"/>
+				<textElement textAlignment="Center"><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA["( " + ($F{nm_dokter}==null?"":$F{nm_dokter}) + " )"]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>
