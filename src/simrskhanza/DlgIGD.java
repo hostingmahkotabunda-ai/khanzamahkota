@@ -260,6 +260,7 @@ public final class DlgIGD extends javax.swing.JDialog {
     public DlgIGD(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        pasangMenuCetakCPPT();
         initFilterDanKeteranganWarnaIgd();
         initIGD();
         initHostKerjaIgd();
@@ -11040,6 +11041,25 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
             });
             dialog.setVisible(true);
         });
+    }
+
+    private void pasangMenuCetakCPPT() {
+        javax.swing.JMenuItem mnCetakCPPT = new javax.swing.JMenuItem();
+        mnCetakCPPT.setBackground(new java.awt.Color(255, 255, 254));
+        mnCetakCPPT.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mnCetakCPPT.setForeground(new java.awt.Color(50, 50, 50));
+        mnCetakCPPT.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        mnCetakCPPT.setText("Cetak CPPT");
+        mnCetakCPPT.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mnCetakCPPT.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mnCetakCPPT.setPreferredSize(new java.awt.Dimension(250, 26));
+        mnCetakCPPT.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rekammedis.CetakCPPT.cetak(TNoRw.getText(), "igd");
+            }
+        });
+        MnDataRM.add(mnCetakCPPT);
     }
 
     private void initHostKerjaIgd() {

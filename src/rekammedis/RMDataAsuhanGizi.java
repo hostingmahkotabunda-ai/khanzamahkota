@@ -51,6 +51,8 @@ public final class RMDataAsuhanGizi extends javax.swing.JDialog {
     private String finger="";
     private DlgCariPetugas petugas=new DlgCariPetugas(null,false);
     private String alergi_telur, alergi_susu_sapi, alergi_kacang, alergi_gluten, alergi_udang, alergi_ikan, alergi_hazelnut,sttsumur="";
+    private final MasterCariTemplateAsuhanGizi template=new MasterCariTemplateAsuhanGizi(null,false);
+    private widget.Button BtnTemplateGizi;
     
     /** Creates new form DlgRujuk
      * @param parent
@@ -245,7 +247,9 @@ public final class RMDataAsuhanGizi extends javax.swing.JDialog {
         
         ChkInput.setSelected(false);
         isForm();
-      
+
+        pasangTombolTemplate();
+
     }
 
     private void aturTampilanFormInput(){
@@ -264,6 +268,49 @@ public final class RMDataAsuhanGizi extends javax.swing.JDialog {
             area.setLineWrap(true);
             area.setWrapStyleWord(true);
         }
+    }
+
+    /** Memasang tombol "Template" pada toolbar bawah. Tombol membuka dialog
+     * pencari template (logika seperti template laporan operasi); template
+     * yang dipilih akan mengisi field Fisik/Klinis, Intervensi Gizi, dan
+     * Monitoring & Evaluasi sekaligus. */
+    private void pasangTombolTemplate(){
+        BtnTemplateGizi=new widget.Button();
+        BtnTemplateGizi.setText("Template");
+        BtnTemplateGizi.setToolTipText("Ambil template Fisik/Klinis, Intervensi Gizi & Monitoring");
+        BtnTemplateGizi.setPreferredSize(new java.awt.Dimension(110,30));
+        try{
+            BtnTemplateGizi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png")));
+        }catch(Exception e){
+            System.out.println("Notifikasi : "+e);
+        }
+        BtnTemplateGizi.addActionListener(new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){
+                tampilkanTemplate();
+            }
+        });
+        panelGlass8.add(BtnTemplateGizi,0);
+        panelGlass8.revalidate();
+
+        template.addWindowListener(new java.awt.event.WindowAdapter(){
+            @Override public void windowClosed(java.awt.event.WindowEvent e){
+                javax.swing.JTable t=template.getTable();
+                if(t.getSelectedRow()!=-1){
+                    FisikKlinis.setText(t.getValueAt(t.getSelectedRow(),2).toString());
+                    IntervensiGizi.setText(t.getValueAt(t.getSelectedRow(),3).toString());
+                    Monitoring.setText(t.getValueAt(t.getSelectedRow(),4).toString());
+                    FisikKlinis.requestFocus();
+                }
+            }
+        });
+    }
+
+    private void tampilkanTemplate(){
+        template.emptTeks();
+        template.isCek();
+        template.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+        template.setLocationRelativeTo(internalFrame1);
+        template.setVisible(true);
     }
 
 

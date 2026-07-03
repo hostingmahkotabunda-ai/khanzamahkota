@@ -209,15 +209,17 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
             }else if(i==7){
                 column.setPreferredWidth(85);
             }else if(i==8){
-                column.setPreferredWidth(110);
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
             }else if(i==9){
-                column.setPreferredWidth(100);
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
             }else if(i==10){
                 column.setMinWidth(0);
                 column.setMaxWidth(0);
             }else if(i==11){
                 column.setPreferredWidth(50);
-            }                 
+            }
         }
         warna.kolom=1;
         tbResep.setDefaultRenderer(Object.class,warna);
@@ -2438,23 +2440,28 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         labelDraftSOAP = new widget.Label();
         labelDraftSOAP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelDraftSOAP.setText("Plan SOAP Dokter :");
+        labelDraftSOAP.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
         labelDraftSOAP.setPreferredSize(new java.awt.Dimension(100,23));
         labelDraftSOAPRacikan = new widget.Label();
         labelDraftSOAPRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelDraftSOAPRacikan.setText("Plan SOAP Dokter :");
+        labelDraftSOAPRacikan.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
         labelDraftSOAPRacikan.setPreferredSize(new java.awt.Dimension(100,23));
         labelDraftSOAPRacikanV2 = new widget.Label();
         labelDraftSOAPRacikanV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelDraftSOAPRacikanV2.setText("Plan SOAP Dokter :");
+        labelDraftSOAPRacikanV2.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
         labelDraftSOAPRacikanV2.setPreferredSize(new java.awt.Dimension(100,23));
         labelCatatanDokter = new widget.Label();
         labelCatatanDokter.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        labelCatatanDokter.setText("Catatan Dokter :");
-        labelCatatanDokter.setPreferredSize(new java.awt.Dimension(100,23));
+        labelCatatanDokter.setText("Catatan untuk resep ini :");
+        labelCatatanDokter.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+        labelCatatanDokter.setPreferredSize(new java.awt.Dimension(230,23));
         labelCatatanDokterRacikanV2 = new widget.Label();
         labelCatatanDokterRacikanV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        labelCatatanDokterRacikanV2.setText("Catatan Dokter :");
-        labelCatatanDokterRacikanV2.setPreferredSize(new java.awt.Dimension(100,23));
+        labelCatatanDokterRacikanV2.setText("Catatan untuk resep ini :");
+        labelCatatanDokterRacikanV2.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+        labelCatatanDokterRacikanV2.setPreferredSize(new java.awt.Dimension(230,23));
 
         areaDraftSOAP = new javax.swing.JTextArea();
         areaDraftSOAP.setEditable(false);
@@ -2477,11 +2484,13 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         areaCatatanDokter = new javax.swing.JTextArea();
         areaCatatanDokter.setLineWrap(true);
         areaCatatanDokter.setWrapStyleWord(true);
+        areaCatatanDokter.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 15));
         areaCatatanDokter.setMargin(new java.awt.Insets(6,6,6,6));
         areaCatatanDokter.setName("areaCatatanDokter");
         areaCatatanDokterRacikanV2 = new javax.swing.JTextArea();
         areaCatatanDokterRacikanV2.setLineWrap(true);
         areaCatatanDokterRacikanV2.setWrapStyleWord(true);
+        areaCatatanDokterRacikanV2.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 15));
         areaCatatanDokterRacikanV2.setMargin(new java.awt.Insets(6,6,6,6));
         areaCatatanDokterRacikanV2.setName("areaCatatanDokterRacikanV2");
         pasangSinkronCatatanDokter(areaCatatanDokter);
@@ -2518,16 +2527,22 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         javax.swing.JSplitPane splitInfoSOAP=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelPlanSOAP,panelTindakanPasien);
         splitInfoSOAP.setName("splitInfoSOAP");
         splitInfoSOAP.setBorder(null);
-        splitInfoSOAP.setResizeWeight(0.68);
-        splitInfoSOAP.setDividerLocation(225);
+        splitInfoSOAP.setResizeWeight(0.45);
+        splitInfoSOAP.setDividerLocation(95);
         javax.swing.JPanel panelCatatanSOAP=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelCatatanSOAP.setName("panelCatatanSOAP");
         panelCatatanSOAP.setOpaque(false);
         panelCatatanSOAP.setPreferredSize(new java.awt.Dimension(230,210));
         panelCatatanSOAP.add(labelCatatanDokter, java.awt.BorderLayout.PAGE_START);
         panelCatatanSOAP.add(scrollCatatanDokter, java.awt.BorderLayout.CENTER);
-        panelDraftSOAP.add(splitInfoSOAP, java.awt.BorderLayout.CENTER);
-        panelDraftSOAP.add(panelCatatanSOAP, java.awt.BorderLayout.PAGE_END);
+        // Bungkus (Plan SOAP + Tindakan) dan Catatan dalam split pane
+        // vertikal agar tinggi panel Catatan bisa di-adjust (naik/turun).
+        javax.swing.JSplitPane splitCatatanSOAP=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,splitInfoSOAP,panelCatatanSOAP);
+        splitCatatanSOAP.setName("splitCatatanSOAP");
+        splitCatatanSOAP.setBorder(null);
+        splitCatatanSOAP.setResizeWeight(0.3);
+        splitCatatanSOAP.setDividerLocation(210);
+        panelDraftSOAP.add(splitCatatanSOAP, java.awt.BorderLayout.CENTER);
 
         javax.swing.JPanel panelPlanSOAPRacikan=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelPlanSOAPRacikan.setName("panelPlanSOAPRacikan");
@@ -2549,22 +2564,32 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         javax.swing.JSplitPane splitInfoSOAPRacikanV2=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,panelPlanSOAPRacikanV2,panelTindakanPasienRacikanV2);
         splitInfoSOAPRacikanV2.setName("splitInfoSOAPRacikanV2");
         splitInfoSOAPRacikanV2.setBorder(null);
-        splitInfoSOAPRacikanV2.setResizeWeight(0.68);
-        splitInfoSOAPRacikanV2.setDividerLocation(225);
+        splitInfoSOAPRacikanV2.setResizeWeight(0.45);
+        splitInfoSOAPRacikanV2.setDividerLocation(95);
         javax.swing.JPanel panelCatatanSOAPRacikanV2=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
         panelCatatanSOAPRacikanV2.setName("panelCatatanSOAPRacikanV2");
         panelCatatanSOAPRacikanV2.setOpaque(false);
         panelCatatanSOAPRacikanV2.setPreferredSize(new java.awt.Dimension(230,210));
         panelCatatanSOAPRacikanV2.add(labelCatatanDokterRacikanV2, java.awt.BorderLayout.PAGE_START);
         panelCatatanSOAPRacikanV2.add(scrollCatatanDokterRacikanV2, java.awt.BorderLayout.CENTER);
-        panelDraftSOAPRacikanV2.add(splitInfoSOAPRacikanV2, java.awt.BorderLayout.CENTER);
-        panelDraftSOAPRacikanV2.add(panelCatatanSOAPRacikanV2, java.awt.BorderLayout.PAGE_END);
+        // Panel Catatan pada Racikan V2 juga dibuat bisa di-adjust.
+        javax.swing.JSplitPane splitCatatanSOAPRacikanV2=new javax.swing.JSplitPane(javax.swing.JSplitPane.VERTICAL_SPLIT,splitInfoSOAPRacikanV2,panelCatatanSOAPRacikanV2);
+        splitCatatanSOAPRacikanV2.setName("splitCatatanSOAPRacikanV2");
+        splitCatatanSOAPRacikanV2.setBorder(null);
+        splitCatatanSOAPRacikanV2.setResizeWeight(0.3);
+        splitCatatanSOAPRacikanV2.setDividerLocation(210);
+        panelDraftSOAPRacikanV2.add(splitCatatanSOAPRacikanV2, java.awt.BorderLayout.CENTER);
 
         int indexUmum = TabRawat.indexOfComponent(Scroll);
         if(indexUmum>-1) {
             TabRawat.remove(indexUmum);
-            panelUmumResep.add(Scroll, java.awt.BorderLayout.CENTER);
-            panelUmumResep.add(panelDraftSOAP, java.awt.BorderLayout.EAST);
+            // Tabel obat dibuat lebar tetap (cukup untuk semua kolom yang
+            // tampil) di WEST, dan panel 3 form (Plan SOAP, Tindakan,
+            // Catatan) dipindah ke CENTER agar melebar mengisi sisa ruang
+            // kosong di sebelah kanan tabel.
+            Scroll.setPreferredSize(new java.awt.Dimension(850,400));
+            panelUmumResep.add(Scroll, java.awt.BorderLayout.WEST);
+            panelUmumResep.add(panelDraftSOAP, java.awt.BorderLayout.CENTER);
             TabRawat.insertTab("Umum", null, panelUmumResep, null, indexUmum);
         }
 
@@ -3211,10 +3236,12 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         labelTindakanPasien = new widget.Label();
         labelTindakanPasien.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelTindakanPasien.setText("Tindakan yang sudah diinput :");
+        labelTindakanPasien.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
         labelTindakanPasien.setPreferredSize(new java.awt.Dimension(100,23));
         labelTindakanPasienRacikan = new widget.Label();
         labelTindakanPasienRacikan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelTindakanPasienRacikan.setText("Tindakan yang sudah diinput :");
+        labelTindakanPasienRacikan.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
         labelTindakanPasienRacikan.setPreferredSize(new java.awt.Dimension(100,23));
 
         tbTindakanPasien=new widget.Table();
@@ -3230,6 +3257,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         labelTindakanPasienRacikanV2 = new widget.Label();
         labelTindakanPasienRacikanV2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         labelTindakanPasienRacikanV2.setText("Tindakan yang sudah diinput :");
+        labelTindakanPasienRacikanV2.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
         labelTindakanPasienRacikanV2.setPreferredSize(new java.awt.Dimension(100,23));
         tbTindakanPasienRacikanV2=new widget.Table();
         tbTindakanPasienRacikanV2.setName("tbTindakanPasienRacikanV2");

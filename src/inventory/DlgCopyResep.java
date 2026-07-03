@@ -488,7 +488,11 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                         rs.getString("no_resep"),rs.getString("tgl_peresepan"),rs.getString("jam_peresepan"),rs.getString("no_rawat"),
                         rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),rs.getString("nm_dokter"),rs.getString("kd_dokter"),
                         rs.getString("status")
-                    });  
+                    });
+                    String catatanResep=Sequel.cariIsi("select catatan from catatan_resep_dokter where no_resep=?",rs.getString("no_resep"));
+                    if(catatanResep!=null && !catatanResep.trim().equals("")){
+                        tabMode.addRow(new String[]{"","Catatan","","","",catatanResep,"","",""});
+                    }  
                     tabMode.addRow(new String[]{"","Jumlah","Satuan","Aturan Pakai","Kode/No","Nama Obat/Racikan","","",rs.getString("status_asal").replaceAll("ralan","Rawat Jalan").replaceAll("ranap","Rawat Inap")});                
                     ps2=koneksi.prepareStatement("select databarang.kode_brng,databarang.nama_brng,resep_dokter.jml,"+
                         "databarang.kode_sat,resep_dokter.aturan_pakai from resep_dokter inner join databarang on "+

@@ -54,6 +54,8 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     private ResultSet rs;
     private int i=0;    
     private DlgCariPetugas petugas=new DlgCariPetugas(null,false);
+    private final MasterCariTemplateADIMEGizi template=new MasterCariTemplateADIMEGizi(null,false);
+    private widget.Button BtnTemplateGizi;
     /** Creates new form DlgRujuk
      * @param parent
      * @param modal */
@@ -168,8 +170,57 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
         
         ChkInput.setSelected(false);
         isForm();
-        
+
         jam();
+
+        pasangTombolTemplate();
+    }
+
+    /** Memasang tombol "Template" pada toolbar bawah. Tombol membuka dialog
+     * pencari template (logika seperti template laporan operasi); template
+     * yang dipilih akan mengisi field Asesmen, Diagnosis, Intervensi,
+     * Monitoring, Evaluasi, dan Instruksi sekaligus. */
+    private void pasangTombolTemplate(){
+        BtnTemplateGizi=new widget.Button();
+        BtnTemplateGizi.setText("Template");
+        BtnTemplateGizi.setToolTipText("Ambil template Asesmen, Monitoring, Evaluasi & Instruksi");
+        BtnTemplateGizi.setPreferredSize(new java.awt.Dimension(110,30));
+        try{
+            BtnTemplateGizi.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png")));
+        }catch(Exception e){
+            System.out.println("Notifikasi : "+e);
+        }
+        BtnTemplateGizi.addActionListener(new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){
+                tampilkanTemplate();
+            }
+        });
+        panelGlass8.add(BtnTemplateGizi,0);
+        panelGlass8.revalidate();
+
+        template.addWindowListener(new java.awt.event.WindowAdapter(){
+            @Override public void windowClosed(java.awt.event.WindowEvent e){
+                javax.swing.JTable t=template.getTable();
+                if(t.getSelectedRow()!=-1){
+                    // Isi Asesmen, Monitoring, Evaluasi & Instruksi. Diagnosis
+                    // dan Intervensi sengaja TIDAK ditimpa agar data tarikan
+                    // dari halaman sebelumnya tidak hilang.
+                    Asesmen.setText(t.getValueAt(t.getSelectedRow(),2).toString());
+                    Monitoring.setText(t.getValueAt(t.getSelectedRow(),3).toString());
+                    Evaluasi.setText(t.getValueAt(t.getSelectedRow(),4).toString());
+                    Instruksi.setText(t.getValueAt(t.getSelectedRow(),5).toString());
+                    Asesmen.requestFocus();
+                }
+            }
+        });
+    }
+
+    private void tampilkanTemplate(){
+        template.emptTeks();
+        template.isCek();
+        template.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+        template.setLocationRelativeTo(internalFrame1);
+        template.setVisible(true);
     }
 
     private void aturTampilanFormInput(){

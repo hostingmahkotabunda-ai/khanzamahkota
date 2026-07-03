@@ -195,6 +195,11 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 d.setVisible(true);
             }
         });
+        tambahTombolMenuSBAR("Cetak CPPT", new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){
+                cetakCPPTRanap();
+            }
+        });
     }
 
     private void tambahTombolMenuSBAR(String teks, java.awt.event.ActionListener aksi){
@@ -209,6 +214,10 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         FormMenu.add(b);
         FormMenu.revalidate();
         FormMenu.repaint();
+    }
+
+    private void cetakCPPTRanap() {
+        rekammedis.CetakCPPT.cetak(TNoRw.getText(), "ranap");
     }
 
     /** Sembunyikan tab tertentu di ranap & tambahkan tab Resep terintegrasi (embed DlgPeresepanDokter). */
@@ -10661,6 +10670,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         if(akses.gethasil_endoskopi_faring_laring()==true){
             tinggi=tinggi+24;
         }
+        tinggi=tinggi+72;
         
         FormMenu.setPreferredSize(new Dimension(195,(tinggi+10)));
         
