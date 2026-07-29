@@ -57,7 +57,7 @@ img.logo { width: 35px; height: 35px; }
     if((USERHYBRIDWEB==$usere)&&(PASHYBRIDWEB==$passwordte)){
         $nonota    = validTeks4(str_replace("_"," ",$_GET['nonota']),20);
 
-        $_sql      = "SELECT penjualan.tgl_jual,penjualan.nip,penjualan.no_rkm_medis,penjualan.nm_pasien,penjualan.keterangan,penjualan.ongkir,penjualan.ppn,penjualan.nama_bayar from penjualan where penjualan.nota_jual='$nonota'";
+        $_sql      = "SELECT penjualan.tgl_jual,penjualan.nip,penjualan.no_rkm_medis,penjualan.nm_pasien,penjualan.keterangan,penjualan.ongkir,penjualan.ppn,penjualan.ppn_umum,penjualan.nama_bayar from penjualan where penjualan.nota_jual='$nonota'";
         $hasil     = mysqli_fetch_array(bukaquery($_sql));
 
         $tanggal   = $hasil["tgl_jual"];
@@ -67,8 +67,10 @@ img.logo { width: 35px; height: 35px; }
         $pasien    = $hasil["nm_pasien"];
         $ongkir    = $hasil["ongkir"];
         $ppnobat   = $hasil["ppn"];
-        $ppn       = getOne("select akun_bayar.ppn from akun_bayar where akun_bayar.nama_bayar='$hasil[nama_bayar]'")/100;
-        $nilaippn  = 0;
+        // PPN umum diambil LANGSUNG dari yang tersimpan saat transaksi (field "PPN(%)" di
+        // DlgPenjualan) -- BUKAN dihitung ulang dari akun_bayar.ppn (persen tetap per metode
+        // bayar), krn itu tidak selalu sama dgn yang dipakai/diketik user saat transaksi.
+        $nilaippn  = $hasil["ppn_umum"];
 
         $_sql = "select detailjual.kode_brng,databarang.nama_brng, detailjual.kode_sat,
                  kodesatuan.satuan,detailjual.h_jual, detailjual.jumlah,
@@ -121,7 +123,6 @@ img.logo { width: 35px; height: 35px; }
             }
             $i++;
         }
-        $nilaippn = ($ttlpesan + $ppnobat) * $ppn;
 
         echo "<div class='ln'></div>";
 

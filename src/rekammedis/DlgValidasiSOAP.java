@@ -37,8 +37,9 @@ import javax.swing.table.TableColumn;
 import kepegawaian.DlgCariDokter;
 
 /**
- * Dialog validasi SOAP. SOAP yang diinput petugas non-dokter divalidasi oleh
- * dokter. Diparameter status ("ralan"/"ranap") -> tabel pemeriksaan_ralan /
+ * Dialog validasi SOAP. SOAP yang diinput SELAIN DPJP (dokter lain maupun
+ * non-dokter) divalidasi oleh DPJP; SOAP dari DPJP sendiri tidak perlu.
+ * Diparameter status ("ralan"/"ranap") -> tabel pemeriksaan_ralan /
  * pemeriksaan_ranap. Filter per no_rawat (pasien yang sedang dibuka).
  */
 public final class DlgValidasiSOAP extends JDialog {
@@ -48,10 +49,17 @@ public final class DlgValidasiSOAP extends JDialog {
     private final String status;
     private final String tabel;
 
-    /** Kondisi SQL: penginput adalah dokter (tidak perlu validasi). */
-    private static final String DOKTER_COND =
-            "(lower(ifnull(pg.jbtn,'')) like '%dokter%' or lower(ifnull(pg.nama,'')) like 'dr.%' "
-            + "or lower(ifnull(pg.nama,'')) like 'dr %' or lower(ifnull(pg.nama,'')) like 'drg%')";
+    /** Kondisi SQL (alias pr=pemeriksaan, pg=pegawai): penginput SOAP adalah
+     *  DPJP pasien pada no_rawat tsb -> tidak perlu divalidasi. SOAP dari
+     *  dokter lain maupun non-dokter (bukan DPJP) tetap butuh validasi DPJP. */
+    private static String kondisiPenginputDpjp(String status) {
+        if ("ranap".equalsIgnoreCase(status)) {
+            return "exists(select 1 from dpjp_ranap dd inner join dokter dk on dd.kd_dokter=dk.kd_dokter "
+                    + "where dd.no_rawat=pr.no_rawat and lower(trim(dk.nm_dokter))=lower(trim(ifnull(pg.nama,''))))";
+        }
+        return "exists(select 1 from reg_periksa rr inner join dokter dk on rr.kd_dokter=dk.kd_dokter "
+                + "where rr.no_rawat=pr.no_rawat and lower(trim(dk.nm_dokter))=lower(trim(ifnull(pg.nama,''))))";
+    }
 
     private final widget.TextBox TNoRw = new widget.TextBox();
     private final widget.TextBox TNoRM = new widget.TextBox();
@@ -150,7 +158,7 @@ public final class DlgValidasiSOAP extends JDialog {
         sekuel Sequel = new sekuel();
         String n = Sequel.cariIsi(
                 "select count(*) from " + tbl + " pr left join pegawai pg on pr.nip=pg.nik "
-                + "where pr.no_rawat=? and pr.validasi='Belum' and not " + DOKTER_COND, noRawat.trim());
+                + "where pr.no_rawat=? and pr.validasi='Belum' and not " + kondisiPenginputDpjp(status), noRawat.trim());
         try {
             return (n == null || n.trim().equals("")) ? 0 : Integer.parseInt(n.trim());
         } catch (NumberFormatException e) {
@@ -245,7 +253,7 @@ public final class DlgValidasiSOAP extends JDialog {
             c.setPreferredWidth(lebar[i]);
         }
         JScrollPane scroll = new JScrollPane(tbSOAP);
-        scroll.setBorder(BorderFactory.createTitledBorder(".: SOAP Belum/Sudah Divalidasi (input non-dokter)"));
+        scroll.setBorder(BorderFactory.createTitledBorder(".: SOAP Belum/Sudah Divalidasi (input selain DPJP)"));
 
         JPanel filter = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
         filter.add(new JLabel("Cari (No.Rawat / No.RM / Nama) :"));
@@ -366,11 +374,30 @@ public final class DlgValidasiSOAP extends JDialog {
         Instruksi.setText("");
         Evaluasi.setText("");
         JamValidasi.setText(jamSekarang());
-        String kd = akses.getkode();
+        setValidatorDpjp(noRawatFilter);
+        setStatusLabel("Belum");
+    }
+
+    /** Set validator default = DPJP pasien pada no_rawat; fallback dokter login. */
+    private void setValidatorDpjp(String noRawat) {
+        String kd = "";
+        if (noRawat != null && !noRawat.trim().equals("")) {
+            if (status.equals("ranap")) {
+                kd = Sequel.cariIsi("select kd_dokter from dpjp_ranap where no_rawat=? order by kd_dokter limit 1", noRawat.trim());
+            } else {
+                kd = Sequel.cariIsi("select kd_dokter from reg_periksa where no_rawat=?", noRawat.trim());
+            }
+        }
+        if (kd == null) {
+            kd = "";
+        }
         String nm = namaDokter(kd);
+        if (nm.equals("")) {
+            kd = akses.getkode();
+            nm = namaDokter(kd);
+        }
         KdValidator.setText(nm.equals("") ? "" : kd);
         NmValidator.setText(nm);
-        setStatusLabel("Belum");
     }
 
     private void setStatusLabel(String v) {
@@ -421,7 +448,7 @@ public final class DlgValidasiSOAP extends JDialog {
                 + "inner join reg_periksa reg on pr.no_rawat=reg.no_rawat "
                 + "inner join pasien p on reg.no_rkm_medis=p.no_rkm_medis "
                 + "left join pegawai pg on pr.nip=pg.nik "
-                + "where not " + DOKTER_COND + " "
+                + "where not " + kondisiPenginputDpjp(status) + " "
                 + (noRawatFilter.equals("") ? "" : "and pr.no_rawat=? ")
                 + "and (pr.no_rawat like ? or p.no_rkm_medis like ? or p.nm_pasien like ?) "
                 + "order by pr.tgl_perawatan desc,pr.jam_rawat desc";
@@ -478,10 +505,7 @@ public final class DlgValidasiSOAP extends JDialog {
         Evaluasi.setText(nilai(r, 14));
         setStatusLabel(nilai(r, 15).startsWith("Sudah") ? "Sudah" : "Belum");
         JamValidasi.setText(jamSekarang());
-        String kd = akses.getkode();
-        String nm = namaDokter(kd);
-        KdValidator.setText(nm.equals("") ? "" : kd);
-        NmValidator.setText(nm);
+        setValidatorDpjp(nilai(r, 3));
     }
 
     /** Centang semua baris yang belum divalidasi. */

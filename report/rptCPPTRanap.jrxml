@@ -48,6 +48,8 @@
 	<field name="validator_photo" class="java.lang.String"/>
 	<field name="tgl_validasi" class="java.lang.String"/>
 	<field name="jam_validasi" class="java.lang.String"/>
+	<field name="ppa_photo" class="java.lang.String"/>
+	<field name="penginput_dpjp" class="java.lang.String"/>
 	<background>
 		<band splitType="Stretch"/>
 	</background>
@@ -229,12 +231,21 @@
 				<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Tahoma" size="7"/></textElement>
 				<textFieldExpression><![CDATA[$F{jam_rawat}]]></textFieldExpression>
 			</textField>
-			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+			<frame>
 				<reportElement x="96" y="0" width="118" height="136" stretchType="RelativeToTallestObject"/>
-				<box leftPadding="3" rightPadding="3"><pen lineWidth="0.5"/></box>
-				<textElement verticalAlignment="Top"><font fontName="Tahoma" size="7"/></textElement>
-				<textFieldExpression><![CDATA[$F{nama} + "\n" + $F{jbtn} + "\nNIP: " + $F{nip}]]></textFieldExpression>
-			</textField>
+				<box><pen lineWidth="0.5"/></box>
+				<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
+					<reportElement x="8" y="4" width="102" height="46">
+						<printWhenExpression><![CDATA[$F{ppa_photo} != null && !$F{ppa_photo}.equals("")]]></printWhenExpression>
+					</reportElement>
+					<imageExpression class="java.awt.Image"><![CDATA[rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + $F{ppa_photo})]]></imageExpression>
+				</image>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="3" y="52" width="112" height="80"/>
+					<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Tahoma" size="7"/></textElement>
+					<textFieldExpression><![CDATA[$F{nama} + "\n" + $F{jbtn} + "\nJam: " + $F{jam_rawat}]]></textFieldExpression>
+				</textField>
+			</frame>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="214" y="0" width="86" height="136" stretchType="RelativeToTallestObject"/>
 				<box leftPadding="3" rightPadding="3"><pen lineWidth="0.5"/></box>
@@ -258,14 +269,14 @@
 				<box><pen lineWidth="0.5"/></box>
 				<image scaleImage="RetainShape" hAlign="Center" vAlign="Middle" onErrorType="Blank">
 					<reportElement x="8" y="4" width="104" height="52">
-						<printWhenExpression><![CDATA[$F{validasi}.equals("Sudah") && $F{validator_photo} != null && !$F{validator_photo}.equals("")]]></printWhenExpression>
+						<printWhenExpression><![CDATA[($F{penginput_dpjp}.equals("1") && $F{ppa_photo} != null && !$F{ppa_photo}.equals("")) || ($F{validasi}.equals("Sudah") && $F{validator_photo} != null && !$F{validator_photo}.equals(""))]]></printWhenExpression>
 					</reportElement>
-					<imageExpression class="java.awt.Image"><![CDATA[rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + $F{validator_photo})]]></imageExpression>
+					<imageExpression class="java.awt.Image"><![CDATA[rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + ($F{penginput_dpjp}.equals("1") ? $F{ppa_photo} : $F{validator_photo}))]]></imageExpression>
 				</image>
 				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 					<reportElement x="4" y="58" width="112" height="52"/>
 					<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Tahoma" size="7"/></textElement>
-					<textFieldExpression><![CDATA[$F{validasi}.equals("Sudah") ? ("Diverifikasi oleh\n" + $F{nama_validator} + "\n" + $F{tgl_validasi} + " " + $F{jam_validasi}) : "Belum diverifikasi"]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{penginput_dpjp}.equals("1") ? ("Ditulis & disahkan oleh DPJP\n" + $F{nama} + "\n" + $F{tgl_perawatan} + " " + $F{jam_rawat}) : ($F{validasi}.equals("Sudah") ? ("Diverifikasi oleh\n" + $F{nama_validator} + "\n" + $F{tgl_validasi} + " " + $F{jam_validasi}) : "Belum diverifikasi")]]></textFieldExpression>
 				</textField>
 			</frame>
 		</band>

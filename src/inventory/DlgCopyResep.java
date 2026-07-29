@@ -4,15 +4,35 @@ import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
 import fungsi.akses;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.KeyEvent;
 import java.io.FileInputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListModel;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListCellRenderer;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 
@@ -26,6 +46,20 @@ public class DlgCopyResep extends javax.swing.JDialog {
     private String aktifkanparsial="no",norm="",kddokter="",kode_pj="",norawat="",status="";
     private final Properties prop = new Properties();
     private int jmlparsial=0;
+    private final DefaultListModel<ResepRingkas> modelDaftarResep = new DefaultListModel<>();
+    private final JList<ResepRingkas> daftarResep = new JList<>(modelDaftarResep);
+    private final DefaultTableModel modelDetail = new DefaultTableModel(
+            new Object[]{"Nama Obat / Racikan","Kode","Jumlah","Satuan","Aturan Pakai"},0){
+        @Override public boolean isCellEditable(int row, int column){ return false; }
+    };
+    private final JTable tabelDetail = new JTable(modelDetail);
+    private final JTextField txtCariModern = new JTextField();
+    private final JComboBox<String> cmbSumberModern = new JComboBox<>(
+            new String[]{"Semua Sumber","IGD","Rawat Jalan","Rawat Inap"});
+    private final JLabel lblJudulDetail = new JLabel("Pilih resep untuk melihat detail");
+    private final JLabel lblMetaDetail = new JLabel(" ");
+    private final JLabel lblCatatanDetail = new JLabel("Tidak ada catatan tambahan.");
+    private final JLabel lblPasienModern = new JLabel(" ");
     
     /** Creates new form 
      * @param parent
@@ -69,6 +103,7 @@ public class DlgCopyResep extends javax.swing.JDialog {
             }
         }
         tbPemisahan.setDefaultRenderer(Object.class, new WarnaTable());
+        modernisasiTampilan();
         
         try {
             prop.loadFromXML(new FileInputStream("setting/database.xml"));
@@ -77,6 +112,309 @@ public class DlgCopyResep extends javax.swing.JDialog {
             aktifkanparsial="no";
         }
 
+    }
+
+    private void modernisasiTampilan(){
+        Color utama=new Color(0,133,143);
+        Color latar=new Color(246,249,251);
+        Color garis=new Color(214,224,230);
+        internalFrame1.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(garis),
+                " Riwayat Resep Kunjungan Sebelumnya ",
+                javax.swing.border.TitledBorder.LEFT,
+                javax.swing.border.TitledBorder.TOP,
+                new Font("Tahoma",Font.BOLD,13),utama));
+        internalFrame1.remove(scrollPane1);
+        internalFrame1.remove(panelisi1);
+
+        JPanel atas=new JPanel(new BorderLayout(10,8));
+        atas.setBackground(latar);
+        atas.setBorder(new EmptyBorder(8,10,8,10));
+        JPanel judul=new JPanel(new BorderLayout());
+        judul.setOpaque(false);
+        JLabel title=new JLabel("Riwayat Resep Kunjungan Sebelumnya");
+        title.setFont(new Font("Tahoma",Font.BOLD,18));
+        title.setForeground(new Color(31,47,62));
+        JLabel sub=new JLabel("Pilih resep untuk disalin atau diperbarui");
+        sub.setFont(new Font("Tahoma",Font.PLAIN,11));
+        sub.setForeground(new Color(88,103,114));
+        JPanel teksJudul=new JPanel(new GridLayout(2,1));
+        teksJudul.setOpaque(false);
+        teksJudul.add(title);
+        teksJudul.add(sub);
+        judul.add(teksJudul,BorderLayout.WEST);
+        lblPasienModern.setHorizontalAlignment(SwingConstants.RIGHT);
+        lblPasienModern.setFont(new Font("Tahoma",Font.BOLD,12));
+        lblPasienModern.setForeground(new Color(31,47,62));
+        judul.add(lblPasienModern,BorderLayout.EAST);
+        atas.add(judul,BorderLayout.NORTH);
+
+        JPanel filter=new JPanel(new FlowLayout(FlowLayout.LEFT,6,4));
+        filter.setBackground(Color.WHITE);
+        filter.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(garis),new EmptyBorder(5,6,5,6)));
+        ChkTanggal.setText("Tanggal Resep");
+        ChkTanggal.setPreferredSize(new Dimension(105,26));
+        DTPCari1.setPreferredSize(new Dimension(105,26));
+        DTPCari2.setPreferredSize(new Dimension(105,26));
+        BtnCari.setText("Terapkan");
+        BtnCari.setPreferredSize(new Dimension(95,28));
+        txtCariModern.setPreferredSize(new Dimension(260,28));
+        txtCariModern.setToolTipText("Cari nomor resep, dokter, atau obat");
+        cmbSumberModern.setPreferredSize(new Dimension(130,28));
+        filter.add(ChkTanggal);
+        filter.add(DTPCari1);
+        filter.add(new JLabel("s.d"));
+        filter.add(DTPCari2);
+        filter.add(BtnCari);
+        filter.add(new JLabel("  Cari :"));
+        filter.add(txtCariModern);
+        filter.add(cmbSumberModern);
+        atas.add(filter,BorderLayout.CENTER);
+        internalFrame1.add(atas,BorderLayout.NORTH);
+
+        daftarResep.setCellRenderer(new RendererResep());
+        daftarResep.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        daftarResep.setFixedCellHeight(112);
+        daftarResep.setBackground(latar);
+        daftarResep.addListSelectionListener(e -> {
+            if(!e.getValueIsAdjusting()){
+                tampilkanDetailTerpilih();
+            }
+        });
+
+        JPanel kiri=new JPanel(new BorderLayout());
+        kiri.setBackground(Color.WHITE);
+        JLabel judulKiri=new JLabel("Daftar Resep");
+        judulKiri.setFont(new Font("Tahoma",Font.BOLD,13));
+        judulKiri.setBorder(new EmptyBorder(9,10,8,8));
+        kiri.add(judulKiri,BorderLayout.NORTH);
+        JScrollPane scrollDaftar=new JScrollPane(daftarResep);
+        scrollDaftar.setBorder(BorderFactory.createMatteBorder(1,0,0,0,garis));
+        kiri.add(scrollDaftar,BorderLayout.CENTER);
+
+        JPanel kanan=new JPanel(new BorderLayout(0,8));
+        kanan.setBackground(Color.WHITE);
+        kanan.setBorder(new EmptyBorder(8,10,8,10));
+        JPanel kepalaDetail=new JPanel(new GridLayout(2,1,0,3));
+        kepalaDetail.setOpaque(false);
+        lblJudulDetail.setFont(new Font("Tahoma",Font.BOLD,14));
+        lblJudulDetail.setForeground(new Color(31,47,62));
+        lblMetaDetail.setFont(new Font("Tahoma",Font.PLAIN,11));
+        lblMetaDetail.setForeground(new Color(72,88,99));
+        kepalaDetail.add(lblJudulDetail);
+        kepalaDetail.add(lblMetaDetail);
+        kanan.add(kepalaDetail,BorderLayout.NORTH);
+        tabelDetail.setRowHeight(27);
+        tabelDetail.setFillsViewportHeight(true);
+        tabelDetail.getTableHeader().setFont(new Font("Tahoma",Font.BOLD,11));
+        kanan.add(new JScrollPane(tabelDetail),BorderLayout.CENTER);
+        JPanel catatan=new JPanel(new BorderLayout());
+        catatan.setBackground(new Color(244,248,255));
+        catatan.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(160,190,230)),
+                new EmptyBorder(7,9,7,9)));
+        JLabel labelCatatan=new JLabel("Catatan Dokter");
+        labelCatatan.setFont(new Font("Tahoma",Font.BOLD,11));
+        catatan.add(labelCatatan,BorderLayout.NORTH);
+        lblCatatanDetail.setFont(new Font("Tahoma",Font.ITALIC,11));
+        catatan.add(lblCatatanDetail,BorderLayout.CENTER);
+        kanan.add(catatan,BorderLayout.SOUTH);
+
+        JSplitPane split=new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,kiri,kanan);
+        split.setResizeWeight(0.36);
+        split.setDividerLocation(390);
+        split.setBorder(new EmptyBorder(0,8,0,8));
+        internalFrame1.add(split,BorderLayout.CENTER);
+
+        JPanel bawah=new JPanel(new FlowLayout(FlowLayout.RIGHT,7,8));
+        bawah.setBackground(Color.WHITE);
+        bawah.setBorder(BorderFactory.createMatteBorder(1,0,0,0,garis));
+        BtnTambah.setText("Salin Resep Terpilih");
+        BtnTambah.setPreferredSize(new Dimension(155,32));
+        BtnEdit.setText("Ubah");
+        BtnHapus.setText("Hapus");
+        bawah.add(BtnHapus);
+        bawah.add(BtnEdit);
+        bawah.add(BtnKeluar);
+        bawah.add(BtnTambah);
+        internalFrame1.add(bawah,BorderLayout.SOUTH);
+
+        txtCariModern.getDocument().addDocumentListener(new DocumentListener(){
+            @Override public void insertUpdate(DocumentEvent e){ muatTampilanModern(); }
+            @Override public void removeUpdate(DocumentEvent e){ muatTampilanModern(); }
+            @Override public void changedUpdate(DocumentEvent e){ muatTampilanModern(); }
+        });
+        cmbSumberModern.addActionListener(e -> muatTampilanModern());
+        internalFrame1.revalidate();
+        internalFrame1.repaint();
+    }
+
+    private void muatTampilanModern(){
+        String cari=txtCariModern.getText()==null ? "" : txtCariModern.getText().trim().toLowerCase();
+        String filter=cmbSumberModern.getSelectedItem()==null ? "Semua Sumber" : cmbSumberModern.getSelectedItem().toString();
+        modelDaftarResep.clear();
+        for(int i=0;i<tabMode.getRowCount();i++){
+            String no=nilaiTabel(i,0);
+            if(no.equals("")){
+                continue;
+            }
+            String sumber="Rawat Jalan";
+            String catatan="";
+            int item=0;
+            StringBuilder obat=new StringBuilder();
+            for(int j=i+1;j<tabMode.getRowCount() && nilaiTabel(j,0).equals("");j++){
+                if(nilaiTabel(j,1).equals("Catatan")){
+                    catatan=nilaiTabel(j,5);
+                }else if(nilaiTabel(j,1).equals("Jumlah")){
+                    if(!nilaiTabel(j,8).equals("")){
+                        sumber=nilaiTabel(j,8);
+                    }
+                }else if(!nilaiTabel(j,5).trim().equals("")){
+                    item++;
+                    obat.append(' ').append(nilaiTabel(j,5));
+                }
+            }
+            ResepRingkas r=new ResepRingkas(i,no,nilaiTabel(i,1),nilaiTabel(i,2),
+                    nilaiTabel(i,3),nilaiTabel(i,4),nilaiTabel(i,5),nilaiTabel(i,6),
+                    nilaiTabel(i,8),sumber,item,catatan);
+            String gabung=(r.noResep+" "+r.dokter+" "+r.pasien+" "+obat).toLowerCase();
+            if((filter.equals("Semua Sumber") || filter.equals(r.sumber)) &&
+                    (cari.equals("") || gabung.contains(cari))){
+                modelDaftarResep.addElement(r);
+            }
+        }
+        if(!modelDaftarResep.isEmpty()){
+            daftarResep.setSelectedIndex(0);
+            ResepRingkas awal=modelDaftarResep.getElementAt(0);
+            lblPasienModern.setText(awal.pasien+"  •  No. RM "+awal.noRm);
+        }else{
+            lblPasienModern.setText("Tidak ada resep");
+            kosongkanDetail();
+        }
+    }
+
+    private void tampilkanDetailTerpilih(){
+        ResepRingkas resep=daftarResep.getSelectedValue();
+        if(resep==null){
+            kosongkanDetail();
+            return;
+        }
+        tbPemisahan.setRowSelectionInterval(resep.barisAsli,resep.barisAsli);
+        modelDetail.setRowCount(0);
+        String catatan=resep.catatan;
+        for(int i=resep.barisAsli+1;i<tabMode.getRowCount() && nilaiTabel(i,0).equals("");i++){
+            if(nilaiTabel(i,1).equals("Catatan")){
+                catatan=nilaiTabel(i,5);
+            }else if(!nilaiTabel(i,1).equals("Jumlah") && !nilaiTabel(i,5).trim().equals("")){
+                modelDetail.addRow(new Object[]{
+                    nilaiTabel(i,5),nilaiTabel(i,4),nilaiTabel(i,1),
+                    nilaiTabel(i,2),nilaiTabel(i,3)
+                });
+            }
+        }
+        lblJudulDetail.setText("Detail Resep "+resep.noResep+"  •  "+resep.sumber+"  •  "+resep.statusLayanan);
+        lblMetaDetail.setText("Dokter Peresep: "+resep.dokter+"   |   Tanggal: "+
+                resep.tanggal+" "+resep.jam+"   |   No. Rawat: "+resep.noRawat);
+        lblCatatanDetail.setText(catatan.trim().equals("") ? "Tidak ada catatan tambahan." : catatan);
+    }
+
+    private void kosongkanDetail(){
+        modelDetail.setRowCount(0);
+        lblJudulDetail.setText("Pilih resep untuk melihat detail");
+        lblMetaDetail.setText(" ");
+        lblCatatanDetail.setText("Tidak ada catatan tambahan.");
+    }
+
+    private String nilaiTabel(int row,int col){
+        Object nilai=tabMode.getValueAt(row,col);
+        return nilai==null ? "" : nilai.toString();
+    }
+
+    private String sumberResep(String statusAsal,String noRawat){
+        if("ranap".equalsIgnoreCase(statusAsal)){
+            return "Rawat Inap";
+        }
+        String poli=Sequel.cariIsi(
+                "select ifnull(poliklinik.nm_poli,'') from reg_periksa "+
+                "left join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli "+
+                "where reg_periksa.no_rawat=?",noRawat);
+        String nama=poli==null ? "" : poli.toUpperCase();
+        if(nama.contains("IGD") || nama.contains("UGD") || nama.contains("GAWAT DARURAT")){
+            return "IGD";
+        }
+        return "Rawat Jalan";
+    }
+
+    private static final class ResepRingkas{
+        final int barisAsli,item;
+        final String noResep,tanggal,jam,noRawat,noRm,pasien,dokter,statusLayanan,sumber,catatan;
+        ResepRingkas(int barisAsli,String noResep,String tanggal,String jam,String noRawat,
+                String noRm,String pasien,String dokter,String statusLayanan,String sumber,
+                int item,String catatan){
+            this.barisAsli=barisAsli;
+            this.noResep=noResep;
+            this.tanggal=tanggal;
+            this.jam=jam;
+            this.noRawat=noRawat;
+            this.noRm=noRm;
+            this.pasien=pasien;
+            this.dokter=dokter;
+            this.statusLayanan=statusLayanan;
+            this.sumber=sumber;
+            this.item=item;
+            this.catatan=catatan;
+        }
+    }
+
+    private static final class RendererResep extends JPanel implements ListCellRenderer<ResepRingkas>{
+        private final JLabel badge=new JLabel();
+        private final JLabel utama=new JLabel();
+        private final JLabel dokter=new JLabel();
+        private final JLabel meta=new JLabel();
+        RendererResep(){
+            setLayout(new BorderLayout(8,3));
+            setBorder(new EmptyBorder(7,8,7,8));
+            badge.setOpaque(true);
+            badge.setHorizontalAlignment(SwingConstants.CENTER);
+            badge.setPreferredSize(new Dimension(82,78));
+            badge.setFont(new Font("Tahoma",Font.BOLD,10));
+            JPanel teks=new JPanel(new GridLayout(3,1));
+            teks.setOpaque(false);
+            utama.setFont(new Font("Tahoma",Font.BOLD,12));
+            dokter.setFont(new Font("Tahoma",Font.BOLD,11));
+            meta.setFont(new Font("Tahoma",Font.PLAIN,10));
+            teks.add(utama);
+            teks.add(dokter);
+            teks.add(meta);
+            add(badge,BorderLayout.WEST);
+            add(teks,BorderLayout.CENTER);
+        }
+        @Override public Component getListCellRendererComponent(JList<? extends ResepRingkas> list,
+                ResepRingkas value,int index,boolean isSelected,boolean cellHasFocus){
+            Color aksen;
+            if("IGD".equals(value.sumber)){
+                aksen=new Color(239,108,0);
+            }else if("Rawat Inap".equals(value.sumber)){
+                aksen=new Color(112,61,170);
+            }else{
+                aksen=new Color(0,137,150);
+            }
+            badge.setText("<html><center>"+value.sumber.toUpperCase().replace(" ","<br>")+"</center></html>");
+            badge.setBackground(aksen);
+            badge.setForeground(Color.WHITE);
+            utama.setText("Resep "+value.noResep+"  •  "+value.item+" item");
+            dokter.setText(value.dokter);
+            meta.setText(value.tanggal+" "+value.jam+"  •  "+value.statusLayanan);
+            setBackground(isSelected ? campurPutih(aksen) : Color.WHITE);
+            setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0,5,1,1,aksen),
+                    new EmptyBorder(7,8,7,8)));
+            return this;
+        }
+        private static Color campurPutih(Color c){
+            return new Color((c.getRed()+255*5)/6,(c.getGreen()+255*5)/6,(c.getBlue()+255*5)/6);
+        }
     }
 
     /** This method is called from within the constructor to
@@ -463,25 +801,23 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                     " if(resep_obat.tgl_perawatan='0000-00-00','Belum Terlayani','Sudah Terlayani') as status,resep_obat.status as status_asal "+
                     " from resep_obat inner join reg_periksa inner join pasien inner join dokter on resep_obat.no_rawat=reg_periksa.no_rawat  "+
                     " and reg_periksa.no_rkm_medis=pasien.no_rkm_medis and resep_obat.kd_dokter=dokter.kd_dokter where "+
-                    " resep_obat.tgl_peresepan<>'0000-00-00' and resep_obat.tgl_peresepan between ? and ? and pasien.no_rkm_medis=? and resep_obat.kd_dokter=? order by resep_obat.tgl_perawatan,resep_obat.jam desc");
+                    " resep_obat.tgl_peresepan<>'0000-00-00' and resep_obat.tgl_peresepan between ? and ? and resep_obat.no_rawat=? order by resep_obat.tgl_perawatan,resep_obat.jam desc");
             }else{
                 ps=koneksi.prepareStatement("select resep_obat.no_resep,resep_obat.tgl_peresepan,resep_obat.jam_peresepan,"+
                     " resep_obat.no_rawat,pasien.no_rkm_medis,pasien.nm_pasien,resep_obat.kd_dokter,dokter.nm_dokter, "+
                     " if(resep_obat.tgl_perawatan='0000-00-00','Belum Terlayani','Sudah Terlayani') as status,resep_obat.status as status_asal "+
                     " from resep_obat inner join reg_periksa inner join pasien inner join dokter on resep_obat.no_rawat=reg_periksa.no_rawat  "+
                     " and reg_periksa.no_rkm_medis=pasien.no_rkm_medis and resep_obat.kd_dokter=dokter.kd_dokter where "+
-                    " resep_obat.tgl_peresepan<>'0000-00-00' and pasien.no_rkm_medis=? and resep_obat.kd_dokter=? order by resep_obat.tgl_perawatan,resep_obat.jam desc");
+                    " resep_obat.tgl_peresepan<>'0000-00-00' and resep_obat.no_rawat=? order by resep_obat.tgl_perawatan,resep_obat.jam desc");
             }
             try{
                 if(ChkTanggal.isSelected()==true){
                     ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
                     ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
-                    ps.setString(3,norm);
-                    ps.setString(4,kddokter);
+                    ps.setString(3,norawat);
                 }else{
-                    ps.setString(1,norm);
-                    ps.setString(2,kddokter);
-                }                
+                    ps.setString(1,norawat);
+                }
                 rs=ps.executeQuery();
                 while(rs.next()){
                     tabMode.addRow(new String[]{
@@ -493,7 +829,8 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                     if(catatanResep!=null && !catatanResep.trim().equals("")){
                         tabMode.addRow(new String[]{"","Catatan","","","",catatanResep,"","",""});
                     }  
-                    tabMode.addRow(new String[]{"","Jumlah","Satuan","Aturan Pakai","Kode/No","Nama Obat/Racikan","","",rs.getString("status_asal").replaceAll("ralan","Rawat Jalan").replaceAll("ranap","Rawat Inap")});                
+                    tabMode.addRow(new String[]{"","Jumlah","Satuan","Aturan Pakai","Kode/No","Nama Obat/Racikan","","",
+                        sumberResep(rs.getString("status_asal"),rs.getString("no_rawat"))});
                     ps2=koneksi.prepareStatement("select databarang.kode_brng,databarang.nama_brng,resep_dokter.jml,"+
                         "databarang.kode_sat,resep_dokter.aturan_pakai from resep_dokter inner join databarang on "+
                         "resep_dokter.kode_brng=databarang.kode_brng where resep_dokter.no_resep=? order by databarang.kode_brng");
@@ -575,7 +912,8 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }                
         }catch(Exception e){
             System.out.println("Notifikasi : "+e);
-        }        
+        }
+        muatTampilanModern();
     }
 
     public void isCek(){

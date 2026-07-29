@@ -2092,17 +2092,32 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                     }else if(!Status.equals("Sudah Terlayani")){
                         JOptionPane.showMessageDialog(null,"Maaf, resep belum divalidasi/terlayani.\nSilahkan validasi resep terlebih dahulu sebelum penyerahan..!!");
                     }else{
-                        String jamDefault=new java.text.SimpleDateFormat("HH:mm:ss").format(new Date());
-                        String jam=JOptionPane.showInputDialog(rootPane,"Masukkan jam penyerahan (HH:mm:ss) untuk No.Resep "+NoResep+" :",jamDefault);
-                        if(jam==null){
+                        widget.Tanggal tglPenyerahan=new widget.Tanggal();
+                        tglPenyerahan.setDisplayFormat("dd-MM-yyyy");
+                        tglPenyerahan.setPreferredSize(new java.awt.Dimension(130,23));
+                        tglPenyerahan.setDate(new Date());
+                        javax.swing.JTextField txtJamPenyerahan=new javax.swing.JTextField(
+                                new java.text.SimpleDateFormat("HH:mm:ss").format(new Date()));
+                        javax.swing.JPanel panelSerah=new javax.swing.JPanel(new java.awt.GridLayout(2,2,6,6));
+                        panelSerah.add(new javax.swing.JLabel("Tanggal penyerahan :"));
+                        panelSerah.add(tglPenyerahan);
+                        panelSerah.add(new javax.swing.JLabel("Jam penyerahan (HH:mm:ss) :"));
+                        panelSerah.add(txtJamPenyerahan);
+                        int opsiSerah=JOptionPane.showConfirmDialog(rootPane,panelSerah,
+                                "Penyerahan Resep No."+NoResep,JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE);
+                        if(opsiSerah!=JOptionPane.OK_OPTION){
                             return;
                         }
-                        jam=jam.trim().replaceAll("[^0-9:]","");
+                        String jam=txtJamPenyerahan.getText().trim().replaceAll("[^0-9:]","");
                         if(jam.equals("")){
                             JOptionPane.showMessageDialog(null,"Maaf, jam penyerahan tidak boleh kosong..!!");
                             return;
                         }
-                        String tgl=new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
+                        if(tglPenyerahan.getDate()==null){
+                            JOptionPane.showMessageDialog(null,"Maaf, tanggal penyerahan tidak boleh kosong..!!");
+                            return;
+                        }
+                        String tgl=new java.text.SimpleDateFormat("yyyy-MM-dd").format(tglPenyerahan.getDate());
                         Sequel.queryu("update resep_obat set tgl_penyerahan='"+tgl+"',jam_penyerahan='"+jam+"' where no_resep='"+NoResep+"'");
                         JOptionPane.showMessageDialog(null,"Penyerahan resep "+NoResep+" berhasil dicatat.\nTanggal : "+tgl+"   Jam : "+jam);
                         tampil();

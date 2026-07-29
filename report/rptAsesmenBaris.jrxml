@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptAsesmenBaris" language="groovy" pageWidth="543" pageHeight="10000" columnWidth="543" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" uuid="c2d3e4f5-2222-3333-4444-555566667777">
+	<field name="tipe" class="java.lang.String"/>
+	<field name="label" class="java.lang.String"/>
+	<field name="nilai" class="java.lang.String"/>
+	<field name="label2" class="java.lang.String"/>
+	<field name="nilai2" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<detail>
+		<band height="18" splitType="Stretch">
+			<!-- SECTION: bar abu-abu, judul tebal -->
+			<frame>
+				<reportElement x="0" y="0" width="543" height="18" isPrintWhenDetailOverflows="true" stretchType="RelativeToTallestObject">
+					<printWhenExpression><![CDATA[$F{tipe}.equals("section")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineColor="#999999"/>
+				</box>
+				<rectangle>
+					<reportElement x="0" y="0" width="543" height="18" backcolor="#E0E0E0" mode="Opaque"/>
+					<graphicElement><pen lineWidth="0.5" lineColor="#999999"/></graphicElement>
+				</rectangle>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="4" y="1" width="535" height="16"/>
+					<textElement markup="html" verticalAlignment="Middle"><font fontName="Tahoma" size="9" isBold="true"/></textElement>
+					<textFieldExpression><![CDATA[$F{label}]]></textFieldExpression>
+				</textField>
+			</frame>
+			<!-- FIELD: satu kolom penuh, kotak bergaris -->
+			<frame>
+				<reportElement x="0" y="0" width="543" height="18" isPrintWhenDetailOverflows="true" stretchType="RelativeToTallestObject">
+					<printWhenExpression><![CDATA[$F{tipe}.equals("field")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CCCCCC"/>
+					<topPen lineWidth="0.5" lineColor="#CCCCCC"/>
+					<leftPen lineWidth="0.5" lineColor="#CCCCCC"/>
+					<bottomPen lineWidth="0.5" lineColor="#CCCCCC"/>
+					<rightPen lineWidth="0.5" lineColor="#CCCCCC"/>
+				</box>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="4" y="2" width="535" height="14" stretchType="RelativeToTallestObject"/>
+					<textElement markup="html" verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{label}.toUpperCase() + ($F{nilai}==null || $F{nilai}.trim().equals("") ? " :" : " : " + $F{nilai})]]></textFieldExpression>
+				</textField>
+			</frame>
+			<!-- FIELD2: dua kolom sejajar, masing-masing kotak bergaris -->
+			<frame>
+				<reportElement x="0" y="0" width="543" height="18" isPrintWhenDetailOverflows="true" stretchType="RelativeToTallestObject">
+					<printWhenExpression><![CDATA[$F{tipe}.equals("field2")]]></printWhenExpression>
+				</reportElement>
+				<box>
+					<pen lineWidth="0.5" lineColor="#CCCCCC"/>
+				</box>
+				<line>
+					<reportElement x="271" y="0" width="1" height="18" stretchType="RelativeToTallestObject"/>
+					<graphicElement><pen lineWidth="0.5" lineColor="#CCCCCC"/></graphicElement>
+				</line>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="4" y="2" width="263" height="14" stretchType="RelativeToTallestObject"/>
+					<textElement markup="html" verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{label}.toUpperCase() + ($F{nilai}==null || $F{nilai}.trim().equals("") ? " :" : " : " + $F{nilai})]]></textFieldExpression>
+				</textField>
+				<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+					<reportElement x="275" y="2" width="264" height="14" stretchType="RelativeToTallestObject"/>
+					<textElement markup="html" verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+					<textFieldExpression><![CDATA[$F{label2}.toUpperCase() + ($F{nilai2}==null || $F{nilai2}.trim().equals("") ? " :" : " : " + $F{nilai2})]]></textFieldExpression>
+				</textField>
+			</frame>
+		</band>
+	</detail>
+</jasperReport>

@@ -74,6 +74,15 @@ public final class CetakCPPT {
                 "or coalesce(nullif(vpegawai.photo,''),nullif((select p2.photo from pegawai p2 where lower(trim(p2.nama))=lower(trim(vdokter.nm_dokter)) limit 1),''),'')='-' " +
                 "or coalesce(nullif(vpegawai.photo,''),nullif((select p2.photo from pegawai p2 where lower(trim(p2.nama))=lower(trim(vdokter.nm_dokter)) limit 1),''),'')='pages/pegawai/photo/'," +
                 "'',replace(coalesce(nullif(vpegawai.photo,''),nullif((select p2.photo from pegawai p2 where lower(trim(p2.nama))=lower(trim(vdokter.nm_dokter)) limit 1),''),''),'\\\\','/')) as validator_photo,";
+        String ppaPhoto = "if(coalesce(nullif(pegawai.photo,''),'')='' " +
+                "or coalesce(nullif(pegawai.photo,''),'')='-' " +
+                "or coalesce(nullif(pegawai.photo,''),'')='pages/pegawai/photo/'," +
+                "'',replace(coalesce(nullif(pegawai.photo,''),''),'\\\\','/')) as ppa_photo,";
+        String penginputDpjp = jenis.equals("ranap") ?
+                "if(exists(select 1 from dpjp_ranap dpjp_pg inner join dokter dk_pg on dpjp_pg.kd_dokter=dk_pg.kd_dokter " +
+                "where dpjp_pg.no_rawat=reg_periksa.no_rawat and lower(trim(dk_pg.nm_dokter))=lower(trim(ifnull(pegawai.nama,'')))),'1','0') as penginput_dpjp" :
+                "if(exists(select 1 from dokter dk_pg where dk_pg.kd_dokter=reg_periksa.kd_dokter " +
+                "and lower(trim(dk_pg.nm_dokter))=lower(trim(ifnull(pegawai.nama,'')))),'1','0') as penginput_dpjp";
 
         return "select reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien," +
                 "if(pasien.jk='L','Laki-laki','Perempuan') as jk," +
@@ -99,7 +108,8 @@ public final class CetakCPPT {
                 "ifnull(vdokter.nm_dokter,ifnull(vpegawai.nama,'')) as nama_validator," +
                 validatorPhoto +
                 "ifnull(date_format(" + tabel + ".tgl_validasi,'%d-%m-%Y'),'') as tgl_validasi," +
-                "ifnull(date_format(" + tabel + ".jam_validasi,'%H:%i:%s'),'') as jam_validasi " +
+                "ifnull(date_format(" + tabel + ".jam_validasi,'%H:%i:%s'),'') as jam_validasi," +
+                ppaPhoto + penginputDpjp + " " +
                 "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis " +
                 "inner join " + tabel + " on " + tabel + ".no_rawat=reg_periksa.no_rawat " +
                 "inner join pegawai on " + tabel + ".nip=pegawai.nik " +

@@ -258,32 +258,121 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         return -1; // SBAR / Resep / Penilaian Awal / lainnya -> tidak ikut dispatch index
     }
 
-    /** Tab "Penilaian Awal" berisi dropdown jenis penilaian + tombol buka form. */
+    /**
+     * Tab "Penilaian Awal" TIDAK berisi halaman/panel isian -- begitu tab ini diklik,
+     * langsung muncul dropdown (JPopupMenu) berisi semua pilihan form, tab-nya sendiri
+     * cuma placeholder kosong. Dipicu lewat MouseListener terpisah di TabRawat (bukan
+     * lewat TabRawatMouseClicked bawaan GUI-builder, supaya tidak perlu sentuh kode itu).
+     */
     private void pasangTabPenilaianAwal() {
-        final javax.swing.JComboBox<String> cmbJenis = new javax.swing.JComboBox<>(new String[]{
-            "Awal Keperawatan Bayi", "Awal Keperawatan Anak", "Awal Keperawatan Dewasa", "Awal Kebidanan"
-        });
-        cmbJenis.setPreferredSize(new java.awt.Dimension(340, 28));
-        widget.Button btnBuka = new widget.Button();
-        btnBuka.setText("Buka Form Penilaian Awal");
-        btnBuka.setPreferredSize(new java.awt.Dimension(340, 30));
-        btnBuka.addActionListener(new java.awt.event.ActionListener() {
-            @Override public void actionPerformed(java.awt.event.ActionEvent e) {
-                bukaPenilaianAwal((String) cmbJenis.getSelectedItem());
+        javax.swing.JPanel placeholder = new javax.swing.JPanel();
+        placeholder.setOpaque(false);
+        TabRawat.addTab("Penilaian Awal", placeholder);
+        final int idxPenilaianAwal = TabRawat.indexOfComponent(placeholder);
+
+        final javax.swing.JPopupMenu menuPenilaianAwal = new javax.swing.JPopupMenu();
+        // "Awal Keperawatan Anak" & "Awal Keperawatan Dewasa" di-hide dulu (belum terpakai) -- jangan dihapus permanen, tinggal uncomment kalau mau diaktifkan lagi.
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Awal Keperawatan Bayi", e -> bukaPenilaianAwal("Awal Keperawatan Bayi")));
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Awal Kebidanan", e -> bukaPenilaianAwal("Awal Kebidanan")));
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Awal Keperawatan Anak", e -> bukaPenilaianAwalAnakBawaan()));
+        menuPenilaianAwal.addSeparator();
+        // NOTE: penempatan menu form baru (RM 2a, RM 3a, dst) di sini bersifat SEMENTARA --
+        // akan di-mapping ulang ke lokasi final setelah semua form rampung.
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Ringkasan Riwayat Masuk (RM 2a)", e -> bukaRingkasanRiwayatMasuk()));
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Pengantar Pasien Rawat Inap (RM 3a)", e -> bukaPengantarPasienRanap()));
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Asesmen Ulang Nyeri (RM 7.1)", e -> bukaAsesmenUlangNyeri()));
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Grafik Nadi, Suhu & TTV (RM 9)", e -> bukaGrafikTTV()));
+
+        TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                if (TabRawat.indexAtLocation(evt.getX(), evt.getY()) == idxPenilaianAwal) {
+                    menuPenilaianAwal.show(TabRawat, evt.getX(), evt.getY());
+                }
             }
         });
-        javax.swing.JPanel isi = new javax.swing.JPanel(new java.awt.GridBagLayout());
-        isi.setOpaque(false);
-        java.awt.GridBagConstraints g = new java.awt.GridBagConstraints();
-        g.insets = new java.awt.Insets(8, 8, 8, 8);
-        g.gridx = 0; g.gridy = 0; g.anchor = java.awt.GridBagConstraints.WEST;
-        isi.add(new javax.swing.JLabel("Pilih Jenis Penilaian Awal :"), g);
-        g.gridy = 1; isi.add(cmbJenis, g);
-        g.gridy = 2; isi.add(btnBuka, g);
+    }
 
-        javax.swing.JPanel wrap = new javax.swing.JPanel(new java.awt.GridBagLayout());
-        wrap.add(isi, new java.awt.GridBagConstraints());
-        TabRawat.addTab("Penilaian Awal", wrap);
+    private javax.swing.JMenuItem itemMenuPenilaianAwal(String teks, java.awt.event.ActionListener aksi) {
+        javax.swing.JMenuItem item = new javax.swing.JMenuItem(teks);
+        item.addActionListener(aksi);
+        return item;
+    }
+
+    /** Buka form Ringkasan Riwayat Masuk dan Keluar Rumah Sakit (RM 2a) untuk pasien yang aktif. */
+    private void bukaRingkasanRiwayatMasuk() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMRingkasanRiwayatMasuk f = new rekammedis.RMRingkasanRiwayatMasuk(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Pengantar Pasien Rawat Inap (RM 3a) untuk pasien yang aktif. */
+    private void bukaPengantarPasienRanap() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMPengantarPasienRanap f = new rekammedis.RMPengantarPasienRanap(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Asesmen Ulang Nyeri (RM 7.1) untuk pasien yang aktif. */
+    private void bukaAsesmenUlangNyeri() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMAsesmenUlangNyeri f = new rekammedis.RMAsesmenUlangNyeri(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Grafik Nadi, Suhu & TTV (RM 9) untuk pasien yang aktif. */
+    private void bukaGrafikTTV() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMGrafikTTV f = new rekammedis.RMGrafikTTV(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
     }
 
     /** Buka form penilaian awal sesuai jenis untuk pasien yang aktif. */
@@ -316,6 +405,28 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 f.isCek(); f.emptTeks(); f.setNoRm(norawat, now, carabayar, norm);
                 f.setLocationRelativeTo(this); f.setVisible(true);
             }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Penilaian Awal Keperawatan Rawat Inap Anak bawaan Khanza (beda dari RMAsesmenKeperawatanAnak buatan kita). */
+    private void bukaPenilaianAwalAnakBawaan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMPenilaianAwalKeperawatanRanapAnak f = new rekammedis.RMPenilaianAwalKeperawatanRanapAnak(null, false);
+            f.isCek();
+            f.emptTeks();
+            f.setNoRm(TNoRw.getText(), new java.util.Date(), "", TNoRM.getText());
+            f.setResizable(true);
+            f.setSize(950, 650);
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
         }
@@ -10901,11 +11012,12 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             TPenilaian.setText(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),18).toString()); 
             TindakLanjut.setText(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),19).toString()); 
             TInstruksi.setText(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),20).toString());  
-            TEvaluasi.setText(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),21).toString()); 
-            cmbJam.setSelectedItem(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),5).toString().substring(0,2));
-            cmbMnt.setSelectedItem(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),5).toString().substring(3,5));
-            cmbDtk.setSelectedItem(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),5).toString().substring(6,8));
-            Valid.SetTgl(DTPTgl,tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),4).toString());
+            TEvaluasi.setText(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),21).toString());
+            // Jam & Tanggal sengaja TIDAK ikut data yang diklik (klik cuma untuk lihat/isi ulang field
+            // lain dari riwayat lama, bukan menyatakan entry baru ini utk tanggal/jam lampau).
+            // Jam sudah otomatis kembali ke sekarang lewat Timer live-clock (cmbJam/cmbMnt/cmbDtk),
+            // tapi Tanggal tidak ada mekanisme serupa, jadi dipaksa eksplisit ke hari ini di sini.
+            DTPTgl.setDate(new Date());
         }
     }
 

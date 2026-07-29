@@ -203,9 +203,244 @@ public class DlgInputStok extends javax.swing.JDialog {
         } catch (Exception e) {
             hppfarmasi="dasar";
         }
-            
+
+        pasangTombolExcelOpname();
     }
-    
+
+    /**
+     * Tombol tambahan (di luar GEN block): stok opname lewat Excel untuk mode
+     * NON-batch. Alur: pilih Lokasi (mis. Apotek) -> Export Excel (template
+     * berisi stok sistem + kolom Stok Fisik kosong) -> tim farmasi mengisi
+     * Stok Fisik offline -> Upload Excel -> preview selisih -> simpan lewat
+     * jalur opname resmi (tabel opname + riwayat_barang_medis + gudangbarang),
+     * sehingga hasilnya tetap muncul di laporan Stok Opname & riwayat barang.
+     */
+    private void pasangTombolExcelOpname() {
+        widget.Button btnExport = new widget.Button();
+        btnExport.setText("Export Excel");
+        btnExport.setToolTipText("Export template stok opname (semua barang aktif + stok sistem lokasi terpilih) ke Excel");
+        btnExport.setPreferredSize(new Dimension(115, 30));
+        btnExport.addActionListener(evt -> exportExcelOpname());
+        widget.Button btnUpload = new widget.Button();
+        btnUpload.setText("Upload Excel");
+        btnUpload.setToolTipText("Upload hasil stok opname dari Excel; kolom Stok Fisik yang terisi akan menimpa stok lokasi terpilih");
+        btnUpload.setPreferredSize(new Dimension(115, 30));
+        btnUpload.addActionListener(evt -> uploadExcelOpname());
+        panelisi1.add(btnExport);
+        panelisi1.add(btnUpload);
+        panelisi1.revalidate();
+        panelisi1.repaint();
+    }
+
+    private boolean lokasiOpnameValid() {
+        if (kdgudang.getText().trim().equals("") || nmgudang.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih Lokasi (mis. Apotek) terlebih dahulu sebelum memakai fitur Excel.");
+            kdgudang.requestFocus();
+            return false;
+        }
+        if (aktifkanbatch.equals("yes")) {
+            JOptionPane.showMessageDialog(this, "Fitur opname lewat Excel hanya tersedia untuk mode stok biasa (non-batch).");
+            return false;
+        }
+        return true;
+    }
+
+    private void exportExcelOpname() {
+        if (!lokasiOpnameValid()) { return; }
+        String kd = kdgudang.getText().trim().replace("'", "''");
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            String qry =
+                "select databarang.kode_brng as `Kode Barang`, databarang.nama_brng as `Nama Barang`, "
+                + "kodesatuan.satuan as `Satuan`, ifnull(gudangbarang.stok,0) as `Stok Sistem`, '' as `Stok Fisik` "
+                + "from databarang inner join kodesatuan on databarang.kode_sat=kodesatuan.kode_sat "
+                + "left join gudangbarang on gudangbarang.kode_brng=databarang.kode_brng "
+                + "and gudangbarang.kd_bangsal='" + kd + "' and gudangbarang.no_batch='' and gudangbarang.no_faktur='' "
+                + "where databarang.status='1' order by databarang.nama_brng";
+            Valid.MyReportToExcel(qry, null);
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void uploadExcelOpname() {
+        if (!lokasiOpnameValid()) { return; }
+        javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+        chooser.setDialogTitle("Pilih File Excel Hasil Stok Opname");
+        chooser.setFileFilter(new javax.swing.filechooser.FileNameExtensionFilter("File Excel (*.xls)", "xls"));
+        if (chooser.showOpenDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+
+        java.util.List<String[]> data = new java.util.ArrayList<>();   // {kode, nama, stokSistem, stokFisik}
+        java.util.List<String> masalah = new java.util.ArrayList<>();
+        String kd = kdgudang.getText().trim();
+        jxl.Workbook wb = null;
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            wb = jxl.Workbook.getWorkbook(chooser.getSelectedFile());
+            jxl.Sheet sheet = wb.getSheet(0);
+            // Cari posisi kolom dari baris header supaya toleran bila urutan kolom digeser
+            int kolKode = -1, kolFisik = -1;
+            for (int c = 0; c < sheet.getColumns(); c++) {
+                String h = sheet.getCell(c, 0).getContents().trim().toLowerCase();
+                if (h.equals("kode barang")) { kolKode = c; }
+                if (h.equals("stok fisik")) { kolFisik = c; }
+            }
+            if (kolKode < 0 || kolFisik < 0) {
+                JOptionPane.showMessageDialog(this, "Format file tidak dikenali.\nBaris pertama harus memuat kolom 'Kode Barang' dan 'Stok Fisik' (hasil Export Excel dari form ini).");
+                return;
+            }
+            java.util.Map<String, Integer> posKode = new HashMap<>();
+            for (int r = 1; r < sheet.getRows(); r++) {
+                String kode = sheet.getCell(kolKode, r).getContents().trim();
+                String fisikStr = kolFisik < sheet.getColumns() ? sheet.getCell(kolFisik, r).getContents().trim() : "";
+                if (kode.equals("") || fisikStr.equals("")) {
+                    continue; // baris tanpa isian Stok Fisik dilewati (belum dihitung), bukan dianggap nol
+                }
+                double fisik;
+                try {
+                    fisik = Double.parseDouble(fisikStr.replace(",", "."));
+                } catch (Exception e) {
+                    masalah.add("Baris " + (r + 1) + " (" + kode + ") : Stok Fisik '" + fisikStr + "' bukan angka, dilewati.");
+                    continue;
+                }
+                if (fisik < 0) {
+                    masalah.add("Baris " + (r + 1) + " (" + kode + ") : Stok Fisik negatif, dilewati.");
+                    continue;
+                }
+                String nama = Sequel.cariIsi("select nama_brng from databarang where kode_brng=? and status='1'", kode);
+                if (nama == null || nama.trim().equals("")) {
+                    masalah.add("Baris " + (r + 1) + " : Kode Barang '" + kode + "' tidak ditemukan/nonaktif, dilewati.");
+                    continue;
+                }
+                double stokSistem = Sequel.cariIsiAngka(
+                        "select ifnull(stok,0) from gudangbarang where kode_brng='" + kode.replace("'", "''")
+                        + "' and kd_bangsal='" + kd.replace("'", "''") + "' and no_batch='' and no_faktur=''");
+                String[] baris = {kode, nama, String.valueOf(stokSistem), String.valueOf(fisik)};
+                if (posKode.containsKey(kode)) {
+                    data.set(posKode.get(kode), baris); // kode dobel di Excel: isian terakhir yang dipakai
+                    masalah.add("Kode '" + kode + "' muncul lebih dari sekali, dipakai isian terakhir (baris " + (r + 1) + ").");
+                } else {
+                    posKode.put(kode, data.size());
+                    data.add(baris);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal membaca file Excel : " + e.getMessage());
+            return;
+        } finally {
+            if (wb != null) { wb.close(); }
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+
+        if (data.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Tidak ada baris dengan isian Stok Fisik yang valid di file tersebut."
+                    + (masalah.isEmpty() ? "" : "\n\n" + String.join("\n", masalah)));
+            return;
+        }
+        if (!tampilkanPreviewOpnameExcel(data, masalah)) {
+            return;
+        }
+        simpanOpnameExcel(data, kd);
+    }
+
+    /** Preview stok lama vs baru sebelum benar-benar ditimpa; return true bila user setuju. */
+    private boolean tampilkanPreviewOpnameExcel(java.util.List<String[]> data, java.util.List<String> masalah) {
+        DefaultTableModel modePrev = new DefaultTableModel(null,
+                new Object[]{"Kode Barang", "Nama Barang", "Stok Sistem", "Stok Fisik", "Selisih"}) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
+        };
+        int berubah = 0;
+        for (String[] b : data) {
+            double sistem = Double.parseDouble(b[2]);
+            double fisik = Double.parseDouble(b[3]);
+            if (sistem != fisik) { berubah++; }
+            modePrev.addRow(new Object[]{b[0], b[1], b[2], b[3], String.valueOf(fisik - sistem)});
+        }
+        JTable tbPrev = new JTable(modePrev);
+        tbPrev.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        int[] lebar = {90, 240, 80, 80, 80};
+        for (int c = 0; c < lebar.length; c++) {
+            tbPrev.getColumnModel().getColumn(c).setPreferredWidth(lebar[c]);
+        }
+        javax.swing.JScrollPane sc = new javax.swing.JScrollPane(tbPrev);
+        sc.setPreferredSize(new Dimension(640, 340));
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout(4, 4));
+        String info = data.size() + " item akan diopname (" + berubah + " item stoknya berubah). Stok lokasi "
+                + nmgudang.getText() + " akan DITIMPA dengan Stok Fisik.";
+        if (!masalah.isEmpty()) {
+            info = info + " Catatan: " + masalah.size() + " baris bermasalah dilewati.";
+        }
+        javax.swing.JTextArea taInfo = new javax.swing.JTextArea(info
+                + (masalah.isEmpty() ? "" : "\n" + String.join("\n", masalah)));
+        taInfo.setEditable(false);
+        taInfo.setLineWrap(true);
+        taInfo.setWrapStyleWord(true);
+        javax.swing.JScrollPane scInfo = new javax.swing.JScrollPane(taInfo);
+        scInfo.setPreferredSize(new Dimension(640, masalah.isEmpty() ? 40 : 90));
+        panel.add(scInfo, java.awt.BorderLayout.NORTH);
+        panel.add(sc, java.awt.BorderLayout.CENTER);
+        return JOptionPane.showConfirmDialog(this, panel, "Preview Stok Opname dari Excel",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION;
+    }
+
+    /** Simpan lewat jalur yang sama persis dengan tombol Simpan opname manual (non-batch). */
+    private void simpanOpnameExcel(java.util.List<String[]> data, String kd) {
+        String tgl = Valid.SetTgl(Tgl.getSelectedItem() + "");
+        String keterangan = catatan.getText().trim().equals("") ? "Stok Opname via Excel" : catatan.getText().trim();
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        Sequel.AutoComitFalse();
+        boolean beres = true;
+        int tersimpan = 0;
+        for (String[] b : data) {
+            try {
+                String kode = b[0];
+                double stokSistem = Double.parseDouble(b[2]);
+                double fisik = Double.parseDouble(b[3]);
+                double harga = Sequel.cariIsiAngka("select databarang." + hppfarmasi
+                        + " from databarang where kode_brng='" + kode.replace("'", "''") + "'");
+                double kurangx = stokSistem - fisik;
+                double selisihx = kurangx > 0 ? kurangx : 0;
+                double lebihx = kurangx > 0 ? 0 : -kurangx;
+                double nomihilangx = selisihx * harga;
+                double nomilebihx = lebihx * harga;
+                if (Sequel.menyimpantf2("opname", "?,?,?,?,?,?,?,?,?,?,?,?,?", "Stok Opname", 13, new String[]{
+                        kode, String.valueOf(harga), tgl, String.valueOf(stokSistem),
+                        String.valueOf(fisik), String.valueOf(selisihx), String.valueOf(nomihilangx),
+                        String.valueOf(lebihx), String.valueOf(nomilebihx), keterangan,
+                        kd, "", ""}) == true) {
+                    Trackobat.catatRiwayat(kode, fisik, 0, "Opname", akses.getkode(), kd, "Simpan", "", "", keterangan);
+                    Sequel.menyimpan("gudangbarang", "'" + kode + "','" + kd + "','" + fisik + "','',''",
+                            "stok='" + fisik + "'",
+                            "kode_brng='" + kode + "' and kd_bangsal='" + kd + "' and no_batch='' and no_faktur=''");
+                    tersimpan++;
+                } else {
+                    beres = false;
+                    JOptionPane.showMessageDialog(this, kode + " " + b[1] + " gagal disimpan (mungkin sudah diopname pada tanggal yang sama)...!");
+                    break;
+                }
+            } catch (Exception e) {
+                beres = false;
+                JOptionPane.showMessageDialog(this, "Gagal memproses " + b[0] + " : " + e.getMessage());
+                break;
+            }
+        }
+        if (beres) {
+            Sequel.Commit();
+        } else {
+            Sequel.RollBack();
+        }
+        Sequel.AutoComitTrue();
+        this.setCursor(Cursor.getDefaultCursor());
+        if (beres) {
+            JOptionPane.showMessageDialog(this, "Stok opname dari Excel berhasil: " + tersimpan + " item tersimpan & stok diperbarui.");
+            tampil2();
+        } else {
+            JOptionPane.showMessageDialog(this, "Terjadi kesalahan, SEMUA perubahan dibatalkan (tidak ada stok yang berubah).\nPerbaiki data lalu upload ulang.");
+        }
+    }
+
 
     /** This method is called from within the constructor to
      * initialize the form.

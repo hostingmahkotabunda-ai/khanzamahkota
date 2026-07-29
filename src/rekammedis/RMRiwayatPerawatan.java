@@ -72,6 +72,15 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
     private javax.swing.JPopupMenu popupSOAPIE=new javax.swing.JPopupMenu();
     private javax.swing.JMenuItem ppEditTanggalSOAPIE=new javax.swing.JMenuItem();
     private String linkSOAPIEAktif="";
+    private javax.swing.JEditorPane LoadHTMLResume;
+    private javax.swing.JEditorPane LoadHTMLAsesmenRalan;
+    private javax.swing.JEditorPane LoadHTMLAsesmenRanap;
+    private final javax.swing.JPopupMenu popupResume = new javax.swing.JPopupMenu();
+    private final javax.swing.JMenuItem ppCetakResume = new javax.swing.JMenuItem();
+    private String linkResumeAktif = "";
+    private final javax.swing.JPopupMenu popupAsesmen = new javax.swing.JPopupMenu();
+    private final javax.swing.JMenuItem ppCetakAsesmen = new javax.swing.JMenuItem();
+    private String linkAsesmenAktif = "";
 
     /** Creates new form DlgLhtBiaya
      * @param parent
@@ -285,7 +294,192 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
         
         ChkAccor.setSelected(false);
         isMenu();
-    }    
+        pasangTabTambahan();
+    }
+
+    /**
+     * Tab tambahan (di luar form NetBeans/GEN): Resume, Penilaian Awal Rawat
+     * Jalan, dan Penilaian Awal Rawat Inap. Semua read-only, mengikuti filter
+     * R1-R4/NoRM yang sama dengan tab lain di layar ini. Dibangun manual
+     * (bukan lewat GEN block) supaya tidak mengganggu initComponents() yang
+     * auto-generate dari .form.
+     */
+    private void pasangTabTambahan() {
+        LoadHTMLResume = buatEditorPaneHtml();
+        pasangPopupCetakResume();
+        TabRawat.addTab("Resume", new javax.swing.JScrollPane(LoadHTMLResume));
+
+        LoadHTMLAsesmenRalan = buatEditorPaneHtml();
+        TabRawat.addTab("Penilaian Awal Rawat Jalan", new javax.swing.JScrollPane(LoadHTMLAsesmenRalan));
+
+        LoadHTMLAsesmenRanap = buatEditorPaneHtml();
+        TabRawat.addTab("Penilaian Awal Rawat Inap", new javax.swing.JScrollPane(LoadHTMLAsesmenRanap));
+
+        pasangPopupCetakAsesmen();
+    }
+
+    private javax.swing.JEditorPane buatEditorPaneHtml() {
+        javax.swing.JEditorPane pane = new javax.swing.JEditorPane();
+        pane.setContentType("text/html");
+        pane.setEditable(false);
+        pane.setFont(new java.awt.Font("Tahoma", 0, 11));
+        pane.setBorder(null);
+        pane.addHyperlinkListener(e -> {
+            if (HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType()) && e.getURL() != null) {
+                try {
+                    Desktop.getDesktop().browse(e.getURL().toURI());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+        return pane;
+    }
+
+    /**
+     * Pasang popup klik-kanan "Cetak Resume" di tab Resume. Item resume yang
+     * sedang di-hover ditandai lewat link "cetakresume:jenis=..;norawat=..";
+     * ENTERED/EXITED dipakai (bukan cuma ACTIVATED) supaya cukup arahkan
+     * kursor lalu klik kanan, tanpa perlu klik kiri dulu.
+     */
+    private void pasangPopupCetakResume() {
+        ppCetakResume.setText("Cetak Resume");
+        ppCetakResume.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png")));
+        ppCetakResume.addActionListener(e -> prosesCetakResume(linkResumeAktif));
+        popupResume.add(ppCetakResume);
+
+        LoadHTMLResume.addHyperlinkListener(e -> {
+            String desc = e.getDescription();
+            if (desc != null && desc.startsWith("cetakresume:")) {
+                if (HyperlinkEvent.EventType.ENTERED.equals(e.getEventType())
+                        || HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                    linkResumeAktif = desc;
+                } else if (HyperlinkEvent.EventType.EXITED.equals(e.getEventType())) {
+                    linkResumeAktif = "";
+                }
+            }
+        });
+        LoadHTMLResume.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mousePressed(java.awt.event.MouseEvent evt) { tampilkanPopupResume(evt); }
+            @Override public void mouseReleased(java.awt.event.MouseEvent evt) { tampilkanPopupResume(evt); }
+        });
+    }
+
+    private void tampilkanPopupResume(java.awt.event.MouseEvent evt) {
+        if (evt.isPopupTrigger()) {
+            ppCetakResume.setEnabled(!linkResumeAktif.equals(""));
+            popupResume.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
+
+    private String buatLinkCetakResume(String jenis, String noRawat, String label) {
+        try {
+            return "<a style='color:#323232;font-weight:bold;text-decoration:none;' href='cetakresume:jenis="
+                    + URLEncoder.encode(jenis, "UTF-8") + ";norawat=" + URLEncoder.encode(noRawat, "UTF-8") + "'>"
+                    + label + " <span style='color:#8b9b95;font-weight:normal;'>(klik kanan untuk cetak)</span></a>";
+        } catch (Exception e) {
+            return label;
+        }
+    }
+
+    private void prosesCetakResume(String deskripsi) {
+        if (deskripsi == null || deskripsi.equals("")) {
+            JOptionPane.showMessageDialog(null, "Arahkan kursor ke salah satu item Resume terlebih dahulu, lalu klik kanan untuk mencetak.");
+            return;
+        }
+        Map<String, String> data = parseParameterLink(deskripsi.replaceFirst("^cetakresume:", ""));
+        String jenis = data.get("jenis");
+        String noRawat = data.get("norawat");
+        if (jenis == null || noRawat == null || noRawat.trim().equals("")) {
+            JOptionPane.showMessageDialog(null, "Data resume yang dipilih tidak lengkap.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            if (jenis.equals("ranap")) {
+                RMResumeMedisRanapV2.cetak(noRawat);
+            } else {
+                RMResumeMedisRalanV2.cetak(noRawat);
+            }
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    /**
+     * Pasang popup klik-kanan "Cetak" di tab Penilaian Awal Rawat Jalan & Rawat
+     * Inap (satu popup dipakai bersama, karena hanya satu tab yang aktif dalam
+     * satu waktu). Sama polanya dengan pasangPopupCetakResume().
+     */
+    private void pasangPopupCetakAsesmen() {
+        ppCetakAsesmen.setText("Cetak Penilaian Awal");
+        ppCetakAsesmen.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png")));
+        ppCetakAsesmen.addActionListener(e -> prosesCetakAsesmen(linkAsesmenAktif));
+        popupAsesmen.add(ppCetakAsesmen);
+
+        javax.swing.event.HyperlinkListener listenerLink = e -> {
+            String desc = e.getDescription();
+            if (desc != null && desc.startsWith("cetakasesmen:")) {
+                if (HyperlinkEvent.EventType.ENTERED.equals(e.getEventType())
+                        || HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
+                    linkAsesmenAktif = desc;
+                } else if (HyperlinkEvent.EventType.EXITED.equals(e.getEventType())) {
+                    linkAsesmenAktif = "";
+                }
+            }
+        };
+        java.awt.event.MouseAdapter popupTrigger = new java.awt.event.MouseAdapter() {
+            @Override public void mousePressed(java.awt.event.MouseEvent evt) { tampilkanPopupAsesmen(evt); }
+            @Override public void mouseReleased(java.awt.event.MouseEvent evt) { tampilkanPopupAsesmen(evt); }
+        };
+        LoadHTMLAsesmenRalan.addHyperlinkListener(listenerLink);
+        LoadHTMLAsesmenRalan.addMouseListener(popupTrigger);
+        LoadHTMLAsesmenRanap.addHyperlinkListener(listenerLink);
+        LoadHTMLAsesmenRanap.addMouseListener(popupTrigger);
+    }
+
+    private void tampilkanPopupAsesmen(java.awt.event.MouseEvent evt) {
+        if (evt.isPopupTrigger()) {
+            ppCetakAsesmen.setEnabled(!linkAsesmenAktif.equals(""));
+            popupAsesmen.show(evt.getComponent(), evt.getX(), evt.getY());
+        }
+    }
+
+    private String buatLinkCetakAsesmen(String jenis, String noRawat, String label) {
+        try {
+            return "<a style='color:#323232;font-weight:bold;text-decoration:none;' href='cetakasesmen:jenis="
+                    + URLEncoder.encode(jenis, "UTF-8") + ";norawat=" + URLEncoder.encode(noRawat, "UTF-8") + "'>"
+                    + label + " <span style='color:#8b9b95;font-weight:normal;'>(klik kanan untuk cetak)</span></a>";
+        } catch (Exception e) {
+            return label;
+        }
+    }
+
+    private void prosesCetakAsesmen(String deskripsi) {
+        if (deskripsi == null || deskripsi.equals("")) {
+            JOptionPane.showMessageDialog(null, "Arahkan kursor ke salah satu item Penilaian Awal terlebih dahulu, lalu klik kanan untuk mencetak.");
+            return;
+        }
+        Map<String, String> data = parseParameterLink(deskripsi.replaceFirst("^cetakasesmen:", ""));
+        String jenis = data.get("jenis");
+        String noRawat = data.get("norawat");
+        if (jenis == null || noRawat == null || noRawat.trim().equals("")) {
+            JOptionPane.showMessageDialog(null, "Data penilaian awal yang dipilih tidak lengkap.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            switch (jenis) {
+                case "dewasa": RMAsesmenKeperawatanDewasa.cetak(noRawat); break;
+                case "anak": RMAsesmenKeperawatanAnak.cetak(noRawat); break;
+                case "kebidanan": RMAsesmenKebidanan.cetak(noRawat); break;
+                case "bayi": RMPenilaianAwalKeperawatanRanapBayi.cetak(noRawat); break;
+                default: RMAsesmenRalan.cetak(noRawat); break;
+            }
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -2122,6 +2316,15 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                     break;
                 case 5:
                     tampilRetensi();
+                    break;
+                case 6:
+                    tampilResumeV2();
+                    break;
+                case 7:
+                    tampilAsesmenRalan();
+                    break;
+                case 8:
+                    tampilAsesmenRanap();
                     break;
                 default:
                     break;
@@ -5608,7 +5811,164 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
             System.out.println("Notifikasi : "+e);
         }
     }
-    
+
+    // ====================== Tab Resume & Penilaian Awal (custom) ======================
+
+    private interface PenilaianAwalRenderer {
+        void render(ResultSet rs, StringBuilder sb) throws Exception;
+    }
+
+    /**
+     * Ambil & render baris dari satu tabel sesuai filter R1-R4/NoRM yang berlaku
+     * di layar ini (5 riwayat terakhir/semua riwayat/tanggal/nomor). joinReg=true
+     * bila tabel hanya punya kolom no_rawat (perlu join reg_periksa untuk
+     * mencocokkan no_rkm_medis pasien).
+     */
+    private int renderRiwayatTabel(String tabel, String kolomTanggal, boolean joinReg,
+            PenilaianAwalRenderer renderer, StringBuilder tujuan) {
+        int n = 0;
+        String dari = joinReg
+                ? tabel + " inner join reg_periksa on " + tabel + ".no_rawat=reg_periksa.no_rawat"
+                : tabel;
+        String kolomRM = joinReg ? "reg_periksa.no_rkm_medis" : (tabel + ".no_rkm_medis");
+        String kolomNoRawat = tabel + ".no_rawat";
+        String where;
+        String urut;
+        if (R4.isSelected()) {
+            where = " where " + kolomNoRawat + "='" + NoRawat.getText().trim() + "' ";
+            urut = " order by " + kolomTanggal + " desc ";
+        } else {
+            where = " where " + kolomRM + "='" + NoRM.getText().trim() + "' ";
+            if (R3.isSelected()) {
+                where += " and " + kolomTanggal + " between '" + Valid.SetTgl(Tgl1.getSelectedItem() + "")
+                        + "' and '" + Valid.SetTgl(Tgl2.getSelectedItem() + "") + "' ";
+            }
+            urut = R1.isSelected() ? (" order by " + kolomTanggal + " desc limit 5 ") : (" order by " + kolomTanggal + " asc ");
+        }
+        try (PreparedStatement st = koneksi.prepareStatement("select " + tabel + ".* from " + dari + where + urut)) {
+            try (ResultSet hasil = st.executeQuery()) {
+                while (hasil.next()) {
+                    renderer.render(hasil, tujuan);
+                    n++;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif renderRiwayatTabel (" + tabel + ") : " + e);
+        }
+        return n;
+    }
+
+    /** Render satu baris ResultSet sebagai daftar "Label : Nilai" (kolom kosong/di-skip dilewati). */
+    private String renderBarisGenerik(ResultSet rs, String[] kolomDilewati) throws Exception {
+        java.sql.ResultSetMetaData md = rs.getMetaData();
+        java.util.Set<String> skip = new java.util.HashSet<>(java.util.Arrays.asList(kolomDilewati));
+        StringBuilder sb = new StringBuilder();
+        sb.append("<table width='100%' border='0' cellpadding='2px' cellspacing='0'>");
+        for (int c = 1; c <= md.getColumnCount(); c++) {
+            String kolom = md.getColumnName(c);
+            if (skip.contains(kolom)) { continue; }
+            String nilai = rs.getString(c);
+            if (nilai == null || nilai.trim().isEmpty()) { continue; }
+            sb.append("<tr><td valign='top' width='210' style='color:#557;'><b>")
+                    .append(CetakAsesmen.esc(labelKolom(kolom))).append("</b></td><td valign='top'>")
+                    .append(CetakAsesmen.esc(nilai).replace("\n", "<br>")).append("</td></tr>");
+        }
+        sb.append("</table>");
+        return sb.toString();
+    }
+
+    /** snake_case -> Judul Case sederhana untuk label kolom. */
+    private String labelKolom(String kolom) {
+        String[] kata = kolom.split("_");
+        StringBuilder sb = new StringBuilder();
+        for (String k : kata) {
+            if (k.isEmpty()) { continue; }
+            if (sb.length() > 0) { sb.append(" "); }
+            sb.append(Character.toUpperCase(k.charAt(0))).append(k.length() > 1 ? k.substring(1) : "");
+        }
+        return sb.toString();
+    }
+
+    private String nz(String v) {
+        return v == null ? "" : v;
+    }
+
+    private void tampilResumeV2() {
+        htmlContent = new StringBuilder();
+        if (NoRM.getText().trim().equals("")) {
+            LoadHTMLResume.setText("<html><body style='font-family:Tahoma;font-size:11px;color:#888;margin:8px;'>Pasien belum dipilih.</body></html>");
+            return;
+        }
+        String[] skip = {"no_rawat", "no_rkm_medis", "nama_pasien", "ttd_dokter", "created_by", "updated_by", "created_at", "updated_at"};
+        int n = 0;
+        n += renderRiwayatTabel("resume_medis_ralan_v2", "tanggal_resume", false, (rs, sb) -> {
+            String judul = "Resume Rawat Jalan &mdash; No.Rawat " + rs.getString("no_rawat")
+                    + " (" + nz(rs.getString("tanggal_resume")) + ")";
+            sb.append("<div style='margin-bottom:14px;padding:8px;border:1px solid #dde;background:#fbfbff;'>")
+                    .append(buatLinkCetakResume("ralan", rs.getString("no_rawat"), judul))
+                    .append("<br/>")
+                    .append(renderBarisGenerik(rs, skip))
+                    .append("</div>");
+        }, htmlContent);
+        n += renderRiwayatTabel("resume_medis_ranap_v2", "tanggal_resume", false, (rs, sb) -> {
+            String judul = "Resume Rawat Inap &mdash; No.Rawat " + rs.getString("no_rawat")
+                    + " (" + nz(rs.getString("tanggal_resume")) + ")";
+            sb.append("<div style='margin-bottom:14px;padding:8px;border:1px solid #ded;background:#fbfffb;'>")
+                    .append(buatLinkCetakResume("ranap", rs.getString("no_rawat"), judul))
+                    .append("<br/>")
+                    .append(renderBarisGenerik(rs, skip))
+                    .append("</div>");
+        }, htmlContent);
+        if (n == 0) { htmlContent.append("<i>Data resume tidak ditemukan.</i>"); }
+        LoadHTMLResume.setText("<html><body style='font-family:Tahoma;font-size:11px;'>" + htmlContent.toString() + "</body></html>");
+    }
+
+    private void tampilAsesmenRalan() {
+        htmlContent = new StringBuilder();
+        if (NoRM.getText().trim().equals("")) {
+            LoadHTMLAsesmenRalan.setText("<html><body style='font-family:Tahoma;font-size:11px;color:#888;margin:8px;'>Pasien belum dipilih.</body></html>");
+            return;
+        }
+        String[] skip = {"no_rawat", "tgl_ttd", "jam_ttd", "nik"};
+        int n = renderRiwayatTabel("asesmen_ralan", "tanggal", true, (rs, sb) -> {
+            String judul = "Penilaian Awal Rawat Jalan &mdash; No.Rawat " + rs.getString("no_rawat")
+                    + " (" + nz(rs.getString("tanggal")) + " " + nz(rs.getString("jam")) + ")";
+            sb.append("<div style='margin-bottom:14px;padding:8px;border:1px solid #dde;background:#fbfbff;'>")
+                    .append(buatLinkCetakAsesmen("ralan", rs.getString("no_rawat"), judul))
+                    .append("<br/>")
+                    .append(renderBarisGenerik(rs, skip))
+                    .append("</div>");
+        }, htmlContent);
+        if (n == 0) { htmlContent.append("<i>Data penilaian awal rawat jalan tidak ditemukan.</i>"); }
+        LoadHTMLAsesmenRalan.setText("<html><body style='font-family:Tahoma;font-size:11px;'>" + htmlContent.toString() + "</body></html>");
+    }
+
+    private void tampilAsesmenRanap() {
+        htmlContent = new StringBuilder();
+        if (NoRM.getText().trim().equals("")) {
+            LoadHTMLAsesmenRanap.setText("<html><body style='font-family:Tahoma;font-size:11px;color:#888;margin:8px;'>Pasien belum dipilih.</body></html>");
+            return;
+        }
+        String[] skip = {"no_rawat", "tgl_ttd", "jam_ttd", "nik"};
+        int n = 0;
+        n += renderRiwayatTabel("asesmen_keperawatan_dewasa", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Dewasa", "dewasa", rs, skip), htmlContent);
+        n += renderRiwayatTabel("asesmen_keperawatan_anak", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Anak", "anak", rs, skip), htmlContent);
+        n += renderRiwayatTabel("asesmen_kebidanan", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Kebidanan", "kebidanan", rs, skip), htmlContent);
+        n += renderRiwayatTabel("asesmen_keperawatan_bayi", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Bayi", "bayi", rs, skip), htmlContent);
+        if (n == 0) { htmlContent.append("<i>Data penilaian awal rawat inap tidak ditemukan.</i>"); }
+        LoadHTMLAsesmenRanap.setText("<html><body style='font-family:Tahoma;font-size:11px;'>" + htmlContent.toString() + "</body></html>");
+    }
+
+    private void tulisBlokAsesmenRanap(StringBuilder sb, String jenisTampil, String jenisKunci, ResultSet rs, String[] skip) throws Exception {
+        String judul = "Penilaian Awal Rawat Inap (Keperawatan " + jenisTampil + ") &mdash; No.Rawat "
+                + rs.getString("no_rawat") + " (" + nz(rs.getString("tanggal")) + " " + nz(rs.getString("jam")) + ")";
+        sb.append("<div style='margin-bottom:14px;padding:8px;border:1px solid #ded;background:#fbfffb;'>")
+                .append(buatLinkCetakAsesmen(jenisKunci, rs.getString("no_rawat"), judul))
+                .append("<br/>")
+                .append(renderBarisGenerik(rs, skip))
+                .append("</div>");
+    }
+
     /** Ganti tiap elemen &lt;input&gt; pada HTML cetak dengan nilai teks-nya
      *  (memakai nilai live yang sedang diketik bila ada), agar di hasil cetak
      *  tampil sebagai teks biasa tanpa kotak. */

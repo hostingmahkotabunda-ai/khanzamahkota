@@ -30,7 +30,15 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Font;
+import java.awt.Insets;
 import javax.swing.JComboBox;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import kepegawaian.DlgCariDokter;
 import kepegawaian.DlgCariPetugas;
 
@@ -563,6 +571,175 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
         
         ChkAccor.setSelected(false);
         isMenu();
+        modernisasiTampilan();
+    }
+
+    /**
+     * Lapisan presentasi untuk membuat form asesmen panjang lebih mudah
+     * dinavigasi. Seluruh komponen input dan logika penyimpanan tetap memakai
+     * komponen lama sehingga tidak mengubah kontrak data form.
+     */
+    private void modernisasiTampilan() {
+        final Color utama = new Color(0, 133, 143);
+        final Color utamaMuda = new Color(230, 247, 248);
+        final Color latar = new Color(246, 249, 251);
+        final Color garis = new Color(214, 224, 230);
+        internalFrame1.setBorder(javax.swing.BorderFactory.createTitledBorder(
+                javax.swing.BorderFactory.createLineBorder(garis),
+                "  Penilaian Awal Keperawatan Rawat Inap Anak  ",
+                javax.swing.border.TitledBorder.LEFT,
+                javax.swing.border.TitledBorder.TOP,
+                new Font("Tahoma", Font.BOLD, 13), utama));
+        internalFrame1.setBackground(latar);
+        internalFrame2.setBackground(latar);
+        FormInput.setBackground(Color.WHITE);
+        scrollInput.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        scrollInput.getVerticalScrollBar().setUnitIncrement(22);
+
+        // Penanda wajib mengikuti validasi pada BtnSimpanActionPerformed.
+        tandaiWajib(jLabel10, "No. Rawat");
+        tandaiWajib(label14, "Pengkaji 1");
+        tandaiWajib(label15, "Pengkaji 2");
+        tandaiWajib(label16, "DPJP");
+        tandaiWajib(jLabel30, "Riwayat Penyakit Saat Ini");
+
+        JLabel[] judulBagian = {
+            jLabel94, jLabel95, jLabel169, jLabel180,
+            jLabel189, jLabel203, jLabel59, jLabel271
+        };
+        for (JLabel judul : judulBagian) {
+            judul.setFont(new Font("Tahoma", Font.BOLD, 12));
+            judul.setForeground(utama);
+        }
+
+        javax.swing.JSeparator[] pemisah = {
+            jSeparator2, jSeparator3, jSeparator5, jSeparator4,
+            jSeparator6, jSeparator8, jSeparator10, jSeparator11, jSeparator12
+        };
+        for (javax.swing.JSeparator separator : pemisah) {
+            separator.setForeground(garis);
+            separator.setBackground(garis);
+            separator.setBorder(null);
+        }
+
+        /*
+         * Pecah kanvas lama menjadi delapan halaman sungguhan. Komponen tidak
+         * disalin: komponen asli dipindahkan ke halaman masing-masing agar
+         * listener, nilai, validasi, dan proses simpan tetap identik.
+         */
+        final int[] awalBagian = {0, 538, 630, 800, 950, 1128, 1310, 1560};
+        final int[] akhirBagian = {538, 630, 800, 950, 1128, 1310, 1560, 2100};
+        final JPanel[] halamanBagian = new JPanel[awalBagian.length];
+        for (int nomorBagian = 0; nomorBagian < halamanBagian.length; nomorBagian++) {
+            JPanel halaman = new JPanel(null);
+            halaman.setName("halamanAsesmen" + (nomorBagian + 1));
+            halaman.setBackground(Color.WHITE);
+            halaman.setBorder(new EmptyBorder(8, 12, 12, 12));
+            halaman.setPreferredSize(new Dimension(
+                    900, (akhirBagian[nomorBagian] - awalBagian[nomorBagian]) + 35));
+            halamanBagian[nomorBagian] = halaman;
+        }
+
+        Component[] komponenForm = FormInput.getComponents();
+        for (Component komponen : komponenForm) {
+            java.awt.Rectangle batas = komponen.getBounds();
+            int nomorBagian = halamanBagian.length - 1;
+            for (int kandidat = 0; kandidat < awalBagian.length; kandidat++) {
+                if (batas.y >= awalBagian[kandidat] && batas.y < akhirBagian[kandidat]) {
+                    nomorBagian = kandidat;
+                    break;
+                }
+            }
+            komponen.setBounds(
+                    batas.x + 12,
+                    batas.y - awalBagian[nomorBagian] + 12,
+                    batas.width,
+                    batas.height);
+            halamanBagian[nomorBagian].add(komponen);
+        }
+        scrollInput.setViewportView(halamanBagian[0]);
+
+        JPanel navigasi = new JPanel();
+        navigasi.setName("navigasiAsesmen");
+        navigasi.setBackground(Color.WHITE);
+        navigasi.setBorder(new EmptyBorder(12, 10, 12, 10));
+        navigasi.setPreferredSize(new Dimension(205, 100));
+        navigasi.setLayout(new javax.swing.BoxLayout(navigasi, javax.swing.BoxLayout.Y_AXIS));
+
+        JLabel judulNavigasi = new JLabel("BAGIAN ASESMEN");
+        judulNavigasi.setFont(new Font("Tahoma", Font.BOLD, 11));
+        judulNavigasi.setForeground(new Color(75, 90, 100));
+        judulNavigasi.setBorder(new EmptyBorder(0, 8, 10, 0));
+        judulNavigasi.setAlignmentX(Component.LEFT_ALIGNMENT);
+        navigasi.add(judulNavigasi);
+
+        String[] namaBagian = {
+            "1  Informasi & Riwayat",
+            "2  Pemeriksaan Fisik",
+            "3  Pola Kehidupan",
+            "4  Fungsi & Mobilitas",
+            "5  Psikososial",
+            "6  Nyeri",
+            "7  Risiko Jatuh",
+            "8  Gizi & Rencana"
+        };
+        for (int indexBagian = 0; indexBagian < namaBagian.length; indexBagian++) {
+            final int halamanAktif = indexBagian;
+            JButton tombolBagian = new JButton(namaBagian[indexBagian]);
+            tombolBagian.setName("navigasiBagian" + (indexBagian + 1));
+            tombolBagian.setHorizontalAlignment(SwingConstants.LEFT);
+            tombolBagian.setFont(new Font("Tahoma", indexBagian == 0 ? Font.BOLD : Font.PLAIN, 11));
+            tombolBagian.setForeground(indexBagian == 0 ? utama : new Color(65, 78, 86));
+            tombolBagian.setBackground(indexBagian == 0 ? utamaMuda : Color.WHITE);
+            tombolBagian.setBorder(new EmptyBorder(9, 10, 9, 8));
+            tombolBagian.setMargin(new Insets(0, 0, 0, 0));
+            tombolBagian.setFocusPainted(false);
+            tombolBagian.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            tombolBagian.setMaximumSize(new Dimension(185, 38));
+            tombolBagian.setAlignmentX(Component.LEFT_ALIGNMENT);
+            tombolBagian.addActionListener(e -> {
+                scrollInput.setViewportView(halamanBagian[halamanAktif]);
+                scrollInput.getViewport().setViewPosition(new java.awt.Point(0, 0));
+                for (Component komponen : navigasi.getComponents()) {
+                    if (komponen instanceof JButton) {
+                        JButton item = (JButton) komponen;
+                        boolean aktif = item == tombolBagian;
+                        item.setBackground(aktif ? utamaMuda : Color.WHITE);
+                        item.setForeground(aktif ? utama : new Color(65, 78, 86));
+                        item.setFont(new Font("Tahoma", aktif ? Font.BOLD : Font.PLAIN, 11));
+                    }
+                }
+            });
+            navigasi.add(tombolBagian);
+            navigasi.add(javax.swing.Box.createVerticalStrut(3));
+        }
+
+        navigasi.add(javax.swing.Box.createVerticalGlue());
+        JLabel keterangan = new JLabel("<html><span style='color:#d32f2f'>*</span> Wajib diisi</html>");
+        keterangan.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        keterangan.setForeground(new Color(85, 95, 102));
+        keterangan.setBorder(new EmptyBorder(10, 8, 4, 0));
+        keterangan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        navigasi.add(keterangan);
+        internalFrame2.add(navigasi, java.awt.BorderLayout.LINE_START);
+
+        panelGlass8.setBackground(Color.WHITE);
+        panelGlass8.setBorder(javax.swing.BorderFactory.createMatteBorder(1, 0, 0, 0, garis));
+        BtnSimpan.setText("Simpan & Lanjutkan");
+        BtnSimpan.setPreferredSize(new Dimension(145, 32));
+        BtnBatal.setText("Baru / Bersihkan");
+        BtnBatal.setPreferredSize(new Dimension(125, 32));
+        TabRawat.setFont(new Font("Tahoma", Font.BOLD, 11));
+        TabRawat.setForeground(utama);
+
+        internalFrame2.revalidate();
+        internalFrame2.repaint();
+    }
+
+    private void tandaiWajib(JLabel label, String teks) {
+        label.setText("<html>" + teks + " <font color='#D32F2F'>*</font> :</html>");
+        label.setToolTipText("Wajib diisi");
+        label.setForeground(new Color(55, 65, 72));
     }
 
 
@@ -6786,4 +6963,3 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
 
     
     }
-

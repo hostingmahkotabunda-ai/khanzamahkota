@@ -62,7 +62,9 @@ public class DlgBarang extends javax.swing.JDialog {
     public DlgBarang(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
-        
+        pasangTombolExportExcel();
+        pasangSinkronHargaDasar();
+
         tabMode = new DefaultTableModel(null,new Object[]{
             "P", "Kode Barang", "Nama Barang", "Kd.Sat Besar", "Nm.Satuan Besar","Isi", "Kd.Sat Kecil", "Nm.Satuan Kecil",
             "Kps", "Kandungan","Hrg.Dasar(Rp)","Hrg.Beli(Rp)", "Ralan(Rp)", "Ranap K1(Rp)", "Ranap K2(Rp)", "Ranap K3(Rp)",
@@ -2714,6 +2716,77 @@ private void KapasitasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
             }
         }
             
+    }
+
+    /** Tombol tambahan (di luar GEN block) untuk export semua item ke Excel. */
+    /** Saat mengetik di Harga Dasar, semua harga lain ikut mengetik -- KECUALI Harga Beli (harga beli tidak ikut). */
+    private void pasangSinkronHargaDasar() {
+        dasar.addKeyListener(new java.awt.event.KeyAdapter() {
+            @Override
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                sinkronHargaDariDasar();
+            }
+        });
+    }
+
+    private void sinkronHargaDariDasar() {
+        String nilai = dasar.getText();
+        ralan.setText(nilai);
+        kelas1.setText(nilai);
+        kelas2.setText(nilai);
+        kelas3.setText(nilai);
+        utama.setText(nilai);
+        kelasvip.setText(nilai);
+        kelasvvip.setText(nilai);
+        beliluar.setText(nilai);
+        jualbebas.setText(nilai);
+        karyawan.setText(nilai);
+    }
+
+    private void pasangTombolExportExcel() {
+        widget.Button btn = new widget.Button();
+        btn.setText("Export Excel");
+        btn.setToolTipText("Export SEMUA data obat/alkes/BHP ke Excel (bukan hanya yang tampil/hasil pencarian)");
+        btn.setPreferredSize(new java.awt.Dimension(120, 30));
+        btn.addActionListener(evt -> exportSemuaExcel());
+        panelisi1.add(btn);
+        panelisi1.revalidate();
+        panelisi1.repaint();
+    }
+
+    /** Export SELURUH data barang (status aktif), tidak terikat filter pencarian yang sedang tampil di tabel. */
+    private void exportSemuaExcel() {
+        if (JOptionPane.showConfirmDialog(this,
+                "Export SEMUA data obat/alkes/BHP (bukan hanya hasil pencarian yang tampil) ke file Excel?",
+                "Export Excel", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            String qry =
+                "select databarang.kode_brng as `Kode Barang`, databarang.nama_brng as `Nama Barang`, "
+                + "databarang.kode_satbesar as `Kd.Sat Besar`, satuanbesar.satuan as `Nm.Satuan Besar`, "
+                + "databarang.isi as `Isi`, databarang.kode_sat as `Kd.Sat Kecil`, kodesatuan.satuan as `Nm.Satuan Kecil`, "
+                + "databarang.kapasitas as `Kps`, databarang.letak_barang as `Kandungan`, "
+                + "databarang.dasar as `Hrg.Dasar(Rp)`, databarang.h_beli as `Hrg.Beli(Rp)`, "
+                + "databarang.ralan as `Ralan(Rp)`, databarang.kelas1 as `Ranap K1(Rp)`, databarang.kelas2 as `Ranap K2(Rp)`, databarang.kelas3 as `Ranap K3(Rp)`, "
+                + "databarang.utama as `Kelas Utama/BPJS(Rp)`, databarang.vip as `Ranap VIP(Rp)`, databarang.vvip as `Ranap VVIP(Rp)`, "
+                + "databarang.beliluar as `Beli Luar(Rp)`, databarang.jualbebas as `Jual Bebas(Rp)`, databarang.karyawan as `Karyawan(Rp)`, "
+                + "databarang.stokminimal as `Stok Min`, databarang.kdjns as `Kode Jenis`, jenis.nama as `Nama Jenis`, "
+                + "databarang.expire as `Kadaluwarsa`, databarang.kode_industri as `Kode I.F.`, industrifarmasi.nama_industri as `Industri Farmasi`, "
+                + "databarang.kode_kategori as `Kode Kategori`, kategori_barang.nama as `Kategori`, "
+                + "databarang.kode_golongan as `Kode Golongan`, golongan_barang.nama as `Golongan` "
+                + "from databarang inner join kodesatuan on databarang.kode_sat=kodesatuan.kode_sat "
+                + "inner join kodesatuan as satuanbesar on databarang.kode_satbesar=satuanbesar.kode_sat "
+                + "inner join jenis on databarang.kdjns=jenis.kdjns "
+                + "inner join industrifarmasi on databarang.kode_industri=industrifarmasi.kode_industri "
+                + "inner join golongan_barang on databarang.kode_golongan=golongan_barang.kode "
+                + "inner join kategori_barang on databarang.kode_kategori=kategori_barang.kode "
+                + "where databarang.status='1' order by databarang.nama_brng";
+            Valid.MyReportToExcel(qry, null);
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     private void tampil2() {

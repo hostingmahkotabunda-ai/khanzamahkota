@@ -18,3 +18,9 @@ nbproject/private/
 cache/*.iyem
 # Hasil compile
 *.class
+
+# Data sensitif / bukan bagian source code -- jangan pernah ke-track
+/backup_db/
+/design/
+export_*.xls
+/.claude/

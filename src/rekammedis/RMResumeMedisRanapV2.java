@@ -43,8 +43,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.swing.BorderFactory;
@@ -105,7 +107,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
     private final TextBox TNoRw = buatTextBox(15);
     private final TextBox TNoRM = buatTextBox(15);
     private final TextBox TPasien = buatTextBox(36);
-    private final TextBox TRuang = buatTextBox(24);
+    private final javax.swing.JComboBox<String> TRuang = buatComboEditable(24);
     private final TextBox TPenjab = buatTextBox(24);
     private final TextBox TTglMasuk = buatTextBox(12);
     private final TextBox TJamMasuk = buatTextBox(8);
@@ -140,6 +142,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
     private final TextArea AreaPenunjangLain = buatTextArea(4);
     private final TextArea AreaTerapiObat = buatTextArea(4);
     private final TextArea AreaInstruksi = buatTextArea(4);
+    private final TextBox TTglKontrol = buatTextBox(60);
 
     private final javax.swing.JComboBox<String> CmbCaraKeluar = buatCombo(
         "Diijinkan Pulang",
@@ -210,6 +213,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         setTanggalAwal();
         ensureTable();
         ensureAksesResumeRanapV2();
+        ensureKolomTanggalKontrol();
+        muatDaftarRuang();
         tampilData();
         isiDefaultDokterLogin();
         isCek();
@@ -322,6 +327,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         // Penunjang Lainnya disembunyikan dari form (data tetap tersimpan apa adanya)
         row = tambahAreaDenganTombol(panel, row, "Terapi / Obat Yang Diberikan", AreaTerapiObat, 220, BtnAmbilTerapiObatSoap);
         row = tambahArea(panel, row, "Instruksi Untuk Tindak Lanjut", AreaInstruksi, 96);
+        row = tambahSatuKolom(panel, row, "Tanggal Kontrol Ulang", TTglKontrol);
         return panel;
     }
 
@@ -521,7 +527,6 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         aturTextReadonly(TNoRw);
         aturTextReadonly(TNoRM);
         aturTextReadonly(TPasien);
-        aturTextReadonly(TRuang);
         aturTextReadonly(TPenjab);
         aturTextReadonly(TKodeDokter);
         aturTextReadonly(TNamaDokter);
@@ -570,6 +575,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             "penunjang_lain text null," +
             "terapi_obat text null," +
             "instruksi_tindak_lanjut text null," +
+            "tanggal_kontrol varchar(255) null," +
             "cara_keluar varchar(120) null," +
             "dirujuk_ke varchar(255) null," +
             "keadaan_keluar varchar(120) null," +
@@ -592,6 +598,51 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         } catch (Exception e) {
             System.out.println("Notif akses Resume Ranap V2 : " + e);
         }
+    }
+
+    private void ensureKolomTanggalKontrol() {
+        try {
+            if (Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() and table_name='resume_medis_ranap_v2' and column_name='tanggal_kontrol'") == 0) {
+                Sequel.queryu2("alter table resume_medis_ranap_v2 add column tanggal_kontrol varchar(255) null after instruksi_tindak_lanjut");
+            }
+        } catch (Exception e) {
+            System.out.println("Notif kolom tanggal kontrol : " + e);
+        }
+    }
+
+    private void muatDaftarRuang() {
+        javax.swing.DefaultComboBoxModel<String> model = new javax.swing.DefaultComboBoxModel<String>();
+        PreparedStatement stmt = null;
+        ResultSet hasil = null;
+        try {
+            stmt = koneksi.prepareStatement(
+                "select kamar.kd_kamar,bangsal.nm_bangsal from kamar " +
+                "inner join bangsal on kamar.kd_bangsal=bangsal.kd_bangsal " +
+                "where kamar.statusdata='1' order by bangsal.nm_bangsal,kamar.kd_kamar"
+            );
+            hasil = stmt.executeQuery();
+            while (hasil.next()) {
+                model.addElement(hasil.getString("kd_kamar") + " - " + hasil.getString("nm_bangsal"));
+            }
+        } catch (Exception e) {
+            System.out.println("Notif daftar ruang : " + e);
+        } finally {
+            try {
+                if (hasil != null) {
+                    hasil.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notif : " + e);
+            }
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notif : " + e);
+            }
+        }
+        TRuang.setModel(model);
     }
 
     public void tampilData() {
@@ -684,7 +735,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 "select reg_periksa.no_rkm_medis,pasien.nm_pasien,reg_periksa.tgl_registrasi,reg_periksa.jam_reg," +
                 "reg_periksa.kd_pj,penjab.png_jawab,if(kamar_inap.tgl_keluar='0000-00-00',current_date(),kamar_inap.tgl_keluar) as tgl_keluar," +
                 "if(kamar_inap.jam_keluar='00:00:00',current_time(),kamar_inap.jam_keluar) as jam_keluar," +
-                "kamar_inap.diagnosa_awal,bangsal.nm_bangsal from reg_periksa " +
+                "kamar_inap.diagnosa_awal,kamar.kd_kamar,bangsal.nm_bangsal from reg_periksa " +
                 "inner join pasien on pasien.no_rkm_medis=reg_periksa.no_rkm_medis " +
                 "inner join penjab on penjab.kd_pj=reg_periksa.kd_pj " +
                 "inner join kamar_inap on kamar_inap.no_rawat=reg_periksa.no_rawat " +
@@ -697,7 +748,9 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             if (rs.next()) {
                 TNoRM.setText(nvl(rs.getString("no_rkm_medis")));
                 TPasien.setText(nvl(rs.getString("nm_pasien")));
-                TRuang.setText(nvl(rs.getString("nm_bangsal")));
+                String kdKamarSekarang = nvl(rs.getString("kd_kamar"));
+                String nmBangsalSekarang = nvl(rs.getString("nm_bangsal"));
+                setComboText(TRuang, kdKamarSekarang.isEmpty() ? nmBangsalSekarang : kdKamarSekarang + " - " + nmBangsalSekarang);
                 TPenjab.setText(nvl(rs.getString("png_jawab")));
                 TTglMasuk.setText(nvl(rs.getString("tgl_registrasi")));
                 TJamMasuk.setText(nvl(rs.getString("jam_reg")));
@@ -754,7 +807,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         TNoRw.setText(nvl(data.getString("no_rawat")));
         TNoRM.setText(nvl(data.getString("no_rkm_medis")));
         TPasien.setText(nvl(data.getString("nama_pasien")));
-        TRuang.setText(nvl(data.getString("ruang_bangsal")));
+        setComboText(TRuang, nvl(data.getString("ruang_bangsal")));
         TPenjab.setText(nvl(data.getString("penjamin")));
         TTglMasuk.setText(nvl(data.getString("tgl_masuk")));
         TJamMasuk.setText(nvl(data.getString("jam_masuk")));
@@ -782,6 +835,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         AreaPenunjangLain.setText(nvl(data.getString("penunjang_lain")));
         AreaTerapiObat.setText(nvl(data.getString("terapi_obat")));
         AreaInstruksi.setText(nvl(data.getString("instruksi_tindak_lanjut")));
+        TTglKontrol.setText(nvl(data.getString("tanggal_kontrol")));
         CmbCaraKeluar.setSelectedItem(nvlCombo(data.getString("cara_keluar"), CmbCaraKeluar));
         TDirujukKe.setText(nvl(data.getString("dirujuk_ke")));
         CmbKeadaanKeluar.setSelectedItem(nvlCombo(data.getString("keadaan_keluar"), CmbKeadaanKeluar));
@@ -835,9 +889,9 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 "kd_dokter,nm_dokter,alasan_rawat,diagnosa_masuk,icd10_masuk,diagnosa_keluar,icd10_keluar," +
                 "diagnosa_sekunder1,icd10_sekunder1,diagnosa_sekunder2,icd10_sekunder2,diagnosa_sekunder3,icd10_sekunder3," +
                 "terapi_tindakan,icd9_cm,penyebab_kematian,pemeriksaan_fisik,laboratorium,radiologi,penunjang_lain,terapi_obat," +
-                "instruksi_tindak_lanjut,cara_keluar,dirujuk_ke,keadaan_keluar,tanggal_resume,jam_resume,ttd_dokter,created_by,updated_by,created_at,updated_at" +
+                "instruksi_tindak_lanjut,tanggal_kontrol,cara_keluar,dirujuk_ke,keadaan_keluar,tanggal_resume,jam_resume,ttd_dokter,created_by,updated_by,created_at,updated_at" +
                 ") values (" +
-                "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now()" +
+                "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),now()" +
                 ")"
             );
             isiStatement(stmt, false);
@@ -873,7 +927,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 "kd_dokter=?,nm_dokter=?,alasan_rawat=?,diagnosa_masuk=?,icd10_masuk=?,diagnosa_keluar=?,icd10_keluar=?," +
                 "diagnosa_sekunder1=?,icd10_sekunder1=?,diagnosa_sekunder2=?,icd10_sekunder2=?,diagnosa_sekunder3=?,icd10_sekunder3=?," +
                 "terapi_tindakan=?,icd9_cm=?,penyebab_kematian=?,pemeriksaan_fisik=?,laboratorium=?,radiologi=?,penunjang_lain=?,terapi_obat=?," +
-                "instruksi_tindak_lanjut=?,cara_keluar=?,dirujuk_ke=?,keadaan_keluar=?,tanggal_resume=?,jam_resume=?,ttd_dokter=?,updated_by=?,updated_at=now() " +
+                "instruksi_tindak_lanjut=?,tanggal_kontrol=?,cara_keluar=?,dirujuk_ke=?,keadaan_keluar=?,tanggal_resume=?,jam_resume=?,ttd_dokter=?,updated_by=?,updated_at=now() " +
                 "where no_rawat=?"
             );
             isiStatement(stmt, true);
@@ -900,7 +954,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         }
         stmt.setString(idx++, ambil(TNoRM));
         stmt.setString(idx++, ambil(TPasien));
-        stmt.setString(idx++, ambil(TRuang));
+        stmt.setString(idx++, ambilComboText(TRuang));
         stmt.setString(idx++, ambil(TPenjab));
         setDateString(stmt, idx++, ambil(TTglMasuk));
         stmt.setString(idx++, ambil(TJamMasuk));
@@ -928,6 +982,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         stmt.setString(idx++, ambil(AreaPenunjangLain));
         stmt.setString(idx++, ambil(AreaTerapiObat));
         stmt.setString(idx++, ambil(AreaInstruksi));
+        stmt.setString(idx++, ambil(TTglKontrol));
         stmt.setString(idx++, ambilCombo(CmbCaraKeluar));
         stmt.setString(idx++, ambil(TDirujukKe));
         stmt.setString(idx++, ambilCombo(CmbKeadaanKeluar));
@@ -972,7 +1027,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         String noRawat = ambil(TNoRw);
         String noRm = ambil(TNoRM);
         String nama = ambil(TPasien);
-        String ruang = ambil(TRuang);
+        String ruang = ambilComboText(TRuang);
         String penjab = ambil(TPenjab);
         String tglMasuk = ambil(TTglMasuk);
         String jamMasuk = ambil(TJamMasuk);
@@ -983,7 +1038,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         TNoRw.setText(noRawat);
         TNoRM.setText(noRm);
         TPasien.setText(nama);
-        TRuang.setText(ruang);
+        setComboText(TRuang, ruang);
         TPenjab.setText(penjab);
         TTglMasuk.setText(tglMasuk);
         TJamMasuk.setText(jamMasuk);
@@ -1014,6 +1069,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         AreaPenunjangLain.setText("");
         AreaTerapiObat.setText("");
         AreaInstruksi.setText("");
+        TTglKontrol.setText("");
         CmbCaraKeluar.setSelectedIndex(0);
         TDirujukKe.setText("");
         CmbKeadaanKeluar.setSelectedIndex(0);
@@ -1120,7 +1176,65 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         param.put("ttd_dokter", buatImageReport(ttdDokter));
         param.put("finger", buatBarcodeDokter());
         param.put("kota_ttd", akses.getkabupatenrs());
+        param.put("baris", buatBarisTabel(koneksi, ambil(TNoRw)));
         return param;
+    }
+
+    /**
+     * Baris-baris tabel URAIAN/KETERANGAN/KODE diambil lewat query terpisah (bukan dari
+     * datasource utama report) supaya bisa dirender pakai komponen jr:list — komponen ini
+     * yang menjamin baris saling mendorong turun & lanjut ke halaman berikutnya dengan benar
+     * kalau isinya panjang, tanpa duplikasi atau kehilangan data seperti pendekatan frame+float.
+     */
+    private static List<Map<String, Object>> buatBarisTabel(Connection konn, String noRawat) {
+        List<Map<String, Object>> baris = new ArrayList<Map<String, Object>>();
+        String sql =
+            "select ifnull(alasan_rawat,'') alasan_rawat," +
+            "ifnull(diagnosa_masuk,'') diagnosa_masuk,ifnull(icd10_masuk,'') icd10_masuk," +
+            "ifnull(diagnosa_keluar,'') diagnosa_keluar,ifnull(icd10_keluar,'') icd10_keluar," +
+            "ifnull(diagnosa_sekunder1,'') diagnosa_sekunder1,ifnull(icd10_sekunder1,'') icd10_sekunder1," +
+            "ifnull(diagnosa_sekunder2,'') diagnosa_sekunder2,ifnull(icd10_sekunder2,'') icd10_sekunder2," +
+            "ifnull(diagnosa_sekunder3,'') diagnosa_sekunder3,ifnull(icd10_sekunder3,'') icd10_sekunder3," +
+            "ifnull(icd9_cm,'') icd9_cm,ifnull(pemeriksaan_fisik,'') pemeriksaan_fisik," +
+            "ifnull(laboratorium,'') laboratorium,ifnull(radiologi,'') radiologi," +
+            "ifnull(terapi_obat,'') terapi_obat,ifnull(instruksi_tindak_lanjut,'') instruksi_tindak_lanjut " +
+            "from resume_medis_ranap_v2 where no_rawat=?";
+        try (PreparedStatement st = konn.prepareStatement(sql)) {
+            st.setString(1, noRawat);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    tambahBaris(baris, "bed", "Alasan / Indikasi Di Rawat", rs.getString("alasan_rawat"), null);
+                    tambahBaris(baris, "stetoskop", "Diagnosa Masuk", rs.getString("diagnosa_masuk"), kodeAtauStrip(rs.getString("icd10_masuk")));
+                    tambahBaris(baris, "stetoskop", "Diagnosa Keluar", rs.getString("diagnosa_keluar"), kodeAtauStrip(rs.getString("icd10_keluar")));
+                    String valSekunder = "1. " + rs.getString("diagnosa_sekunder1") + "\n2. " + rs.getString("diagnosa_sekunder2") + "\n3. " + rs.getString("diagnosa_sekunder3");
+                    String kodeSekunder = kodeAtauStrip(rs.getString("icd10_sekunder1")) + "\n" + kodeAtauStrip(rs.getString("icd10_sekunder2")) + "\n" + kodeAtauStrip(rs.getString("icd10_sekunder3"));
+                    tambahBaris(baris, "klip", "Diagnosa Sekunder (Komplikasi)", valSekunder, kodeSekunder);
+                    tambahBaris(baris, "kode", "Kode ICD 9 CM", rs.getString("icd9_cm"), "-");
+                    tambahBaris(baris, "periksa", "Pemeriksaan Fisik", rs.getString("pemeriksaan_fisik"), null);
+                    tambahBaris(baris, "lab", "Laboratorium", rs.getString("laboratorium"), null);
+                    tambahBaris(baris, "radiologi", "Radiologi", rs.getString("radiologi"), null);
+                    tambahBaris(baris, "obat", "Terapi / Obat Yang Diberikan", rs.getString("terapi_obat"), null);
+                    tambahBaris(baris, "klip", "Instruksi Untuk Tindak Lanjut", rs.getString("instruksi_tindak_lanjut"), null);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif baris tabel resume ranap V2 : " + e);
+        }
+        return baris;
+    }
+
+    private static void tambahBaris(List<Map<String, Object>> list, String icon, String label, String value, String kode) {
+        Map<String, Object> m = new HashMap<String, Object>();
+        m.put("icon", "./report/icons/" + icon + ".png");
+        m.put("label", label);
+        m.put("value", value == null ? "" : value);
+        m.put("kode", kode == null ? "" : kode);
+        m.put("hasKode", kode != null);
+        list.add(m);
+    }
+
+    private static String kodeAtauStrip(String kode) {
+        return (kode == null || kode.trim().isEmpty()) ? "-" : kode.trim();
     }
 
     private String buatBarcodeDokter() {
@@ -1171,6 +1285,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             "ifnull(m.penunjang_lain,'') as penunjang_lain," +
             "ifnull(m.terapi_obat,'') as terapi_obat," +
             "ifnull(m.instruksi_tindak_lanjut,'') as instruksi_tindak_lanjut," +
+            "ifnull(m.ruang_bangsal,'') as ruang_bangsal," +
+            "ifnull(m.tanggal_kontrol,'') as tanggal_kontrol," +
             "ifnull(m.cara_keluar,'') as cara_keluar," +
             "ifnull(m.keadaan_keluar,'') as keadaan_keluar," +
             "ifnull(m.dirujuk_ke,'') as dirujuk_ke," +
@@ -1204,6 +1320,158 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         if (!jasper.exists() || jrxml.lastModified() > jasper.lastModified()) {
             JasperCompileManager.compileReportToFile(jrxml.getPath(), jasper.getPath());
         }
+    }
+
+    /**
+     * Cetak preview Jasper resume rawat inap untuk no_rawat tertentu tanpa
+     * perlu membuka dialog ini dulu (dipakai dari klik-kanan item Resume di
+     * layar Riwayat Perawatan). Query/parameter/report sama persis dengan
+     * previewJasper() saat dialog ini dibuka & data-nya sudah dimuat.
+     */
+    public static void cetak(String noRawat) {
+        if (noRawat == null || noRawat.trim().isEmpty()) {
+            return;
+        }
+        try {
+            File jrxml = new File("./report/rptResumeMedisRanapV2.jrxml");
+            File jasper = new File("./report/rptResumeMedisRanapV2.jasper");
+            if (!jrxml.exists()) {
+                throw new Exception("File report rptResumeMedisRanapV2 tidak ditemukan.");
+            }
+            if (!jasper.exists() || jrxml.lastModified() > jasper.lastModified()) {
+                JasperCompileManager.compileReportToFile(jrxml.getPath(), jasper.getPath());
+            }
+            new validasi().MyReportqry(
+                "rptResumeMedisRanapV2.jasper",
+                "report",
+                "::[ Laporan Resume Rawat Inap ]::",
+                buatQueryCetakStatis(noRawat.trim()),
+                buatParameterCetakStatis(noRawat.trim())
+            );
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Gagal cetak resume rawat inap : " + e.getMessage());
+        }
+    }
+
+    private static String buatQueryCetakStatis(String noRawat) {
+        String aman = noRawat.replace("'", "''");
+        return "select " +
+            "m.no_rawat," +
+            "m.no_rkm_medis," +
+            "m.nama_pasien," +
+            "ifnull(date_format(p.tgl_lahir,'%d-%m-%Y'),'') as tgl_lahir_format," +
+            "if(p.jk='L','L','P') as jk_singkat," +
+            "concat(ifnull(p.alamat,'')," +
+            "if(kelurahan.nm_kel is null or kelurahan.nm_kel='', '', concat(', ',kelurahan.nm_kel))," +
+            "if(kecamatan.nm_kec is null or kecamatan.nm_kec='', '', concat(', ',kecamatan.nm_kec))," +
+            "if(kabupaten.nm_kab is null or kabupaten.nm_kab='', '', concat(', ',kabupaten.nm_kab))) as alamat_lengkap," +
+            "ifnull(date_format(m.tgl_masuk,'%d-%m-%Y'),'') as tgl_masuk_format," +
+            "ifnull(date_format(m.tgl_keluar,'%d-%m-%Y'),'') as tgl_keluar_format," +
+            "ifnull(m.alasan_rawat,'') as alasan_rawat," +
+            "ifnull(m.diagnosa_masuk,'') as diagnosa_masuk," +
+            "ifnull(m.icd10_masuk,'') as icd10_masuk," +
+            "ifnull(m.diagnosa_keluar,'') as diagnosa_keluar," +
+            "ifnull(m.icd10_keluar,'') as icd10_keluar," +
+            "ifnull(m.diagnosa_sekunder1,'') as diagnosa_sekunder1," +
+            "ifnull(m.icd10_sekunder1,'') as icd10_sekunder1," +
+            "ifnull(m.diagnosa_sekunder2,'') as diagnosa_sekunder2," +
+            "ifnull(m.icd10_sekunder2,'') as icd10_sekunder2," +
+            "ifnull(m.diagnosa_sekunder3,'') as diagnosa_sekunder3," +
+            "ifnull(m.icd10_sekunder3,'') as icd10_sekunder3," +
+            "ifnull(m.terapi_tindakan,'') as terapi_tindakan," +
+            "ifnull(m.icd9_cm,'') as icd9_cm," +
+            "ifnull(m.penyebab_kematian,'') as penyebab_kematian," +
+            "ifnull(m.pemeriksaan_fisik,'') as pemeriksaan_fisik," +
+            "ifnull(m.laboratorium,'') as laboratorium," +
+            "ifnull(m.radiologi,'') as radiologi," +
+            "ifnull(m.penunjang_lain,'') as penunjang_lain," +
+            "ifnull(m.terapi_obat,'') as terapi_obat," +
+            "ifnull(m.instruksi_tindak_lanjut,'') as instruksi_tindak_lanjut," +
+            "ifnull(m.ruang_bangsal,'') as ruang_bangsal," +
+            "ifnull(m.tanggal_kontrol,'') as tanggal_kontrol," +
+            "ifnull(m.cara_keluar,'') as cara_keluar," +
+            "ifnull(m.keadaan_keluar,'') as keadaan_keluar," +
+            "ifnull(m.dirujuk_ke,'') as dirujuk_ke," +
+            "ifnull(date_format(m.tanggal_resume,'%d-%m-%Y'),'') as tanggal_resume_format," +
+            "ifnull(date_format(m.tanggal_resume,'%Y'),'') as tahun_resume," +
+            "ifnull(m.jam_resume,'') as jam_resume," +
+            "ifnull(m.kd_dokter,'') as kd_dokter," +
+            "ifnull(m.nm_dokter,'') as nm_dokter," +
+            "ifnull((select d.nm_dokter from dpjp_ranap dr inner join dokter d on dr.kd_dokter=d.kd_dokter where dr.no_rawat=m.no_rawat order by dr.kd_dokter limit 0,1)," +
+            "ifnull((select d2.nm_dokter from dokter d2 where d2.kd_dokter=m.kd_dokter),'') ) as dpjp," +
+            "if((select count(*) from dpjp_ranap drx where drx.no_rawat=m.no_rawat)>0,'ya','tidak') as rawat_tim_dokter," +
+            "ifnull((select concat('1. dr. ',d.nm_dokter) from dpjp_ranap dr inner join dokter d on dr.kd_dokter=d.kd_dokter where dr.no_rawat=m.no_rawat order by dr.kd_dokter limit 0,1)," +
+            "concat('1. dr. ',ifnull(m.nm_dokter,''))) as tim_dokter1," +
+            "ifnull((select concat('2. dr. ',d.nm_dokter) from dpjp_ranap dr inner join dokter d on dr.kd_dokter=d.kd_dokter where dr.no_rawat=m.no_rawat order by dr.kd_dokter limit 1,1),'') as tim_dokter2," +
+            "ifnull((select concat('3. dr. ',d.nm_dokter) from dpjp_ranap dr inner join dokter d on dr.kd_dokter=d.kd_dokter where dr.no_rawat=m.no_rawat order by dr.kd_dokter limit 2,1),'') as tim_dokter3 " +
+            "from resume_medis_ranap_v2 m " +
+            "inner join reg_periksa r on r.no_rawat=m.no_rawat " +
+            "inner join pasien p on p.no_rkm_medis=r.no_rkm_medis " +
+            "left join kelurahan on p.kd_kel=kelurahan.kd_kel " +
+            "left join kecamatan on p.kd_kec=kecamatan.kd_kec " +
+            "left join kabupaten on p.kd_kab=kabupaten.kd_kab " +
+            "where m.no_rawat='" + aman + "'";
+    }
+
+    private static Map<String, Object> buatParameterCetakStatis(String noRawat) {
+        Map<String, Object> param = new HashMap<String, Object>();
+        param.put("namars", akses.getnamars());
+        param.put("alamatrs", akses.getalamatrs());
+        param.put("kotars", akses.getkabupatenrs());
+        param.put("propinsirs", akses.getpropinsirs());
+        param.put("kontakrs", akses.getkontakrs());
+        param.put("emailrs", akses.getemailrs());
+        sekuel sequelStatis = new sekuel();
+        param.put("logo", sequelStatis.cariGambar("select setting.logo from setting"));
+        byte[] ttd = null;
+        String kdDokter = "";
+        String namaDokter = "";
+        String tanggalResume = "";
+        Connection konn = koneksiDB.condb();
+        try (PreparedStatement st = konn.prepareStatement(
+                "select ttd_dokter,kd_dokter,nm_dokter,date_format(tanggal_resume,'%d-%m-%Y') as tgl "
+                + "from resume_medis_ranap_v2 where no_rawat=?")) {
+            st.setString(1, noRawat);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    ttd = rs.getBytes("ttd_dokter");
+                    kdDokter = rs.getString("kd_dokter") == null ? "" : rs.getString("kd_dokter");
+                    namaDokter = rs.getString("nm_dokter") == null ? "" : rs.getString("nm_dokter");
+                    tanggalResume = rs.getString("tgl") == null ? "" : rs.getString("tgl");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif buatParameterCetakStatis (ranap) : " + e);
+        }
+        param.put("ttd_dokter", buatImageReportStatis(ttd));
+        param.put("finger", buatBarcodeDokterStatis(kdDokter, namaDokter, tanggalResume));
+        param.put("kota_ttd", akses.getkabupatenrs());
+        param.put("baris", buatBarisTabel(konn, noRawat));
+        return param;
+    }
+
+    private static Image buatImageReportStatis(byte[] data) {
+        if (data == null || data.length == 0) {
+            return null;
+        }
+        try {
+            return ImageIO.read(new ByteArrayInputStream(data));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static String buatBarcodeDokterStatis(String kodeDokter, String namaDokter, String tanggalResume) {
+        sekuel sequelStatis = new sekuel();
+        String finger = sequelStatis.cariIsi(
+            "select sha1(sidikjari.sidikjari) from sidikjari inner join pegawai on pegawai.id=sidikjari.id where pegawai.nik=?",
+            kodeDokter
+        );
+        finger = finger == null ? "" : finger;
+        return "Dikeluarkan di " + akses.getnamars() + ", Kabupaten/Kota " + akses.getkabupatenrs() +
+            "\nDitandatangani secara elektronik oleh " + namaDokter +
+            "\nID " + (finger.equals("") ? kodeDokter : finger) +
+            "\n" + tanggalResume;
     }
 
     private Image buatImageReport(byte[] data) {
@@ -1761,6 +2029,33 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             new EmptyBorder(2, 6, 2, 6)
         ));
         return combo;
+    }
+
+    private javax.swing.JComboBox<String> buatComboEditable(int columns) {
+        javax.swing.JComboBox<String> combo = new javax.swing.JComboBox<String>();
+        combo.setEditable(true);
+        combo.setFont(FONT_BODY);
+        combo.setBackground(WARNA_FIELD);
+        combo.setForeground(WARNA_TEXT);
+        combo.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(WARNA_BORDER),
+            new EmptyBorder(2, 6, 2, 6)
+        ));
+        javax.swing.JTextField editor = (javax.swing.JTextField) combo.getEditor().getEditorComponent();
+        editor.setColumns(columns);
+        editor.setFont(FONT_BODY);
+        editor.setForeground(WARNA_TEXT);
+        editor.setBackground(WARNA_FIELD);
+        return combo;
+    }
+
+    private String ambilComboText(javax.swing.JComboBox<String> combo) {
+        Object item = combo.getEditor().getItem();
+        return item == null ? "" : item.toString().trim();
+    }
+
+    private void setComboText(javax.swing.JComboBox<String> combo, String text) {
+        combo.setSelectedItem(text == null ? "" : text);
     }
 
     private Button buatButton(String label) {

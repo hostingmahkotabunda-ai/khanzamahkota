@@ -261,6 +261,7 @@ public final class DlgIGD extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         pasangMenuCetakCPPT();
+        pasangMenuRingkasanDanPengantarRanap();
         initFilterDanKeteranganWarnaIgd();
         initIGD();
         initHostKerjaIgd();
@@ -11060,6 +11061,84 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
             }
         });
         MnDataRM.add(mnCetakCPPT);
+    }
+
+    /**
+     * Ringkasan Riwayat Masuk (RM 2a) & Pengantar Pasien Rawat Inap (RM 3a) -- diisi keduanya oleh
+     * petugas IGD, tabelnya keyed by no_rawat. Kalau pasien ini nantinya masuk Rawat Inap dgn
+     * no_rawat yg SAMA (bukan registrasi baru), data yg sudah diisi di sini otomatis "ketarik" begitu
+     * form yg sama dibuka lagi dari DlgRawatInap -- tidak perlu logic transfer terpisah.
+     */
+    private void pasangMenuRingkasanDanPengantarRanap() {
+        javax.swing.JMenuItem mnRingkasan = new javax.swing.JMenuItem();
+        mnRingkasan.setBackground(new java.awt.Color(255, 255, 254));
+        mnRingkasan.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mnRingkasan.setForeground(new java.awt.Color(50, 50, 50));
+        mnRingkasan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        mnRingkasan.setText("Ringkasan Riwayat Masuk (RM 2a)");
+        mnRingkasan.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mnRingkasan.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mnRingkasan.setPreferredSize(new java.awt.Dimension(250, 26));
+        mnRingkasan.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bukaRingkasanRiwayatMasukIgd();
+            }
+        });
+        MnDataRM.add(mnRingkasan);
+
+        javax.swing.JMenuItem mnPengantar = new javax.swing.JMenuItem();
+        mnPengantar.setBackground(new java.awt.Color(255, 255, 254));
+        mnPengantar.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mnPengantar.setForeground(new java.awt.Color(50, 50, 50));
+        mnPengantar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        mnPengantar.setText("Pengantar Pasien Rawat Inap (RM 3a)");
+        mnPengantar.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mnPengantar.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mnPengantar.setPreferredSize(new java.awt.Dimension(250, 26));
+        mnPengantar.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bukaPengantarPasienRanapIgd();
+            }
+        });
+        MnDataRM.add(mnPengantar);
+    }
+
+    private void bukaRingkasanRiwayatMasukIgd() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMRingkasanRiwayatMasuk f = new rekammedis.RMRingkasanRiwayatMasuk(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private void bukaPengantarPasienRanapIgd() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMPengantarPasienRanap f = new rekammedis.RMPengantarPasienRanap(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
     }
 
     private void initHostKerjaIgd() {

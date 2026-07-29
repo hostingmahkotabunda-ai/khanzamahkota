@@ -210,6 +210,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     private javax.swing.JTable tbRiwayatPasienRalan;
     private javax.swing.JPanel panelDataPasienRalan;
     private javax.swing.JPanel panelPenilaianAwalKosongRalan;
+    private rekammedis.RMAsesmenRalan panelAsesmenRalan;
     private javax.swing.JTextField txtDPRNoRM, txtDPRNama, txtDPRNIK, txtDPRTempatLahir, txtDPRTglLahir,
             txtDPRTelepon, txtDPRPekerjaan, txtDPRNamaKeluarga, txtDPRPekerjaanPJ;
     private javax.swing.JTextArea txtDPRAlamat, txtDPRCatatan;
@@ -247,7 +248,77 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     private void pasangTabPenilaianAwalKosongRalan() {
         panelPenilaianAwalKosongRalan=new javax.swing.JPanel(new java.awt.BorderLayout());
         panelPenilaianAwalKosongRalan.setName("panelPenilaianAwalKosongRalan");
+        panelAsesmenRalan=new rekammedis.RMAsesmenRalan();
+        panelPenilaianAwalKosongRalan.add(panelAsesmenRalan, java.awt.BorderLayout.CENTER);
         TabRawat.addTab("Penilaian Awal", panelPenilaianAwalKosongRalan);
+        final int idxPenilaianAwalRalan = TabRawat.indexOfComponent(panelPenilaianAwalKosongRalan);
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener(){
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e){
+                if(TabRawat.getSelectedComponent()==panelPenilaianAwalKosongRalan){
+                    panelAsesmenRalan.setKonteks(TNoRw.getText());
+                }
+            }
+        });
+
+        // Ringkasan Riwayat Masuk (RM 2a) & Pengantar Pasien Ranap (RM 3a) -- gabung ke tab "Penilaian
+        // Awal" ini, dgn mekanisme sama spt DlgRawatInap: klik tab-nya langsung muncul dropdown menu di
+        // situ (tab tetap pindah & menampilkan panel Asesmen Ralan spt biasa DI BALIK menu-nya). Keduanya
+        // keyed by no_rawat, jadi kalau pasien ini nanti masuk Rawat Inap dgn no_rawat yg SAMA, data yg
+        // diisi di sini otomatis "ketarik" begitu form yg sama dibuka dari DlgRawatInap -- tidak perlu
+        // logic transfer terpisah.
+        final javax.swing.JPopupMenu menuPenilaianAwalRalan = new javax.swing.JPopupMenu();
+        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Ringkasan Riwayat Masuk (RM 2a)", ev -> bukaRingkasanRiwayatMasukRalan()));
+        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Pengantar Pasien Rawat Inap (RM 3a)", ev -> bukaPengantarPasienRanapRalan()));
+        TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                if (TabRawat.indexAtLocation(evt.getX(), evt.getY()) == idxPenilaianAwalRalan) {
+                    menuPenilaianAwalRalan.show(TabRawat, evt.getX(), evt.getY());
+                }
+            }
+        });
+    }
+
+    private javax.swing.JMenuItem itemMenuPenilaianAwalRalan(String teks, java.awt.event.ActionListener aksi) {
+        javax.swing.JMenuItem item = new javax.swing.JMenuItem(teks);
+        item.addActionListener(aksi);
+        return item;
+    }
+
+    private void bukaRingkasanRiwayatMasukRalan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMRingkasanRiwayatMasuk f = new rekammedis.RMRingkasanRiwayatMasuk(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private void bukaPengantarPasienRanapRalan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMPengantarPasienRanap f = new rekammedis.RMPengantarPasienRanap(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
     }
 
     private void pasangTabDataPasienRalan() {

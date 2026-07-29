@@ -76,8 +76,8 @@
         <mkdir dir="${build.dir}/suara" />        
         <mkdir dir="${build.dir}/gambar" />      
         <copy todir="${build.dir}/report">
-            <fileset dir="report/" includes="**/*.jrxml, **/*.jasper" />
-        </copy>                
+            <fileset dir="report/" includes="**/*.jrxml, **/*.jasper, **/*.png, **/*.jpg" />
+        </copy>
         <copy todir="${build.dir}/setting">
             <fileset dir="setting/" includes="**/*.xml, **/*.png, **/*.jpg" />
         </copy>
@@ -95,8 +95,8 @@
         <mkdir dir="${dist.dir}/suara" />         
         <mkdir dir="${dist.dir}/gambar" />       
         <copy todir="${dist.dir}/report">
-            <fileset dir="report/" includes="**/*.jrxml, **/*.jasper" />
-        </copy>               
+            <fileset dir="report/" includes="**/*.jrxml, **/*.jasper, **/*.png, **/*.jpg" />
+        </copy>
         <copy todir="${dist.dir}/setting">
             <fileset dir="setting/" includes="**/*.xml, **/*.png, **/*.jpg" />
         </copy> 

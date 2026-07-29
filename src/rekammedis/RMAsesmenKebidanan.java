@@ -5,6 +5,7 @@ import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -23,8 +24,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JDialog;
@@ -32,6 +36,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import kepegawaian.DlgCariDokter;
 
@@ -244,6 +250,7 @@ public final class RMAsesmenKebidanan extends JDialog {
             }
         });
         setSize(1200, 800);
+        setMinimumSize(new Dimension(1050, 700));
         setLocationRelativeTo(parent);
     }
 
@@ -373,11 +380,7 @@ public final class RMAsesmenKebidanan extends JDialog {
         row = baris1(form, row, "Tanggal / Pukul", dtpTtd);
         row = baris2(form, row, "Bidan Pengkaji *", gabungBtn(KdPetugas, NmPetugas, null), "Dokter PJ", gabungBtn(KdDokter, NmDokter, BtnDokter));
 
-        JScrollPane scroll = new JScrollPane(form);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.getVerticalScrollBar().setUnitIncrement(28);
-        scroll.getVerticalScrollBar().setBlockIncrement(120);
-        getContentPane().add(scroll, BorderLayout.CENTER);
+        getContentPane().add(buatTampilanBertahap(form), BorderLayout.CENTER);
 
         BtnBaru.setText("Baru");
         BtnSimpan.setText("Simpan");
@@ -398,16 +401,220 @@ public final class RMAsesmenKebidanan extends JDialog {
             dokter.setLocationRelativeTo(this);
             dokter.setVisible(true);
         });
-        JPanel bawah = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 6));
-        bawah.add(BtnSimpan);
-        bawah.add(BtnBaru);
+        BtnSimpan.setText("Simpan Data");
+        BtnHapus.setText("Hapus Data");
+        JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 8));
+        bawah.setBackground(Color.WHITE);
+        bawah.setBorder(BorderFactory.createMatteBorder(
+                1, 0, 0, 0, new Color(214, 224, 230)));
         bawah.add(BtnHapus);
+        bawah.add(BtnBaru);
         bawah.add(BtnCetak);
         bawah.add(BtnKeluar);
+        bawah.add(BtnSimpan);
         getContentPane().add(bawah, BorderLayout.SOUTH);
 
         dtpTanggal.setDate(new Date());
         dtpTtd.setDate(new Date());
+    }
+
+    private JPanel buatTampilanBertahap(JPanel formLama) {
+        final Color utama = new Color(0, 133, 143);
+        final Color utamaMuda = new Color(230, 247, 248);
+        final Color latar = new Color(246, 249, 251);
+        final Color garis = new Color(214, 224, 230);
+
+        GridBagLayout layoutLama = (GridBagLayout) formLama.getLayout();
+        Component[] komponenAwal = formLama.getComponents();
+        java.util.Map<Component, GridBagConstraints> posisi = new java.util.HashMap<>();
+        for (Component komponen : komponenAwal) {
+            posisi.put(komponen, layoutLama.getConstraints(komponen));
+        }
+
+        JPanel hasil = new JPanel(new BorderLayout());
+        hasil.setBackground(latar);
+
+        JPanel header = new JPanel(new BorderLayout(8, 8));
+        header.setBackground(latar);
+        header.setBorder(new EmptyBorder(12, 16, 9, 16));
+        JPanel blokJudul = new JPanel();
+        blokJudul.setOpaque(false);
+        blokJudul.setLayout(new BoxLayout(blokJudul, BoxLayout.Y_AXIS));
+        JLabel judulUtama = new JLabel("Asesmen Kebidanan");
+        judulUtama.setFont(new Font("Tahoma", Font.BOLD, 20));
+        judulUtama.setForeground(new Color(31, 47, 62));
+        JLabel subJudul = new JLabel("Asesmen awal pasien kebidanan rawat inap");
+        subJudul.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        subJudul.setForeground(new Color(87, 102, 113));
+        blokJudul.add(judulUtama);
+        blokJudul.add(Box.createVerticalStrut(2));
+        blokJudul.add(subJudul);
+        header.add(blokJudul, BorderLayout.NORTH);
+
+        JPanel identitas = new JPanel(new GridLayout(2, 4, 0, 6));
+        identitas.setBackground(Color.WHITE);
+        identitas.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(garis), new EmptyBorder(8, 8, 8, 8)));
+        identitas.add(ringkasanPasien("No. Rawat *", TNoRw));
+        identitas.add(ringkasanPasien("No. RM", TNoRM));
+        identitas.add(ringkasanPasien("Nama Pasien", TPasien));
+        identitas.add(ringkasanPasien("Jenis Kelamin", TJK));
+        identitas.add(ringkasanPasien("Tanggal Lahir", TTglLahir));
+        identitas.add(ringkasanPasien("Unit", TUnit));
+        identitas.add(ringkasanPasien("Cara Bayar", TCaraBayar));
+        identitas.add(ringkasanPasien("Alamat", TAlamat));
+        header.add(identitas, BorderLayout.CENTER);
+        hasil.add(header, BorderLayout.NORTH);
+
+        // Buang label identitas lama; field identitasnya sudah dipindahkan ke header.
+        for (Component komponen : komponenAwal) {
+            GridBagConstraints g = posisi.get(komponen);
+            if (g.gridy <= 3 && komponen.getParent() == formLama) {
+                formLama.remove(komponen);
+            }
+        }
+
+        int[] awal = {
+            4,
+            barisJudul(posisi, komponenAwal, "Pemeriksaan Nyeri (NRS)"),
+            barisJudul(posisi, komponenAwal, "Riwayat Menstruasi"),
+            barisJudul(posisi, komponenAwal, "Pola Makan, Minum & Skrining Gizi"),
+            barisJudul(posisi, komponenAwal, "B. Data Obyektif - Pemeriksaan Fisik"),
+            barisJudul(posisi, komponenAwal, "Pemeriksaan Khusus & Nifas"),
+            barisJudul(posisi, komponenAwal, "Discharge Planning & Perencanaan Pulang"),
+            barisJudul(posisi, komponenAwal, "Diagnosa & Rencana Kebidanan")
+        };
+        String[] nama = {
+            "1  Informasi & Tanda Vital",
+            "2  Nyeri & Psikososial",
+            "3  Riwayat Reproduksi",
+            "4  Nutrisi & Eliminasi",
+            "5  Pemeriksaan Fisik",
+            "6  Obstetri & Nifas",
+            "7  Pulang & Penunjang",
+            "8  Diagnosa & Verifikasi"
+        };
+        String[] kunci = {
+            "UMUM", "NYERI", "REPRODUKSI", "NUTRISI",
+            "FISIK", "OBSTETRI", "PULANG", "VERIFIKASI"
+        };
+
+        JPanel[] halaman = new JPanel[nama.length];
+        for (int i = 0; i < halaman.length; i++) {
+            halaman[i] = new JPanel(new GridBagLayout());
+            halaman[i].setBackground(Color.WHITE);
+            halaman[i].setBorder(new EmptyBorder(5, 8, 16, 8));
+        }
+
+        for (Component komponen : komponenAwal) {
+            if (komponen.getParent() != formLama) {
+                continue;
+            }
+            GridBagConstraints lama = posisi.get(komponen);
+            int bagian = 0;
+            for (int i = 1; i < awal.length; i++) {
+                if (lama.gridy >= awal[i]) {
+                    bagian = i;
+                }
+            }
+            GridBagConstraints baru = (GridBagConstraints) lama.clone();
+            baru.gridy = lama.gridy - awal[bagian];
+            halaman[bagian].add(komponen, baru);
+        }
+
+        final CardLayout kartu = new CardLayout();
+        final JPanel isi = new JPanel(kartu);
+        isi.setBackground(latar);
+        for (int i = 0; i < halaman.length; i++) {
+            JScrollPane scroll = new JScrollPane(halaman[i]);
+            scroll.setBorder(null);
+            scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            scroll.getVerticalScrollBar().setUnitIncrement(26);
+            scroll.getVerticalScrollBar().setBlockIncrement(120);
+            scroll.getViewport().setBackground(Color.WHITE);
+            isi.add(scroll, kunci[i]);
+        }
+
+        JPanel navigasi = new JPanel();
+        navigasi.setBackground(Color.WHITE);
+        navigasi.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, garis));
+        navigasi.setPreferredSize(new Dimension(225, 100));
+        navigasi.setLayout(new BoxLayout(navigasi, BoxLayout.Y_AXIS));
+        JLabel judulNavigasi = new JLabel("BAGIAN ASESMEN");
+        judulNavigasi.setFont(new Font("Tahoma", Font.BOLD, 11));
+        judulNavigasi.setForeground(new Color(80, 95, 105));
+        judulNavigasi.setBorder(new EmptyBorder(15, 16, 9, 8));
+        judulNavigasi.setAlignmentX(Component.LEFT_ALIGNMENT);
+        navigasi.add(judulNavigasi);
+
+        JButton[] tombol = new JButton[nama.length];
+        for (int i = 0; i < nama.length; i++) {
+            final int indeks = i;
+            tombol[i] = new JButton(nama[i]);
+            tombol[i].setHorizontalAlignment(SwingConstants.LEFT);
+            tombol[i].setFont(new Font("Tahoma", i == 0 ? Font.BOLD : Font.PLAIN, 11));
+            tombol[i].setForeground(i == 0 ? utama : new Color(61, 76, 86));
+            tombol[i].setBackground(i == 0 ? utamaMuda : Color.WHITE);
+            tombol[i].setBorder(new EmptyBorder(9, 16, 9, 7));
+            tombol[i].setFocusPainted(false);
+            tombol[i].setMaximumSize(new Dimension(225, 38));
+            tombol[i].setAlignmentX(Component.LEFT_ALIGNMENT);
+            tombol[i].addActionListener(e -> {
+                kartu.show(isi, kunci[indeks]);
+                for (int j = 0; j < tombol.length; j++) {
+                    boolean aktif = j == indeks;
+                    tombol[j].setBackground(aktif ? utamaMuda : Color.WHITE);
+                    tombol[j].setForeground(aktif ? utama : new Color(61, 76, 86));
+                    tombol[j].setFont(new Font("Tahoma", aktif ? Font.BOLD : Font.PLAIN, 11));
+                }
+            });
+            navigasi.add(tombol[i]);
+            navigasi.add(Box.createVerticalStrut(2));
+        }
+        navigasi.add(Box.createVerticalGlue());
+        JLabel keterangan = new JLabel(
+                "<html><span style='color:#D32F2F'>*</span> Wajib diisi</html>");
+        keterangan.setFont(new Font("Tahoma", Font.PLAIN, 10));
+        keterangan.setForeground(new Color(85, 99, 108));
+        keterangan.setBorder(new EmptyBorder(8, 16, 14, 8));
+        keterangan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        navigasi.add(keterangan);
+
+        JPanel badan = new JPanel(new BorderLayout());
+        badan.setBackground(latar);
+        badan.add(navigasi, BorderLayout.WEST);
+        badan.add(isi, BorderLayout.CENTER);
+        hasil.add(badan, BorderLayout.CENTER);
+        return hasil;
+    }
+
+    private int barisJudul(java.util.Map<Component, GridBagConstraints> posisi,
+            Component[] komponen, String teks) {
+        for (Component item : komponen) {
+            if (item instanceof JLabel && teks.equals(((JLabel) item).getText())) {
+                return posisi.get(item).gridy;
+            }
+        }
+        throw new IllegalStateException("Bagian form tidak ditemukan: " + teks);
+    }
+
+    private JPanel ringkasanPasien(String label, Component komponen) {
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(0, 8, 0, 8));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JLabel judul = new JLabel(label);
+        judul.setFont(new Font("Tahoma", Font.PLAIN, 10));
+        judul.setForeground(label.contains("*")
+                ? new Color(198, 40, 40) : new Color(82, 97, 108));
+        judul.setAlignmentX(Component.LEFT_ALIGNMENT);
+        komponen.setPreferredSize(new Dimension(180, 25));
+        komponen.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+        komponen.setBackground(new Color(247, 249, 250));
+        panel.add(judul);
+        panel.add(Box.createVerticalStrut(3));
+        panel.add(komponen);
+        return panel;
     }
 
     // ====================== Helpers UI ======================
@@ -450,10 +657,10 @@ public final class RMAsesmenKebidanan extends JDialog {
     private int judul(JPanel p, int row, String teks) {
         JLabel l = new JLabel(teks);
         l.setOpaque(true);
-        l.setBackground(new Color(225, 240, 225));
-        l.setForeground(new Color(30, 90, 30));
+        l.setBackground(new Color(230, 247, 248));
+        l.setForeground(new Color(0, 120, 130));
         l.setFont(new Font("Tahoma", Font.BOLD, 12));
-        l.setBorder(BorderFactory.createEmptyBorder(5, 6, 5, 6));
+        l.setBorder(BorderFactory.createEmptyBorder(7, 8, 7, 8));
         GridBagConstraints g = gc(0, row, 4, 1.0);
         g.insets = new Insets(10, 4, 2, 4);
         p.add(l, g);
@@ -500,8 +707,12 @@ public final class RMAsesmenKebidanan extends JDialog {
     }
 
     private JLabel lbl(String t) {
-        JLabel l = new JLabel(t + " :");
+        String teks = t.contains("*")
+                ? "<html>" + t.replace("*", "<font color='#D32F2F'>*</font>") + " :</html>"
+                : t + " :";
+        JLabel l = new JLabel(teks);
         l.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        l.setForeground(new Color(48, 63, 74));
         return l;
     }
 
@@ -797,6 +1008,11 @@ public final class RMAsesmenKebidanan extends JDialog {
                         KdDokter.setText(g(rs, "kd_dokter"));
                         NmDokter.setText(Sequel.cariIsi("select nm_dokter from dokter where kd_dokter=?", g(rs, "kd_dokter")));
                     }
+                    // Pelaksana asesmen yang TERSIMPAN (bukan user yang sedang login) -- penting saat data dibuka/dicetak oleh user lain.
+                    if (!g(rs, "nik").equals("")) {
+                        KdPetugas.setText(g(rs, "nik"));
+                        NmPetugas.setText(Sequel.cariIsi("select nama from petugas where nip=?", g(rs, "nik")));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -829,133 +1045,151 @@ public final class RMAsesmenKebidanan extends JDialog {
             JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
             return;
         }
-        StringBuilder b = new StringBuilder();
-        CetakAsesmen.h(b, "Identitas Pasien");
-        CetakAsesmen.r(b, "No. Rawat", TNoRw.getText());
-        CetakAsesmen.r(b, "No. RM", TNoRM.getText());
-        CetakAsesmen.r(b, "Nama Pasien", TPasien.getText());
-        CetakAsesmen.r(b, "Jenis Kelamin", TJK.getText());
-        CetakAsesmen.r(b, "Tanggal Lahir", TTglLahir.getText());
-        CetakAsesmen.r(b, "Alamat", TAlamat.getText());
-        CetakAsesmen.r(b, "Unit", TUnit.getText());
-        CetakAsesmen.r(b, "Cara Bayar", TCaraBayar.getText());
-        CetakAsesmen.r(b, "Ruang / Lantai / Kelas", tRuang.getText() + " / " + tLantai.getText() + " / " + tKelas.getText());
-        CetakAsesmen.r(b, "Diagnosa Medis", tDiagnosaMedis.getText());
-        CetakAsesmen.r(b, "Gelang Identitas", s(cmbGelang));
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "A. Data Subyektif - Data Umum");
-        CetakAsesmen.r(b, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
-        CetakAsesmen.r(b, "Kondisi Saat Masuk", grpKondisiMasuk.get());
-        CetakAsesmen.r(b, "Via", grpVia.get());
-        CetakAsesmen.r(b, "Nadi / Respirasi", tNadi.getText() + " / " + tRespirasi.getText());
-        CetakAsesmen.r(b, "Suhu / SpO2", tSuhu.getText() + " / " + tSpo2.getText());
-        CetakAsesmen.r(b, "Tekanan Darah / Posisi", tTD.getText() + " (" + grpTdPosisi.get() + ")");
-        CetakAsesmen.r(b, "TB / BB", tTB.getText() + " / " + tBB.getText());
-        CetakAsesmen.r(b, "GCS (E/M/V)", tGcsE.getText() + " / " + tGcsM.getText() + " / " + tGcsV.getText());
-        CetakAsesmen.r(b, "Keluhan Utama", taKeluhan.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Alergi");
-        CetakAsesmen.r(b, "Lateks", grpLateks.get());
-        CetakAsesmen.r(b, "Makanan / Obat", tAlergiMakananObat.getText());
-        CetakAsesmen.r(b, "Jenis Reaksi", tAlergiReaksi.getText());
-        CetakAsesmen.r(b, "Snap Alert", cekSnapAlert.isSelected() ? "Ya" : "-");
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Pemeriksaan Nyeri (NRS)");
-        CetakAsesmen.r(b, "Skala Nyeri", tNyeriSkala.getText());
-        CetakAsesmen.r(b, "Lokasi / Onset", tNyeriLokasi.getText() + " / " + tNyeriOnset.getText());
-        CetakAsesmen.r(b, "Variasi", tNyeriVariasi.getText());
-        CetakAsesmen.r(b, "Kualitas", grpNyeriKualitas.get());
-        CetakAsesmen.r(b, "Faktor Pemberat", grpNyeriPemberat.get());
-        CetakAsesmen.r(b, "Faktor Pencetus", grpNyeriPencetus.get());
-        CetakAsesmen.r(b, "Obat-obatan", tNyeriObat.getText());
-        CetakAsesmen.r(b, "Efek Nyeri", grpNyeriEfek.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Psikososial / Ekonomi / Spiritual");
-        CetakAsesmen.r(b, "Status Pernikahan / Keluarga", s(cmbStatusNikah) + " / " + s(cmbKeluargaTinggal));
-        CetakAsesmen.r(b, "Tempat Tinggal / Pekerjaan", s(cmbTempatTinggal) + " / " + s(cmbPekerjaan));
-        CetakAsesmen.r(b, "Agama / Nilai Keyakinan", tAgama.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Riwayat Menstruasi");
-        CetakAsesmen.r(b, "Umur Menarche / Lama Haid", tMenarche.getText() + " / " + tLamaHaid.getText());
-        CetakAsesmen.r(b, "Jumlah Darah / Haid Terakhir", tJumlahDarah.getText() + " / " + tHaidTerakhir.getText());
-        CetakAsesmen.r(b, "Tafsiran Persalinan", tTafsiranPersalinan.getText());
-        CetakAsesmen.r(b, "Gangguan Haid", grpGangguanHaid.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Riwayat Perkawinan & Kehamilan");
-        CetakAsesmen.r(b, "Kawin Ke", tKawinKe.getText());
-        CetakAsesmen.r(b, "G / P / A / Hidup", tGpaG.getText() + " / " + tGpaP.getText() + " / " + tGpaA.getText() + " / " + tGpaHidup.getText());
+        List<Map<String, ?>> rows = CetakAsesmen.mulai();
+        CetakAsesmen.r2(rows, "Ruang / Lantai", tRuang.getText() + " / " + tLantai.getText(), "Kelas", tKelas.getText());
+        CetakAsesmen.r2(rows, "Diagnosa Medis", tDiagnosaMedis.getText(), "Gelang Identitas", s(cmbGelang));
+
+        CetakAsesmen.h(rows, "A. Data Subyektif - Data Umum");
+        CetakAsesmen.r(rows, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
+        CetakAsesmen.r(rows, "Kondisi Saat Masuk", grpKondisiMasuk);
+        CetakAsesmen.r(rows, "Via", grpVia);
+        CetakAsesmen.r2(rows, "Nadi", tNadi.getText(), "Respirasi", tRespirasi.getText());
+        CetakAsesmen.r2(rows, "Suhu", tSuhu.getText(), "SpO2", tSpo2.getText());
+        CetakAsesmen.r(rows, "Tekanan Darah / Posisi", tTD.getText() + " (" + grpTdPosisi.get() + ")");
+        CetakAsesmen.r2(rows, "TB", tTB.getText(), "BB", tBB.getText());
+        CetakAsesmen.r(rows, "GCS (E/M/V)", tGcsE.getText() + " / " + tGcsM.getText() + " / " + tGcsV.getText());
+        CetakAsesmen.r(rows, "Keluhan Utama", taKeluhan.getText());
+
+        CetakAsesmen.h(rows, "Alergi");
+        CetakAsesmen.r2(rows, "Lateks", CetakAsesmen.fmt(grpLateks), "Snap Alert", cekSnapAlert.isSelected() ? "Ya" : "");
+        CetakAsesmen.r2(rows, "Makanan / Obat", tAlergiMakananObat.getText(), "Jenis Reaksi", tAlergiReaksi.getText());
+
+        CetakAsesmen.h(rows, "Pemeriksaan Nyeri (NRS)");
+        CetakAsesmen.r(rows, "Skala Nyeri", tNyeriSkala.getText());
+        CetakAsesmen.r2(rows, "Lokasi", tNyeriLokasi.getText(), "Onset", tNyeriOnset.getText());
+        CetakAsesmen.r(rows, "Variasi", tNyeriVariasi.getText());
+        CetakAsesmen.r(rows, "Kualitas", grpNyeriKualitas);
+        CetakAsesmen.r(rows, "Faktor Pemberat", grpNyeriPemberat);
+        CetakAsesmen.r(rows, "Faktor Pencetus", grpNyeriPencetus);
+        CetakAsesmen.r(rows, "Obat-obatan", tNyeriObat.getText());
+        CetakAsesmen.r(rows, "Efek Nyeri", grpNyeriEfek);
+
+        CetakAsesmen.h(rows, "Psikososial / Ekonomi / Spiritual");
+        CetakAsesmen.r2(rows, "Status Pernikahan", s(cmbStatusNikah), "Keluarga", s(cmbKeluargaTinggal));
+        CetakAsesmen.r2(rows, "Tempat Tinggal", s(cmbTempatTinggal), "Pekerjaan", s(cmbPekerjaan));
+        CetakAsesmen.r(rows, "Agama / Nilai Keyakinan", tAgama.getText());
+
+        CetakAsesmen.h(rows, "Riwayat Menstruasi");
+        CetakAsesmen.r2(rows, "Umur Menarche / Lama Haid", tMenarche.getText() + " / " + tLamaHaid.getText() + " hr", "Jumlah Darah", tJumlahDarah.getText() + " cc");
+        CetakAsesmen.r2(rows, "Haid Terakhir", tHaidTerakhir.getText(), "Tafsiran Persalinan", tTafsiranPersalinan.getText());
+        CetakAsesmen.r(rows, "Gangguan Haid", grpGangguanHaid);
+
+        CetakAsesmen.h(rows, "Riwayat Perkawinan & Kehamilan");
+        CetakAsesmen.r(rows, "Kawin Ke", tKawinKe.getText());
+        CetakAsesmen.r(rows, "G / P / A / Hidup", tGpaG.getText() + " / " + tGpaP.getText() + " / " + tGpaA.getText() + " / " + tGpaHidup.getText());
+        if (modePersalinan.getRowCount() == 0) {
+            CetakAsesmen.r(rows, "Riwayat Persalinan Yang Lalu", "");
+        }
         for (int i = 0; i < modePersalinan.getRowCount(); i++) {
-            StringBuilder row = new StringBuilder();
+            StringBuilder rowTeks = new StringBuilder();
             for (int c = 0; c < 8; c++) {
                 Object o = modePersalinan.getValueAt(i, c);
-                if (c > 0) { row.append(" | "); }
-                row.append(o == null ? "" : o.toString());
+                if (c > 0) { rowTeks.append(" | "); }
+                rowTeks.append(o == null ? "" : o.toString());
             }
-            CetakAsesmen.r(b, "Persalinan Lalu " + (i + 1), row.toString());
+            CetakAsesmen.r(rows, "Persalinan Lalu " + (i + 1), rowTeks.toString());
         }
-        CetakAsesmen.r(b, "Riwayat Hamil Muda", grpHamilMuda.get());
-        CetakAsesmen.r(b, "Riwayat Hamil Tua", grpHamilTua.get());
-        CetakAsesmen.r(b, "Riwayat Penyakit Lalu / Operasi", taRiwayatOperasi.getText());
-        CetakAsesmen.r(b, "Riwayat Penyakit Keluarga", grpPenyakitKeluarga.get());
-        CetakAsesmen.r(b, "Riwayat Gynekologi", grpGynekologi.get());
-        CetakAsesmen.r(b, "KB - Metode / Lama", tKbMetode.getText() + " / " + tKbLama.getText());
-        CetakAsesmen.r(b, "Komplikasi KB", grpKbKomplikasi.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Pola Makan, Minum & Skrining Gizi");
-        CetakAsesmen.r(b, "Pola Makan / Minum", tPolaMakan.getText() + " / " + tPolaMinum.getText());
-        CetakAsesmen.r(b, "Alkohol/Obat/Jamu/Kopi", tPolaKonsumsi.getText());
-        CetakAsesmen.r(b, "Asupan berkurang / Pertambahan BB", s(cmbGiziAsupan) + " / " + s(cmbGiziBb));
-        CetakAsesmen.r(b, "Hb<10/HCT<30 / Gangguan metabolisme", s(cmbGiziHb) + " / " + s(cmbGiziMetabolisme));
-        CetakAsesmen.r(b, "Skor Total Gizi", tGiziTotal.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Pola Eliminasi & Istirahat");
-        CetakAsesmen.r(b, "BAK (jumlah/warna/terakhir)", tBakJumlah.getText() + " / " + tBakWarna.getText() + " / " + tBakTerakhir.getText());
-        CetakAsesmen.r(b, "BAB (jumlah/karakter/terakhir)", tBabJumlah.getText() + " / " + tBabKarakteristik.getText() + " / " + tBabTerakhir.getText());
-        CetakAsesmen.r(b, "Tidur (jam/terakhir)", tTidurJam.getText() + " / " + tTidurTerakhir.getText());
-        CetakAsesmen.r(b, "Nilai & Keyakinan", tNilaiKeyakinan.getText());
-        CetakAsesmen.r(b, "Penerimaan thd Kehamilan", tPenerimaanKehamilan.getText());
-        CetakAsesmen.r(b, "Sosial Support Dari", grpSosialSupport.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "B. Data Obyektif - Pemeriksaan Fisik");
-        CetakAsesmen.r(b, "Mata", grpFisikMata.get());
-        CetakAsesmen.r(b, "Dada & Axylla", grpFisikDada.get());
-        CetakAsesmen.r(b, "Ekstrimitas", grpFisikEkstrimitas.get());
-        CetakAsesmen.r(b, "Sistem Kardio", grpFisikKardio.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Faktor Resiko Jatuh (Morse)");
-        CetakAsesmen.r(b, "Riwayat Jatuh / Diagnosis Sekunder", s(cmbMorseJatuh) + " / " + s(cmbMorseDiagnosis));
-        CetakAsesmen.r(b, "Alat Bantu / Infus", s(cmbMorseAlat) + " / " + s(cmbMorseInfus));
-        CetakAsesmen.r(b, "Gaya Berjalan / Status Mental", s(cmbMorseJalan) + " / " + s(cmbMorseMental));
-        CetakAsesmen.r(b, "Total Skor / Tingkat Resiko", tMorseTotal.getText() + " / " + tMorseResiko.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Pemeriksaan Khusus & Nifas");
-        CetakAsesmen.r(b, "Obstetri - Inspeksi Abdomen", grpObsInspeksi.get());
-        CetakAsesmen.r(b, "TFU / Letak Punggung / Presentasi", tObsTfu.getText() + " / " + tObsLetakPunggung.getText() + " / " + tObsPresentasi.getText());
-        CetakAsesmen.r(b, "Palpasi", grpObsPalpasi.get());
-        CetakAsesmen.r(b, "Taksiran BB Janin / DJJ", tObsTaksiranBb.getText() + " / " + tObsDjj.getText() + " (" + s(cmbObsDjjIrama) + ")");
-        CetakAsesmen.r(b, "Bagian Terendah", tObsBagianTerendah.getText());
-        CetakAsesmen.r(b, "His / Kontraksi", tObsHis.getText() + " (" + s(cmbObsHisIrama) + ")");
-        CetakAsesmen.r(b, "Gynekologi - Inspeksi Ano Genital", grpGynInspeksi.get());
-        CetakAsesmen.r(b, "Inspekulo Vagina / Portio", tGynVagina.getText() + " / " + tGynPortio.getText());
-        CetakAsesmen.r(b, "Vagina Toucher", tGynVt.getText());
-        CetakAsesmen.r(b, "Kesan Panggul / Imbang Feto Pelvic", tGynKesanPanggul.getText() + " / " + tGynImbang.getText());
-        CetakAsesmen.r(b, "Nifas - TFU / Kontraksi", tNifasTfu.getText() + " / " + tNifasKontraksi.getText());
-        CetakAsesmen.r(b, "Lochea / Luka Jalan Lahir", tNifasLochea.getText() + " / " + tNifasLuka.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Discharge Planning & Perencanaan Pulang");
-        CetakAsesmen.r(b, "Kriteria Discharge Planning", grpKriteria.get());
-        CetakAsesmen.r(b, "Perencanaan Pulang", grpPerencanaanPulang.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Pemeriksaan Penunjang");
-        CetakAsesmen.r(b, "Darah HB / Ht", tPenunjangHb.getText() + " / " + tPenunjangHt.getText());
-        CetakAsesmen.r(b, "Urine Protein", tPenunjangUrine.getText());
-        CetakAsesmen.r(b, "CTG / USG", tPenunjangCtg.getText() + " / " + tPenunjangUsg.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Diagnosa & Rencana Kebidanan");
-        CetakAsesmen.r(b, "Diagnosa Kebidanan & Masalah", taDiagnosa.getText());
-        CetakAsesmen.r(b, "Rencana Kebidanan", taRencana.getText());
-        CetakAsesmen.cetak("ASESMEN KEBIDANAN", "RM 5a", b.toString(),
-                dtpTtd.getSelectedItem() + "", "Bidan Pengkaji", KdPetugas.getText(), NmPetugas.getText());
+        CetakAsesmen.r(rows, "Riwayat Hamil Muda", grpHamilMuda);
+        CetakAsesmen.r(rows, "Riwayat Hamil Tua", grpHamilTua);
+        CetakAsesmen.r(rows, "Riwayat Penyakit Lalu / Operasi", taRiwayatOperasi.getText());
+        CetakAsesmen.r(rows, "Riwayat Penyakit Keluarga", grpPenyakitKeluarga);
+        CetakAsesmen.r(rows, "Riwayat Gynekologi", grpGynekologi);
+        CetakAsesmen.r2(rows, "KB - Metode", tKbMetode.getText(), "KB - Lama", tKbLama.getText());
+        CetakAsesmen.r(rows, "Komplikasi KB", grpKbKomplikasi);
+
+        CetakAsesmen.h(rows, "Pola Makan, Minum & Skrining Gizi");
+        CetakAsesmen.r2(rows, "Pola Makan", tPolaMakan.getText(), "Pola Minum", tPolaMinum.getText());
+        CetakAsesmen.r(rows, "Alkohol/Obat/Jamu/Kopi", tPolaKonsumsi.getText());
+        CetakAsesmen.r2(rows, "Asupan berkurang", s(cmbGiziAsupan), "Pertambahan BB", s(cmbGiziBb));
+        CetakAsesmen.r2(rows, "Hb<10/HCT<30", s(cmbGiziHb), "Gangguan metabolisme", s(cmbGiziMetabolisme));
+        CetakAsesmen.r(rows, "Skor Total Gizi", tGiziTotal.getText());
+
+        CetakAsesmen.h(rows, "Pola Eliminasi & Istirahat");
+        CetakAsesmen.r(rows, "BAK (jumlah/warna/terakhir)", tBakJumlah.getText() + " / " + tBakWarna.getText() + " / " + tBakTerakhir.getText());
+        CetakAsesmen.r(rows, "BAB (jumlah/karakter/terakhir)", tBabJumlah.getText() + " / " + tBabKarakteristik.getText() + " / " + tBabTerakhir.getText());
+        CetakAsesmen.r2(rows, "Tidur (jam)", tTidurJam.getText(), "Terakhir", tTidurTerakhir.getText());
+        CetakAsesmen.r(rows, "Nilai & Keyakinan", tNilaiKeyakinan.getText());
+        CetakAsesmen.r(rows, "Penerimaan thd Kehamilan", tPenerimaanKehamilan.getText());
+        CetakAsesmen.r(rows, "Sosial Support Dari", grpSosialSupport);
+
+        CetakAsesmen.h(rows, "B. Data Obyektif - Pemeriksaan Fisik");
+        CetakAsesmen.r(rows, "Mata", grpFisikMata);
+        CetakAsesmen.r(rows, "Dada & Axylla", grpFisikDada);
+        CetakAsesmen.r(rows, "Ekstrimitas", grpFisikEkstrimitas);
+        CetakAsesmen.r(rows, "Sistem Kardio", grpFisikKardio);
+
+        CetakAsesmen.h(rows, "Faktor Resiko Jatuh (Morse)");
+        CetakAsesmen.r2(rows, "Riwayat Jatuh", s(cmbMorseJatuh), "Diagnosis Sekunder", s(cmbMorseDiagnosis));
+        CetakAsesmen.r2(rows, "Alat Bantu", s(cmbMorseAlat), "Terpasang Infus", s(cmbMorseInfus));
+        CetakAsesmen.r2(rows, "Gaya Berjalan", s(cmbMorseJalan), "Status Mental", s(cmbMorseMental));
+        CetakAsesmen.r2(rows, "Total Skor", tMorseTotal.getText(), "Tingkat Resiko", tMorseResiko.getText());
+
+        CetakAsesmen.h(rows, "Pemeriksaan Khusus & Nifas");
+        CetakAsesmen.r(rows, "Obstetri - Inspeksi Abdomen", grpObsInspeksi);
+        CetakAsesmen.r(rows, "TFU / Letak Punggung / Presentasi", tObsTfu.getText() + " / " + tObsLetakPunggung.getText() + " / " + tObsPresentasi.getText());
+        CetakAsesmen.r(rows, "Palpasi", grpObsPalpasi);
+        CetakAsesmen.r(rows, "Taksiran BB Janin / DJJ", tObsTaksiranBb.getText() + " / " + tObsDjj.getText() + " (" + s(cmbObsDjjIrama) + ")");
+        CetakAsesmen.r(rows, "Bagian Terendah", tObsBagianTerendah.getText());
+        CetakAsesmen.r(rows, "His / Kontraksi", tObsHis.getText() + " (" + s(cmbObsHisIrama) + ")");
+        CetakAsesmen.r(rows, "Gynekologi - Inspeksi Ano Genital", grpGynInspeksi);
+        CetakAsesmen.r2(rows, "Inspekulo Vagina", tGynVagina.getText(), "Portio", tGynPortio.getText());
+        CetakAsesmen.r(rows, "Vagina Toucher", tGynVt.getText());
+        CetakAsesmen.r2(rows, "Kesan Panggul", tGynKesanPanggul.getText(), "Imbang Feto Pelvic", tGynImbang.getText());
+        CetakAsesmen.r2(rows, "Nifas - TFU", tNifasTfu.getText(), "Kontraksi", tNifasKontraksi.getText());
+        CetakAsesmen.r2(rows, "Lochea", tNifasLochea.getText(), "Luka Jalan Lahir", tNifasLuka.getText());
+
+        CetakAsesmen.h(rows, "Discharge Planning & Perencanaan Pulang");
+        CetakAsesmen.r(rows, "Kriteria Discharge Planning", grpKriteria);
+        CetakAsesmen.r(rows, "Perencanaan Pulang", grpPerencanaanPulang);
+
+        CetakAsesmen.h(rows, "Pemeriksaan Penunjang");
+        CetakAsesmen.r2(rows, "Darah HB", tPenunjangHb.getText(), "Ht", tPenunjangHt.getText());
+        CetakAsesmen.r(rows, "Urine Protein", tPenunjangUrine.getText());
+        CetakAsesmen.r2(rows, "CTG", tPenunjangCtg.getText(), "USG", tPenunjangUsg.getText());
+
+        CetakAsesmen.h(rows, "Diagnosa & Rencana Kebidanan");
+        CetakAsesmen.r(rows, "Diagnosa Kebidanan & Masalah", taDiagnosa.getText());
+        CetakAsesmen.r(rows, "Rencana Kebidanan", taRencana.getText());
+
+        CetakAsesmen.Identitas id = new CetakAsesmen.Identitas();
+        id.nama = TPasien.getText();
+        id.noRawat = TNoRw.getText();
+        id.kelas = tKelas.getText();
+        id.nik = Sequel.cariIsi("select no_ktp from pasien where no_rkm_medis=?", TNoRM.getText());
+        id.tglMasuk = Sequel.cariIsi("select concat(date_format(tgl_registrasi,'%d-%m-%Y'),' ',jam_reg) "
+                + "from reg_periksa where no_rawat=?", TNoRw.getText());
+        id.pembayaran = TCaraBayar.getText();
+        id.jk = TJK.getText();
+        id.noRM = TNoRM.getText();
+        id.unit = TUnit.getText();
+        id.tglLahir = TTglLahir.getText();
+        id.alamat = TAlamat.getText();
+
+        CetakAsesmen.cetak("ASESMEN KEBIDANAN", "RM 5a", rows, id,
+                dtpTtd.getSelectedItem() + "", "Bidan Pengkaji", KdPetugas.getText(), NmPetugas.getText(),
+                "Dokter Penanggung Jawab", NmDokter.getText());
+    }
+
+    /** Cetak langsung dari no_rawat tanpa membuka dialog (dipakai dari klik-kanan di layar Riwayat). */
+    public static void cetak(String noRawat) {
+        if (noRawat == null || noRawat.trim().isEmpty()) {
+            return;
+        }
+        RMAsesmenKebidanan f = new RMAsesmenKebidanan(null, false);
+        f.isCek();
+        f.setNoRm(noRawat.trim(), new Date(), "", null);
+        f.cetak();
+        f.dispose();
     }
 
     private void hapus() {
@@ -1013,7 +1247,7 @@ public final class RMAsesmenKebidanan extends JDialog {
     }
 
     /** Grup checkbox: get/set sebagai string gabungan dipisah koma. */
-    private static final class Grup {
+    private static final class Grup implements CetakAsesmen.OpsiCheckbox {
         final JPanel panel = new JPanel(new GridLayout(0, 3, 4, 0));
         final List<JCheckBox> boxes = new ArrayList<>();
 
@@ -1028,7 +1262,8 @@ public final class RMAsesmenKebidanan extends JDialog {
             }
         }
 
-        String get() {
+        @Override
+        public String get() {
             StringBuilder sb = new StringBuilder();
             for (JCheckBox c : boxes) {
                 if (c.isSelected()) {
@@ -1037,6 +1272,13 @@ public final class RMAsesmenKebidanan extends JDialog {
                 }
             }
             return sb.toString();
+        }
+
+        @Override
+        public List<String> semuaOpsi() {
+            List<String> hasil = new ArrayList<>();
+            for (JCheckBox c : boxes) { hasil.add(c.getText()); }
+            return hasil;
         }
 
         void set(String v) {

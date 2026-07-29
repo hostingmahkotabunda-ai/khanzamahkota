@@ -4256,6 +4256,7 @@ public class frmUtama extends javax.swing.JFrame {
                    "detail_pemberian_obat.kode_brng,satu_sehat_mapping_obat.obat_display,satu_sehat_mapping_obat.form_code,satu_sehat_mapping_obat.form_system,satu_sehat_mapping_obat.form_display,"+
                    "satu_sehat_mapping_obat.route_code,satu_sehat_mapping_obat.route_system,satu_sehat_mapping_obat.route_display,satu_sehat_mapping_obat.denominator_code,"+
                    "satu_sehat_mapping_obat.denominator_system,resep_obat.tgl_peresepan,resep_obat.jam_peresepan,detail_pemberian_obat.jml,satu_sehat_medication.id_medication,"+
+                   "satu_sehat_medicationrequest.id_medicationrequest,"+
                    "aturan_pakai.aturan,resep_obat.no_resep,ifnull(satu_sehat_medicationdispense.id_medicationdispanse,'') as id_medicationdispanse,detail_pemberian_obat.no_batch,"+
                    "detail_pemberian_obat.no_faktur,detail_pemberian_obat.tgl_perawatan,detail_pemberian_obat.jam,satu_sehat_mapping_lokasi_depo_farmasi.id_lokasi_satusehat,"+
                    "bangsal.nm_bangsal from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
@@ -4271,6 +4272,8 @@ public class frmUtama extends javax.swing.JFrame {
                    "inner join bangsal on bangsal.kd_bangsal=detail_pemberian_obat.kd_bangsal "+
                    "inner join satu_sehat_mapping_lokasi_depo_farmasi on satu_sehat_mapping_lokasi_depo_farmasi.kd_bangsal=bangsal.kd_bangsal "+
                    "inner join satu_sehat_medication on satu_sehat_medication.kode_brng=satu_sehat_mapping_obat.kode_brng "+
+                   "inner join satu_sehat_medicationrequest on satu_sehat_medicationrequest.no_resep=resep_obat.no_resep and "+
+                   "satu_sehat_medicationrequest.kode_brng=detail_pemberian_obat.kode_brng "+
                    "inner join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat "+
                    "left join satu_sehat_medicationdispense on satu_sehat_medicationdispense.no_rawat=detail_pemberian_obat.no_rawat and "+
                    "satu_sehat_medicationdispense.tgl_perawatan=detail_pemberian_obat.tgl_perawatan and "+
@@ -4284,7 +4287,7 @@ public class frmUtama extends javax.swing.JFrame {
                 ps.setString(2,Tanggal2.getText());
                 rs=ps.executeQuery();
                 while(rs.next()){
-                    if((!rs.getString("no_ktp").equals(""))&&(!rs.getString("ktppraktisi").equals(""))&&rs.getString("id_medicationdispanse").equals("")){
+                    if((!rs.getString("no_ktp").equals(""))&&(!rs.getString("ktppraktisi").equals(""))&&(!rs.getString("id_medicationrequest").equals(""))&&rs.getString("id_medicationdispanse").equals("")){
                         try {
                             idpasien=cekViaSatuSehat.tampilIDPasien(rs.getString("no_ktp"));
                             iddokter=cekViaSatuSehat.tampilIDParktisi(rs.getString("ktppraktisi"));
@@ -4327,14 +4330,14 @@ public class frmUtama extends javax.swing.JFrame {
                                             "\"category\": {" +
                                                 "\"coding\": [" +
                                                     "{" +
-                                                        "\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\"," +
+                                                        "\"system\": \"http://terminology.hl7.org/fhir/CodeSystem/medicationdispense-category\"," +
                                                         "\"code\": \"outpatient\"," +
                                                         "\"display\": \"Outpatient\"" +
                                                     "}" +
                                                 "]" +
                                             "}," +
                                             "\"medicationReference\": {" +
-                                                "\"reference\": \"Medication/"+rs.getString("id_medicationrequest")+"\"," +
+                                                "\"reference\": \"Medication/"+rs.getString("id_medication")+"\"," +
                                                 "\"display\": \""+rs.getString("obat_display")+"\"" +
                                             "}," +
                                             "\"subject\": {" +
@@ -4356,6 +4359,11 @@ public class frmUtama extends javax.swing.JFrame {
                                                 "\"reference\": \"Location/"+rs.getString("id_lokasi_satusehat")+"\"," +
                                                 "\"display\": \""+rs.getString("nm_bangsal")+"\"" +
                                             "},"+
+                                            "\"authorizingPrescription\": [" +
+                                                "{" +
+                                                    "\"reference\": \"MedicationRequest/"+rs.getString("id_medicationrequest")+"\"" +
+                                                "}" +
+                                            "]," +
                                             "\"quantity\": {" +
                                                 "\"system\": \""+rs.getString("denominator_system")+"\"," +
                                                 "\"code\": \""+rs.getString("denominator_code")+"\"," +
@@ -4433,6 +4441,7 @@ public class frmUtama extends javax.swing.JFrame {
                    "detail_pemberian_obat.kode_brng,satu_sehat_mapping_obat.obat_display,satu_sehat_mapping_obat.form_code,satu_sehat_mapping_obat.form_system,satu_sehat_mapping_obat.form_display,"+
                    "satu_sehat_mapping_obat.route_code,satu_sehat_mapping_obat.route_system,satu_sehat_mapping_obat.route_display,satu_sehat_mapping_obat.denominator_code,"+
                    "satu_sehat_mapping_obat.denominator_system,resep_obat.tgl_peresepan,resep_obat.jam_peresepan,detail_pemberian_obat.jml,satu_sehat_medication.id_medication,"+
+                   "satu_sehat_medicationrequest.id_medicationrequest,"+
                    "aturan_pakai.aturan,resep_obat.no_resep,ifnull(satu_sehat_medicationdispense.id_medicationdispanse,'') as id_medicationdispanse,detail_pemberian_obat.no_batch,"+
                    "detail_pemberian_obat.no_faktur,detail_pemberian_obat.tgl_perawatan,detail_pemberian_obat.jam,satu_sehat_mapping_lokasi_depo_farmasi.id_lokasi_satusehat,"+
                    "bangsal.nm_bangsal from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
@@ -4448,6 +4457,8 @@ public class frmUtama extends javax.swing.JFrame {
                    "inner join bangsal on bangsal.kd_bangsal=detail_pemberian_obat.kd_bangsal "+
                    "inner join satu_sehat_mapping_lokasi_depo_farmasi on satu_sehat_mapping_lokasi_depo_farmasi.kd_bangsal=bangsal.kd_bangsal "+
                    "inner join satu_sehat_medication on satu_sehat_medication.kode_brng=satu_sehat_mapping_obat.kode_brng "+
+                   "inner join satu_sehat_medicationrequest on satu_sehat_medicationrequest.no_resep=resep_obat.no_resep and "+
+                   "satu_sehat_medicationrequest.kode_brng=detail_pemberian_obat.kode_brng "+
                    "inner join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat "+
                    "left join satu_sehat_medicationdispense on satu_sehat_medicationdispense.no_rawat=detail_pemberian_obat.no_rawat and "+
                    "satu_sehat_medicationdispense.tgl_perawatan=detail_pemberian_obat.tgl_perawatan and "+
@@ -4461,7 +4472,7 @@ public class frmUtama extends javax.swing.JFrame {
                 ps.setString(2,Tanggal2.getText());
                 rs=ps.executeQuery();
                 while(rs.next()){
-                    if((!rs.getString("no_ktp").equals(""))&&(!rs.getString("ktppraktisi").equals(""))&&rs.getString("id_medicationdispanse").equals("")){
+                    if((!rs.getString("no_ktp").equals(""))&&(!rs.getString("ktppraktisi").equals(""))&&(!rs.getString("id_medicationrequest").equals(""))&&rs.getString("id_medicationdispanse").equals("")){
                         try {
                             idpasien=cekViaSatuSehat.tampilIDPasien(rs.getString("no_ktp"));
                             iddokter=cekViaSatuSehat.tampilIDParktisi(rs.getString("ktppraktisi"));
@@ -4504,14 +4515,14 @@ public class frmUtama extends javax.swing.JFrame {
                                             "\"category\": {" +
                                                 "\"coding\": [" +
                                                     "{" +
-                                                        "\"system\": \"http://terminology.hl7.org/CodeSystem/medicationrequest-category\"," +
+                                                        "\"system\": \"http://terminology.hl7.org/fhir/CodeSystem/medicationdispense-category\"," +
                                                         "\"code\": \"inpatient\"," +
                                                         "\"display\": \"Inpatient\"" +
                                                     "}" +
                                                 "]" +
                                             "}," +
                                             "\"medicationReference\": {" +
-                                                "\"reference\": \"Medication/"+rs.getString("id_medicationrequest")+"\"," +
+                                                "\"reference\": \"Medication/"+rs.getString("id_medication")+"\"," +
                                                 "\"display\": \""+rs.getString("obat_display")+"\"" +
                                             "}," +
                                             "\"subject\": {" +
@@ -4533,6 +4544,11 @@ public class frmUtama extends javax.swing.JFrame {
                                                 "\"reference\": \"Location/"+rs.getString("id_lokasi_satusehat")+"\"," +
                                                 "\"display\": \""+rs.getString("nm_bangsal")+"\"" +
                                             "},"+
+                                            "\"authorizingPrescription\": [" +
+                                                "{" +
+                                                    "\"reference\": \"MedicationRequest/"+rs.getString("id_medicationrequest")+"\"" +
+                                                "}" +
+                                            "]," +
                                             "\"quantity\": {" +
                                                 "\"system\": \""+rs.getString("denominator_system")+"\"," +
                                                 "\"code\": \""+rs.getString("denominator_code")+"\"," +

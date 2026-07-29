@@ -5,6 +5,7 @@ import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -23,8 +24,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -34,6 +38,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import kepegawaian.DlgCariDokter;
 
@@ -194,108 +200,223 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
             }
         });
         setSize(1200, 800);
+        setMinimumSize(new Dimension(1050, 700));
         setLocationRelativeTo(parent);
     }
 
     // ====================== UI ======================
     private void initComponents() {
-        getContentPane().setLayout(new BorderLayout(6, 6));
+        final Color utama = new Color(0, 133, 143);
+        final Color utamaMuda = new Color(230, 247, 248);
+        final Color latar = new Color(246, 249, 251);
+        final Color garis = new Color(214, 224, 230);
+        final Color teks = new Color(31, 47, 62);
+        getContentPane().setBackground(latar);
+        getContentPane().setLayout(new BorderLayout());
 
-        JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(Color.WHITE);
+        JPanel header = new JPanel(new BorderLayout(10, 8));
+        header.setBackground(latar);
+        header.setBorder(new EmptyBorder(12, 16, 9, 16));
+        JPanel blokJudul = new JPanel();
+        blokJudul.setOpaque(false);
+        blokJudul.setLayout(new BoxLayout(blokJudul, BoxLayout.Y_AXIS));
+        JLabel judulUtama = new JLabel("Asesmen Keperawatan Bayi");
+        judulUtama.setFont(new Font("Tahoma", Font.BOLD, 20));
+        judulUtama.setForeground(teks);
+        JLabel subJudul = new JLabel("Penilaian awal pasien bayi rawat inap");
+        subJudul.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        subJudul.setForeground(new Color(89, 104, 115));
+        blokJudul.add(judulUtama);
+        blokJudul.add(Box.createVerticalStrut(2));
+        blokJudul.add(subJudul);
+        header.add(blokJudul, BorderLayout.NORTH);
+
+        JPanel identitas = new JPanel(new GridLayout(1, 6, 0, 0));
+        identitas.setBackground(Color.WHITE);
+        identitas.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(garis), new EmptyBorder(8, 8, 8, 8)));
+        identitas.add(ringkasan("No. Rawat *", TNoRw));
+        identitas.add(ringkasan("No. RM", TNoRM));
+        identitas.add(ringkasan("Nama Pasien", TPasien));
+        identitas.add(ringkasan("Jenis Kelamin", TJK));
+        identitas.add(ringkasan("Tanggal Lahir", TTglLahir));
+        identitas.add(ringkasan("Unit", TUnit));
+        header.add(identitas, BorderLayout.CENTER);
+        getContentPane().add(header, BorderLayout.NORTH);
+
+        final CardLayout tataHalaman = new CardLayout();
+        final JPanel kartuHalaman = new JPanel(tataHalaman);
+        kartuHalaman.setBackground(latar);
+
+        JPanel halamanInformasi = formHalaman("1. Informasi Asesmen", utama, latar);
         int row = 0;
-        row = judul(form, row, "Identitas Pasien");
-        row = baris2(form, row, "No.Rawat", TNoRw, "No.RM", TNoRM);
-        row = baris2(form, row, "Nama Pasien", TPasien, "Jenis Kelamin", TJK);
-        row = baris2(form, row, "Tanggal Lahir", TTglLahir, "Unit", TUnit);
-        row = baris2(form, row, "Cara Bayar", TCaraBayar, "Alamat", TAlamat);
+        row = judul(halamanInformasi, row, "Informasi Ruang & Waktu");
+        row = baris2(halamanInformasi, row, "Ruang", tRuang, "Lantai", tLantai);
+        row = baris2(halamanInformasi, row, "Kelas", tKelas, "Gelang Identitas", cmbGelang);
+        row = baris1(halamanInformasi, row, "Tanggal / Jam *", dtpTanggal);
+        row = judul(halamanInformasi, row, "Informasi Registrasi");
+        row = baris2(halamanInformasi, row, "Cara Bayar", TCaraBayar, "Alamat", TAlamat);
+        kartuHalaman.add(scrollHalaman(halamanInformasi, latar), "INFORMASI");
 
-        row = judul(form, row, "Asesmen Keperawatan Bayi");
-        row = baris2(form, row, "Ruang", tRuang, "Lantai", tLantai);
-        row = baris2(form, row, "Kelas", tKelas, "Gelang Identitas", cmbGelang);
-        row = baris1(form, row, "Tanggal / Jam *", dtpTanggal);
+        JPanel halamanKeluarga = formHalaman("2. Keluarga & Riwayat Ibu", utama, latar);
+        row = 0;
+        row = judul(halamanKeluarga, row, "A. Identitas Penanggung Jawab");
+        row = baris2(halamanKeluarga, row, "Nama", pjNama, "Alamat", pjAlamat);
+        row = baris2(halamanKeluarga, row, "Umur", pjUmur, "Pendidikan", pjPendidikan);
+        row = baris1(halamanKeluarga, row, "Hubungan", pjHubungan);
+        row = judul(halamanKeluarga, row, "B. Riwayat Ibu");
+        row = baris2(halamanKeluarga, row, "Nama", ibuNama, "Umur", ibuUmur);
+        row = baris2(halamanKeluarga, row, "Pendidikan", ibuPendidikan, "Suku", ibuSuku);
+        row = baris2(halamanKeluarga, row, "Agama", ibuAgama, "Penyakit", ibuPenyakit);
+        row = baris1(halamanKeluarga, row, "Perkawinan Ke", ibuPerkawinan);
+        kartuHalaman.add(scrollHalaman(halamanKeluarga, latar), "KELUARGA");
 
-        row = judul(form, row, "A. Identitas Penanggung Jawab");
-        row = baris2(form, row, "Nama", pjNama, "Alamat", pjAlamat);
-        row = baris2(form, row, "Umur", pjUmur, "Pendidikan", pjPendidikan);
-        row = baris1(form, row, "Hubungan", pjHubungan);
+        JPanel halamanKlinis = formHalaman("3. Riwayat Klinis", utama, latar);
+        row = 0;
+        row = judul(halamanKlinis, row, "C. Riwayat Penyakit (Untuk Bayi Sakit)");
+        row = area(halamanKlinis, row, "Keluhan Utama", taKeluhan);
+        row = area(halamanKlinis, row, "Riwayat Kesehatan Sekarang", taRiwSekarang);
+        row = area(halamanKlinis, row, "Riwayat Kesehatan Dahulu", taRiwDahulu);
+        kartuHalaman.add(scrollHalaman(halamanKlinis, latar), "KLINIS");
 
-        row = judul(form, row, "B. Riwayat Ibu");
-        row = baris2(form, row, "Nama", ibuNama, "Umur", ibuUmur);
-        row = baris2(form, row, "Pendidikan", ibuPendidikan, "Suku", ibuSuku);
-        row = baris2(form, row, "Agama", ibuAgama, "Penyakit", ibuPenyakit);
-        row = baris1(form, row, "Perkawinan Ke", ibuPerkawinan);
+        JPanel halamanKehamilan = formHalaman("4. Kehamilan & Persalinan", utama, latar);
+        row = 0;
+        row = judul(halamanKehamilan, row, "D. Riwayat Kehamilan");
+        row = grup(halamanKehamilan, row, "Komplikasi Kehamilan", grpKomplikasi.panel);
+        row = area(halamanKehamilan, row, "Komplikasi Lain-lain", taKomplikasiLain);
+        row = judul(halamanKehamilan, row, "Riwayat Persalinan Yang Lalu");
+        row = tabelPersalinan(halamanKehamilan, row);
+        kartuHalaman.add(scrollHalaman(halamanKehamilan, latar), "KEHAMILAN");
 
-        row = judul(form, row, "C. Riwayat Penyakit (Untuk Bayi Sakit)");
-        row = area(form, row, "Keluhan Utama", taKeluhan);
-        row = area(form, row, "Riwayat Kesehatan Sekarang", taRiwSekarang);
-        row = area(form, row, "Riwayat Kesehatan Dahulu", taRiwDahulu);
+        JPanel halamanPsikososial = formHalaman("5. Psikososial Orang Tua", utama, latar);
+        row = 0;
+        row = judul(halamanPsikososial, row, "F. Riwayat Psikososial Orang Tua");
+        row = area(halamanPsikososial, row, "Perkembangan Interpersonal", taPsiko);
+        row = grup(halamanPsikososial, row, "Pengasuh", grpPengasuh.panel);
+        row = baris2(halamanPsikososial, row, "Dukungan Sibling", cmbSibling, "Dukungan Keluarga Lain", cmbDukKeluarga);
+        row = baris2(halamanPsikososial, row, "Sebutkan (Keluarga)", tDukKeluargaSebut, "Budaya Dianut", cmbBudaya);
+        row = baris1(halamanPsikososial, row, "Sebutkan (Budaya)", tBudayaSebut);
+        kartuHalaman.add(scrollHalaman(halamanPsikososial, latar), "PSIKOSOSIAL");
 
-        row = judul(form, row, "D. Riwayat Kehamilan");
-        row = grup(form, row, "Komplikasi Kehamilan", grpKomplikasi.panel);
-        row = area(form, row, "Lain-lain", taKomplikasiLain);
+        JPanel halamanFisik = formHalaman("6. Pemeriksaan Fisik Bayi", utama, latar);
+        row = 0;
+        row = judul(halamanFisik, row, "Tanda Vital & Antropometri");
+        row = baris2(halamanFisik, row, "APGAR Score *", tApgar, "Score Down", tDown);
+        row = baris2(halamanFisik, row, "Suhu *", tSuhu, "RR *", tRR);
+        row = baris2(halamanFisik, row, "Nadi *", tNadi, "Tingkat Kesadaran", tKesadaran);
+        row = baris2(halamanFisik, row, "BB (gr) *", tBB, "PB (cm) *", tPB);
+        row = judul(halamanFisik, row, "Observasi Umum");
+        row = grup(halamanFisik, row, "Tangisan", grpTangisan.panel);
+        row = baris2(halamanFisik, row, "CRT", cmbCrt, "Lingkar Kepala", tLingkarKepala);
+        row = grup(halamanFisik, row, "Kulit", grpKulit.panel);
+        row = judul(halamanFisik, row, "Kepala & Sistem Sensorik");
+        row = grup(halamanFisik, row, "Ubun-ubun", grpUbun.panel);
+        row = grup(halamanFisik, row, "Mata & Penglihatan", grpMata.panel);
+        row = grup(halamanFisik, row, "Hidung & Penciuman", grpHidung.panel);
+        row = grup(halamanFisik, row, "Telinga & Pendengaran", grpTelinga.panel);
+        row = grup(halamanFisik, row, "Mulut", grpMulut.panel);
+        row = judul(halamanFisik, row, "Pernafasan, Pencernaan & Eliminasi");
+        row = baris1(halamanFisik, row, "Frekuensi Nafas (x/m)", tFreqNafas);
+        row = grup(halamanFisik, row, "Dada, Pernafasan & Sirkulasi", grpDada.panel);
+        row = grup(halamanFisik, row, "Abdomen", grpAbdomen.panel);
+        row = baris2(halamanFisik, row, "Jenis Kelamin", cmbJK, "Testis", cmbTestis);
+        row = baris2(halamanFisik, row, "Labia Mayora", cmbLabia, "Anus", cmbAnus);
+        row = baris2(halamanFisik, row, "BAB (Frekuensi)", tBabFreq, "BAK (Warna/Frekuensi)", tBak);
+        row = grup(halamanFisik, row, "BAB", grpBab.panel);
+        row = judul(halamanFisik, row, "Motorik, Refleks & Kebutuhan Dasar");
+        row = grup(halamanFisik, row, "Ekstremitas Atas", grpEkstrAtas.panel);
+        row = grup(halamanFisik, row, "Ekstremitas Bawah", grpEkstrBawah.panel);
+        row = baris2(halamanFisik, row, "Reflek Moro", cmbReflekMoro, "Reflek Mengisap", cmbReflekMengisap);
+        row = baris2(halamanFisik, row, "Reflek Babinski", tBabinski, "Reflek Rooting", cmbReflekRooting);
+        row = grup(halamanFisik, row, "Aktifitas & Istirahat", grpAktifitas.panel);
+        row = grup(halamanFisik, row, "Personal Hygiene", grpHygiene.panel);
+        row = grup(halamanFisik, row, "Nutrisi", grpNutrisi.panel);
+        row = baris2(halamanFisik, row, "Kontak Ibu dengan Bayi", cmbKontakIbu, "Bayi Diharapkan", cmbBayiDiharapkan);
+        row = area(halamanFisik, row, "Obat / Therapi", taObat);
+        kartuHalaman.add(scrollHalaman(halamanFisik, latar), "FISIK");
 
-        row = judul(form, row, "Riwayat Persalinan Yang Lalu");
-        row = tabelPersalinan(form, row);
+        JPanel halamanPulang = formHalaman("7. Pulang & Cap Kaki", utama, latar);
+        row = 0;
+        row = judul(halamanPulang, row, "Cap Telapak Kaki Bayi");
+        row = capKaki(halamanPulang, row);
+        row = judul(halamanPulang, row, "Kriteria Discharge Planning & Perencanaan Pulang");
+        row = grup(halamanPulang, row, "Kriteria", panelHambatan());
+        row = baris2(halamanPulang, row, "Pasien Tinggal Dengan", cmbTinggal, "Sebutkan", tTinggalSebut);
+        row = baris2(halamanPulang, row, "Keluarga Perokok", cmbPerokok, "Sebutkan", tPerokokSebut);
+        row = grup(halamanPulang, row, "Kondisi Rumah", grpKondisiRumah.panel);
+        row = area(halamanPulang, row, "Masalah Keperawatan", taMasalah);
+        row = area(halamanPulang, row, "Rencana Keperawatan", taRencana);
+        kartuHalaman.add(scrollHalaman(halamanPulang, latar), "PULANG");
 
-        row = judul(form, row, "F. Riwayat Psikososial Orang Tua");
-        row = area(form, row, "Perkembangan Interpersonal", taPsiko);
-        row = grup(form, row, "Pengasuh", grpPengasuh.panel);
-        row = baris2(form, row, "Dukungan Sibling", cmbSibling, "Dukungan Keluarga Lain", cmbDukKeluarga);
-        row = baris2(form, row, "Sebutkan (Keluarga)", tDukKeluargaSebut, "Budaya Dianut", cmbBudaya);
-        row = baris1(form, row, "Sebutkan (Budaya)", tBudayaSebut);
+        JPanel halamanVerifikasi = formHalaman("8. Verifikasi", utama, latar);
+        row = 0;
+        row = judul(halamanVerifikasi, row, "Tanda Tangan & Penanggung Jawab Asesmen");
+        row = baris1(halamanVerifikasi, row, "Tanggal / Jam", dtpTtd);
+        row = baris2(halamanVerifikasi, row, "Perawat Pengkaji *",
+                gabungBtn(KdPetugas, NmPetugas, null), "Dokter PJ",
+                gabungBtn(KdDokter, NmDokter, BtnDokter));
+        kartuHalaman.add(scrollHalaman(halamanVerifikasi, latar), "VERIFIKASI");
 
-        row = judul(form, row, "G. Pemeriksaan Fisik");
-        row = baris2(form, row, "APGAR Score *", tApgar, "Score Down", tDown);
-        row = baris2(form, row, "Suhu *", tSuhu, "RR *", tRR);
-        row = baris2(form, row, "Nadi *", tNadi, "Tingkat Kesadaran", tKesadaran);
-        row = baris2(form, row, "BB (gr) *", tBB, "PB (cm) *", tPB);
-        row = grup(form, row, "Tangisan", grpTangisan.panel);
-        row = baris1(form, row, "CRT", cmbCrt);
-        row = grup(form, row, "Kulit", grpKulit.panel);
-        row = baris1(form, row, "Lingkar Kepala", tLingkarKepala);
-        row = grup(form, row, "Ubun-ubun", grpUbun.panel);
-        row = grup(form, row, "Mata & Penglihatan", grpMata.panel);
-        row = grup(form, row, "Hidung & Penciuman", grpHidung.panel);
-        row = grup(form, row, "Telinga & Pendengaran", grpTelinga.panel);
-        row = grup(form, row, "Mulut", grpMulut.panel);
-        row = baris1(form, row, "Frekuensi Nafas (x/m)", tFreqNafas);
-        row = grup(form, row, "Dada, Pernafasan & Sirkulasi", grpDada.panel);
-        row = grup(form, row, "Abdomen", grpAbdomen.panel);
-        row = baris2(form, row, "Jenis Kelamin", cmbJK, "Testis", cmbTestis);
-        row = baris2(form, row, "Labia Mayora", cmbLabia, "Anus", cmbAnus);
-        row = baris2(form, row, "BAB (Frekuensi)", tBabFreq, "BAK (Warna/Frekuensi)", tBak);
-        row = grup(form, row, "BAB", grpBab.panel);
-        row = grup(form, row, "Ekstremitas Atas", grpEkstrAtas.panel);
-        row = grup(form, row, "Ekstremitas Bawah", grpEkstrBawah.panel);
-        row = baris2(form, row, "Reflek Moro", cmbReflekMoro, "Reflek Mengisap", cmbReflekMengisap);
-        row = baris2(form, row, "Reflek Babinski", tBabinski, "Reflek Rooting", cmbReflekRooting);
-        row = grup(form, row, "Aktifitas & Istirahat", grpAktifitas.panel);
-        row = grup(form, row, "Personal Hygiene", grpHygiene.panel);
-        row = grup(form, row, "Nutrisi", grpNutrisi.panel);
-        row = baris2(form, row, "Kontak Ibu dengan Bayi", cmbKontakIbu, "Bayi Diharapkan", cmbBayiDiharapkan);
-        row = area(form, row, "Obat / Therapi", taObat);
+        JPanel navigasi = new JPanel();
+        navigasi.setBackground(Color.WHITE);
+        navigasi.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, garis));
+        navigasi.setPreferredSize(new Dimension(225, 100));
+        navigasi.setLayout(new BoxLayout(navigasi, BoxLayout.Y_AXIS));
+        JLabel judulNavigasi = new JLabel("BAGIAN ASESMEN");
+        judulNavigasi.setFont(new Font("Tahoma", Font.BOLD, 11));
+        judulNavigasi.setForeground(new Color(80, 95, 105));
+        judulNavigasi.setBorder(new EmptyBorder(15, 16, 9, 8));
+        judulNavigasi.setAlignmentX(Component.LEFT_ALIGNMENT);
+        navigasi.add(judulNavigasi);
 
-        row = judul(form, row, "Cap Telapak Kaki Bayi");
-        row = capKaki(form, row);
+        String[] namaMenu = {
+            "1  Informasi Asesmen", "2  Keluarga & Riwayat Ibu",
+            "3  Riwayat Klinis", "4  Kehamilan & Persalinan",
+            "5  Psikososial Orang Tua", "6  Pemeriksaan Fisik",
+            "7  Pulang & Cap Kaki", "8  Verifikasi"
+        };
+        String[] kunciMenu = {
+            "INFORMASI", "KELUARGA", "KLINIS", "KEHAMILAN",
+            "PSIKOSOSIAL", "FISIK", "PULANG", "VERIFIKASI"
+        };
+        JButton[] tombolMenu = new JButton[namaMenu.length];
+        for (int i = 0; i < namaMenu.length; i++) {
+            final int indeks = i;
+            JButton tombol = new JButton(namaMenu[i]);
+            tombolMenu[i] = tombol;
+            tombol.setHorizontalAlignment(SwingConstants.LEFT);
+            tombol.setFont(new Font("Tahoma", i == 0 ? Font.BOLD : Font.PLAIN, 11));
+            tombol.setForeground(i == 0 ? utama : new Color(61, 76, 86));
+            tombol.setBackground(i == 0 ? utamaMuda : Color.WHITE);
+            tombol.setBorder(new EmptyBorder(9, 16, 9, 7));
+            tombol.setFocusPainted(false);
+            tombol.setMaximumSize(new Dimension(225, 38));
+            tombol.setAlignmentX(Component.LEFT_ALIGNMENT);
+            tombol.addActionListener(e -> {
+                tataHalaman.show(kartuHalaman, kunciMenu[indeks]);
+                for (int m = 0; m < tombolMenu.length; m++) {
+                    boolean aktif = m == indeks;
+                    tombolMenu[m].setBackground(aktif ? utamaMuda : Color.WHITE);
+                    tombolMenu[m].setForeground(aktif ? utama : new Color(61, 76, 86));
+                    tombolMenu[m].setFont(new Font("Tahoma", aktif ? Font.BOLD : Font.PLAIN, 11));
+                }
+            });
+            navigasi.add(tombol);
+            navigasi.add(Box.createVerticalStrut(2));
+        }
+        navigasi.add(Box.createVerticalGlue());
+        JLabel wajib = new JLabel("<html><span style='color:#D32F2F'>*</span> Wajib diisi</html>");
+        wajib.setFont(new Font("Tahoma", Font.PLAIN, 10));
+        wajib.setForeground(new Color(85, 99, 108));
+        wajib.setBorder(new EmptyBorder(8, 16, 14, 8));
+        wajib.setAlignmentX(Component.LEFT_ALIGNMENT);
+        navigasi.add(wajib);
 
-        row = judul(form, row, "Kriteria Discharge Planning & Perencanaan Pulang");
-        row = grup(form, row, "Kriteria", panelHambatan());
-        row = baris2(form, row, "Pasien Tinggal Dengan", cmbTinggal, "Sebutkan", tTinggalSebut);
-        row = baris2(form, row, "Keluarga Perokok", cmbPerokok, "Sebutkan", tPerokokSebut);
-        row = grup(form, row, "Kondisi Rumah", grpKondisiRumah.panel);
-        row = area(form, row, "Masalah Keperawatan", taMasalah);
-        row = area(form, row, "Rencana Keperawatan", taRencana);
-
-        row = judul(form, row, "Tanda Tangan");
-        row = baris1(form, row, "Tanggal / Jam", dtpTtd);
-        row = baris2(form, row, "Perawat Pengkaji *", gabungBtn(KdPetugas, NmPetugas, null), "Dokter PJ", gabungBtn(KdDokter, NmDokter, BtnDokter));
-
-        JScrollPane scroll = new JScrollPane(form);
-        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        scroll.getVerticalScrollBar().setUnitIncrement(28);
-        scroll.getVerticalScrollBar().setBlockIncrement(120);
-        getContentPane().add(scroll, BorderLayout.CENTER);
+        JPanel tengah = new JPanel(new BorderLayout());
+        tengah.setBackground(latar);
+        tengah.add(navigasi, BorderLayout.WEST);
+        tengah.add(kartuHalaman, BorderLayout.CENTER);
+        getContentPane().add(tengah, BorderLayout.CENTER);
 
         BtnBaru.setText("Baru");
         BtnSimpan.setText("Simpan");
@@ -316,12 +437,16 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
             dokter.setLocationRelativeTo(this);
             dokter.setVisible(true);
         });
-        JPanel bawah = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 6));
-        bawah.add(BtnSimpan);
-        bawah.add(BtnBaru);
+        BtnSimpan.setText("Simpan Data");
+        BtnHapus.setText("Hapus Data");
+        JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 8));
+        bawah.setBackground(Color.WHITE);
+        bawah.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, garis));
         bawah.add(BtnHapus);
+        bawah.add(BtnBaru);
         bawah.add(BtnCetak);
         bawah.add(BtnKeluar);
+        bawah.add(BtnSimpan);
         getContentPane().add(bawah, BorderLayout.SOUTH);
 
         dtpTanggal.setDate(new Date());
@@ -356,6 +481,76 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
         return d;
     }
 
+    private JPanel ringkasan(String label, Component komponen) {
+        JPanel panel = new JPanel();
+        panel.setBackground(Color.WHITE);
+        panel.setBorder(new EmptyBorder(0, 8, 0, 8));
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JLabel judul = new JLabel(label);
+        judul.setFont(new Font("Tahoma", Font.PLAIN, 10));
+        judul.setForeground(label.contains("*")
+                ? new Color(198, 40, 40) : new Color(82, 97, 108));
+        judul.setAlignmentX(Component.LEFT_ALIGNMENT);
+        komponen.setPreferredSize(new Dimension(145, 25));
+        komponen.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
+        komponen.setBackground(new Color(247, 249, 250));
+        panel.add(judul);
+        panel.add(Box.createVerticalStrut(3));
+        panel.add(komponen);
+        return panel;
+    }
+
+    private JPanel formHalaman(String nama, Color utama, Color latar) {
+        JPanel pembungkus = new JPanel(new BorderLayout());
+        pembungkus.setBackground(latar);
+        pembungkus.setBorder(new EmptyBorder(13, 16, 16, 16));
+        JLabel judulHalaman = new JLabel(nama);
+        judulHalaman.setFont(new Font("Tahoma", Font.BOLD, 16));
+        judulHalaman.setForeground(utama);
+        judulHalaman.setBorder(new EmptyBorder(0, 3, 10, 0));
+        pembungkus.add(judulHalaman, BorderLayout.NORTH);
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(Color.WHITE);
+        form.setBorder(BorderFactory.createLineBorder(new Color(214, 224, 230)));
+        pembungkus.add(form, BorderLayout.CENTER);
+        return new HalamanPanel(pembungkus, form);
+    }
+
+    private JScrollPane scrollHalaman(JPanel halaman, Color latar) {
+        JScrollPane scroll = new JScrollPane(halaman);
+        scroll.setBorder(null);
+        scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroll.getVerticalScrollBar().setUnitIncrement(25);
+        scroll.getVerticalScrollBar().setBlockIncrement(120);
+        scroll.getViewport().setBackground(latar);
+        return scroll;
+    }
+
+    /**
+     * Pembungkus transparan: pemanggil tetap menambahkan field dengan
+     * GridBagLayout, sementara judul halaman berada di luar form.
+     */
+    private static final class HalamanPanel extends JPanel {
+        private final JPanel form;
+
+        HalamanPanel(JPanel pembungkus, JPanel form) {
+            super(new BorderLayout());
+            this.form = form;
+            setOpaque(false);
+            add(pembungkus, BorderLayout.CENTER);
+        }
+
+        @Override
+        protected void addImpl(Component comp, Object constraints, int index) {
+            if (form != null && comp != form && !(getLayout() instanceof BorderLayout
+                    && BorderLayout.CENTER.equals(constraints))) {
+                form.add(comp, constraints, index);
+            } else {
+                super.addImpl(comp, constraints, index);
+            }
+        }
+    }
+
     private GridBagConstraints gc(int x, int y, int w, double wx) {
         GridBagConstraints g = new GridBagConstraints();
         g.gridx = x; g.gridy = y; g.gridwidth = w; g.weightx = wx;
@@ -368,10 +563,10 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
     private int judul(JPanel p, int row, String teks) {
         JLabel l = new JLabel(teks);
         l.setOpaque(true);
-        l.setBackground(new Color(225, 240, 225));
-        l.setForeground(new Color(30, 90, 30));
+        l.setBackground(new Color(230, 247, 248));
+        l.setForeground(new Color(0, 120, 130));
         l.setFont(new Font("Tahoma", Font.BOLD, 12));
-        l.setBorder(BorderFactory.createEmptyBorder(5, 6, 5, 6));
+        l.setBorder(BorderFactory.createEmptyBorder(7, 8, 7, 8));
         GridBagConstraints g = gc(0, row, 4, 1.0);
         g.insets = new Insets(10, 4, 2, 4);
         p.add(l, g);
@@ -411,8 +606,12 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
     }
 
     private JLabel lbl(String t) {
-        JLabel l = new JLabel(t + " :");
+        String teks = t.contains("*")
+                ? "<html>" + t.replace("*", "<font color='#D32F2F'>*</font>") + " :</html>"
+                : t + " :";
+        JLabel l = new JLabel(teks);
         l.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        l.setForeground(new Color(48, 63, 74));
         return l;
     }
 
@@ -754,6 +953,11 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
                         KdDokter.setText(g(rs, "kd_dokter"));
                         NmDokter.setText(Sequel.cariIsi("select nm_dokter from dokter where kd_dokter=?", g(rs, "kd_dokter")));
                     }
+                    // Pelaksana asesmen yang TERSIMPAN (bukan user yang sedang login) -- penting saat data dibuka/dicetak oleh user lain.
+                    if (!g(rs, "nik").equals("")) {
+                        KdPetugas.setText(g(rs, "nik"));
+                        NmPetugas.setText(Sequel.cariIsi("select nama from petugas where nip=?", g(rs, "nik")));
+                    }
                     String bab = g(rs, "bab");
                     if (bab.contains(" - ")) {
                         tBabFreq.setText(bab.substring(0, bab.indexOf(" - ")));
@@ -814,96 +1018,117 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
             JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
             return;
         }
-        StringBuilder b = new StringBuilder();
-        CetakAsesmen.h(b, "Identitas Pasien");
-        CetakAsesmen.r(b, "No. Rawat", TNoRw.getText());
-        CetakAsesmen.r(b, "No. RM", TNoRM.getText());
-        CetakAsesmen.r(b, "Nama Pasien", TPasien.getText());
-        CetakAsesmen.r(b, "Jenis Kelamin", TJK.getText());
-        CetakAsesmen.r(b, "Tanggal Lahir", TTglLahir.getText());
-        CetakAsesmen.r(b, "Alamat", TAlamat.getText());
-        CetakAsesmen.r(b, "Unit", TUnit.getText());
-        CetakAsesmen.r(b, "Cara Bayar", TCaraBayar.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Asesmen Keperawatan Bayi");
-        CetakAsesmen.r(b, "Ruang / Lantai / Kelas", tRuang.getText() + " / " + tLantai.getText() + " / " + tKelas.getText());
-        CetakAsesmen.r(b, "Gelang Identitas", s(cmbGelang));
-        CetakAsesmen.r(b, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "A. Identitas Penanggung Jawab");
-        CetakAsesmen.r(b, "Nama / Hubungan", pjNama.getText() + " / " + pjHubungan.getText());
-        CetakAsesmen.r(b, "Alamat", pjAlamat.getText());
-        CetakAsesmen.r(b, "Umur / Pendidikan", pjUmur.getText() + " / " + pjPendidikan.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "B. Riwayat Ibu");
-        CetakAsesmen.r(b, "Nama / Umur", ibuNama.getText() + " / " + ibuUmur.getText());
-        CetakAsesmen.r(b, "Pendidikan / Suku", ibuPendidikan.getText() + " / " + ibuSuku.getText());
-        CetakAsesmen.r(b, "Agama / Penyakit", ibuAgama.getText() + " / " + ibuPenyakit.getText());
-        CetakAsesmen.r(b, "Perkawinan Ke", ibuPerkawinan.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "C. Riwayat Penyakit");
-        CetakAsesmen.r(b, "Keluhan Utama", taKeluhan.getText());
-        CetakAsesmen.r(b, "Riwayat Kesehatan Sekarang", taRiwSekarang.getText());
-        CetakAsesmen.r(b, "Riwayat Kesehatan Dahulu", taRiwDahulu.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "D. Riwayat Kehamilan");
-        CetakAsesmen.r(b, "Komplikasi Kehamilan", grpKomplikasi.get());
-        CetakAsesmen.r(b, "Lain-lain", taKomplikasiLain.getText());
+        List<Map<String, ?>> rows = CetakAsesmen.mulai();
+        CetakAsesmen.h(rows, "Asesmen Keperawatan Bayi");
+        CetakAsesmen.r2(rows, "Ruang / Lantai", tRuang.getText() + " / " + tLantai.getText(), "Kelas", tKelas.getText());
+        CetakAsesmen.r(rows, "Gelang Identitas", s(cmbGelang));
+        CetakAsesmen.r(rows, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
+
+        CetakAsesmen.h(rows, "A. Identitas Penanggung Jawab");
+        CetakAsesmen.r2(rows, "Nama", pjNama.getText(), "Hubungan", pjHubungan.getText());
+        CetakAsesmen.r(rows, "Alamat", pjAlamat.getText());
+        CetakAsesmen.r2(rows, "Umur", pjUmur.getText(), "Pendidikan", pjPendidikan.getText());
+
+        CetakAsesmen.h(rows, "B. Riwayat Ibu");
+        CetakAsesmen.r2(rows, "Nama", ibuNama.getText(), "Umur", ibuUmur.getText());
+        CetakAsesmen.r2(rows, "Pendidikan", ibuPendidikan.getText(), "Suku", ibuSuku.getText());
+        CetakAsesmen.r2(rows, "Agama", ibuAgama.getText(), "Penyakit", ibuPenyakit.getText());
+        CetakAsesmen.r(rows, "Perkawinan Ke", ibuPerkawinan.getText());
+
+        CetakAsesmen.h(rows, "C. Riwayat Penyakit");
+        CetakAsesmen.r(rows, "Keluhan Utama", taKeluhan.getText());
+        CetakAsesmen.r(rows, "Riwayat Kesehatan Sekarang", taRiwSekarang.getText());
+        CetakAsesmen.r(rows, "Riwayat Kesehatan Dahulu", taRiwDahulu.getText());
+
+        CetakAsesmen.h(rows, "D. Riwayat Kehamilan & Persalinan Yang Lalu");
+        CetakAsesmen.r(rows, "Komplikasi Kehamilan", grpKomplikasi);
+        CetakAsesmen.r(rows, "Lain-lain", taKomplikasiLain.getText());
+        if (modePersalinan.getRowCount() == 0) {
+            CetakAsesmen.r(rows, "Riwayat Persalinan Yang Lalu", "");
+        }
         for (int i = 0; i < modePersalinan.getRowCount(); i++) {
-            StringBuilder row = new StringBuilder();
+            StringBuilder rowTeks = new StringBuilder();
             for (int c = 0; c < 7; c++) {
                 Object o = modePersalinan.getValueAt(i, c);
-                if (c > 0) { row.append(" | "); }
-                row.append(o == null ? "" : o.toString());
+                if (c > 0) { rowTeks.append(" | "); }
+                rowTeks.append(o == null ? "" : o.toString());
             }
-            CetakAsesmen.r(b, "Persalinan Lalu " + (i + 1), row.toString());
+            CetakAsesmen.r(rows, "Persalinan Lalu " + (i + 1), rowTeks.toString());
         }
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "F. Riwayat Psikososial Orang Tua");
-        CetakAsesmen.r(b, "Perkembangan Interpersonal", taPsiko.getText());
-        CetakAsesmen.r(b, "Pengasuh", grpPengasuh.get());
-        CetakAsesmen.r(b, "Dukungan Sibling / Keluarga", s(cmbSibling) + " / " + gabung(cmbDukKeluarga, tDukKeluargaSebut));
-        CetakAsesmen.r(b, "Budaya Dianut", gabung(cmbBudaya, tBudayaSebut));
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "G. Pemeriksaan Fisik");
-        CetakAsesmen.r(b, "APGAR / Score Down", tApgar.getText() + " / " + tDown.getText());
-        CetakAsesmen.r(b, "Suhu / RR / Nadi", tSuhu.getText() + " / " + tRR.getText() + " / " + tNadi.getText());
-        CetakAsesmen.r(b, "Tingkat Kesadaran", tKesadaran.getText());
-        CetakAsesmen.r(b, "BB / PB", tBB.getText() + " / " + tPB.getText());
-        CetakAsesmen.r(b, "Tangisan / CRT", grpTangisan.get() + " / " + s(cmbCrt));
-        CetakAsesmen.r(b, "Kulit", grpKulit.get());
-        CetakAsesmen.r(b, "Lingkar Kepala / Ubun-ubun", tLingkarKepala.getText() + " / " + grpUbun.get());
-        CetakAsesmen.r(b, "Mata", grpMata.get());
-        CetakAsesmen.r(b, "Hidung", grpHidung.get());
-        CetakAsesmen.r(b, "Telinga", grpTelinga.get());
-        CetakAsesmen.r(b, "Mulut", grpMulut.get());
-        CetakAsesmen.r(b, "Frekuensi Nafas", tFreqNafas.getText());
-        CetakAsesmen.r(b, "Dada & Sirkulasi", grpDada.get());
-        CetakAsesmen.r(b, "Abdomen", grpAbdomen.get());
-        CetakAsesmen.r(b, "Jenis Kelamin / Testis / Labia / Anus", s(cmbJK) + " / " + s(cmbTestis) + " / " + s(cmbLabia) + " / " + s(cmbAnus));
-        CetakAsesmen.r(b, "BAB", tBabFreq.getText() + " " + grpBab.get());
-        CetakAsesmen.r(b, "BAK", tBak.getText());
-        CetakAsesmen.r(b, "Ekstremitas Atas", grpEkstrAtas.get());
-        CetakAsesmen.r(b, "Ekstremitas Bawah", grpEkstrBawah.get());
-        CetakAsesmen.r(b, "Reflek Moro / Mengisap / Rooting", s(cmbReflekMoro) + " / " + s(cmbReflekMengisap) + " / " + s(cmbReflekRooting));
-        CetakAsesmen.r(b, "Reflek Babinski", tBabinski.getText());
-        CetakAsesmen.r(b, "Aktifitas & Istirahat", grpAktifitas.get());
-        CetakAsesmen.r(b, "Personal Hygiene", grpHygiene.get());
-        CetakAsesmen.r(b, "Nutrisi", grpNutrisi.get());
-        CetakAsesmen.r(b, "Kontak Ibu / Bayi Diharapkan", s(cmbKontakIbu) + " / " + s(cmbBayiDiharapkan));
-        CetakAsesmen.r(b, "Obat / Therapi", taObat.getText());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Discharge Planning & Perencanaan Pulang");
-        CetakAsesmen.r(b, "Kriteria", cekHambatan.isSelected() ? "Memiliki Hambatan Mobilisasi" : "-");
-        CetakAsesmen.r(b, "Pasien Tinggal Dengan", gabung(cmbTinggal, tTinggalSebut));
-        CetakAsesmen.r(b, "Keluarga Perokok", gabung(cmbPerokok, tPerokokSebut));
-        CetakAsesmen.r(b, "Kondisi Rumah", grpKondisiRumah.get());
-        CetakAsesmen.sp(b);
-        CetakAsesmen.h(b, "Resume");
-        CetakAsesmen.r(b, "Masalah Keperawatan", taMasalah.getText());
-        CetakAsesmen.r(b, "Rencana Keperawatan", taRencana.getText());
-        CetakAsesmen.cetak("ASESMEN KEPERAWATAN BAYI", "RM 5b", b.toString(),
-                dtpTtd.getSelectedItem() + "", "Perawat Pengkaji", KdPetugas.getText(), NmPetugas.getText());
+
+        CetakAsesmen.h(rows, "F. Riwayat Psikososial Orang Tua");
+        CetakAsesmen.r(rows, "Perkembangan Interpersonal", taPsiko.getText());
+        CetakAsesmen.r(rows, "Pengasuh", grpPengasuh);
+        CetakAsesmen.r2(rows, "Dukungan Sibling", s(cmbSibling), "Dukungan Keluarga", gabung(cmbDukKeluarga, tDukKeluargaSebut));
+        CetakAsesmen.r(rows, "Budaya Dianut", gabung(cmbBudaya, tBudayaSebut));
+
+        CetakAsesmen.h(rows, "G. Pemeriksaan Fisik");
+        CetakAsesmen.r2(rows, "APGAR Score", tApgar.getText(), "Score Down", tDown.getText());
+        CetakAsesmen.r(rows, "Suhu / RR / Nadi", tSuhu.getText() + " / " + tRR.getText() + " / " + tNadi.getText());
+        CetakAsesmen.r(rows, "Tingkat Kesadaran", tKesadaran.getText());
+        CetakAsesmen.r2(rows, "BB", tBB.getText(), "PB", tPB.getText());
+        CetakAsesmen.r2(rows, "Tangisan", grpTangisan.get(), "CRT", s(cmbCrt));
+        CetakAsesmen.r(rows, "Kulit", grpKulit);
+        CetakAsesmen.r2(rows, "Lingkar Kepala", tLingkarKepala.getText(), "Ubun-ubun", grpUbun.get());
+        CetakAsesmen.r(rows, "Mata", grpMata);
+        CetakAsesmen.r(rows, "Hidung", grpHidung);
+        CetakAsesmen.r(rows, "Telinga", grpTelinga);
+        CetakAsesmen.r(rows, "Mulut", grpMulut);
+        CetakAsesmen.r(rows, "Frekuensi Nafas", tFreqNafas.getText());
+        CetakAsesmen.r(rows, "Dada & Sirkulasi", grpDada);
+        CetakAsesmen.r(rows, "Abdomen", grpAbdomen);
+        CetakAsesmen.r(rows, "Jenis Kelamin / Testis / Labia / Anus", s(cmbJK) + " / " + s(cmbTestis) + " / " + s(cmbLabia) + " / " + s(cmbAnus));
+        CetakAsesmen.r(rows, "BAB", tBabFreq.getText() + " " + grpBab.get());
+        CetakAsesmen.r(rows, "BAK", tBak.getText());
+        CetakAsesmen.r(rows, "Ekstremitas Atas", grpEkstrAtas);
+        CetakAsesmen.r(rows, "Ekstremitas Bawah", grpEkstrBawah);
+        CetakAsesmen.r(rows, "Reflek Moro / Mengisap / Rooting", s(cmbReflekMoro) + " / " + s(cmbReflekMengisap) + " / " + s(cmbReflekRooting));
+        CetakAsesmen.r(rows, "Reflek Babinski", tBabinski.getText());
+        CetakAsesmen.r(rows, "Aktifitas & Istirahat", grpAktifitas);
+        CetakAsesmen.r(rows, "Personal Hygiene", grpHygiene);
+        CetakAsesmen.r(rows, "Nutrisi", grpNutrisi);
+        CetakAsesmen.r2(rows, "Kontak Ibu", s(cmbKontakIbu), "Bayi Diharapkan", s(cmbBayiDiharapkan));
+        CetakAsesmen.r(rows, "Obat / Therapi", taObat.getText());
+
+        CetakAsesmen.h(rows, "Discharge Planning & Perencanaan Pulang");
+        CetakAsesmen.r(rows, "Kriteria", cekHambatan.isSelected() ? "Memiliki Hambatan Mobilisasi" : "");
+        CetakAsesmen.r(rows, "Pasien Tinggal Dengan", gabung(cmbTinggal, tTinggalSebut));
+        CetakAsesmen.r(rows, "Keluarga Perokok", gabung(cmbPerokok, tPerokokSebut));
+        CetakAsesmen.r(rows, "Kondisi Rumah", grpKondisiRumah);
+
+        CetakAsesmen.h(rows, "Resume");
+        CetakAsesmen.r(rows, "Masalah Keperawatan", taMasalah.getText());
+        CetakAsesmen.r(rows, "Rencana Keperawatan", taRencana.getText());
+
+        CetakAsesmen.Identitas id = new CetakAsesmen.Identitas();
+        id.nama = TPasien.getText();
+        id.noRawat = TNoRw.getText();
+        id.kelas = tKelas.getText();
+        id.nik = Sequel.cariIsi("select no_ktp from pasien where no_rkm_medis=?", TNoRM.getText());
+        id.tglMasuk = Sequel.cariIsi("select concat(date_format(tgl_registrasi,'%d-%m-%Y'),' ',jam_reg) "
+                + "from reg_periksa where no_rawat=?", TNoRw.getText());
+        id.pembayaran = TCaraBayar.getText();
+        id.jk = TJK.getText();
+        id.noRM = TNoRM.getText();
+        id.unit = TUnit.getText();
+        id.tglLahir = TTglLahir.getText();
+        id.alamat = TAlamat.getText();
+
+        CetakAsesmen.cetak("ASESMEN KEPERAWATAN BAYI", "RM 5b", rows, id,
+                dtpTtd.getSelectedItem() + "", "Perawat Pengkaji", KdPetugas.getText(), NmPetugas.getText(),
+                "Dokter Penanggung Jawab", NmDokter.getText());
+    }
+
+    /** Cetak langsung dari no_rawat tanpa membuka dialog (dipakai dari klik-kanan di layar Riwayat). */
+    public static void cetak(String noRawat) {
+        if (noRawat == null || noRawat.trim().isEmpty()) {
+            return;
+        }
+        RMPenilaianAwalKeperawatanRanapBayi f = new RMPenilaianAwalKeperawatanRanapBayi(null, false);
+        f.isCek();
+        f.setNoRm(noRawat.trim(), new Date(), "", null);
+        f.cetak();
+        f.dispose();
     }
 
     private void hapus() {
@@ -979,7 +1204,7 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
     }
 
     /** Grup checkbox: get/set sebagai string gabungan dipisah koma. */
-    private static final class Grup {
+    private static final class Grup implements CetakAsesmen.OpsiCheckbox {
         final JPanel panel = new JPanel(new GridLayout(0, 3, 4, 0));
         final List<JCheckBox> boxes = new ArrayList<>();
 
@@ -994,7 +1219,15 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
             }
         }
 
-        String get() {
+        @Override
+        public List<String> semuaOpsi() {
+            List<String> hasil = new ArrayList<>();
+            for (JCheckBox c : boxes) { hasil.add(c.getText()); }
+            return hasil;
+        }
+
+        @Override
+        public String get() {
             StringBuilder sb = new StringBuilder();
             for (JCheckBox c : boxes) {
                 if (c.isSelected()) {

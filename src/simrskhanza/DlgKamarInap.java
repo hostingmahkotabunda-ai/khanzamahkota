@@ -215,6 +215,17 @@ public class DlgKamarInap extends javax.swing.JDialog {
             public void actionPerformed(java.awt.event.ActionEvent evt) { bukaKeperawatanBayi(); }
         });
         MnPenilaianAwal.insert(MnKepBayi, 1);
+        javax.swing.JMenuItem MnDokumentasiFoto = new javax.swing.JMenuItem("Dokumentasi Foto Perawatan");
+        MnDokumentasiFoto.setFont(new java.awt.Font("Tahoma", 0, 11));
+        MnDokumentasiFoto.setForeground(new java.awt.Color(50, 50, 50));
+        try{ MnDokumentasiFoto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); }catch(Exception e){}
+        MnDokumentasiFoto.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnDokumentasiFoto.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnDokumentasiFoto.setPreferredSize(new java.awt.Dimension(240, 26));
+        MnDokumentasiFoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) { bukaDokumentasiFoto(); }
+        });
+        MenuInputData.add(MnDokumentasiFoto);
         tabMode=new DefaultTableModel(null,new Object[]{
             "No.Rawat","Nomer RM","Nama Pasien","Alamat Pasien","Penanggung Jawab","Hubungan P.J.","Jenis Bayar","Kamar","Tarif Kamar",
             "Diagnosa Awal","Diagnosa Akhir","Tgl.Masuk","Jam Masuk","Tgl.Keluar","Jam Keluar",
@@ -6712,10 +6723,8 @@ private void MnRawatInapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             if(tbKamIn.getSelectedRow()>-1){
                 if(tbKamIn.getValueAt(tbKamIn.getSelectedRow(),0).toString().equals("")){
                     try {
-                        if(Sequel.cariRegistrasi(tbKamIn.getValueAt(tbKamIn.getSelectedRow()-1,0).toString())>0){
-                              JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi.\nSilahkan hubungi bagian kasir/keuangan ..!!");
-                              TCari.requestFocus();
-                        }else{
+                              // Logika pemblokiran saat billing sudah dibayar/terverifikasi
+                              // dicopot: tetap boleh masuk ke DlgRawatInap.
                               psanak=koneksi.prepareStatement(
                                     "select pasien.no_rkm_medis,pasien.nm_pasien,ranap_gabung.no_rawat2 from reg_periksa inner join pasien on pasien.no_rkm_medis=reg_periksa.no_rkm_medis "+
                                     "inner join ranap_gabung on ranap_gabung.no_rawat2=reg_periksa.no_rawat where ranap_gabung.no_rawat=?");
@@ -6751,15 +6760,12 @@ private void MnRawatInapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                                         psanak.close();
                                     }
                               }
-                        }
                     } catch (Exception e) {
                         System.out.println(e);
                     }
                 }else{
-                    if(Sequel.cariRegistrasi(norawat.getText())>0){
-                        JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi.\nSilahkan hubungi bagian kasir/keuangan ..!!");
-                        TCari.requestFocus();
-                    }else{
+                        // Logika pemblokiran saat billing sudah dibayar/terverifikasi
+                        // dicopot: tetap boleh masuk ke DlgRawatInap.
                         DlgRawatInap rawatinap=new DlgRawatInap((java.awt.Frame)null,false);
                         rawatinap.isCek();
                         rawatinap.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
@@ -6774,7 +6780,6 @@ private void MnRawatInapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         rawatinap.setKamar(tbKamIn.getValueAt(tbKamIn.getSelectedRow(),7).toString());
                         rawatinap.setJenisBayar(tbKamIn.getValueAt(tbKamIn.getSelectedRow(),6).toString());
                         rawatinap.setVisible(true);
-                    }
                 }
             }
       }
@@ -12633,6 +12638,23 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     form.setNoRm(norawat.getText(),DTPCari4.getDate(),tbKamIn.getValueAt(tbKamIn.getSelectedRow(),6).toString(),TNoRMCari.getText());
                 }
                 form.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                form.setLocationRelativeTo(internalFrame1);
+                form.setVisible(true);
+                this.setCursor(Cursor.getDefaultCursor());
+            }
+        }
+    }
+
+    private void bukaDokumentasiFoto() {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else{
+            if(tbKamIn.getSelectedRow()>-1){
+                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                rekammedis.RMDokumentasiFoto form=new rekammedis.RMDokumentasiFoto(null,false);
+                form.isCek();
+                form.setNoRm(norawat.getText());
                 form.setLocationRelativeTo(internalFrame1);
                 form.setVisible(true);
                 this.setCursor(Cursor.getDefaultCursor());
