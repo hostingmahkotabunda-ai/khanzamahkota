@@ -221,7 +221,7 @@ public class DlgPenjualan extends javax.swing.JDialog {
             }){
             @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
-                if ((colIndex==18)||(colIndex==7)||(colIndex==8)||(colIndex==10)||(colIndex==11)||(colIndex==12)||(colIndex==13)||(colIndex==14)||(colIndex==18)||(colIndex==19)) {
+                if ((colIndex==8)||(colIndex==10)||(colIndex==11)||(colIndex==12)||(colIndex==13)||(colIndex==14)||(colIndex==18)||(colIndex==19)) {
                     a=true;
                 }
                 return a;
@@ -263,7 +263,9 @@ public class DlgPenjualan extends javax.swing.JDialog {
             }else if(i==6){
                 column.setPreferredWidth(42);
             }else if(i==7){
-                column.setPreferredWidth(45);
+                column.setMinWidth(0);
+                column.setPreferredWidth(0);
+                column.setMaxWidth(0);
             }else if(i==8){
                 column.setPreferredWidth(42);
             }else if(i==9){
@@ -293,7 +295,7 @@ public class DlgPenjualan extends javax.swing.JDialog {
                 column.setPreferredWidth(65);
             }
         }
-        warna3.kolom=7;
+        warna3.kolom=8;
         tbDetailObatRacikan.setDefaultRenderer(Object.class,warna3);
         
         NoNota.setDocument(new batasInput((byte)20).getKata(NoNota));
@@ -649,7 +651,7 @@ public class DlgPenjualan extends javax.swing.JDialog {
             }){
             @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
-                if ((colIndex==7)||(colIndex==8)||(colIndex==10)||(colIndex==11)||(colIndex==12)||(colIndex==13)||(colIndex==14)||(colIndex==18)||(colIndex==19)) {
+                if ((colIndex==8)||(colIndex==10)||(colIndex==11)||(colIndex==12)||(colIndex==13)||(colIndex==14)||(colIndex==18)||(colIndex==19)) {
                     a=true;
                 }
                 return a;
@@ -701,7 +703,7 @@ public class DlgPenjualan extends javax.swing.JDialog {
         tbDetailRacikanV2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tbDetailRacikanV2.setRowSorter(new javax.swing.table.TableRowSorter<DefaultTableModel>(tabModeDetailRacikanV2));
         aturKolomDetailRacikanV2();
-        warna3.kolom=7;
+        warna3.kolom=8;
         tbDetailRacikanV2.setDefaultRenderer(Object.class,warna3);
         tbDetailRacikanV2.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -812,7 +814,9 @@ public class DlgPenjualan extends javax.swing.JDialog {
             }else if(kolom==6){
                 column.setPreferredWidth(42);
             }else if(kolom==7){
-                column.setPreferredWidth(45);
+                column.setMinWidth(0);
+                column.setPreferredWidth(0);
+                column.setMaxWidth(0);
             }else if(kolom==8){
                 column.setPreferredWidth(42);
             }else if(kolom==9){
@@ -2823,33 +2827,91 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                 }
             }
 
-            // PENTING: baca lewat tabModeDetailRacikanV2 (model), BUKAN tbDetailRacikanV2 (JTable) --
-            // ada RowFilter aktif di tbDetailRacikanV2 yg cuma nampilin 1 racikan yg lagi dipilih.
-            // Tanpa loop ini, item Racikan V2 tidak ikut tercetak & tidak ikut kehitung di "Tagihan"
-            // nota, padahal PPN (besarppn/besarppnobat) DI BAWAH sudah dihitung termasuk item V2 --
-            // itu sebabnya nota jadi kelihatan "PPN tidak sesuai" (PPN benar, tapi Tagihan yg tercetak
-            // kurang krn item V2 hilang).
-            for(i=0;i<tabModeDetailRacikanV2.getRowCount();i++){
-                try {
-                    if(Valid.SetAngka(tabModeDetailRacikanV2.getValueAt(i,8).toString())>0){
-                        Sequel.menyimpan2("temporary","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?",38,new String[]{
-                            ""+row,"&nbsp;&nbsp;&nbsp;&nbsp;"+tabModeDetailRacikanV2.getValueAt(i,8).toString(),tabModeDetailRacikanV2.getValueAt(i,1).toString(),
-                            "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+tabModeDetailRacikanV2.getValueAt(i,2).toString(),tabModeDetailRacikanV2.getValueAt(i,3).toString(),
-                            tabModeDetailRacikanV2.getValueAt(i,4).toString(),tabModeDetailRacikanV2.getValueAt(i,5).toString(),tabModeDetailRacikanV2.getValueAt(i,9).toString(),
-                            tabModeDetailRacikanV2.getValueAt(i,11).toString(),tabModeDetailRacikanV2.getValueAt(i,12).toString(),tabModeDetailRacikanV2.getValueAt(i,13).toString(),
-                            tabModeDetailRacikanV2.getValueAt(i,14).toString(),"",tabModeDetailRacikanV2.getValueAt(i,15).toString(),"","","","","","","","","","","",
-                            "","","","","","","","","","","","",akses.getalamatip()
-                        });
-                        row++;
-                    }
-                } catch (Exception e) {
-                }
+            // Sesudah transaksi disimpan, gunakan tabel transaksi sebagai sumber nota agar SEMUA
+            // no_racik ikut tercetak. Model layar tetap dipakai sebagai fallback saat tombol Nota
+            // ditekan sebelum transaksi disimpan.
+            if(!tambahRacikanV2TersimpanKeNota()){
+                tambahRacikanV2ModelKeNota();
             }
 
             Valid.panggilUrl("billing/NotaApotek.php?nonota="+NoNota.getText()+"&besarppn="+(besarppn+besarppnobat)+"&ongkir="+ongkir+"&bayar="+Bayar.getText()+"&tanggal="+Valid.SetTgl(Tgl.getSelectedItem()+"")+"&catatan="+catatan.getText().replaceAll(" ","_")+"&petugas="+nmptg.getText().replaceAll(" ","_")+"&pasien="+nmmem.getText().replaceAll(" ","_")+"&norm="+kdmem.getText().replaceAll(" ","_")+"&alamatip="+akses.getalamatip()+"&usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB());
         }
         this.setCursor(Cursor.getDefaultCursor());
     }//GEN-LAST:event_BtnNotaActionPerformed
+
+    private boolean tambahRacikanV2TersimpanKeNota() {
+        boolean ditemukan=false;
+        try {
+            ps=koneksi.prepareStatement(
+                "select o.no_racik,o.jml_dr,o.nama_racik,ifnull(m.nm_racik,''),o.aturan_pakai,"+
+                "ifnull(sum(dj.total),0) total_racikan "+
+                "from obat_racikan_jual o "+
+                "left join metode_racik m on m.kd_racik=o.kd_racik "+
+                "left join detail_obat_racikan_jual dr on dr.nota_jual=o.nota_jual and dr.no_racik=o.no_racik "+
+                "left join detailjual dj on dj.nota_jual=dr.nota_jual and dj.kode_brng=dr.kode_brng "+
+                "where o.nota_jual=? group by o.no_racik,o.jml_dr,o.nama_racik,m.nm_racik,o.aturan_pakai "+
+                "order by cast(o.no_racik as unsigned),o.no_racik"
+            );
+            ps.setString(1,NoNota.getText());
+            rs=ps.executeQuery();
+            while(rs.next()){
+                ditemukan=true;
+                simpanBarisRacikanKeNota(
+                    rs.getString("no_racik"),rs.getString("jml_dr"),rs.getString("nama_racik"),
+                    rs.getString(4),rs.getString("aturan_pakai"),rs.getString("total_racikan")
+                );
+            }
+        } catch (Exception e) {
+            ditemukan=false;
+            System.out.println("Notifikasi racikan nota penjualan : "+e);
+        } finally {
+            try {
+                if(rs!=null){
+                    rs.close();
+                }
+                if(ps!=null){
+                    ps.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notifikasi tutup racikan nota penjualan : "+e);
+            }
+        }
+        return ditemukan;
+    }
+
+    private void tambahRacikanV2ModelKeNota() {
+        for(int barisRacikan=0;barisRacikan<tabModeRacikanV2.getRowCount();barisRacikan++){
+            try {
+                if(Valid.SetAngka(tabModeRacikanV2.getValueAt(barisRacikan,4).toString())>0){
+                    String noRacikan=tabModeRacikanV2.getValueAt(barisRacikan,0).toString();
+                    double totalRacikan=0;
+                    for(int detail=0;detail<tabModeDetailRacikanV2.getRowCount();detail++){
+                        if(tabModeDetailRacikanV2.getValueAt(detail,0).toString().equals(noRacikan)){
+                            try {
+                                totalRacikan+=Valid.SetAngka(tabModeDetailRacikanV2.getValueAt(detail,15).toString());
+                            } catch (Exception e) {
+                            }
+                        }
+                    }
+                    simpanBarisRacikanKeNota(
+                        noRacikan,tabModeRacikanV2.getValueAt(barisRacikan,4).toString(),
+                        tabModeRacikanV2.getValueAt(barisRacikan,1).toString(),tabModeRacikanV2.getValueAt(barisRacikan,3).toString(),
+                        tabModeRacikanV2.getValueAt(barisRacikan,5).toString(),Double.toString(totalRacikan)
+                    );
+                }
+            } catch (Exception e) {
+                System.out.println("Notifikasi model racikan nota penjualan baris "+barisRacikan+" : "+e);
+            }
+        }
+    }
+
+    private void simpanBarisRacikanKeNota(String noRacikan,String jumlahRacikan,String namaRacikan,String metodeRacikan,String aturanPakai,String totalRacikan) {
+        Sequel.menyimpan2("temporary","?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?",38,new String[]{
+            ""+row,jumlahRacikan,"",noRacikan+". "+namaRacikan,"",metodeRacikan,"","","","","","",aturanPakai,totalRacikan,"","","","","","","","","","","",
+            "","","","","","","","","","","","",akses.getalamatip()
+        });
+        row++;
+    }
 
     private void BtnNotaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnNotaKeyPressed
         // TODO add your handling code here:

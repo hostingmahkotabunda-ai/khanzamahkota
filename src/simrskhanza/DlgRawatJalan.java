@@ -211,6 +211,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     private javax.swing.JPanel panelDataPasienRalan;
     private javax.swing.JPanel panelPenilaianAwalKosongRalan;
     private rekammedis.RMAsesmenRalan panelAsesmenRalan;
+    private rekammedis.RMRiwayatObatPasien panelRiwayatObat;
     private javax.swing.JTextField txtDPRNoRM, txtDPRNama, txtDPRNIK, txtDPRTempatLahir, txtDPRTglLahir,
             txtDPRTelepon, txtDPRPekerjaan, txtDPRNamaKeluarga, txtDPRPekerjaanPJ;
     private javax.swing.JTextArea txtDPRAlamat, txtDPRCatatan;
@@ -243,6 +244,24 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         if(c==panelDataPasienRalan) return 90;
         if(c==panelPenilaianAwalKosongRalan) return 91;
         return -1;
+    }
+
+    /**
+     * Tab "Riwayat Obat" -- daftar SEMUA kunjungan (lintas IGD/Ralan/Ranap, selama no_rkm_medis
+     * sama) yg pernah dapat resep, ditampilkan sbg daftar kunjungan dulu (no_rawat+tanggal),
+     * BUKAN langsung tampil semua obat sekaligus -- klik 1 kunjungan baru muncul detail obatnya
+     * (lihat rekammedis.RMRiwayatObatPasien).
+     */
+    private void pasangTabRiwayatObat() {
+        panelRiwayatObat = new rekammedis.RMRiwayatObatPasien();
+        TabRawat.addTab("Riwayat Obat", panelRiwayatObat);
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e) {
+                if (TabRawat.getSelectedComponent() == panelRiwayatObat) {
+                    panelRiwayatObat.setKonteks(TNoRM.getText());
+                }
+            }
+        });
     }
 
     private void pasangTabPenilaianAwalKosongRalan() {
@@ -915,6 +934,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         initTabResepTerintegrasi();
         sesuaikanTabRalanDenganRanap();
         pasangTabPenilaianAwalKosongRalan();
+        pasangTabRiwayatObat();
         pasangTabDataPasienRalan();
         hiasTabRalan();
         
@@ -12646,6 +12666,7 @@ private String nvl(String value) {
     private void initTabResepTerintegrasi() {
         resepTerintegrasiRalan=new DlgPeresepanDokter((java.awt.Frame)null,false);
         resepTerintegrasiRalan.aktifkanModeEmbedded();
+        resepTerintegrasiRalan.sembunyikanKolomKapasitas();
         PanelResepTerintegrasi.removeAll();
         PanelResepTerintegrasi.add(resepTerintegrasiRalan.ambilKontenUntukEmbed(),java.awt.BorderLayout.CENTER);
         PanelResepTerintegrasi.revalidate();

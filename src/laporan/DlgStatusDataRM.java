@@ -913,13 +913,13 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                     }else{
                         tidakadasoapiranap++;
                     }
-                    resumeralan=Sequel.cariIsi("select if(count(resume_pasien.no_rawat)>0,'Ada','Tidak Ada') from resume_pasien where resume_pasien.no_rawat=?",rs.getString("no_rawat"));
+                    resumeralan=Sequel.cariIsi("select if(count(resume_medis_ralan_v2.no_rawat)>0,'Ada','Tidak Ada') from resume_medis_ralan_v2 where resume_medis_ralan_v2.no_rawat=?",rs.getString("no_rawat"));
                     if(resumeralan.equals("Ada")){
                         adaresumeralan++;
                     }else{
                         tidakadaresumeralan++;
                     }
-                    resumeranap=Sequel.cariIsi("select if(count(resume_pasien_ranap.no_rawat)>0,'Ada','Tidak Ada') from resume_pasien_ranap where resume_pasien_ranap.no_rawat=?",rs.getString("no_rawat"));
+                    resumeranap=Sequel.cariIsi("select if(count(resume_medis_ranap_v2.no_rawat)>0,'Ada','Tidak Ada') from resume_medis_ranap_v2 where resume_medis_ranap_v2.no_rawat=?",rs.getString("no_rawat"));
                     if(resumeranap.equals("Ada")){
                         adaresumeranap++;
                     }else{

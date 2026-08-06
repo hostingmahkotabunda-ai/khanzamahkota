@@ -72,14 +72,53 @@ img.logo { width: 35px; height: 35px; }
         // bayar), krn itu tidak selalu sama dgn yang dipakai/diketik user saat transaksi.
         $nilaippn  = $hasil["ppn_umum"];
 
-        $_sql = "select detailjual.kode_brng,databarang.nama_brng, detailjual.kode_sat,
-                 kodesatuan.satuan,detailjual.h_jual, detailjual.jumlah,
-                 detailjual.subtotal, detailjual.dis, detailjual.bsr_dis,detailjual.tambahan,detailjual.total,detailjual.aturan_pakai from
-                 detailjual inner join databarang inner join kodesatuan inner join jenis
-                 on detailjual.kode_brng=databarang.kode_brng and databarang.kdjns=jenis.kdjns
-                 and detailjual.kode_sat=kodesatuan.kode_sat where
-                 detailjual.nota_jual='$nonota'";
+        // detail_obat_racikan_jual cuma tabel TAG (nota_jual,no_racik,kode_brng) -- TIDAK menunjuk ke
+        // baris detailjual mana persis. Kalau kode_brng yg SAMA muncul lebih dari 1x dalam satu nota
+        // (mis. 2 racikan sama-sama pakai "kertas puyer", atau obat yg sama dibeli lepas DAN dipakai
+        // di racikan), pencocokan cuma berdasar kode_brng (tanpa nomor urut) akan AMBIGU: item lepas
+        // bisa ke-anggap racikan (hilang dari daftar biasa), atau 1 baris detailjual bisa ke-hitung
+        // dobel ke beberapa racikan sekaligus (Tagihan racikan jadi kegedean). Fix: pasangkan tiap tag
+        // racikan ke SATU baris detailjual yg berbeda lewat ROW_NUMBER() per kode_brng (baris ke-1 tag
+        // pasang ke baris ke-1 detailjual, ke-2 ke ke-2, dst) -- baris detailjual yg TIDAK kebagian
+        // pasangan itulah yg benar-benar item lepas (non-racikan).
+        $_sql = "with dj_num as (
+                     select detailjual.*, databarang.nama_brng, kodesatuan.satuan,
+                            row_number() over (partition by detailjual.kode_brng order by detailjual.total) as rn
+                     from detailjual inner join databarang on detailjual.kode_brng=databarang.kode_brng
+                     inner join kodesatuan on detailjual.kode_sat=kodesatuan.kode_sat
+                     where detailjual.nota_jual='$nonota'
+                 ), tag_num as (
+                     select detail_obat_racikan_jual.*,
+                            row_number() over (partition by detail_obat_racikan_jual.kode_brng order by detail_obat_racikan_jual.no_racik) as rn
+                     from detail_obat_racikan_jual where detail_obat_racikan_jual.nota_jual='$nonota'
+                 )
+                 select dj_num.kode_brng,dj_num.nama_brng,dj_num.kode_sat,dj_num.satuan,dj_num.h_jual,
+                        dj_num.jumlah,dj_num.subtotal,dj_num.dis,dj_num.bsr_dis,dj_num.tambahan,dj_num.total,dj_num.aturan_pakai
+                 from dj_num left join tag_num on dj_num.kode_brng=tag_num.kode_brng and dj_num.rn=tag_num.rn
+                 where tag_num.kode_brng is null";
         $hasil = bukaquery($_sql);
+
+        // Item racikan -- cuma tampilkan NAMA racikan-nya, bukan rincian obat isinya. Harga dijumlah
+        // penuh dari baris detailjual yg SUDAH DIPASANGKAN (via rn di atas) ke racikan itu, supaya
+        // Tagihan tetap benar walau ada obat yg sama dipakai di lebih dari satu racikan/juga dijual lepas.
+        $_sqlRacikan = "with dj_num as (
+                     select detailjual.*, row_number() over (partition by detailjual.kode_brng order by detailjual.total) as rn
+                     from detailjual where detailjual.nota_jual='$nonota'
+                 ), tag_num as (
+                     select detail_obat_racikan_jual.*,
+                            row_number() over (partition by detail_obat_racikan_jual.kode_brng order by detail_obat_racikan_jual.no_racik) as rn
+                     from detail_obat_racikan_jual where detail_obat_racikan_jual.nota_jual='$nonota'
+                 )
+                 select obat_racikan_jual.no_racik,obat_racikan_jual.nama_racik,
+                        obat_racikan_jual.jml_dr,obat_racikan_jual.aturan_pakai,
+                        sum(dj_num.total) as total_racikan
+                 from obat_racikan_jual
+                 inner join tag_num on obat_racikan_jual.nota_jual=tag_num.nota_jual and obat_racikan_jual.no_racik=tag_num.no_racik
+                 inner join dj_num on tag_num.kode_brng=dj_num.kode_brng and tag_num.rn=dj_num.rn
+                 where obat_racikan_jual.nota_jual='$nonota'
+                 group by obat_racikan_jual.no_racik,obat_racikan_jual.nama_racik,
+                 obat_racikan_jual.jml_dr,obat_racikan_jual.aturan_pakai";
+        $hasilRacikan = bukaquery($_sqlRacikan);
 
         $setting = mysqli_fetch_array(bukaquery("select setting.nama_instansi,setting.alamat_instansi,setting.kabupaten,setting.propinsi,setting.kontak,setting.email,setting.logo from setting"));
 
@@ -120,6 +159,15 @@ img.logo { width: 35px; height: 35px; }
             echo "<div class='row s'>&nbsp;&nbsp;".$jml." x ".formatDuit2($barispesan["h_jual"])."<span class='r'>".formatDuit2($barispesan["total"])."</span></div>";
             if(trim($barispesan["aturan_pakai"]) !== ""){
                 echo "<div class='item-aturan'>".$barispesan["aturan_pakai"]."</div>";
+            }
+            $i++;
+        }
+        while($racikan = mysqli_fetch_array($hasilRacikan)) {
+            $ttlpesan = $ttlpesan + $racikan["total_racikan"];
+            echo "<div class='row'>".$i.". ".$racikan["nama_racik"]."</div>";
+            echo "<div class='row s'>&nbsp;&nbsp;".$racikan["jml_dr"]." Racikan<span class='r'>".formatDuit2($racikan["total_racikan"])."</span></div>";
+            if(trim($racikan["aturan_pakai"]) !== ""){
+                echo "<div class='item-aturan'>".$racikan["aturan_pakai"]."</div>";
             }
             $i++;
         }

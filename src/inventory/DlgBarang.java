@@ -57,6 +57,7 @@ public class DlgBarang extends javax.swing.JDialog {
     private int i = 0;
     public String aktifkanbatch="no",pengaturanharga=Sequel.cariIsi("select set_harga_obat.setharga from set_harga_obat");
     private String kdlokasi = "", nmlokasi = "", tanggal = "0000-00-00",qrystok="";
+    private String hargaDasarTerakhirSaatEdit="";
 
 
     public DlgBarang(java.awt.Frame parent, boolean modal) {
@@ -2721,10 +2722,20 @@ private void KapasitasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     /** Tombol tambahan (di luar GEN block) untuk export semua item ke Excel. */
     /** Saat mengetik di Harga Dasar, semua harga lain ikut mengetik -- KECUALI Harga Beli (harga beli tidak ikut). */
     private void pasangSinkronHargaDasar() {
+        dasar.addFocusListener(new java.awt.event.FocusAdapter() {
+            @Override
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                hargaDasarTerakhirSaatEdit=dasar.getText();
+            }
+        });
         dasar.addKeyListener(new java.awt.event.KeyAdapter() {
             @Override
             public void keyReleased(java.awt.event.KeyEvent evt) {
-                sinkronHargaDariDasar();
+                String nilaiSekarang=dasar.getText();
+                if(!nilaiSekarang.equals(hargaDasarTerakhirSaatEdit)){
+                    sinkronHargaDariDasar();
+                    hargaDasarTerakhirSaatEdit=nilaiSekarang;
+                }
             }
         });
     }

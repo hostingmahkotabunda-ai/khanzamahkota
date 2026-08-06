@@ -1212,13 +1212,62 @@ public final class RMResumeMedisRalanV2 extends JDialog {
     }
 
     private static void tambahBaris(List<Map<String, Object>> list, String icon, String label, String value, String kode) {
-        Map<String, Object> m = new HashMap<String, Object>();
-        m.put("icon", "./report/icons/" + icon + ".png");
-        m.put("label", label);
-        m.put("value", value == null ? "" : value);
-        m.put("kode", kode == null ? "" : kode);
-        m.put("hasKode", kode != null);
-        list.add(m);
+        List<String> bagian = pecahTeksReport(value == null ? "" : value, 8, 55);
+        for (int i = 0; i < bagian.size(); i++) {
+            Map<String, Object> m = new HashMap<String, Object>();
+            m.put("icon", "./report/icons/" + icon + ".png");
+            m.put("label", i == 0 ? label : "Lanjutan " + label);
+            m.put("value", bagian.get(i));
+            m.put("kode", i == 0 && kode != null ? kode : "");
+            m.put("hasKode", kode != null);
+            list.add(m);
+        }
+    }
+
+    /**
+     * Satu item jr:list tidak dapat dipotong Jasper dengan aman ketika tingginya
+     * melampaui sisa halaman. Pecah uraian panjang menjadi beberapa item kecil
+     * agar preview tidak masuk loop layout/OOM, tanpa menghilangkan isi resume.
+     */
+    private static List<String> pecahTeksReport(String teks, int maksimumBarisVisual, int karakterPerBaris) {
+        List<String> hasil = new ArrayList<String>();
+        String normal = teks.replace("\r\n", "\n").replace('\r', '\n');
+        String[] baris = normal.split("\n", -1);
+        StringBuilder bagian = new StringBuilder();
+        int barisVisual = 0;
+        for (String barisTeks : baris) {
+            String sisa = barisTeks;
+            do {
+                int batasKarakter = maksimumBarisVisual * karakterPerBaris;
+                int potong = Math.min(sisa.length(), batasKarakter);
+                if (potong < sisa.length()) {
+                    int spasi = sisa.lastIndexOf(' ', potong);
+                    if (spasi > karakterPerBaris) {
+                        potong = spasi;
+                    }
+                }
+                String potongan = sisa.substring(0, potong);
+                int kebutuhan = Math.max(1, (potongan.length() + karakterPerBaris - 1) / karakterPerBaris);
+                if (bagian.length() > 0 && barisVisual + kebutuhan > maksimumBarisVisual) {
+                    hasil.add(bagian.toString());
+                    bagian.setLength(0);
+                    barisVisual = 0;
+                }
+                if (bagian.length() > 0) {
+                    bagian.append('\n');
+                }
+                bagian.append(potongan);
+                barisVisual += kebutuhan;
+                sisa = sisa.substring(potong);
+                if (sisa.startsWith(" ")) {
+                    sisa = sisa.substring(1);
+                }
+            } while (!sisa.isEmpty());
+        }
+        if (bagian.length() > 0 || hasil.isEmpty()) {
+            hasil.add(bagian.toString());
+        }
+        return hasil;
     }
 
     private static String kodeAtauStrip(String kode) {
@@ -2448,6 +2497,4 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         }
     }
 }
-
-
 

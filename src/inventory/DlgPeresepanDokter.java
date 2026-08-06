@@ -168,7 +168,7 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
             }){
             @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
-                if ((colIndex==0)||(colIndex==1)||(colIndex==2)) {
+                if ((colIndex==1)||(colIndex==2)) {
                     a=true;
                 }
                 return a;
@@ -193,7 +193,8 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
         for (i = 0; i < 12; i++) {
             TableColumn column = tbResep.getColumnModel().getColumn(i);
             if(i==0){
-                column.setPreferredWidth(20);
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
             }else if(i==1){
                 column.setPreferredWidth(45);
             }else if(i==2){
@@ -1234,7 +1235,8 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
             boolean found=false;
             for(int r=0;r<tbResep.getRowCount();r++){
                 if(tbResep.getValueAt(r,3)!=null && tbResep.getValueAt(r,3).toString().equals(kode)){
-                    tbResep.setValueAt(Boolean.TRUE,r,0);
+                    // Paket resep memakai jumlah unit apa adanya, tanpa konversi kapasitas.
+                    tbResep.setValueAt(Boolean.FALSE,r,0);
                     tbResep.setValueAt(it[1],r,1);
                     found=true;
                     terpasang++;
@@ -2008,7 +2010,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             z=0;        
             for(i=0;i<tbResep.getRowCount();i++){
                 if(!tbResep.getValueAt(i,1).toString().equals("")){
-                    pilih[z]=Boolean.parseBoolean(tbResep.getValueAt(i,0).toString());                
+                    pilih[z]=false;
                     try {
                         jumlah[z]=Double.parseDouble(tbResep.getValueAt(i,1).toString());
                     } catch (Exception e) {
@@ -2282,8 +2284,18 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         modeEmbedded=true;
         BtnKeluar.setVisible(false);
         internalFrame1.setBorder(null);
+        sembunyikanKolomKapasitas();
         sembunyikanTabRacikanLama();
         TabRawatMouseClicked(null);
+    }
+
+    public void sembunyikanKolomKapasitas() {
+        if(tbResep.getColumnModel().getColumnCount()>0){
+            TableColumn kolomKapasitas=tbResep.getColumnModel().getColumn(0);
+            kolomKapasitas.setMinWidth(0);
+            kolomKapasitas.setPreferredWidth(0);
+            kolomKapasitas.setMaxWidth(0);
+        }
     }
     
     public Button getButton(){
@@ -5370,6 +5382,11 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
 
     private void simpandata() {
         try {
+            // Penggunaan kapasitas dinonaktifkan. Semua jumlah resep, termasuk
+            // yang berasal dari paket, disimpan sebagai jumlah unit yang diinput.
+            for(i=0;i<tbResep.getRowCount();i++){
+                tbResep.setValueAt(Boolean.FALSE,i,0);
+            }
             for(i=0;i<tbResep.getRowCount();i++){ 
                 if(Valid.SetAngka(tbResep.getValueAt(i,1).toString())>0){                        
                     if(tbResep.getValueAt(i,0).toString().equals("true")){

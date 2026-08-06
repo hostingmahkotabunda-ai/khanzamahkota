@@ -154,7 +154,7 @@ public final class DlgCariObat2 extends javax.swing.JDialog {
         }){
             @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
-                if ((colIndex==0)||(colIndex==1)||(colIndex==8)||(colIndex==9)||(colIndex==13)||(colIndex==16)||(colIndex==17)) {
+                if ((colIndex==1)||(colIndex==8)||(colIndex==9)||(colIndex==13)||(colIndex==16)||(colIndex==17)) {
                     a=true;
                 }
                 return a;
@@ -179,7 +179,8 @@ public final class DlgCariObat2 extends javax.swing.JDialog {
         for (i = 0; i < 19; i++) {
             TableColumn column = tbObat.getColumnModel().getColumn(i);
             if(i==0){
-                column.setPreferredWidth(20);
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
             }else if(i==1){
                 column.setPreferredWidth(45);
             }else if(i==2){
@@ -1238,6 +1239,11 @@ public final class DlgCariObat2 extends javax.swing.JDialog {
 private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanActionPerformed
         hentikanEditRacikanFarmasi();
         tampilkanSemuaDetailRacikan();
+        // Penggunaan kapasitas dinonaktifkan. Jumlah obat, termasuk dari paket
+        // resep, selalu diperlakukan sebagai jumlah unit yang diinput.
+        for(i=0;i<tbObat.getRowCount();i++){
+            tbObat.setValueAt(Boolean.FALSE,i,0);
+        }
         if(VALIDASIULANGBERIOBAT.equals("yes")){
             for(i=0;i<tbObat.getRowCount();i++){ 
                 if(Valid.SetAngka(tbObat.getValueAt(i,1).toString())>0){
@@ -2096,7 +2102,7 @@ private void ChkJlnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         jml=0;        
         for(i=0;i<tbObat.getRowCount();i++){
             if(Valid.SetAngka(tbObat.getValueAt(i,1).toString())>0){
-                pilih[jml]=Boolean.parseBoolean(tbObat.getValueAt(i,0).toString());                
+                pilih[jml]=false;
                 try {
                     jumlah[jml]=Double.parseDouble(tbObat.getValueAt(i,1).toString());
                 } catch (Exception e) {

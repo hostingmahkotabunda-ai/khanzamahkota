@@ -235,6 +235,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         TabRawat.addTab("Resep", PanelResepRanap);
         resepTerintegrasiRanap = new inventory.DlgPeresepanDokter((java.awt.Frame) null, false);
         resepTerintegrasiRanap.aktifkanModeEmbedded();
+        resepTerintegrasiRanap.sembunyikanKolomKapasitas();
         PanelResepRanap.add(resepTerintegrasiRanap.ambilKontenUntukEmbed(), java.awt.BorderLayout.CENTER);
         final widget.PanelBiasa frameResep = PanelResepRanap;
         TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {

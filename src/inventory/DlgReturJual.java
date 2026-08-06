@@ -927,31 +927,25 @@ public class DlgReturJual extends javax.swing.JDialog {
             Valid.textKosong(Hargaretur,"harga retur");
         }else{
             if(formvalid.equals("No")){
-                if(aktifkanbatch.equals("yes")){
-                    if(Double.parseDouble(Jmlretur.getText())<=Sequel.cariIsiAngka("select sum(jml) from detail_pemberian_obat where no_rawat='"+norawat+"' and kode_brng='"+Kdbar.getText()+"' and no_batch='"+NoBatch.getText()+"' and no_faktur='"+NoFaktur.getText()+"'")){
-                        if(Sequel.menyimpantf("tampreturjual","'"+NoNota.getText()+"','"+Kdbar.getText()+"','"+nmbar.getText()+"','0','0','"+Jmlretur.getText()+"','"+Hargaretur.getText()+"','"+Satuanbar.getText()+"','"+Subtotal.getText()+"','"+NoBatch.getText()+"','"+akses.getkode()+"','"+NoFaktur.getText()+"'","Kode Barang, No.Batch, No.Faktur")==true){
-                            emptTeks();            
-                            tampil();
-                        }
-                    }else{
-                        JOptionPane.showMessageDialog(null,"Jumlah obat retur tidak sesuai dengan pemberian obat..!!");
-                        Jmlretur.requestFocus();
-                    }
+                if(sudahAdaDiDaftarRetur()){
+                    JOptionPane.showMessageDialog(null,"Barang tersebut sudah ada di daftar retur.\nHapus baris lama terlebih dahulu jika jumlahnya ingin diganti.");
+                    Jmlretur.requestFocus();
                 }else{
-                    if(Double.parseDouble(Jmlretur.getText())<=Sequel.cariIsiAngka("select sum(jml) from detail_pemberian_obat where no_rawat='"+norawat+"' and kode_brng='"+Kdbar.getText()+"' and no_batch='' and no_faktur=''")){
-                        if(Sequel.menyimpantf("tampreturjual","'"+NoNota.getText()+"','"+Kdbar.getText()+"','"+nmbar.getText()+"','0','0','"+Jmlretur.getText()+"','"+Hargaretur.getText()+"','"+Satuanbar.getText()+"','"+Subtotal.getText()+"','"+NoBatch.getText()+"','"+akses.getkode()+"','"+NoFaktur.getText()+"'","Kode Barang, No.Batch, No.Faktur")==true){
-                            emptTeks();            
-                            tampil();
-                        }
+                    double jumlahDiminta=Double.parseDouble(Jmlretur.getText());
+                    double sisaRetur=sisaJumlahYangBolehDiretur();
+                    if(jumlahDiminta<=sisaRetur+0.0000001){
+                        simpanKeDaftarRetur();
                     }else{
-                        JOptionPane.showMessageDialog(null,"Jumlah obat retur tidak sesuai dengan pemberian obat..!!");
+                        JOptionPane.showMessageDialog(null,"Jumlah retur melebihi sisa obat yang boleh diretur.\nSisa yang masih dapat diretur : "+Valid.SetAngka3(sisaRetur));
                         Jmlretur.requestFocus();
                     }
                 }
             }else{
-                if(Sequel.menyimpantf("tampreturjual","'"+NoNota.getText()+"','"+Kdbar.getText()+"','"+nmbar.getText()+"','0','0','"+Jmlretur.getText()+"','"+Hargaretur.getText()+"','"+Satuanbar.getText()+"','"+Subtotal.getText()+"','"+NoBatch.getText()+"','"+akses.getkode()+"','"+NoFaktur.getText()+"'","Kode Barang, No.Batch, No.Faktur")==true){
-                    emptTeks();            
-                    tampil();
+                if(sudahAdaDiDaftarRetur()){
+                    JOptionPane.showMessageDialog(null,"Barang tersebut sudah ada di daftar retur.\nHapus baris lama terlebih dahulu jika jumlahnya ingin diganti.");
+                    Jmlretur.requestFocus();
+                }else{
+                    simpanKeDaftarRetur();
                 }
             }             
         }
@@ -1486,6 +1480,103 @@ private void BtnGudangActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }else{
             Valid.autoNomer3("select ifnull(MAX(CONVERT(RIGHT(no_retur_jual,2),signed)),0) from returjual where no_retur_jual like '%"+norawat+"%' ",norawat,2,NoRetur); 
         }
+    }
+
+    private void simpanKeDaftarRetur() {
+        if(Sequel.menyimpantf("tampreturjual","'"+NoNota.getText()+"','"+Kdbar.getText()+"','"+nmbar.getText()+"','0','0','"+Jmlretur.getText()+"','"+Hargaretur.getText()+"','"+Satuanbar.getText()+"','"+Subtotal.getText()+"','"+NoBatch.getText()+"','"+akses.getkode()+"','"+NoFaktur.getText()+"'","Kode Barang, No.Batch, No.Faktur dan Petugas")==true){
+            emptTeks();
+            tampil();
+        }
+    }
+
+    private boolean sudahAdaDiDaftarRetur() {
+        try {
+            ps=koneksi.prepareStatement(
+                "select count(*) from tampreturjual where nota_jual=? and kode_brng=? and no_batch=? and no_faktur=? and petugas=?"
+            );
+            ps.setString(1,NoNota.getText());
+            ps.setString(2,Kdbar.getText());
+            ps.setString(3,NoBatch.getText());
+            ps.setString(4,NoFaktur.getText());
+            ps.setString(5,akses.getkode());
+            rs=ps.executeQuery();
+            return rs.next()&&rs.getInt(1)>0;
+        } catch (Exception e) {
+            System.out.println("Notifikasi cek daftar retur : "+e);
+            return false;
+        } finally {
+            try {
+                if(rs!=null){
+                    rs.close();
+                }
+                if(ps!=null){
+                    ps.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notifikasi tutup cek daftar retur : "+e);
+            }
+        }
+    }
+
+    private double sisaJumlahYangBolehDiretur() {
+        double jumlahDiberikan=0,jumlahSudahRetur=0,jumlahDiDaftar=0;
+        try {
+            ps=koneksi.prepareStatement(
+                "select ifnull(sum(jml),0) from detail_pemberian_obat where no_rawat=? and kode_brng=? and no_batch=? and no_faktur=?"
+            );
+            ps.setString(1,norawat);
+            ps.setString(2,Kdbar.getText());
+            ps.setString(3,NoBatch.getText());
+            ps.setString(4,NoFaktur.getText());
+            rs=ps.executeQuery();
+            if(rs.next()){
+                jumlahDiberikan=rs.getDouble(1);
+            }
+            rs.close();
+            ps.close();
+
+            ps=koneksi.prepareStatement(
+                "select ifnull(sum(d.jml_retur),0) from detreturjual d inner join returjual r on r.no_retur_jual=d.no_retur_jual " +
+                "where r.no_retur_jual like ? and d.kode_brng=? and d.no_batch=? and d.no_faktur=?"
+            );
+            ps.setString(1,norawat+"%");
+            ps.setString(2,Kdbar.getText());
+            ps.setString(3,NoBatch.getText());
+            ps.setString(4,NoFaktur.getText());
+            rs=ps.executeQuery();
+            if(rs.next()){
+                jumlahSudahRetur=rs.getDouble(1);
+            }
+            rs.close();
+            ps.close();
+
+            ps=koneksi.prepareStatement(
+                "select ifnull(sum(jml_retur),0) from tampreturjual where kode_brng=? and no_batch=? and no_faktur=? and petugas=?"
+            );
+            ps.setString(1,Kdbar.getText());
+            ps.setString(2,NoBatch.getText());
+            ps.setString(3,NoFaktur.getText());
+            ps.setString(4,akses.getkode());
+            rs=ps.executeQuery();
+            if(rs.next()){
+                jumlahDiDaftar=rs.getDouble(1);
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi hitung sisa retur : "+e);
+            return 0;
+        } finally {
+            try {
+                if(rs!=null){
+                    rs.close();
+                }
+                if(ps!=null){
+                    ps.close();
+                }
+            } catch (Exception e) {
+                System.out.println("Notifikasi tutup hitung sisa retur : "+e);
+            }
+        }
+        return Math.max(0,jumlahDiberikan-jumlahSudahRetur-jumlahDiDaftar);
     }
 
     private void simpan() {

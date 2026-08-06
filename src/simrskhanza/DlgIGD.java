@@ -11202,6 +11202,7 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
         }
         resepTerintegrasiIgd=new DlgPeresepanDokter((java.awt.Frame)null,false);
         resepTerintegrasiIgd.aktifkanModeEmbedded();
+        resepTerintegrasiIgd.sembunyikanKolomKapasitas();
         PanelResepTerintegrasiIgd.removeAll();
         PanelResepTerintegrasiIgd.add(resepTerintegrasiIgd.ambilKontenUntukEmbed(),java.awt.BorderLayout.CENTER);
         TabHostKerja.addTab("Resep Pasien",PanelResepTerintegrasiIgd);
