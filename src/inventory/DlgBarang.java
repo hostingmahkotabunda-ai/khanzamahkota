@@ -57,7 +57,7 @@ public class DlgBarang extends javax.swing.JDialog {
     private int i = 0;
     public String aktifkanbatch="no",pengaturanharga=Sequel.cariIsi("select set_harga_obat.setharga from set_harga_obat");
     private String kdlokasi = "", nmlokasi = "", tanggal = "0000-00-00",qrystok="";
-    private String hargaDasarTerakhirSaatEdit="";
+    private final widget.Button chkSamaratakanHarga = new widget.Button();
 
 
     public DlgBarang(java.awt.Frame parent, boolean modal) {
@@ -2720,27 +2720,23 @@ private void KapasitasKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
     }
 
     /** Tombol tambahan (di luar GEN block) untuk export semua item ke Excel. */
-    /** Saat mengetik di Harga Dasar, semua harga lain ikut mengetik -- KECUALI Harga Beli (harga beli tidak ikut). */
+    /**
+     * Bukan otomatis lagi saat mengetik (dulu bikin harga kelas yg sengaja dibedakan ketimpa tanpa
+     * sadar) -- sekarang lewat tombol "Samaratakan ke Harga Dasar", sekali klik langsung menyamakan
+     * semua kolom harga lain dgn Harga Dasar SAAT ITU (Harga Beli TETAP TIDAK IKUT). Dipakai tombol
+     * biasa (bukan checkbox) krn checkbox yg di-flash cepat balik-kosong tidak sempat kelihatan
+     * tercentang di layar -- tombol punya feedback klik yg pasti terlihat.
+     */
     private void pasangSinkronHargaDasar() {
-        dasar.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override
-            public void focusGained(java.awt.event.FocusEvent evt) {
-                hargaDasarTerakhirSaatEdit=dasar.getText();
-            }
-        });
-        dasar.addKeyListener(new java.awt.event.KeyAdapter() {
-            @Override
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                String nilaiSekarang=dasar.getText();
-                if(!nilaiSekarang.equals(hargaDasarTerakhirSaatEdit)){
-                    sinkronHargaDariDasar();
-                    hargaDasarTerakhirSaatEdit=nilaiSekarang;
-                }
-            }
-        });
+        chkSamaratakanHarga.setText("Samaratakan ke Harga Dasar");
+        chkSamaratakanHarga.setToolTipText("Sekali klik: salin Harga Dasar ke semua kolom harga lain (kecuali Harga Beli)");
+        chkSamaratakanHarga.setBounds(790, 12, 260, 23);
+        chkSamaratakanHarga.addActionListener(evt -> samaratakanHargaDariDasar());
+        FormInput.add(chkSamaratakanHarga);
     }
 
-    private void sinkronHargaDariDasar() {
+    /** Salin Harga Dasar ke semua kolom harga lain, TANPA terkecuali (menimpa apa pun yg ada sekarang) -- kecuali Harga Beli. */
+    private void samaratakanHargaDariDasar() {
         String nilai = dasar.getText();
         ralan.setText(nilai);
         kelas1.setText(nilai);

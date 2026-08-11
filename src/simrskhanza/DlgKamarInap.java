@@ -226,6 +226,7 @@ public class DlgKamarInap extends javax.swing.JDialog {
             public void actionPerformed(java.awt.event.ActionEvent evt) { bukaDokumentasiFoto(); }
         });
         MenuInputData.add(MnDokumentasiFoto);
+        pasangTombolLogPasienPulang();
         tabMode=new DefaultTableModel(null,new Object[]{
             "No.Rawat","Nomer RM","Nama Pasien","Alamat Pasien","Penanggung Jawab","Hubungan P.J.","Jenis Bayar","Kamar","Tarif Kamar",
             "Diagnosa Awal","Diagnosa Akhir","Tgl.Masuk","Jam Masuk","Tgl.Keluar","Jam Keluar",
@@ -238,6 +239,14 @@ public class DlgKamarInap extends javax.swing.JDialog {
         //tbObat.setDefaultRenderer(Object.class, new WarnaTable(panelJudul.getBackground(),tbObat.getBackground()));
         tbKamIn.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbKamIn.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		// Daftar pasien adalah area kerja utama: sedikit perbesar tulisan dan
+		// batasi pilihan ke satu baris agar petugas tidak keliru menentukan pasien.
+		tbKamIn.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 12));
+		tbKamIn.getTableHeader().setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+		tbKamIn.setRowHeight(Math.max(tbKamIn.getRowHeight(), 29));
+		tbKamIn.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+		tbKamIn.setRowSelectionAllowed(true);
+		tbKamIn.setColumnSelectionAllowed(false);
 
         for (i = 0; i < 22; i++) {
             TableColumn column = tbKamIn.getColumnModel().getColumn(i);
@@ -286,7 +295,34 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 column.setPreferredWidth(60);
             }
         }
-        tbKamIn.setDefaultRenderer(Object.class, new WarnaTable());
+        tbKamIn.setDefaultRenderer(Object.class, new WarnaTable() {
+            private final javax.swing.border.Border borderTerpilih =
+                    javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(255, 193, 7));
+            private final javax.swing.border.Border borderNormal =
+                    javax.swing.BorderFactory.createEmptyBorder(3, 2, 3, 2);
+
+            @Override
+            public java.awt.Component getTableCellRendererComponent(
+                    JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                java.awt.Component component = super.getTableCellRendererComponent(
+                        table, value, isSelected, hasFocus, row, column);
+                if (isSelected) {
+                    component.setBackground(new java.awt.Color(0, 82, 155));
+                    component.setForeground(java.awt.Color.WHITE);
+                    component.setFont(table.getFont().deriveFont(java.awt.Font.BOLD));
+                    if (component instanceof javax.swing.JComponent) {
+                        ((javax.swing.JComponent) component).setBorder(borderTerpilih);
+                    }
+                } else {
+                    component.setForeground(table.getForeground());
+                    component.setFont(table.getFont().deriveFont(java.awt.Font.PLAIN));
+                    if (component instanceof javax.swing.JComponent) {
+                        ((javax.swing.JComponent) component).setBorder(borderNormal);
+                    }
+                }
+                return component;
+            }
+        });
 
         norawat.setDocument(new batasInput((byte)17).getKata(norawat));
         kdkamar.setDocument(new batasInput((byte)15).getKata(kdkamar));
@@ -6329,6 +6365,9 @@ public class DlgKamarInap extends javax.swing.JDialog {
                             "tgl_keluar='"+CmbTahun.getSelectedItem()+"-"+CmbBln.getSelectedItem()+"-"+CmbTgl.getSelectedItem()+
                             "',trf_kamar='"+TTarif.getText()+"',jam_keluar='"+cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem()+
                             "',ttl_biaya='"+ttlbiaya.getText()+"',stts_pulang='"+cmbStatus.getSelectedItem()+"',diagnosa_akhir='"+diagnosaakhir.getText()+"',lama='"+TJmlHari.getText()+"'")==true){
+                        catatLogPasienPulang(norawat.getText(),TNoRMCari.getText(),TPasienCari.getText(),cmbStatus.getSelectedItem().toString(),
+                                CmbTahun.getSelectedItem()+"-"+CmbBln.getSelectedItem()+"-"+CmbTgl.getSelectedItem(),
+                                cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem());
                         if(tabMode.getRowCount()>1){
                             try {
                                 if(tbKamIn.getValueAt(tbKamIn.getSelectedRow()+1,0).toString().equals("")){
@@ -12642,6 +12681,73 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                 form.setVisible(true);
                 this.setCursor(Cursor.getDefaultCursor());
             }
+        }
+    }
+
+    /** Tombol pembuka "Log Pasien Pulang" -- ditaruh di toolbar bawah, sebelah tombol Keluar. */
+    private void pasangTombolLogPasienPulang() {
+        widget.Button btnLogPulang = new widget.Button();
+        btnLogPulang.setText("Log Pasien Pulang");
+        btnLogPulang.setPreferredSize(new java.awt.Dimension(150, 30));
+        btnLogPulang.addActionListener(e -> {
+            laporan.DlgLogPasienPulang dlg = new laporan.DlgLogPasienPulang(null, false);
+            dlg.isCek();
+            dlg.tampil();
+            dlg.setLocationRelativeTo(this);
+            dlg.setVisible(true);
+        });
+        // Ditaruh di UJUNG KANAN baris toolbar bawah (bukan nempel di sebelah Keluar) -- bungkus
+        // panelGlass10 (toolbar existing, tetap utuh) dalam panel BorderLayout baru. panelGlass10
+        // ditaruh di CENTER (bukan WEST) krn WEST/EAST di BorderLayout dibatasi ke preferred WIDTH
+        // komponennya -- panelGlass10 py setPreferredSize(55,55) yg jauh lebih kecil dari isinya
+        // sebenarnya (tadinya gak masalah krn langsung di PAGE_END yg selalu melebar penuh), kalau
+        // ditaruh di WEST tombol2 lamanya jadi kepotong ke lebar 55px. CENTER selalu ambil sisa
+        // ruang penuh terlepas dari preferred size, jadi aman.
+        java.awt.Container indukToolbar = panelGlass10.getParent();
+        indukToolbar.remove(panelGlass10);
+        javax.swing.JPanel wrapperToolbarBawah = new javax.swing.JPanel(new java.awt.BorderLayout());
+        wrapperToolbarBawah.setOpaque(false);
+        wrapperToolbarBawah.add(panelGlass10, java.awt.BorderLayout.CENTER);
+        javax.swing.JPanel panelKananBawah = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 5, 9));
+        panelKananBawah.setOpaque(false);
+        panelKananBawah.add(btnLogPulang);
+        wrapperToolbarBawah.add(panelKananBawah, java.awt.BorderLayout.EAST);
+        indukToolbar.add(wrapperToolbarBawah, java.awt.BorderLayout.PAGE_END);
+        indukToolbar.revalidate();
+    }
+
+    /** Catat siapa & kapan memulangkan pasien -- sebelumnya tidak tercatat sama sekali. */
+    private void catatLogPasienPulang(String noRawat, String noRM, String namaPasien, String statusPulang, String tglPulang, String jamPulang) {
+        try {
+            Sequel.queryu("create table if not exists log_pasien_pulang ("
+                    + "id int not null auto_increment primary key,"
+                    + "no_rawat varchar(17) not null,"
+                    + "no_rkm_medis varchar(15) null,"
+                    + "nm_pasien varchar(100) null,"
+                    + "status_pulang varchar(30) null,"
+                    + "tgl_pulang date null,"
+                    + "jam_pulang varchar(8) null,"
+                    + "petugas_nip varchar(20) null,"
+                    + "petugas_nama varchar(60) null,"
+                    + "dicatat_pada datetime null,"
+                    + "index idx_no_rawat (no_rawat)"
+                    + ")");
+            String namaPetugas = Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode());
+            try (PreparedStatement ps = koneksi.prepareStatement(
+                    "insert into log_pasien_pulang (no_rawat,no_rkm_medis,nm_pasien,status_pulang,tgl_pulang,jam_pulang,petugas_nip,petugas_nama,dicatat_pada) "
+                    + "values (?,?,?,?,?,?,?,?,now())")) {
+                ps.setString(1, noRawat);
+                ps.setString(2, noRM);
+                ps.setString(3, namaPasien);
+                ps.setString(4, statusPulang);
+                ps.setString(5, tglPulang);
+                ps.setString(6, jamPulang);
+                ps.setString(7, akses.getkode());
+                ps.setString(8, namaPetugas);
+                ps.executeUpdate();
+            }
+        } catch (Exception e) {
+            System.out.println("Notif catat log pasien pulang : " + e);
         }
     }
 

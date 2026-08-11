@@ -1266,9 +1266,16 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 try {  
                     ChkJln.setSelected(false);
                     Sequel.AutoComitFalse();
-                    sukses=true;  
+                    sukses=true;
                     ttlhpp=0;ttljual=0;
-                    for(i=0;i<tbObat.getRowCount();i++){ 
+                    // Penggunaan kapasitas dinonaktifkan (sama spt DlgPeresepanDokter.simpandata()) --
+                    // jumlah yg diinput disimpan apa adanya ke detail_pemberian_obat, tidak dibagi
+                    // databarang.kapasitas. Pembagian itu yg bikin billing tampil pecahan (0 koma
+                    // sekian) padahal Copy Resep menampilkan angka bulat yg benar.
+                    for(i=0;i<tbObat.getRowCount();i++){
+                        tbObat.setValueAt(Boolean.FALSE,i,0);
+                    }
+                    for(i=0;i<tbObat.getRowCount();i++){
                         if(Valid.SetAngka(tbObat.getValueAt(i,1).toString())>0){
                             if(tbObat.getValueAt(i,0).toString().equals("true")){
                                 pscarikapasitas= koneksi.prepareStatement("select IFNULL(databarang.kapasitas,1) from databarang where databarang.kode_brng=?");                                      

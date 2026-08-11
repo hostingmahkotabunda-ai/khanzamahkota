@@ -22,6 +22,7 @@ import fungsi.batasInput;
 import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
+import fungsi.WaktuPeriksaRalan;
 import fungsi.akses;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -799,6 +800,7 @@ private void BtnSimpanTindakanActionPerformed(java.awt.event.ActionEvent evt) {/
             Valid.textKosong(TCariTindakan,"Dokter/Paramedis");            
         }else{   
             Valid.editTable("reg_periksa","no_rawat",TNoRw,"stts='Sudah'");
+            WaktuPeriksaRalan.catat(TNoRw.getText(),"DlgCariPerawatanRalan");
             try {                
                 if(pilihtable.equals("rawat_jl_dr")||pilihtable.equals("rawat_jl_pr")||pilihtable.equals("rawat_jl_drpr")){    
                     Sequel.AutoComitFalse();

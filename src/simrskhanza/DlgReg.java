@@ -27,6 +27,7 @@ import laporan.DlgFrekuensiPenyakitRalan;
 import keuangan.DlgBilingRalan;
 import fungsi.WarnaTable;
 import fungsi.WarnaTableRegistrasi;
+import fungsi.WaktuPeriksaRalan;
 import fungsi.batasInput;
 import grafikanalisa.grafikperiksaperagama;
 import grafikanalisa.grafikperiksaperbulan;
@@ -289,6 +290,7 @@ public final class DlgReg extends javax.swing.JDialog {
         initRegistrasi();
         initHostKerjaRalan();
         pasangSuratKontrolV2();
+        WaktuPeriksaRalan.pastikanTabel();
 
         this.setLocation(8,1);
         setSize(885,674);
@@ -296,7 +298,7 @@ public final class DlgReg extends javax.swing.JDialog {
         tabMode=new DefaultTableModel(null,new Object[]{
             "P","No.Reg","No.Rawat","Tanggal","Jam","Kode Dokter","Dokter Dituju","Nomer RM",
             "Pasien","J.K.","Umur","Poliklinik","Jenis Bayar","Penanggung Jawab","Alamat P.J.","Hubungan P.J.",
-            "Biaya Registrasi","Status","No.Telp","Stts Rawat","Stts Poli","Kode Poli","Kode PJ","Status Bayar","No SEP"
+            "Biaya Registrasi","Status","No.Telp","Stts Rawat","Stts Poli","Kode Poli","Kode PJ","Status Bayar","No SEP","Lama Tunggu"
         }){
              @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
@@ -312,7 +314,7 @@ public final class DlgReg extends javax.swing.JDialog {
                  java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, 
                  java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, java.lang.Object.class, 
                  java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,java.lang.Object.class,
-                 java.lang.Object.class
+                 java.lang.Object.class,java.lang.Object.class
              };
              @Override
              public Class getColumnClass(int columnIndex) {
@@ -324,7 +326,7 @@ public final class DlgReg extends javax.swing.JDialog {
         tbPetugas.setPreferredScrollableViewportSize(new Dimension(800,800));
         tbPetugas.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 25; i++) {
+        for (i = 0; i < 26; i++) {
             TableColumn column = tbPetugas.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(20);
@@ -378,6 +380,8 @@ public final class DlgReg extends javax.swing.JDialog {
                 column.setPreferredWidth(70);
             }else if(i==24){
                 column.setPreferredWidth(150);
+            }else if(i==25){
+                column.setPreferredWidth(90);
             }
         }
         tbPetugas.setDefaultRenderer(Object.class, new WarnaTable());
@@ -10178,8 +10182,10 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
                 JOptionPane.showMessageDialog(null,"Maaf, Pasien sudah masuk Kamar Inap. Gunakan billing Ranap..!!!");
             }else {
                 Valid.editTable(tabMode,"reg_periksa","no_rawat",TNoRw,"stts='Sudah'");
+                WaktuPeriksaRalan.catat(TNoRw.getText(),"DlgReg");
                 if(tbPetugas.getSelectedRow()>-1){
                     tabMode.setValueAt("Sudah",tbPetugas.getSelectedRow(),19);
+                    tabMode.setValueAt(lamaTungguNoRawat(TNoRw.getText()),tbPetugas.getSelectedRow(),25);
                 }
             }
         }
@@ -15326,14 +15332,14 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
                 ps=koneksi.prepareStatement("select reg_periksa.no_reg,reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.jam_reg,"+
                     "reg_periksa.kd_dokter,dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.jk,concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur)as umur,poliklinik.nm_poli,"+
                     "reg_periksa.p_jawab,reg_periksa.almt_pj,reg_periksa.hubunganpj,reg_periksa.biaya_reg,reg_periksa.stts_daftar,penjab.png_jawab,pasien.no_tlp,reg_periksa.stts,reg_periksa.status_poli, "+
-                    "reg_periksa.kd_poli,reg_periksa.kd_pj,reg_periksa.status_bayar,bridging_sep.no_sep from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
+                    "reg_periksa.kd_poli,reg_periksa.kd_pj,reg_periksa.status_bayar,bridging_sep.no_sep,coalesce((select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat),(select ws.waktu_sudah from waktu_sudah_periksa_ralan ws where ws.no_rawat=reg_periksa.no_rawat)) as waktu_selesai from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
                     "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join penjab on reg_periksa.kd_pj=penjab.kd_pj left join bridging_sep on bridging_sep.no_rawat=reg_periksa.no_rawat where "+
                     "poliklinik.kd_poli<>'IGDK' and reg_periksa.tgl_registrasi between ? and ? "+terbitsep+" order by "+order); 
             }else{
                 ps=koneksi.prepareStatement("select reg_periksa.no_reg,reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.jam_reg,"+
                     "reg_periksa.kd_dokter,dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.jk,concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur)as umur,poliklinik.nm_poli,"+
                     "reg_periksa.p_jawab,reg_periksa.almt_pj,reg_periksa.hubunganpj,reg_periksa.biaya_reg,reg_periksa.stts_daftar,penjab.png_jawab,pasien.no_tlp,reg_periksa.stts,reg_periksa.status_poli, "+
-                    "reg_periksa.kd_poli,reg_periksa.kd_pj,reg_periksa.status_bayar,bridging_sep.no_sep from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
+                    "reg_periksa.kd_poli,reg_periksa.kd_pj,reg_periksa.status_bayar,bridging_sep.no_sep,coalesce((select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat),(select ws.waktu_sudah from waktu_sudah_periksa_ralan ws where ws.no_rawat=reg_periksa.no_rawat)) as waktu_selesai from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
                     "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join penjab on reg_periksa.kd_pj=penjab.kd_pj left join bridging_sep on bridging_sep.no_rawat=reg_periksa.no_rawat where "+
                     "poliklinik.kd_poli<>'IGDK' and poliklinik.nm_poli like ? and  dokter.nm_dokter like ? and reg_periksa.tgl_registrasi between ? and ? and  "+
                     "(reg_periksa.no_reg like ? or reg_periksa.no_rawat like ? or reg_periksa.tgl_registrasi like ? or reg_periksa.kd_dokter like ? or "+
@@ -15374,7 +15380,8 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
                         rs.getString(9),rs.getString(10),rs.getString(11),rs.getString(17),
                         rs.getString(12),rs.getString(13),rs.getString(14),Valid.SetAngka(rs.getDouble(15)),
                         rs.getString(16),rs.getString("no_tlp"),rs.getString("stts"),rs.getString("status_poli"),
-                        rs.getString("kd_poli"),rs.getString("kd_pj"),rs.getString("status_bayar"),rs.getString("no_sep")
+                        rs.getString("kd_poli"),rs.getString("kd_pj"),rs.getString("status_bayar"),rs.getString("no_sep"),
+                        formatLamaTunggu(rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("waktu_selesai"))
                     });
                 }                    
             }catch(Exception e){
@@ -16099,7 +16106,7 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
                 tabMode.addRow(new Object[] {
                     false,TNoReg.getText(),TNoRw.getText(),Valid.SetTgl(DTPReg.getSelectedItem()+""),CmbJam.getSelectedItem()+":"+CmbMenit.getSelectedItem()+":"+CmbDetik.getSelectedItem(),
                     KdDokter.getText(),TDokter.getText(),TNoRM.getText(),TPasien.getText(),JK.getText(),umur+" "+sttsumur,TPoli.getText(),nmpnj.getText(),TPngJwb.getText(),TAlmt.getText(),
-                    THbngn.getText(),Valid.SetAngka(Double.parseDouble(TBiaya.getText())),TStatus.getText(),NoTelp.getText(),"Belum",status,kdpoli.getText(),kdpnj.getText(),"Belum Bayar"
+                    THbngn.getText(),Valid.SetAngka(Double.parseDouble(TBiaya.getText())),TStatus.getText(),NoTelp.getText(),"Belum",status,kdpoli.getText(),kdpnj.getText(),"Belum Bayar","","-"
                 });
             }
             Sequel.menyimpan2("antripendaftaran","'"+nomor_antrian.getText()+"','"+TNoRw.getText()+"','"+Sequel.cariIsi("select jam from antripendaftaran_nomor where nomor='"+nomor_antrian.getText()+"'")+"','"+Valid.SetTgl(DTPReg.getSelectedItem()+"")+" "+CmbJam.getSelectedItem()+":"+CmbMenit.getSelectedItem()+":"+CmbDetik.getSelectedItem()+"'","nomor");
@@ -16702,6 +16709,35 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
        Valid2.autoNomer2("select ifnull(MAX(CONVERT(antriloket.antrian,signed)),0) from antriloket","",4,Antrian);      
        
     }  
+
+    private String formatLamaTunggu(String mulai, String selesai) {
+        if(selesai==null || selesai.trim().equals("")){
+            return "-";
+        }
+        try{
+            long menit=java.time.Duration.between(
+                    java.sql.Timestamp.valueOf(mulai).toLocalDateTime(),
+                    java.sql.Timestamp.valueOf(selesai).toLocalDateTime()).toMinutes();
+            if(menit<0){
+                return "Waktu tidak valid";
+            }
+            return (menit/60>0?(menit/60)+" jam ":"")+(menit%60)+" menit";
+        }catch(Exception e){
+            return "-";
+        }
+    }
+
+    private String lamaTungguNoRawat(String noRawat) {
+        String selesai=Sequel.cariIsi(
+                "select min(timestamp(tgl_perawatan,jam_rawat)) from pemeriksaan_ralan where no_rawat=?",noRawat);
+        if(selesai==null || selesai.trim().equals("")){
+            selesai=Sequel.cariIsi(
+                    "select waktu_sudah from waktu_sudah_periksa_ralan where no_rawat=?",noRawat);
+        }
+        String mulai=Sequel.cariIsi(
+                "select timestamp(tgl_registrasi,jam_reg) from reg_periksa where no_rawat=?",noRawat);
+        return formatLamaTunggu(mulai,selesai);
+    }
     
     private void BtnWaActionPerformed(java.awt.event.ActionEvent evt) {                                      
          if(TPasien.getText().trim().equals("")&&TPasien.getText().trim().equals("")){

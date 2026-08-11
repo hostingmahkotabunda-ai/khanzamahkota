@@ -47,6 +47,7 @@ import grafikanalisa.grafiksql;
 import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
+import fungsi.WaktuPeriksaRalan;
 import fungsi.akses;
 import inventory.DlgCopyResep;
 import inventory.DlgPeresepanDokter;
@@ -7768,6 +7769,7 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
                 JOptionPane.showMessageDialog(null,"Maaf, Pasien sudah masuk Kamar Inap. Gunakan billing Ranap..!!!");
             }else {
                 Valid.editTable(tabMode,"reg_periksa","no_rawat",TNoRw,"stts='Sudah'");
+                WaktuPeriksaRalan.catat(TNoRw.getText(),"DlgIGD");
                 if(tbPetugas.getSelectedRow()>-1){
                     tabMode.setValueAt("Sudah",tbPetugas.getSelectedRow(),18);
                 }

@@ -21,6 +21,7 @@ import fungsi.batasInput;
 import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
+import fungsi.WaktuPeriksaRalan;
 import fungsi.akses;
 import inventory.DlgCariObat;
 import inventory.DlgCopyResep;
@@ -6317,6 +6318,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                         TindakLanjut.setText("");TPenilaian.setText("");TInstruksi.setText("");SpO2.setText("");
                                         TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);
                                         LCount.setText(""+tabModePemeriksaan.getRowCount());
+                                        notifikasiSoapTersimpan();
                                 }
                             }else{
                                 if(akses.getkode().equals(KdPeg.getText())){
@@ -6338,6 +6340,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                             TindakLanjut.setText("");TPenilaian.setText("");TInstruksi.setText("");SpO2.setText("");
                                             TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);
                                             LCount.setText(""+tabModePemeriksaan.getRowCount());
+                                            notifikasiSoapTersimpan();
                                     }
                                 }else{
                                     JOptionPane.showMessageDialog(null,"Hanya bisa disimpan oleh dokter/petugas yang bersangkutan..!!");
@@ -6761,7 +6764,10 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                 if(tabModePemeriksaan.getRowCount()==0){
                     JOptionPane.showMessageDialog(null,"Maaf, data sudah habis...!!!!");
                     TNoRw.requestFocus();
+                }else if(JOptionPane.showConfirmDialog(this,"Yakin ingin menghapus SOAP?","Konfirmasi",JOptionPane.YES_NO_OPTION)!=JOptionPane.YES_OPTION){
+                    // dibatalkan
                 }else{
+                    int soapDihapus=0;
                     for(i=0;i<tbPemeriksaan.getRowCount();i++){
                         if(tbPemeriksaan.getValueAt(i,0).toString().equals("true")){
                             if(akses.getkode().equals("Admin Utama")){
@@ -6771,6 +6777,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                         "' and jam_rawat='"+tbPemeriksaan.getValueAt(i,5).toString()+"' ");
                                 tabModePemeriksaan.removeRow(i);
                                 i--;
+                                soapDihapus++;
                             }else{
                                 if(akses.getkode().equals(tbPemeriksaan.getValueAt(i,23).toString())){
                                     hapusDraftResepSOAPPending(tbPemeriksaan.getValueAt(i,1).toString(),tbPemeriksaan.getValueAt(i,4).toString(),tbPemeriksaan.getValueAt(i,5).toString(),tbPemeriksaan.getValueAt(i,23).toString());
@@ -6779,6 +6786,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                             "' and jam_rawat='"+tbPemeriksaan.getValueAt(i,5).toString()+"' ");
                                     tabModePemeriksaan.removeRow(i);
                                     i--;
+                                    soapDihapus++;
                                 }else{
                                     JOptionPane.showMessageDialog(null,"Hanya bisa dihapus oleh dokter/petugas yang bersangkutan..!!");
                                 }
@@ -6786,6 +6794,9 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                         }
                     }
                     LCount.setText(""+tabModePemeriksaan.getRowCount());
+                    if(soapDihapus>0){
+                        JOptionPane.showMessageDialog(this,"SOAP berhasil dihapus.","Hapus Berhasil",JOptionPane.INFORMATION_MESSAGE);
+                    }
                 }   break;
             case 4:
                 if(tabModeObstetri.getRowCount()==0){
@@ -7127,6 +7138,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
             i=JOptionPane.showConfirmDialog(null, "Mau skalian update status pasien sudah diperiksa ????","Konfirmasi",JOptionPane.YES_NO_OPTION);
             if(i==JOptionPane.YES_OPTION){
                 Sequel.mengedit("reg_periksa","no_rawat=?","stts=?",2,new String[]{"Sudah",TNoRw.getText()});
+                WaktuPeriksaRalan.catat(TNoRw.getText(),"DlgRawatJalan");
             }
         } catch (Exception e) {
         }
@@ -7452,12 +7464,13 @@ private void BtnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
                                         tbPemeriksaan.setValueAt(KdPeg.getText(),tbPemeriksaan.getSelectedRow(), 23);
                                         tbPemeriksaan.setValueAt(TPegawai.getText(),tbPemeriksaan.getSelectedRow(), 24);
                                         tbPemeriksaan.setValueAt(Jabatan.getText(),tbPemeriksaan.getSelectedRow(), 25);
+                                        notifikasiSoapDiedit();
                                         TSuhu.setText("");TTensi.setText("");TNadi.setText("");TRespirasi.setText("");
                                         TTinggi.setText("");TBerat.setText("");TGCS.setText("");TKeluhan.setText("");
                                         TPemeriksaan.setText("");TAlergi.setText("");LingkarPerut.setText("");
                                         TindakLanjut.setText("");TPenilaian.setText("");TInstruksi.setText("");
                                         SpO2.setText("");TEvaluasi.setText("");
-                                }   
+                                }
                             }else{
                                 if(akses.getkode().equals(tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),23).toString())){
                                     if(Sequel.mengedittf("pemeriksaan_ralan","no_rawat='"+tbPemeriksaan.getValueAt(tbPemeriksaan.getSelectedRow(),1)+
@@ -7499,12 +7512,13 @@ private void BtnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
                                             tbPemeriksaan.setValueAt(KdPeg.getText(),tbPemeriksaan.getSelectedRow(), 23);
                                             tbPemeriksaan.setValueAt(TPegawai.getText(),tbPemeriksaan.getSelectedRow(), 24);
                                             tbPemeriksaan.setValueAt(Jabatan.getText(),tbPemeriksaan.getSelectedRow(), 25);
+                                            notifikasiSoapDiedit();
                                             TSuhu.setText("");TTensi.setText("");TNadi.setText("");TRespirasi.setText("");
                                             TTinggi.setText("");TBerat.setText("");TGCS.setText("");TKeluhan.setText("");
                                             TPemeriksaan.setText("");TAlergi.setText("");LingkarPerut.setText("");
                                             TindakLanjut.setText("");TPenilaian.setText("");TInstruksi.setText("");
                                             SpO2.setText("");TEvaluasi.setText("");
-                                    }   
+                                    }
                                 }else{
                                     JOptionPane.showMessageDialog(null,"Hanya bisa diganti oleh dokter/petugas yang bersangkutan..!!");
                                 }
@@ -12809,6 +12823,30 @@ private String nvl(String value) {
         Sequel.queryu2("delete from permintaan_resep_soap where no_rawat=? and tgl_soap=? and jam_soap=? and kd_dokter=? and status='Belum Terlayani'",4,new String[]{
             noRawat,tglSoap,jamSoap,kdDokter
         });
+    }
+
+    /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil disimpan. */
+    private void notifikasiSoapTersimpan() {
+        String jam = cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem();
+        JOptionPane.showMessageDialog(this,
+                "SOAP pasien " + TPasien.getText() + "\n"
+                + "Tanggal : " + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + "\n"
+                + "Jam : " + jam + "\n"
+                + "Petugas : " + TPegawai.getText() + "\n\n"
+                + "Berhasil disimpan.",
+                "Simpan Berhasil", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil diganti/diedit. */
+    private void notifikasiSoapDiedit() {
+        String jam = cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem();
+        JOptionPane.showMessageDialog(this,
+                "SOAP pasien " + TPasien.getText() + "\n"
+                + "Tanggal : " + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + "\n"
+                + "Jam : " + jam + "\n"
+                + "Petugas : " + TPegawai.getText() + "\n\n"
+                + "Berhasil diedit.",
+                "Edit Berhasil", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void sinkronDraftResepSOAP(String noRawat,String tglSoap,String jamSoap,String kdDokter,String resepTeks) {
