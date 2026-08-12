@@ -196,6 +196,9 @@ public class DlgKamarInap extends javax.swing.JDialog {
     private final DlgCariDokter dokterFilter = new DlgCariDokter(null,false);
     private String kdDokterFilterDipilih = "";
     private boolean sedangSetFilterDokter = false;
+    private final javax.swing.JLabel ringkasanTotalPasien = new javax.swing.JLabel("0");
+    private final javax.swing.JLabel ringkasanMasukHariIni = new javax.swing.JLabel("0");
+    private final javax.swing.JLabel ringkasanPulangHariIni = new javax.swing.JLabel("0");
 
     /** Creates new form DlgKamarInap
      * @param parent
@@ -267,7 +270,7 @@ public class DlgKamarInap extends javax.swing.JDialog {
             }else if(i==7){
                 column.setPreferredWidth(150);
             }else if(i==8){
-                column.setPreferredWidth(75);
+                sembunyikanKolomRawatInap(column);
             }else if(i==9){
                 column.setPreferredWidth(90);
             }else if(i==10){
@@ -281,7 +284,7 @@ public class DlgKamarInap extends javax.swing.JDialog {
             }else if(i==14){
                 column.setPreferredWidth(60);
             }else if(i==15){
-                column.setPreferredWidth(80);
+                sembunyikanKolomRawatInap(column);
             }else if(i==16){
                 column.setPreferredWidth(75);
             }else if(i==17){
@@ -292,7 +295,7 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 column.setMinWidth(0);
                 column.setMaxWidth(0);
             }else if(i==21){
-                column.setPreferredWidth(60);
+                sembunyikanKolomRawatInap(column);
             }
         }
         tbKamIn.setDefaultRenderer(Object.class, new WarnaTable() {
@@ -314,7 +317,10 @@ public class DlgKamarInap extends javax.swing.JDialog {
                         ((javax.swing.JComponent) component).setBorder(borderTerpilih);
                     }
                 } else {
-                    component.setForeground(table.getForeground());
+                    component.setBackground(row % 2 == 0
+                            ? java.awt.Color.WHITE
+                            : new java.awt.Color(239, 246, 252));
+                    component.setForeground(new java.awt.Color(34, 52, 69));
                     component.setFont(table.getFont().deriveFont(java.awt.Font.PLAIN));
                     if (component instanceof javax.swing.JComponent) {
                         ((javax.swing.JComponent) component).setBorder(borderNormal);
@@ -839,6 +845,175 @@ public class DlgKamarInap extends javax.swing.JDialog {
         } catch (Exception e) {
             diagnosaakhir.setEditable(false);
         }
+        terapkanTampilanModernRawatInap();
+    }
+
+    /** Menyegarkan visual halaman tanpa mengganti komponen maupun event lama. */
+    private void terapkanTampilanModernRawatInap() {
+        final java.awt.Color navy = new java.awt.Color(18, 48, 82);
+        final java.awt.Color latar = new java.awt.Color(243, 247, 251);
+        final java.awt.Color garis = new java.awt.Color(211, 221, 231);
+
+        internalFrame1.removeAll();
+        internalFrame1.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        internalFrame1.setBackground(latar);
+        internalFrame1.setOpaque(true);
+
+        javax.swing.JPanel header = new javax.swing.JPanel(new java.awt.BorderLayout(18, 0));
+        header.setBackground(navy);
+        header.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 18, 7, 18));
+        header.setPreferredSize(new java.awt.Dimension(100, 72));
+
+        javax.swing.JPanel blokJudul = new javax.swing.JPanel();
+        blokJudul.setOpaque(false);
+        blokJudul.setLayout(new javax.swing.BoxLayout(blokJudul, javax.swing.BoxLayout.Y_AXIS));
+        javax.swing.JLabel judul = new javax.swing.JLabel("DAFTAR PASIEN RAWAT INAP");
+        judul.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 18));
+        judul.setForeground(java.awt.Color.WHITE);
+        javax.swing.JLabel subJudul = new javax.swing.JLabel("Kelola data pasien, kamar, kepulangan, dan layanan rawat inap");
+        subJudul.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 10));
+        subJudul.setForeground(new java.awt.Color(205, 221, 238));
+        blokJudul.add(javax.swing.Box.createVerticalGlue());
+        blokJudul.add(judul);
+        blokJudul.add(javax.swing.Box.createVerticalStrut(2));
+        blokJudul.add(subJudul);
+        blokJudul.add(javax.swing.Box.createVerticalGlue());
+        header.add(blokJudul, java.awt.BorderLayout.CENTER);
+
+        javax.swing.JPanel kartu = new javax.swing.JPanel(new java.awt.GridLayout(1, 3, 9, 0));
+        kartu.setOpaque(false);
+        kartu.add(buatKartuRingkasan("TOTAL PASIEN", ringkasanTotalPasien, new java.awt.Color(48, 126, 199)));
+        kartu.add(buatKartuRingkasan("MASUK HARI INI", ringkasanMasukHariIni, new java.awt.Color(34, 153, 119)));
+        kartu.add(buatKartuRingkasan("PULANG HARI INI", ringkasanPulangHariIni, new java.awt.Color(232, 145, 48)));
+        kartu.setPreferredSize(new java.awt.Dimension(450, 54));
+        header.add(kartu, java.awt.BorderLayout.EAST);
+
+        rapikanPanelModern(panelGlass9, garis);
+        panelGlass9.setPreferredSize(new java.awt.Dimension(100, 45));
+        javax.swing.JPanel bagianAtas = new javax.swing.JPanel(new java.awt.BorderLayout(0, 7));
+        bagianAtas.setBackground(latar);
+        bagianAtas.add(header, java.awt.BorderLayout.NORTH);
+        javax.swing.JPanel pembungkusPasien = new javax.swing.JPanel(new java.awt.BorderLayout());
+        pembungkusPasien.setBackground(latar);
+        pembungkusPasien.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 10));
+        pembungkusPasien.add(panelGlass9, java.awt.BorderLayout.CENTER);
+        bagianAtas.add(pembungkusPasien, java.awt.BorderLayout.CENTER);
+        internalFrame1.add(bagianAtas, java.awt.BorderLayout.NORTH);
+
+        Scroll.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createEmptyBorder(7, 10, 7, 10),
+                javax.swing.BorderFactory.createLineBorder(garis)));
+        Scroll.getViewport().setBackground(java.awt.Color.WHITE);
+        tbKamIn.setGridColor(new java.awt.Color(225, 232, 239));
+        tbKamIn.setShowHorizontalLines(true);
+        tbKamIn.setShowVerticalLines(false);
+        tbKamIn.getTableHeader().setBackground(navy);
+        tbKamIn.getTableHeader().setForeground(java.awt.Color.WHITE);
+        tbKamIn.getTableHeader().setOpaque(true);
+        tbKamIn.getTableHeader().setBorder(javax.swing.BorderFactory.createMatteBorder(
+                0, 0, 2, 0, new java.awt.Color(40, 149, 198)));
+        tbKamIn.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 30));
+        internalFrame1.add(Scroll, java.awt.BorderLayout.CENTER);
+
+        // Filter tanggal, kamar, lantai, dokter, kata kunci, dan action bar tetap di bawah.
+        rapikanPanelModern(panelCari, garis);
+        rapikanPanelModern(panelGlass11, garis);
+        panelGlass10.setOpaque(true);
+        panelGlass10.setBackground(java.awt.Color.WHITE);
+        gayaTombolAksi(BtnIn, new java.awt.Color(30, 126, 86));
+        gayaTombolAksi(BtnOut, new java.awt.Color(194, 70, 65));
+        gayaTombolAksi(btnPindah, new java.awt.Color(42, 111, 174));
+        gayaTombolAksi(BtnPrint, new java.awt.Color(92, 103, 116));
+        gayaTombolAksi(BtnKeluar, new java.awt.Color(92, 103, 116));
+        PanelCariUtama.setOpaque(true);
+        PanelCariUtama.setBackground(latar);
+        PanelCariUtama.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 7, 10));
+        internalFrame1.add(PanelCariUtama, java.awt.BorderLayout.SOUTH);
+
+        tabMode.addTableModelListener(new javax.swing.event.TableModelListener() {
+            @Override
+            public void tableChanged(javax.swing.event.TableModelEvent e) {
+                perbaruiRingkasanRawatInap();
+            }
+        });
+        perbaruiRingkasanRawatInap();
+        perbaruiRingkasanHarianRawatInap();
+        internalFrame1.revalidate();
+        internalFrame1.repaint();
+    }
+
+    private javax.swing.JPanel buatKartuRingkasan(String teks, javax.swing.JLabel nilai, java.awt.Color aksen) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout(9, 0));
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 5, 0, 0, aksen),
+                javax.swing.BorderFactory.createEmptyBorder(5, 9, 5, 9)));
+        javax.swing.JLabel label = new javax.swing.JLabel(teks);
+        label.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 9));
+        label.setForeground(new java.awt.Color(91, 105, 120));
+        nilai.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 20));
+        nilai.setForeground(new java.awt.Color(31, 52, 73));
+        nilai.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        panel.add(label, java.awt.BorderLayout.CENTER);
+        panel.add(nilai, java.awt.BorderLayout.EAST);
+        return panel;
+    }
+
+    private void rapikanPanelModern(javax.swing.JComponent panel, java.awt.Color garis) {
+        panel.setOpaque(true);
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createLineBorder(garis));
+    }
+
+    private void gayaTombolAksi(javax.swing.AbstractButton tombol, java.awt.Color warna) {
+        tombol.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 11));
+        tombol.setForeground(warna);
+        tombol.setFocusPainted(false);
+    }
+
+    private void perbaruiRingkasanRawatInap() {
+        int masuk = 0;
+        int pulang = 0;
+        String hariIni = new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date());
+        for (int baris = 0; baris < tabMode.getRowCount(); baris++) {
+            Object tanggalMasuk = tabMode.getValueAt(baris, 11);
+            Object tanggalPulang = tabMode.getValueAt(baris, 13);
+            if (tanggalMasuk != null && tanggalMasuk.toString().startsWith(hariIni)) {
+                masuk++;
+            }
+            if (tanggalPulang != null && tanggalPulang.toString().startsWith(hariIni)) {
+                pulang++;
+            }
+        }
+        ringkasanTotalPasien.setText(String.valueOf(tabMode.getRowCount()));
+        ringkasanMasukHariIni.setText(String.valueOf(masuk));
+        if (R3.isSelected()) {
+            ringkasanPulangHariIni.setText(String.valueOf(pulang));
+        }
+    }
+
+    /** Ringkasan harian tidak mengikuti filter tabel (misalnya "Belum Pulang"). */
+    private void perbaruiRingkasanHarianRawatInap() {
+        try (PreparedStatement psRingkasan = koneksi.prepareStatement(
+                "select "
+                + "(select count(distinct no_rawat) from kamar_inap where tgl_masuk=curdate()) as masuk_hari_ini, "
+                + "(select count(*) from log_pasien_pulang where tgl_pulang=curdate()) as pulang_hari_ini")) {
+            try (ResultSet rsRingkasan = psRingkasan.executeQuery()) {
+                if (rsRingkasan.next()) {
+                    ringkasanMasukHariIni.setText(String.valueOf(rsRingkasan.getInt("masuk_hari_ini")));
+                    ringkasanPulangHariIni.setText(String.valueOf(rsRingkasan.getInt("pulang_hari_ini")));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Ringkasan pasien rawat inap : " + e);
+        }
+    }
+
+    private void sembunyikanKolomRawatInap(javax.swing.table.TableColumn column) {
+        column.setMinWidth(0);
+        column.setMaxWidth(0);
+        column.setPreferredWidth(0);
+        column.setResizable(false);
     }
 
     /** This method is called from within the constructor to
@@ -12745,6 +12920,7 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                 ps.setString(7, akses.getkode());
                 ps.setString(8, namaPetugas);
                 ps.executeUpdate();
+                perbaruiRingkasanHarianRawatInap();
             }
         } catch (Exception e) {
             System.out.println("Notif catat log pasien pulang : " + e);
@@ -17167,6 +17343,7 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             System.out.println("Notifikasi : "+e);
         }
         LCount.setText(""+tabMode.getRowCount());
+        perbaruiRingkasanHarianRawatInap();
     }
 
     private String ekspresiDokterPenanggungJawabRanap() {
@@ -17186,7 +17363,11 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         if(nomor.equals("")){
             return "";
         }
-        return " and (upper(bangsal.nm_bangsal) like '%LT "+nomor+"%' or upper(bangsal.nm_bangsal) like '%LT."+nomor+"%' or upper(bangsal.nm_bangsal) like '%LT"+nomor+"%' or upper(bangsal.nm_bangsal) like '%LANTAI "+nomor+"%' or upper(bangsal.nm_bangsal) like '%LANTAI"+nomor+"%')";
+        return " and (upper(trim(bangsal.nm_bangsal)) like '%LT"+nomor+"%' "
+                + "or upper(trim(bangsal.nm_bangsal)) like '%LT "+nomor+"%' "
+                + "or upper(trim(bangsal.nm_bangsal)) like '%LT."+nomor+"%' "
+                + "or upper(trim(bangsal.nm_bangsal)) like '%LANTAI "+nomor+"%' "
+                + "or upper(trim(bangsal.nm_bangsal)) like '%LANTAI"+nomor+"%')";
     }
 
     private void ringkaskanHeaderRanap() {
@@ -17205,7 +17386,7 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         LblLantaiCari.setPreferredSize(new java.awt.Dimension(55, 23));
 
         cmbLantaiCari.setName("cmbLantaiCari");
-        cmbLantaiCari.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Semua", "LT 1", "LT 2", "LT 3", "LT 4", "LT 5" }));
+        cmbLantaiCari.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Semua", "LT3", "LT4" }));
         cmbLantaiCari.setPreferredSize(new java.awt.Dimension(90, 23));
         cmbLantaiCari.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
