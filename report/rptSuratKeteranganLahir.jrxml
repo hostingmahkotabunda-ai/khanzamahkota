@@ -203,66 +203,90 @@ tahun/jam]]></text>
 
 			<!-- Jenis Kelamin : -->
 			<staticText>
-				<reportElement x="74" y="555" width="110" height="16" positionType="Float"/>
+				<reportElement x="74" y="548" width="110" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<text><![CDATA[Jenis Kelamin]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
-				<reportElement x="196" y="555" width="216" height="16" positionType="Float"/>
+				<reportElement x="196" y="548" width="216" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{jk}]]></textFieldExpression>
 			</textField>
 
 			<!-- Berat Badan Lahir : -->
 			<staticText>
-				<reportElement x="74" y="577" width="110" height="16" positionType="Float"/>
+				<reportElement x="74" y="564" width="110" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<text><![CDATA[Berat Badan Lahir]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
-				<reportElement x="196" y="577" width="216" height="16" positionType="Float"/>
+				<reportElement x="196" y="564" width="216" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{berat_badan}]]></textFieldExpression>
 			</textField>
 
 			<!-- Panjang Badan : -->
 			<staticText>
-				<reportElement x="74" y="599" width="110" height="16" positionType="Float"/>
+				<reportElement x="74" y="580" width="110" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<text><![CDATA[Panjang Badan]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
-				<reportElement x="196" y="599" width="216" height="16" positionType="Float"/>
+				<reportElement x="196" y="580" width="216" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{panjang_badan}]]></textFieldExpression>
 			</textField>
 
 			<!-- Lingkaran Kepala : -->
 			<staticText>
-				<reportElement x="74" y="621" width="110" height="16" positionType="Float"/>
+				<reportElement x="74" y="596" width="110" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<text><![CDATA[Lingkaran Kepala]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
-				<reportElement x="196" y="621" width="216" height="16" positionType="Float"/>
+				<reportElement x="196" y="596" width="216" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{lingkar_kepala}]]></textFieldExpression>
 			</textField>
 
+			<!-- Lingkar Dada : -->
+			<staticText>
+				<reportElement x="74" y="612" width="110" height="16" positionType="Float"/>
+				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
+				<text><![CDATA[Lingkar Dada]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
+				<reportElement x="196" y="612" width="216" height="16" positionType="Float"/>
+				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{lingkar_dada}]]></textFieldExpression>
+			</textField>
+
+			<!-- Lingkar Perut : -->
+			<staticText>
+				<reportElement x="74" y="628" width="110" height="16" positionType="Float"/>
+				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
+				<text><![CDATA[Lingkar Perut]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
+				<reportElement x="196" y="628" width="216" height="16" positionType="Float"/>
+				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
+				<textFieldExpression><![CDATA[$P{lingkar_perut}]]></textFieldExpression>
+			</textField>
+
 			<!-- Tanda/Keterangan Lainnya : -->
 			<staticText>
-				<reportElement x="74" y="643" width="110" height="32" positionType="Float"/>
+				<reportElement x="74" y="644" width="110" height="32" positionType="Float"/>
 				<textElement verticalAlignment="Top"><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<text><![CDATA[Tanda/Keterangan
 Lainnya]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="188" y="643" width="8" height="16" positionType="Float"/>
+				<reportElement x="188" y="644" width="8" height="16" positionType="Float"/>
 				<textElement><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<text><![CDATA[:]]></text>
 			</staticText>
 			<textField isBlankWhenNull="true" isStretchWithOverflow="true">
-				<reportElement x="196" y="643" width="216" height="30" positionType="Float"/>
+				<reportElement x="196" y="644" width="216" height="16" positionType="Float"/>
 				<textElement verticalAlignment="Top"><font fontName="Calibri" size="11" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{keterangan_lain}]]></textFieldExpression>
 			</textField>
@@ -276,10 +300,12 @@ Lainnya]]></text>
 			<staticText><reportElement x="188" y="459" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
 			<staticText><reportElement x="188" y="482" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
 			<staticText><reportElement x="188" y="506" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
-			<staticText><reportElement x="188" y="555" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
-			<staticText><reportElement x="188" y="577" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
-			<staticText><reportElement x="188" y="599" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
-			<staticText><reportElement x="188" y="621" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
+			<staticText><reportElement x="188" y="548" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
+			<staticText><reportElement x="188" y="564" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
+			<staticText><reportElement x="188" y="580" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
+			<staticText><reportElement x="188" y="596" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
+			<staticText><reportElement x="188" y="612" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
+			<staticText><reportElement x="188" y="628" width="8" height="16" positionType="Float"/><text><![CDATA[:]]></text></staticText>
 
 			<!-- Baris tanggal surat "Kota, dd Bulan yyyy" -->
 			<textField isBlankWhenNull="true">

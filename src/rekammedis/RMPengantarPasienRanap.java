@@ -88,6 +88,7 @@ public final class RMPengantarPasienRanap extends JDialog {
     private final widget.ComboBox cmbAsalPengobatan = cmb("-", "Poliklinik", "Emergency", "Kamar Bersalin");
     private final widget.TextArea taPengobatanDiberikan = ta();
     private final widget.TextBox tDokterPenulis = tf();
+    private String dokterIgdNama = "";
 
     private final widget.Button BtnBaru = new widget.Button();
     private final widget.Button BtnSimpan = new widget.Button();
@@ -346,11 +347,12 @@ public final class RMPengantarPasienRanap extends JDialog {
                 + "if(kelurahan.nm_kel is null or kelurahan.nm_kel='','',concat(', ',kelurahan.nm_kel)),"
                 + "if(kecamatan.nm_kec is null or kecamatan.nm_kec='','',concat(', ',kecamatan.nm_kec)),"
                 + "if(kabupaten.nm_kab is null or kabupaten.nm_kab='','',concat(', ',kabupaten.nm_kab))) as alamat_lengkap,"
-                + "ifnull(rp.p_jawab,'') as p_jawab "
+                + "ifnull(rp.p_jawab,'') as p_jawab,ifnull(dokter.nm_dokter,'') as nm_dokter_igd "
                 + "from reg_periksa rp inner join pasien p on rp.no_rkm_medis=p.no_rkm_medis "
                 + "left join kelurahan on p.kd_kel=kelurahan.kd_kel "
                 + "left join kecamatan on p.kd_kec=kecamatan.kd_kec "
                 + "left join kabupaten on p.kd_kab=kabupaten.kd_kab "
+                + "left join dokter on rp.kd_dokter=dokter.kd_dokter "
                 + "where rp.no_rawat=?")) {
             ps.setString(1, norawat);
             try (ResultSet rs = ps.executeQuery()) {
@@ -361,6 +363,7 @@ public final class RMPengantarPasienRanap extends JDialog {
                     TTglLahir.setText(rs.getString("tgl_lahir"));
                     TAlamat.setText(rs.getString("alamat_lengkap"));
                     tWali.setText(rs.getString("p_jawab"));
+                    dokterIgdNama = rs.getString("nm_dokter_igd");
                 }
             }
         } catch (Exception e) {
@@ -385,7 +388,7 @@ public final class RMPengantarPasienRanap extends JDialog {
         dtpTanggal.setDate(new Date());
         String namaPetugas = Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode());
         tPerawatPenulis.setText(namaPetugas);
-        tDokterPenulis.setText(namaPetugas);
+        tDokterPenulis.setText(dokterIgdNama);
     }
 
     private void muatDataJikaAda(String norawat) {
@@ -448,14 +451,22 @@ public final class RMPengantarPasienRanap extends JDialog {
         String jam = dtpTanggal.getSelectedItem().toString().length() >= 19
                 ? dtpTanggal.getSelectedItem().toString().substring(11, 19) : "";
         try (PreparedStatement ps = koneksi.prepareStatement(
-                "replace into pengantar_pasien_ranap (no_rawat,ruangan_tujuan,tanggal,jam,wali,td,nadi,suhu,"
+                "insert into pengantar_pasien_ranap (no_rawat,ruangan_tujuan,tanggal,jam,wali,td,nadi,suhu,"
                 + "frekuensi_nafas,skor_nyeri_ada,skala_nyeri,bb,tb,lingkar_kepala,alat_bantu,prothesa,cacat_tubuh,"
                 + "adl,resiko_jatuh,score_jatuh,perawat_penulis,riwayat_penyakit,pemeriksaan_jasmani,laboratorium,"
                 + "diagnosa,usul_pengobatan,asal_pengobatan,pengobatan_diberikan,dokter_penulis,updated_by,updated_at,"
                 + "created_by,created_at) "
-                + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),"
-                + "ifnull((select created_by from pengantar_pasien_ranap where no_rawat=?),?),"
-                + "ifnull((select created_at from pengantar_pasien_ranap where no_rawat=?),now()))")) {
+                + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,now()) "
+                + "on duplicate key update ruangan_tujuan=values(ruangan_tujuan),tanggal=values(tanggal),jam=values(jam),"
+                + "wali=values(wali),td=values(td),nadi=values(nadi),suhu=values(suhu),frekuensi_nafas=values(frekuensi_nafas),"
+                + "skor_nyeri_ada=values(skor_nyeri_ada),skala_nyeri=values(skala_nyeri),bb=values(bb),tb=values(tb),"
+                + "lingkar_kepala=values(lingkar_kepala),alat_bantu=values(alat_bantu),prothesa=values(prothesa),"
+                + "cacat_tubuh=values(cacat_tubuh),adl=values(adl),resiko_jatuh=values(resiko_jatuh),"
+                + "score_jatuh=values(score_jatuh),perawat_penulis=values(perawat_penulis),"
+                + "riwayat_penyakit=values(riwayat_penyakit),pemeriksaan_jasmani=values(pemeriksaan_jasmani),"
+                + "laboratorium=values(laboratorium),diagnosa=values(diagnosa),usul_pengobatan=values(usul_pengobatan),"
+                + "asal_pengobatan=values(asal_pengobatan),pengobatan_diberikan=values(pengobatan_diberikan),"
+                + "dokter_penulis=values(dokter_penulis),updated_by=values(updated_by),updated_at=now()")) {
             int i = 1;
             ps.setString(i++, ambil(TNoRw));
             ps.setString(i++, ambil(tRuanganTujuan));
@@ -491,9 +502,6 @@ public final class RMPengantarPasienRanap extends JDialog {
             ps.setString(i++, ambil(taPengobatanDiberikan));
             ps.setString(i++, ambil(tDokterPenulis));
             ps.setString(i++, akses.getkode());
-            ps.setString(i++, ambil(TNoRw));
-            ps.setString(i++, akses.getkode());
-            ps.setString(i++, ambil(TNoRw));
             ps.executeUpdate();
             JOptionPane.showMessageDialog(this, "Pengantar pasien rawat inap tersimpan.");
         } catch (Exception e) {

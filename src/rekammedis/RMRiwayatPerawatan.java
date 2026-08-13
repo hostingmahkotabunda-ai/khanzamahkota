@@ -17,14 +17,20 @@ import fungsi.batasInput;
 import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Desktop;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.net.URLDecoder;
@@ -34,7 +40,15 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.table.DefaultTableModel;
@@ -81,6 +95,7 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
     private final javax.swing.JPopupMenu popupAsesmen = new javax.swing.JPopupMenu();
     private final javax.swing.JMenuItem ppCetakAsesmen = new javax.swing.JMenuItem();
     private String linkAsesmenAktif = "";
+    private final JPanel panelMediaGrid = new JPanel();
 
     /** Creates new form DlgLhtBiaya
      * @param parent
@@ -316,6 +331,12 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
         TabRawat.addTab("Penilaian Awal Rawat Inap", new javax.swing.JScrollPane(LoadHTMLAsesmenRanap));
 
         pasangPopupCetakAsesmen();
+
+        panelMediaGrid.setLayout(new FlowLayout(FlowLayout.LEFT, 12, 12));
+        panelMediaGrid.setBackground(Color.WHITE);
+        JScrollPane scrollMedia = new JScrollPane(panelMediaGrid);
+        scrollMedia.getVerticalScrollBar().setUnitIncrement(16);
+        TabRawat.addTab("Media", scrollMedia);
     }
 
     private javax.swing.JEditorPane buatEditorPaneHtml() {
@@ -2325,6 +2346,9 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                     break;
                 case 8:
                     tampilAsesmenRanap();
+                    break;
+                case 9:
+                    tampilMedia();
                     break;
                 default:
                     break;
@@ -5967,6 +5991,164 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                 .append("<br/>")
                 .append(renderBarisGenerik(rs, skip))
                 .append("</div>");
+    }
+
+    /**
+     * Tab "Media" -- grid thumbnail dokumentasi_foto_ranap (sama sumber data
+     * dgn tab "Media" di webapp billing-ranap), tapi tiap kartu di sini bisa
+     * langsung diklik utk lihat versi besar ATAU tombol "Cetak" utk preview
+     * Jasper (webapp billing-ranap cuma preview gambar, tidak bisa cetak).
+     * Filter R1-R4/NoRM sama persis dgn tab lain di layar ini.
+     */
+    private void tampilMedia() {
+        panelMediaGrid.removeAll();
+        if (NoRM.getText().trim().equals("")) {
+            panelMediaGrid.add(labelKosongMedia("Pasien belum dipilih."));
+            panelMediaGrid.revalidate();
+            panelMediaGrid.repaint();
+            return;
+        }
+        String dari = "dokumentasi_foto_ranap inner join reg_periksa on dokumentasi_foto_ranap.no_rawat=reg_periksa.no_rawat";
+        String where;
+        String urut;
+        if (R4.isSelected()) {
+            where = " where dokumentasi_foto_ranap.no_rawat='" + NoRawat.getText().trim() + "' ";
+            urut = " order by dokumentasi_foto_ranap.tgl_upload desc ";
+        } else {
+            where = " where reg_periksa.no_rkm_medis='" + NoRM.getText().trim() + "' ";
+            if (R3.isSelected()) {
+                where += " and dokumentasi_foto_ranap.tgl_upload between '" + Valid.SetTgl(Tgl1.getSelectedItem() + "")
+                        + "' and '" + Valid.SetTgl(Tgl2.getSelectedItem() + "") + "' ";
+            }
+            urut = R1.isSelected() ? " order by dokumentasi_foto_ranap.tgl_upload desc limit 5 "
+                    : " order by dokumentasi_foto_ranap.tgl_upload desc ";
+        }
+        int n = 0;
+        try (PreparedStatement st = koneksi.prepareStatement(
+                "select dokumentasi_foto_ranap.id,dokumentasi_foto_ranap.no_rawat,dokumentasi_foto_ranap.keterangan,"
+                + "dokumentasi_foto_ranap.nama_file,dokumentasi_foto_ranap.photo,"
+                + "date_format(dokumentasi_foto_ranap.tgl_upload,'%d-%m-%Y %H:%i') as tgl_upload,"
+                + "ifnull(petugas.nama,dokumentasi_foto_ranap.created_by) as oleh "
+                + "from " + dari
+                + " left join petugas on petugas.nip=dokumentasi_foto_ranap.created_by "
+                + where + urut)) {
+            try (ResultSet hasil = st.executeQuery()) {
+                while (hasil.next()) {
+                    panelMediaGrid.add(buatKartuMedia(hasil));
+                    n++;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif tampilMedia : " + e);
+        }
+        if (n == 0) {
+            panelMediaGrid.add(labelKosongMedia("Belum ada dokumentasi foto untuk pasien ini."));
+        }
+        panelMediaGrid.revalidate();
+        panelMediaGrid.repaint();
+    }
+
+    private JPanel buatKartuMedia(ResultSet rs) throws Exception {
+        final int id = rs.getInt("id");
+        byte[] foto = rs.getBytes("photo");
+        String caption = rs.getString("keterangan");
+        if (caption == null || caption.trim().isEmpty()) { caption = nz(rs.getString("nama_file")); }
+        final String judulPreview = caption;
+        String tglUpload = nz(rs.getString("tgl_upload"));
+        String oleh = nz(rs.getString("oleh"));
+
+        JPanel kartu = new JPanel(new BorderLayout(4, 4));
+        kartu.setPreferredSize(new Dimension(170, 215));
+        kartu.setBorder(BorderFactory.createLineBorder(new Color(215, 224, 230)));
+        kartu.setBackground(Color.WHITE);
+
+        JLabel lblFoto = new JLabel();
+        lblFoto.setHorizontalAlignment(JLabel.CENTER);
+        lblFoto.setPreferredSize(new Dimension(160, 120));
+        lblFoto.setIcon(buatThumbnail(foto, 156, 116));
+        lblFoto.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        lblFoto.setToolTipText("Klik untuk lihat ukuran penuh");
+        lblFoto.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseClicked(java.awt.event.MouseEvent e) { lihatMediaBesar(id, judulPreview); }
+        });
+
+        JLabel lblCaption = new JLabel("<html><div style='width:150px;'>" + CetakAsesmen.esc(caption) + "</div></html>");
+        lblCaption.setFont(new Font("Tahoma", Font.BOLD, 10));
+        JLabel lblMeta = new JLabel("<html><div style='width:150px;color:#7a8a95;'>"
+                + CetakAsesmen.esc(tglUpload) + " &middot; " + CetakAsesmen.esc(oleh) + "</div></html>");
+        lblMeta.setFont(new Font("Tahoma", Font.PLAIN, 9));
+
+        JPanel infoPanel = new JPanel();
+        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
+        infoPanel.setOpaque(false);
+        infoPanel.add(lblCaption);
+        infoPanel.add(lblMeta);
+
+        widget.Button btnCetak = new widget.Button();
+        btnCetak.setText("Cetak");
+        btnCetak.addActionListener(e -> {
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                CetakMediaFoto.cetak(id);
+            } finally {
+                this.setCursor(Cursor.getDefaultCursor());
+            }
+        });
+
+        JPanel bawah = new JPanel(new BorderLayout());
+        bawah.setOpaque(false);
+        bawah.add(infoPanel, BorderLayout.CENTER);
+        bawah.add(btnCetak, BorderLayout.SOUTH);
+
+        kartu.add(lblFoto, BorderLayout.NORTH);
+        kartu.add(bawah, BorderLayout.CENTER);
+        return kartu;
+    }
+
+    private ImageIcon buatThumbnail(byte[] data, int w, int h) {
+        try {
+            if (data == null) { return null; }
+            Image img = ImageIO.read(new ByteArrayInputStream(data));
+            if (img == null) { return null; }
+            return new ImageIcon(img.getScaledInstance(w, h, Image.SCALE_SMOOTH));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void lihatMediaBesar(int id, String caption) {
+        try (PreparedStatement ps = koneksi.prepareStatement("select photo from dokumentasi_foto_ranap where id=?")) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    byte[] foto = rs.getBytes("photo");
+                    if (foto != null) {
+                        Image img = ImageIO.read(new ByteArrayInputStream(foto));
+                        if (img != null) {
+                            int w = img.getWidth(null);
+                            int h = img.getHeight(null);
+                            double skala = Math.min(1.0, Math.min(800.0 / w, 700.0 / h));
+                            JDialog dlg = new JDialog(this, caption, true);
+                            JLabel lbl = new JLabel(new ImageIcon(
+                                    img.getScaledInstance((int) (w * skala), (int) (h * skala), Image.SCALE_SMOOTH)));
+                            dlg.getContentPane().add(new JScrollPane(lbl));
+                            dlg.pack();
+                            dlg.setLocationRelativeTo(this);
+                            dlg.setVisible(true);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif lihatMediaBesar : " + e);
+        }
+    }
+
+    private JLabel labelKosongMedia(String teks) {
+        JLabel l = new JLabel(teks);
+        l.setForeground(new Color(136, 136, 136));
+        l.setFont(new Font("Tahoma", Font.PLAIN, 11));
+        return l;
     }
 
     /** Ganti tiap elemen &lt;input&gt; pada HTML cetak dengan nilai teks-nya

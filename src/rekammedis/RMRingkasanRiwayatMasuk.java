@@ -15,13 +15,17 @@ import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Insets;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -55,7 +59,10 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
     private final widget.TextBox tNoKtp = tf();
     private final widget.TextBox tNoAsuransi = tf();
     private final widget.ComboBox cmbPerkawinan = cmb("-", "Kawin", "Belum Kawin", "Janda/Duda");
-    private final widget.TextBox tPetugasTPP = tf();
+    private final widget.TextBox tPetugasTPP = ro();
+    private final JLabel lblTtdPetugasTPP = new JLabel();
+    private String petugasTppNip = "";
+    private final Map<String, ImageIcon> cacheFotoTtd = new HashMap<>();
     private final widget.ComboBox cmbSuku = cmb("-", "Banjar", "Jawa", "Dayak", "Lainnya");
     private final widget.TextBox tSukuLainnya = tf();
     private final widget.ComboBox cmbCaraMasuk = cmb("-", "Dokter Luar", "Paramedis", "RS Pemerintah",
@@ -90,6 +97,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         setTitle("::[ Ringkasan Riwayat Masuk dan Keluar Rumah Sakit (RM 2a) ]::");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         ensureTable();
+        ensureKolomNip();
         initComponents();
         setSize(1180, 780);
         setMinimumSize(new Dimension(1000, 680));
@@ -207,7 +215,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         JPanel verifikasi = halaman("3. Verifikasi", utama, latar);
         JPanel kartuVerifikasi = kartu("Persetujuan & Verifikasi", teks, garis);
         row = 0;
-        row = pasanganVertikal(kartuVerifikasi, row, "Nama & TTD Petugas TPP 24 Jam", tPetugasTPP,
+        row = pasanganVertikal(kartuVerifikasi, row, "Nama & TTD Petugas TPP 24 Jam", bungkusFotoTtd(tPetugasTPP, lblTtdPetugasTPP),
                 "Verifikasi oleh Pasien/Penanggung Jawab", tVerifikasi);
         JLabel infoVerifikasi = new JLabel(
                 "<html>Pastikan nama petugas dan pihak yang melakukan verifikasi telah sesuai sebelum menyimpan.</html>");
@@ -366,6 +374,8 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
                     tJamMasuk.setText(rs.getString("jam_reg"));
                     tDokterMerawat.setText(rs.getString("nm_dokter"));
                     tPetugasTPP.setText(Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode()));
+                    petugasTppNip = akses.getkode();
+                    lblTtdPetugasTPP.setIcon(ambilFotoTtd(petugasTppNip));
                 }
             }
         } catch (Exception e) {
@@ -425,6 +435,10 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
                     tNoAsuransi.setText(nvl(rs.getString("no_asuransi")));
                     cmbPerkawinan.setSelectedItem(cocokkanOpsi(cmbPerkawinan, rs.getString("perkawinan")));
                     tPetugasTPP.setText(nvl(rs.getString("petugas_tpp")));
+                    if (!nvl(rs.getString("petugas_tpp_nip")).equals("")) {
+                        petugasTppNip = rs.getString("petugas_tpp_nip");
+                        lblTtdPetugasTPP.setIcon(ambilFotoTtd(petugasTppNip));
+                    }
                     cmbSuku.setSelectedItem(cocokkanOpsi(cmbSuku, rs.getString("suku_bangsa")));
                     tSukuLainnya.setText(nvl(rs.getString("suku_lainnya")));
                     cmbCaraMasuk.setSelectedItem(cocokkanOpsi(cmbCaraMasuk, rs.getString("cara_masuk")));
@@ -464,19 +478,28 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         } catch (Exception ignore) {
         }
         try (PreparedStatement ps = koneksi.prepareStatement(
-                "replace into ringkasan_riwayat_masuk (no_rawat,no_ktp,no_asuransi,perkawinan,petugas_tpp,"
+                "insert into ringkasan_riwayat_masuk (no_rawat,no_ktp,no_asuransi,perkawinan,petugas_tpp,petugas_tpp_nip,"
                 + "suku_bangsa,suku_lainnya,cara_masuk,agama,gol_darah,pendidikan,alamat_lengkap,no_telpon,"
                 + "pekerjaan,pekerjaan_asli,verifikasi_oleh,riwayat_ke,ruangan_unit,kelas,diagnosa_masuk,"
                 + "kode_diagnosa,perawat_ruangan,dokter_merawat,updated_by,updated_at,created_by,created_at) "
-                + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),"
-                + "ifnull((select created_by from ringkasan_riwayat_masuk where no_rawat=?),?),"
-                + "ifnull((select created_at from ringkasan_riwayat_masuk where no_rawat=?),now()))")) {
+                + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,now()) "
+                + "on duplicate key update no_ktp=values(no_ktp),no_asuransi=values(no_asuransi),"
+                + "perkawinan=values(perkawinan),petugas_tpp=values(petugas_tpp),petugas_tpp_nip=values(petugas_tpp_nip),"
+                + "suku_bangsa=values(suku_bangsa),suku_lainnya=values(suku_lainnya),cara_masuk=values(cara_masuk),"
+                + "agama=values(agama),gol_darah=values(gol_darah),pendidikan=values(pendidikan),"
+                + "alamat_lengkap=values(alamat_lengkap),no_telpon=values(no_telpon),pekerjaan=values(pekerjaan),"
+                + "pekerjaan_asli=values(pekerjaan_asli),verifikasi_oleh=values(verifikasi_oleh),"
+                + "riwayat_ke=values(riwayat_ke),ruangan_unit=values(ruangan_unit),kelas=values(kelas),"
+                + "diagnosa_masuk=values(diagnosa_masuk),kode_diagnosa=values(kode_diagnosa),"
+                + "perawat_ruangan=values(perawat_ruangan),dokter_merawat=values(dokter_merawat),"
+                + "updated_by=values(updated_by),updated_at=now()")) {
             int i = 1;
             ps.setString(i++, ambil(TNoRw));
             ps.setString(i++, ambil(tNoKtp));
             ps.setString(i++, ambil(tNoAsuransi));
             ps.setString(i++, s(cmbPerkawinan));
             ps.setString(i++, ambil(tPetugasTPP));
+            ps.setString(i++, petugasTppNip);
             ps.setString(i++, s(cmbSuku));
             ps.setString(i++, ambil(tSukuLainnya));
             ps.setString(i++, s(cmbCaraMasuk));
@@ -500,9 +523,6 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
             ps.setString(i++, ambil(tPerawatRuangan));
             ps.setString(i++, ambil(tDokterMerawat));
             ps.setString(i++, akses.getkode());
-            ps.setString(i++, ambil(TNoRw));
-            ps.setString(i++, akses.getkode());
-            ps.setString(i++, ambil(TNoRw));
             ps.executeUpdate();
             JOptionPane.showMessageDialog(this, "Ringkasan riwayat masuk tersimpan.");
         } catch (Exception e) {
@@ -547,6 +567,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
                 + "no_telpon varchar(40) null,"
                 + "pekerjaan varchar(30) null,"
                 + "pekerjaan_asli varchar(60) null,"
+                + "petugas_tpp_nip varchar(20) null,"
                 + "verifikasi_oleh varchar(60) null,"
                 + "riwayat_ke int null,"
                 + "ruangan_unit varchar(60) null,"
@@ -560,6 +581,56 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
                 + "created_at datetime null,"
                 + "updated_at datetime null"
                 + ")");
+    }
+
+    /** Kolom NIP ditambah belakangan (dipakai utk tarik foto TTD dari pegawai) -- ALTER manual krn table sudah ada di instalasi lama. */
+    private void ensureKolomNip() {
+        try {
+            if (Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() "
+                    + "and table_name='ringkasan_riwayat_masuk' and column_name='petugas_tpp_nip'") == 0) {
+                Sequel.queryu2("alter table ringkasan_riwayat_masuk add column petugas_tpp_nip varchar(20) null after pekerjaan_asli");
+            }
+        } catch (Exception e) {
+            System.out.println("Notif kolom nip ringkasan riwayat masuk : " + e);
+        }
+    }
+
+    /** Bungkus field readonly + label foto TTD kecil di sebelah kanan, dipakai oleh baris "Nama & TTD Petugas". */
+    private JPanel bungkusFotoTtd(Component field, JLabel lblFoto) {
+        JPanel p = new JPanel(new BorderLayout(6, 0));
+        p.setOpaque(false);
+        p.add(field, BorderLayout.CENTER);
+        lblFoto.setPreferredSize(new Dimension(60, 28));
+        p.add(lblFoto, BorderLayout.EAST);
+        return p;
+    }
+
+    /** Foto TTD petugas berdasarkan NIP, ditarik dari pegawai.photo -- pola sama seperti ambilParafIcon di RMAsesmenUlangNyeri. Di-cache per NIP. */
+    private ImageIcon ambilFotoTtd(String nip) {
+        if (nip == null || nip.trim().isEmpty()) { return null; }
+        String key = nip.trim();
+        if (cacheFotoTtd.containsKey(key)) { return cacheFotoTtd.get(key); }
+        ImageIcon ic = null;
+        try {
+            String photo = bersihkanPathFotoTtd(Sequel.cariIsi("select photo from pegawai where nik=?", key));
+            if (!photo.isEmpty()) {
+                String urlPenggajian = "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/"
+                        + koneksiDB.HYBRIDWEB() + "/penggajian/";
+                Image gambar = CetakCPPT.ambilGambarServer(urlPenggajian + photo);
+                if (gambar != null) {
+                    ic = new ImageIcon(gambar.getScaledInstance(-1, 28, Image.SCALE_SMOOTH));
+                }
+            }
+        } catch (Exception ignore) { }
+        cacheFotoTtd.put(key, ic);
+        return ic;
+    }
+
+    private static String bersihkanPathFotoTtd(String photo) {
+        if (photo == null) { return ""; }
+        String p = photo.trim();
+        if (p.equals("") || p.equals("-") || p.equals("pages/pegawai/photo/")) { return ""; }
+        return p.replace("\\", "/");
     }
 
     // ====================== Pemetaan enum data pasien -> kategori RM 2a ======================
