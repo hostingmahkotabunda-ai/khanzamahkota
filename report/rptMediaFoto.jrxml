@@ -1,18 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptMediaFoto" language="groovy" pageWidth="595" pageHeight="842" columnWidth="543" leftMargin="26" rightMargin="26" topMargin="16" bottomMargin="16" uuid="c3d4e5f6-1122-3344-5566-778899aabbcc">
-	<parameter name="namars" class="java.lang.String"/>
-	<parameter name="alamatrs" class="java.lang.String"/>
-	<parameter name="kotars" class="java.lang.String"/>
-	<parameter name="propinsirs" class="java.lang.String"/>
-	<parameter name="kontakrs" class="java.lang.String"/>
-	<parameter name="emailrs" class="java.lang.String"/>
-	<parameter name="logo" class="java.io.InputStream"/>
-	<parameter name="nama_pasien" class="java.lang.String"/>
-	<parameter name="no_rm" class="java.lang.String"/>
-	<parameter name="no_rawat" class="java.lang.String"/>
-	<parameter name="keterangan" class="java.lang.String"/>
-	<parameter name="tgl_upload" class="java.lang.String"/>
-	<parameter name="oleh" class="java.lang.String"/>
 	<parameter name="foto" class="java.io.InputStream"/>
 	<queryString>
 		<![CDATA[select current_date()]]>
@@ -21,73 +8,10 @@
 		<band splitType="Stretch"/>
 	</background>
 	<title>
-		<band height="760" splitType="Stretch">
-			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
-				<reportElement x="0" y="0" width="70" height="55"/>
-				<imageExpression class="java.io.InputStream"><![CDATA[$P{logo}]]></imageExpression>
-			</image>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="0" width="463" height="20"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="14" isBold="true"/></textElement>
-				<textFieldExpression><![CDATA[$P{namars}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="20" width="463" height="11"/>
-				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
-				<textFieldExpression><![CDATA[$P{alamatrs}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="31" width="463" height="11"/>
-				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
-				<textFieldExpression><![CDATA[$P{kotars} + ( ($P{propinsirs}==null || $P{propinsirs}.equals("")) ? "" : " - " + $P{propinsirs} )]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="80" y="42" width="463" height="11"/>
-				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
-				<textFieldExpression><![CDATA["Telp. " + ($P{kontakrs}==null?"":$P{kontakrs}) + ( ($P{emailrs}==null || $P{emailrs}.equals("")) ? "" : "   Email : " + $P{emailrs} )]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement x="0" y="58" width="543" height="1"/>
-			</line>
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="64" width="543" height="20"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="13" isBold="true"/></textElement>
-				<textFieldExpression><![CDATA["DOKUMENTASI FOTO RAWAT INAP"]]></textFieldExpression>
-			</textField>
-
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="94" width="270" height="14"/>
-				<textElement><font fontName="Tahoma" size="9"/></textElement>
-				<textFieldExpression><![CDATA["Nama Pasien : " + $P{nama_pasien}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="280" y="94" width="130" height="14"/>
-				<textElement><font fontName="Tahoma" size="9"/></textElement>
-				<textFieldExpression><![CDATA["No. RM : " + $P{no_rm}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="410" y="94" width="133" height="14"/>
-				<textElement><font fontName="Tahoma" size="9"/></textElement>
-				<textFieldExpression><![CDATA["No. Rawat : " + $P{no_rawat}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="110" width="543" height="14"/>
-				<textElement><font fontName="Tahoma" size="9"/></textElement>
-				<textFieldExpression><![CDATA["Keterangan : " + $P{keterangan}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="126" width="270" height="14"/>
-				<textElement><font fontName="Tahoma" size="9"/></textElement>
-				<textFieldExpression><![CDATA["Tanggal Upload : " + $P{tgl_upload}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement x="280" y="126" width="263" height="14"/>
-				<textElement><font fontName="Tahoma" size="9"/></textElement>
-				<textFieldExpression><![CDATA["Diupload oleh : " + $P{oleh}]]></textFieldExpression>
-			</textField>
-
+		<band height="810" splitType="Stretch">
+			<!-- Cetak murni gambar aslinya saja, tanpa kop/identitas/keterangan (per permintaan user 2026-08-14) -->
 			<image scaleImage="RetainShape" hAlign="Center" vAlign="Top" onErrorType="Blank">
-				<reportElement x="0" y="150" width="543" height="580"/>
+				<reportElement x="0" y="0" width="543" height="810"/>
 				<imageExpression class="java.io.InputStream"><![CDATA[$P{foto}]]></imageExpression>
 			</image>
 		</band>
