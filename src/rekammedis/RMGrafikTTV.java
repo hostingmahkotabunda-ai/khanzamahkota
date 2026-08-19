@@ -57,10 +57,6 @@ import org.jfree.data.category.DefaultCategoryDataset;
  * disimpan) -- jam aktualnya di-"snap" ke checkpoint terdekat (06/12/18/24).
  * Bisa difilter rentang tanggal (default: tanggal masuk s.d. hari ini).
  *
- * Baris Intake/Output (Per Oral, Parenteral, Transfusi, D.L.L, Kemih,
- * Muntah, Defekasi, Berkemih) tidak ada sumbernya di sistem manapun, jadi
- * tetap diisi manual per tanggal (snapshot 1 baris/hari, tabel terpisah
- * grafik_intake_output).
  */
 public final class RMGrafikTTV extends JDialog {
 
@@ -71,7 +67,6 @@ public final class RMGrafikTTV extends JDialog {
     private final validasi Valid = new validasi();
     private final Connection koneksi = koneksiDB.condb();
     private final DefaultTableModel tabModeVital;
-    private final DefaultTableModel tabModeIO;
     private final DefaultTableModel tabModeGridBawah = new DefaultTableModel() {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
@@ -87,43 +82,20 @@ public final class RMGrafikTTV extends JDialog {
     private final JPanel panelChart = new JPanel(new BorderLayout());
     private final widget.Table tbGridBawah = new widget.Table();
     private final widget.Table tbVital = new widget.Table();
-    private final widget.Table tbIO = new widget.Table();
 
     // Filter rentang tanggal grafik
     private final widget.Tanggal dtpDari = dtTanggal();
     private final widget.Tanggal dtpSampai = dtTanggal();
     private final widget.Button BtnTampilkanGrafik = new widget.Button();
 
-    // Entri Intake/Output harian
-    private final widget.Tanggal dtpTanggalIO = dtTanggal();
-    private final widget.TextBox tPerOral = tf();
-    private final widget.TextBox tParenteral = tf();
-    private final widget.TextBox tTransfusi = tf();
-    private final widget.TextBox tDll = tf();
-    private final widget.TextBox tKemih = tf();
-    private final widget.TextBox tMuntah = tf();
-    private final widget.TextBox tDefekasi = tf();
-    private final widget.TextBox tBerkemih = tf();
-    private final widget.TextArea taCatatan = ta();
-
-    private final widget.Button BtnSimpanIO = new widget.Button();
-    private final widget.Button BtnHapusIO = new widget.Button();
-    private final widget.Button BtnBersihkanIO = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
 
     public RMGrafikTTV(Frame parent, boolean modal) {
         super(parent, modal);
         setTitle("::[ Grafik Nadi, Suhu & TTV (RM 9) ]::");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        ensureTable();
         tabModeVital = new DefaultTableModel(null, new Object[]{
             "Tanggal", "Jam", "Nadi", "Suhu", "Respirasi", "Tekanan Darah", "Tinggi", "Berat"
-        }) {
-            @Override public boolean isCellEditable(int row, int column) { return false; }
-        };
-        tabModeIO = new DefaultTableModel(null, new Object[]{
-            "TglRaw", "Tanggal", "Per Oral", "Parenteral", "Transfusi", "D.L.L",
-            "Kemih", "Muntah", "Defekasi", "Berkemih", "Catatan"
         }) {
             @Override public boolean isCellEditable(int row, int column) { return false; }
         };
@@ -225,53 +197,6 @@ public final class RMGrafikTTV extends JDialog {
         scrollVital.setPreferredSize(new Dimension(1100, 130));
         scrollVital.setAlignmentX(Component.LEFT_ALIGNMENT);
         tengah.add(scrollVital);
-        tengah.add(Box.createVerticalStrut(14));
-
-        // --- Intake / Output harian ---
-        JPanel kartuIO = kartu("Intake / Output Harian (manual -- tidak ada sumbernya di SOAP/CPPT)", teks, garis);
-        int row = 0;
-        row = pasanganVertikal(kartuIO, row, "Tanggal", dtpTanggalIO, "Per Oral", tPerOral);
-        row = pasanganVertikal(kartuIO, row, "Parenteral", tParenteral, "Transfusi", tTransfusi);
-        row = pasanganVertikal(kartuIO, row, "D.L.L", tDll, "Kemih", tKemih);
-        row = pasanganVertikal(kartuIO, row, "Muntah", tMuntah, "Defekasi", tDefekasi);
-        row = pasanganVertikal(kartuIO, row, "Berkemih", tBerkemih, "", new JLabel());
-        row = tunggalVertikal(kartuIO, row, "Catatan", taCatatan);
-        kartuIO.setAlignmentX(Component.LEFT_ALIGNMENT);
-        tengah.add(kartuIO);
-        tengah.add(Box.createVerticalStrut(8));
-
-        JPanel panelTombolIO = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-        panelTombolIO.setOpaque(false);
-        panelTombolIO.setAlignmentX(Component.LEFT_ALIGNMENT);
-        BtnSimpanIO.setText("Simpan Intake/Output");
-        BtnHapusIO.setText("Hapus Tanggal Ini");
-        BtnBersihkanIO.setText("Bersihkan Form Entri");
-        panelTombolIO.add(BtnSimpanIO);
-        panelTombolIO.add(BtnHapusIO);
-        panelTombolIO.add(BtnBersihkanIO);
-        tengah.add(panelTombolIO);
-        tengah.add(Box.createVerticalStrut(10));
-
-        JLabel judulIO = new JLabel("Riwayat Intake / Output");
-        judulIO.setFont(new Font("Tahoma", Font.BOLD, 13));
-        judulIO.setForeground(teks);
-        judulIO.setAlignmentX(Component.LEFT_ALIGNMENT);
-        judulIO.setBorder(new EmptyBorder(0, 0, 6, 0));
-        tengah.add(judulIO);
-
-        tbIO.setModel(tabModeIO);
-        tbIO.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tbIO.setAutoResizeMode(widget.Table.AUTO_RESIZE_OFF);
-        tbIO.setRowHeight(24);
-        tbIO.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e.getClickCount() == 2) { muatBarisIOTerpilihKeForm(); }
-            }
-        });
-        JScrollPane scrollIO = new JScrollPane(tbIO);
-        scrollIO.setPreferredSize(new Dimension(1100, 160));
-        scrollIO.setAlignmentX(Component.LEFT_ALIGNMENT);
-        tengah.add(scrollIO);
 
         JScrollPane scrollTengah = new JScrollPane(tengah);
         scrollTengah.setBorder(null);
@@ -281,9 +206,6 @@ public final class RMGrafikTTV extends JDialog {
         BtnTampilkanGrafik.addActionListener(e -> {
             if (!ambil(TNoRw).equals("")) { muatGrafikDanVital(ambil(TNoRw)); }
         });
-        BtnSimpanIO.addActionListener(e -> simpanIO());
-        BtnHapusIO.addActionListener(e -> hapusIO());
-        BtnBersihkanIO.addActionListener(e -> bersihkanEntriIO());
         BtnKeluar.setText("Keluar");
         BtnKeluar.addActionListener(e -> dispose());
         JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 9));
@@ -291,24 +213,17 @@ public final class RMGrafikTTV extends JDialog {
         bawah.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, garis));
         bawah.add(BtnKeluar);
         getContentPane().add(bawah, BorderLayout.SOUTH);
-
-        dtpTanggalIO.setDate(new Date());
     }
 
     public void isCek() {
-        boolean bisa = akses.getpenilaian_awal_keperawatan_ranap();
-        BtnSimpanIO.setEnabled(bisa);
-        BtnHapusIO.setEnabled(bisa);
     }
 
     /** Dipanggil dari DlgRawatInap tab Penilaian Awal. */
     public void setNoRm(String norawat) {
-        bersihkanEntriIO();
         if (norawat == null || norawat.trim().equals("")) {
             TNoRw.setText(""); TNoRM.setText(""); TPasien.setText(""); TJK.setText("");
             TTglLahir.setText(""); TRuangan.setText("");
             tabModeVital.setRowCount(0);
-            tabModeIO.setRowCount(0);
             List<Kolom> kosong = new ArrayList<>();
             tampilkanGrafik(kosong);
             tampilkanGridBawah(kosong);
@@ -317,7 +232,6 @@ public final class RMGrafikTTV extends JDialog {
         TNoRw.setText(norawat);
         tarikIdentitasPasien(norawat);
         muatGrafikDanVital(norawat);
-        muatRiwayatIO(norawat);
     }
 
     private void tarikIdentitasPasien(String norawat) {
@@ -569,142 +483,6 @@ public final class RMGrafikTTV extends JDialog {
             }
         }
         return v;
-    }
-
-    private void muatRiwayatIO(String norawat) {
-        tabModeIO.setRowCount(0);
-        try (PreparedStatement ps = koneksi.prepareStatement(
-                "select * from grafik_intake_output where no_rawat=? order by tanggal")) {
-            ps.setString(1, norawat);
-            try (ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    String tglIso = rs.getString("tanggal");
-                    tabModeIO.addRow(new Object[]{
-                        tglIso, fmtTanggal(tglIso),
-                        nvl(rs.getString("per_oral")), nvl(rs.getString("parenteral")),
-                        nvl(rs.getString("transfusi")), nvl(rs.getString("dll")),
-                        nvl(rs.getString("kemih")), nvl(rs.getString("muntah")),
-                        nvl(rs.getString("defekasi")), nvl(rs.getString("berkemih")),
-                        nvl(rs.getString("catatan"))
-                    });
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Notif muat riwayat intake/output : " + e);
-        }
-        aturLebarKolomIO();
-    }
-
-    private void aturLebarKolomIO() {
-        if (tbIO.getColumnModel().getColumnCount() < 11) { return; }
-        int[] lebar = {0, 90, 70, 80, 70, 60, 60, 60, 70, 70, 220};
-        for (int i = 0; i < lebar.length; i++) {
-            tbIO.getColumnModel().getColumn(i).setPreferredWidth(lebar[i]);
-        }
-        tbIO.getColumnModel().getColumn(0).setMinWidth(0);
-        tbIO.getColumnModel().getColumn(0).setMaxWidth(0);
-    }
-
-    private void muatBarisIOTerpilihKeForm() {
-        int r = tbIO.getSelectedRow();
-        if (r < 0) { return; }
-        setTanggal(dtpTanggalIO, tabModeIO.getValueAt(r, 0) + "");
-        tPerOral.setText(tabModeIO.getValueAt(r, 2) + "");
-        tParenteral.setText(tabModeIO.getValueAt(r, 3) + "");
-        tTransfusi.setText(tabModeIO.getValueAt(r, 4) + "");
-        tDll.setText(tabModeIO.getValueAt(r, 5) + "");
-        tKemih.setText(tabModeIO.getValueAt(r, 6) + "");
-        tMuntah.setText(tabModeIO.getValueAt(r, 7) + "");
-        tDefekasi.setText(tabModeIO.getValueAt(r, 8) + "");
-        tBerkemih.setText(tabModeIO.getValueAt(r, 9) + "");
-        taCatatan.setText(tabModeIO.getValueAt(r, 10) + "");
-    }
-
-    private void simpanIO() {
-        if (ambil(TNoRw).equals("")) {
-            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
-            return;
-        }
-        String tgl = ambilTanggal(dtpTanggalIO);
-        if (tgl.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Isi tanggal terlebih dahulu.");
-            return;
-        }
-        try (PreparedStatement ps = koneksi.prepareStatement(
-                "replace into grafik_intake_output (no_rawat,tanggal,per_oral,parenteral,transfusi,dll,"
-                + "kemih,muntah,defekasi,berkemih,catatan,created_by,created_at) "
-                + "values (?,?,?,?,?,?,?,?,?,?,?,?,now())")) {
-            ps.setString(1, ambil(TNoRw));
-            ps.setString(2, tgl);
-            ps.setString(3, ambil(tPerOral));
-            ps.setString(4, ambil(tParenteral));
-            ps.setString(5, ambil(tTransfusi));
-            ps.setString(6, ambil(tDll));
-            ps.setString(7, ambil(tKemih));
-            ps.setString(8, ambil(tMuntah));
-            ps.setString(9, ambil(tDefekasi));
-            ps.setString(10, ambil(tBerkemih));
-            ps.setString(11, taCatatan.getText() == null ? "" : taCatatan.getText().trim());
-            ps.setString(12, akses.getkode());
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Data intake/output tersimpan.");
-            bersihkanEntriIO();
-            muatRiwayatIO(ambil(TNoRw));
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal menyimpan.\n" + e.getMessage());
-        }
-    }
-
-    private void hapusIO() {
-        String tgl = ambilTanggal(dtpTanggalIO);
-        if (ambil(TNoRw).equals("") || tgl.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Pilih baris di tabel riwayat terlebih dahulu (klik dua kali).");
-            return;
-        }
-        if (JOptionPane.showConfirmDialog(this, "Hapus data intake/output tanggal " + Valid.SetTgl3(tgl) + " ?",
-                "Konfirmasi", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
-            return;
-        }
-        try (PreparedStatement ps = koneksi.prepareStatement(
-                "delete from grafik_intake_output where no_rawat=? and tanggal=?")) {
-            ps.setString(1, ambil(TNoRw));
-            ps.setString(2, tgl);
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(this, "Data dihapus.");
-            bersihkanEntriIO();
-            muatRiwayatIO(ambil(TNoRw));
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal menghapus.\n" + e.getMessage());
-        }
-    }
-
-    private void bersihkanEntriIO() {
-        for (widget.TextBox t : new widget.TextBox[]{tPerOral, tParenteral, tTransfusi, tDll,
-            tKemih, tMuntah, tDefekasi, tBerkemih}) {
-            t.setText("");
-        }
-        taCatatan.setText("");
-        dtpTanggalIO.setDate(new Date());
-    }
-
-    private void ensureTable() {
-        Sequel.queryu2(
-                "create table if not exists grafik_intake_output ("
-                + "no_rawat varchar(17) not null,"
-                + "tanggal date not null,"
-                + "per_oral varchar(20) null,"
-                + "parenteral varchar(20) null,"
-                + "transfusi varchar(20) null,"
-                + "dll varchar(20) null,"
-                + "kemih varchar(20) null,"
-                + "muntah varchar(20) null,"
-                + "defekasi varchar(20) null,"
-                + "berkemih varchar(20) null,"
-                + "catatan varchar(500) null,"
-                + "created_by varchar(50) null,"
-                + "created_at datetime null,"
-                + "primary key (no_rawat,tanggal)"
-                + ")");
     }
 
     // ====================== Helpers data ======================

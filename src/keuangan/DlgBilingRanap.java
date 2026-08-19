@@ -3548,16 +3548,13 @@ private void MnReturJualActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         BtnNota.requestFocus();
     }else{
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        akses.setform("DlgBilingRanap");
-        DlgReturJual returjual=new DlgReturJual(null,false);     
-        returjual.emptTeks();  
-        returjual.isCek(); 
-        returjual.setPasien(TNoRM.getText(),TNoRw.getText());
+        inventory.DlgInputReturObatPasien returjual=new inventory.DlgInputReturObatPasien(null,false);
+        returjual.tampilkan(TNoRM.getText(),TNoRw.getText());
         returjual.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
         returjual.setLocationRelativeTo(internalFrame1);
         returjual.setVisible(true);
         this.setCursor(Cursor.getDefaultCursor());
-    }           
+    }
 }//GEN-LAST:event_MnReturJualActionPerformed
 
 private void norawatpotonganKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_norawatpotonganKeyPressed
@@ -4160,15 +4157,13 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             TCari.requestFocus();
         }else{
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            DlgReturJual returjual=new DlgReturJual(null,false);
-            returjual.emptTeks();
-            returjual.isCek();
-            returjual.setPasien(Sequel.cariIsi("select reg_periksa.no_rkm_medis from reg_periksa where reg_periksa.no_rawat=? ",norawatbayi),norawatbayi);
+            inventory.DlgInputReturObatPasien returjual=new inventory.DlgInputReturObatPasien(null,false);
+            returjual.tampilkan(Sequel.cariIsi("select reg_periksa.no_rkm_medis from reg_periksa where reg_periksa.no_rawat=? ",norawatbayi),norawatbayi);
             returjual.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
             returjual.setLocationRelativeTo(internalFrame1);
             returjual.setVisible(true);
             this.setCursor(Cursor.getDefaultCursor());
-        }            
+        }
     }//GEN-LAST:event_MnReturJual1ActionPerformed
 
     private void MnPeriksaLab1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MnPeriksaLab1ActionPerformed

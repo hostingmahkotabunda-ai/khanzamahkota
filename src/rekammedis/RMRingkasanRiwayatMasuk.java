@@ -376,6 +376,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
                     tPetugasTPP.setText(Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode()));
                     petugasTppNip = akses.getkode();
                     lblTtdPetugasTPP.setIcon(ambilFotoTtd(petugasTppNip));
+                    tPerawatRuangan.setText(Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode()));
                 }
             }
         } catch (Exception e) {
@@ -522,6 +523,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
             ps.setString(i++, ambil(tKodeDiagnosa));
             ps.setString(i++, ambil(tPerawatRuangan));
             ps.setString(i++, ambil(tDokterMerawat));
+            ps.setString(i++, akses.getkode());
             ps.setString(i++, akses.getkode());
             ps.executeUpdate();
             JOptionPane.showMessageDialog(this, "Ringkasan riwayat masuk tersimpan.");

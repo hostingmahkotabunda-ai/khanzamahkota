@@ -282,7 +282,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         // NOTE: penempatan menu form baru (RM 2a, RM 3a, dst) di sini bersifat SEMENTARA --
         // akan di-mapping ulang ke lokasi final setelah semua form rampung.
         menuPenilaianAwal.add(itemMenuPenilaianAwal("Ringkasan Riwayat Masuk (RM 2a)", e -> bukaRingkasanRiwayatMasuk()));
-        menuPenilaianAwal.add(itemMenuPenilaianAwal("Pengantar Pasien Rawat Inap (RM 3a)", e -> bukaPengantarPasienRanap()));
+        menuPenilaianAwal.add(itemMenuPenilaianAwal("Lembar Transfer Pasien Internal (RM 38)", e -> bukaPengantarPasienRanap()));
         menuPenilaianAwal.add(itemMenuPenilaianAwal("Asesmen Ulang Nyeri (RM 7.1)", e -> bukaAsesmenUlangNyeri()));
         menuPenilaianAwal.add(itemMenuPenilaianAwal("Grafik Nadi, Suhu & TTV (RM 9)", e -> bukaGrafikTTV()));
 
@@ -338,7 +338,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         this.setCursor(Cursor.getDefaultCursor());
     }
 
-    /** Buka form Pengantar Pasien Rawat Inap (RM 3a) untuk pasien yang aktif. */
+    /** Buka form Lembar Transfer Pasien Internal (RM 38) untuk pasien yang aktif. */
     private void bukaPengantarPasienRanap() {
         if (TNoRw.getText().trim().equals("")) {
             JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
@@ -346,7 +346,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            rekammedis.RMPengantarPasienRanap f = new rekammedis.RMPengantarPasienRanap(null, false);
+            rekammedis.RMTransferPasienInternal f = new rekammedis.RMTransferPasienInternal(null, false);
             f.isCek();
             f.setNoRm(TNoRw.getText());
             f.setLocationRelativeTo(this);
@@ -6735,7 +6735,7 @@ private void BtnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
                             (!SpO2.getText().trim().equals(""))||(!TEvaluasi.getText().trim().equals(""))){
                         if(tbPemeriksaan.getSelectedRow()>-1){
                             if(isPemeriksaanRalanViewRow(tbPemeriksaan.getSelectedRow())){
-                                JOptionPane.showMessageDialog(null,"SOAP rawat jalan hanya ditampilkan sebagai riwayat, tidak bisa diganti dari pemeriksaan ranap.");
+                                gantiPemeriksaanRalanDariRanap();
                                 break;
                             }
                             if(akses.getkode().equals("Admin Utama")){
@@ -11853,6 +11853,41 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
             return false;
         }
         return isPemeriksaanRalanModelRow(tbPemeriksaan.convertRowIndexToModel(viewRow));
+    }
+
+    /**
+     * Ganti (update) SOAP yg sumbernya pemeriksaan_ralan, dipicu tombol "Ganti" dari layar Ranap --
+     * baris TETAP SATU (update pemeriksaan_ralan langsung, TIDAK dipindah/diduplikasi ke
+     * pemeriksaan_ranap), krn baris ini memang aslinya diisi saat pasien masih rawat jalan/IGD,
+     * no_rawat-nya SAMA dgn kunjungan ranap saat ini (fakta: no_rawat tetap sama lintas
+     * IGD/Ralan->Ranap). Tanggal/jam asesmen TIDAK ikut diubah (tetap sesuai kapan SOAP itu
+     * sungguhan ditulis saat ralan) -- cuma isi klinisnya yg bisa dikoreksi. Pola permission SAMA
+     * PERSIS dgn ganti SOAP ranap biasa: Admin Utama bebas edit siapa saja, selain itu hanya
+     * dokter/petugas penulis asli.
+     */
+    private void gantiPemeriksaanRalanDariRanap() {
+        int row = tbPemeriksaan.getSelectedRow();
+        String noRawatLama = tbPemeriksaan.getValueAt(row,1).toString();
+        String tglSoapLama = tbPemeriksaan.getValueAt(row,4).toString();
+        String jamSoapLama = tbPemeriksaan.getValueAt(row,5).toString();
+        String kdDokterLama = tbPemeriksaan.getValueAt(row,22).toString();
+        if(!akses.getkode().equals("Admin Utama") && !akses.getkode().equals(kdDokterLama)){
+            JOptionPane.showMessageDialog(null,"Hanya bisa diganti oleh dokter/petugas yang bersangkutan..!!");
+            return;
+        }
+        if(Sequel.mengedittf("pemeriksaan_ralan","no_rawat='"+noRawatLama+
+                "' and tgl_perawatan='"+tglSoapLama+
+                "' and jam_rawat='"+jamSoapLama+"'",
+                "suhu_tubuh='"+TSuhu.getText()+"',tensi='"+TTensi.getText()+"',"+
+                "keluhan='"+TKeluhan.getText()+"',pemeriksaan='"+TPemeriksaan.getText()+"',spo2='"+SpO2.getText()+"',"+
+                "nadi='"+TNadi.getText()+"',respirasi='"+TRespirasi.getText()+"',tinggi='"+TTinggi.getText()+"',berat='"+TBerat.getText()+"',"+
+                "gcs='"+TGCS.getText()+"',kesadaran='"+cmbKesadaran.getSelectedItem()+"',alergi='"+TAlergi.getText()+"',"+
+                "rtl='"+TindakLanjut.getText()+"',penilaian='"+TPenilaian.getText()+"',instruksi='"+TInstruksi.getText()+"',evaluasi='"+TEvaluasi.getText()+"',nip='"+KdPeg.getText()+"'")==true){
+            ubahDraftResepSOAP(noRawatLama,tglSoapLama,jamSoapLama,kdDokterLama,noRawatLama,tglSoapLama,jamSoapLama,KdPeg.getText(),TindakLanjut.getText());
+            notifikasiSoapDiedit();
+            BtnBatalActionPerformed(null);
+            tampilPemeriksaan();
+        }
     }
 
     private String ambilNilaiTabel(JTable table, int row, int column) {

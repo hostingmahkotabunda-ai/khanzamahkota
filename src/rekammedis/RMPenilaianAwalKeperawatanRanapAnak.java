@@ -3618,8 +3618,9 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
 } else if(RPS.getText().trim().equals("")){
     Valid.textKosong(RPS,"Riwayat Penyakit Sekarang");
 } else {
-    // Lakukan penyimpanan untuk penilaian_awal_keperawatan_ranap_anak
-     if (Sequel.menyimpantf("penilaian_awal_keperawatan_ranap_anak", "?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?", "No.Rawat", 105, new String[]{
+    // Lakukan penyimpanan (upsert -- replace into, supaya bisa DIEDIT ulang tanpa gagal
+    // "Duplicate entry", beda dgn versi lama yg cuma insert murni & gagal kalau no_rawat sudah ada)
+     if (simpanUpsertAnak(new String[]{
     TNoRw.getText(),
     Valid.SetTgl(TglAsuhan.getSelectedItem() + "") + " " + TglAsuhan.getSelectedItem().toString().substring(11, 19),
     Anamnesis.getSelectedItem().toString(),
@@ -3762,6 +3763,216 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
         
 
 }//GEN-LAST:event_BtnSimpanActionPerformed
+
+    /** Urutan KOLOM fisik penilaian_awal_keperawatan_ranap_anak (dari information_schema), 105 kolom -- dipakai simpanUpsertAnak() & muat(). */
+    private static final String[] KOLOM_ANAK = {
+        "no_rawat","tanggal","informasi","ket_informasi","tiba_diruang_rawat","kasus_trauma","cara_masuk","kel_utama",
+        "rps","rpd","rpk","rpo","riwayat_pembedahan","riwayat_dirawat_dirs","alat_bantu_dipakai","riwayat_tranfusi",
+        "riwayat_imunisasi","riwayat_prkmbngan","riwayat_prkmbngan_lainnya","riwayat_alergi","pemeriksaan_mental",
+        "pemeriksaan_keadaan_umum","pemeriksaan_gcs","pemeriksaan_td","pemeriksaan_nadi","pemeriksaan_rr",
+        "pemeriksaan_suhu","pemeriksaan_spo2","pemeriksaan_bb","pemeriksaan_tb","pola_aktifitas_makanminum",
+        "pola_aktifitas_mandi","pola_aktifitas_eliminasi","pola_aktifitas_berpakaian","pola_aktifitas_berpindah",
+        "pola_nutrisi_frekuesi_makan","pola_nutrisi_jenis_makanan","pola_nutrisi_porsi_makan","pola_tidur_lama_tidur",
+        "pola_tidur_gangguan","pengkajian_fungsi_kemampuan_sehari","pengkajian_fungsi_aktifitas",
+        "pengkajian_fungsi_berjalan","pengkajian_fungsi_berjalan_keterangan","pengkajian_fungsi_ambulasi",
+        "pengkajian_fungsi_ekstrimitas_atas","pengkajian_fungsi_ekstrimitas_atas_keterangan",
+        "pengkajian_fungsi_ekstrimitas_bawah","pengkajian_fungsi_ekstrimitas_bawah_keterangan",
+        "pengkajian_fungsi_menggenggam","pengkajian_fungsi_menggenggam_keterangan","pengkajian_fungsi_koordinasi",
+        "pengkajian_fungsi_koordinasi_keterangan","pengkajian_fungsi_kesimpulan","riwayat_psiko_kondisi_psiko",
+        "riwayat_psiko_gangguan_jiwa","riwayat_psiko_perilaku","riwayat_psiko_perilaku_keterangan",
+        "riwayat_psiko_hubungan_keluarga","riwayat_psiko_tinggal","riwayat_psiko_tinggal_keterangan",
+        "riwayat_psiko_nilai_kepercayaan","riwayat_psiko_nilai_kepercayaan_keterangan","riwayat_psiko_pendidikan_pj",
+        "riwayat_psiko_edukasi_diberikan","riwayat_psiko_edukasi_diberikan_keterangan","wajah","nilaiwajah","kaki",
+        "nilaikaki","aktifitas","nilaiaktifitas","menangis","nilaimenangis","bersuara","nilaibersuara","hasilnyeri",
+        "penilaian_humptydumpty_skala1","penilaian_humptydumpty_nilai1","penilaian_humptydumpty_skala2",
+        "penilaian_humptydumpty_nilai2","penilaian_humptydumpty_skala3","penilaian_humptydumpty_nilai3",
+        "penilaian_humptydumpty_skala4","penilaian_humptydumpty_nilai4","penilaian_humptydumpty_skala5",
+        "penilaian_humptydumpty_nilai5","penilaian_humptydumpty_skala6","penilaian_humptydumpty_nilai6",
+        "penilaian_humptydumpty_skala7","penilaian_humptydumpty_nilai7","penilaian_humptydumpty_totalnilai",
+        "skrining_gizi1","nilai_gizi1","skrining_gizi2","nilai_gizi2","nilai_total_gizi",
+        "skrining_gizi_diagnosa_khusus","skrining_gizi_ket_diagnosa_khusus","skrining_gizi_diketahui_dietisen",
+        "skrining_gizi_jam_diketahui_dietisen","rencana","nip1","nip2","kd_dokter"
+    };
+
+    /**
+     * Simpan (upsert) penilaian_awal_keperawatan_ranap_anak -- ganti dari INSERT murni (Sequel.menyimpantf 5-arg,
+     * gagal "Duplicate entry" kalau no_rawat sudah ada, TIDAK BISA DIEDIT) ke REPLACE INTO (aman, tidak ada tabel
+     * lain yg FK ke tabel ini -- dicek via information_schema.key_column_usage sblm dipakai).
+     */
+    private boolean simpanUpsertAnak(String[] nilai) {
+        if (nilai.length != KOLOM_ANAK.length) {
+            JOptionPane.showMessageDialog(this, "Kesalahan internal: jumlah kolom (" + KOLOM_ANAK.length
+                    + ") != jumlah nilai (" + nilai.length + ").");
+            return false;
+        }
+        StringBuilder cols = new StringBuilder();
+        StringBuilder qm = new StringBuilder();
+        for (String k : KOLOM_ANAK) {
+            if (cols.length() > 0) { cols.append(","); qm.append(","); }
+            cols.append(k);
+            qm.append("?");
+        }
+        try (PreparedStatement psAnak = koneksi.prepareStatement(
+                "replace into penilaian_awal_keperawatan_ranap_anak (" + cols + ") values (" + qm + ")")) {
+            for (int idx = 0; idx < nilai.length; idx++) {
+                psAnak.setString(idx + 1, nilai[idx]);
+            }
+            psAnak.executeUpdate();
+            return true;
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Maaf, gagal menyimpan data. Ada kesalahan Query...!\n" + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Muat data penilaian_awal_keperawatan_ranap_anak yg sudah tersimpan (kalau ada) -- dipanggil dari setNoRm(). */
+    private void muatAnak(String norawat) {
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select * from penilaian_awal_keperawatan_ranap_anak where no_rawat=?")) {
+            ps.setString(1, norawat);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    if (rs.getString("tanggal") != null) {
+                        try {
+                            TglAsuhan.setDate(new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs.getString("tanggal")));
+                        } catch (Exception ignore) { }
+                    }
+                    pilihAnak(Anamnesis, rs.getString("informasi"));
+                    KetAnamnesis.setText(nvAnak(rs.getString("ket_informasi")));
+                    pilihAnak(TibadiRuang, rs.getString("tiba_diruang_rawat"));
+                    pilihAnak(MacamKasus, rs.getString("kasus_trauma"));
+                    pilihAnak(CaraMasuk, rs.getString("cara_masuk"));
+                    KelUtama.setText(nvAnak(rs.getString("kel_utama")));
+                    RPS.setText(nvAnak(rs.getString("rps")));
+                    RPD.setText(nvAnak(rs.getString("rpd")));
+                    RPK.setText(nvAnak(rs.getString("rpk")));
+                    RPO.setText(nvAnak(rs.getString("rpo")));
+                    RPembedahan.setText(nvAnak(rs.getString("riwayat_pembedahan")));
+                    RDirawatRS.setText(nvAnak(rs.getString("riwayat_dirawat_dirs")));
+                    pilihAnak(AlatBantuDipakai, rs.getString("alat_bantu_dipakai"));
+                    RTranfusi.setText(nvAnak(rs.getString("riwayat_tranfusi")));
+                    RiImunisasi.setText(nvAnak(rs.getString("riwayat_imunisasi")));
+                    pilihAnak(RPerkmAnk, rs.getString("riwayat_prkmbngan"));
+                    KetPerkmAnk.setText(nvAnak(rs.getString("riwayat_prkmbngan_lainnya")));
+                    Alergi.setText(nvAnak(rs.getString("riwayat_alergi")));
+                    KesadaranMental.setText(nvAnak(rs.getString("pemeriksaan_mental")));
+                    pilihAnak(KeadaanMentalUmum, rs.getString("pemeriksaan_keadaan_umum"));
+                    GCS.setText(nvAnak(rs.getString("pemeriksaan_gcs")));
+                    TD.setText(nvAnak(rs.getString("pemeriksaan_td")));
+                    Nadi.setText(nvAnak(rs.getString("pemeriksaan_nadi")));
+                    RR.setText(nvAnak(rs.getString("pemeriksaan_rr")));
+                    Suhu.setText(nvAnak(rs.getString("pemeriksaan_suhu")));
+                    SpO2.setText(nvAnak(rs.getString("pemeriksaan_spo2")));
+                    BB.setText(nvAnak(rs.getString("pemeriksaan_bb")));
+                    TB.setText(nvAnak(rs.getString("pemeriksaan_tb")));
+                    pilihAnak(PolaAktifitasMakan, rs.getString("pola_aktifitas_makanminum"));
+                    pilihAnak(PolaAktifitasMandi, rs.getString("pola_aktifitas_mandi"));
+                    pilihAnak(PolaAktifitasEliminasi, rs.getString("pola_aktifitas_eliminasi"));
+                    pilihAnak(PolaAktifitasBerpakaian, rs.getString("pola_aktifitas_berpakaian"));
+                    pilihAnak(PolaAktifitasBerpindah, rs.getString("pola_aktifitas_berpindah"));
+                    PolaNutrisiFrekuensi.setText(nvAnak(rs.getString("pola_nutrisi_frekuesi_makan")));
+                    PolaNutrisiJenis.setText(nvAnak(rs.getString("pola_nutrisi_jenis_makanan")));
+                    PolaNutrisiPorsi.setText(nvAnak(rs.getString("pola_nutrisi_porsi_makan")));
+                    PolaTidurLama.setText(nvAnak(rs.getString("pola_tidur_lama_tidur")));
+                    pilihAnak(PolaTidurGangguan, rs.getString("pola_tidur_gangguan"));
+                    pilihAnak(AktifitasSehari2, rs.getString("pengkajian_fungsi_kemampuan_sehari"));
+                    pilihAnak(Aktifitas, rs.getString("pengkajian_fungsi_aktifitas"));
+                    pilihAnak(Berjalan, rs.getString("pengkajian_fungsi_berjalan"));
+                    KeteranganBerjalan.setText(nvAnak(rs.getString("pengkajian_fungsi_berjalan_keterangan")));
+                    pilihAnak(AlatAmbulasi, rs.getString("pengkajian_fungsi_ambulasi"));
+                    pilihAnak(EkstrimitasAtas, rs.getString("pengkajian_fungsi_ekstrimitas_atas"));
+                    KeteranganEkstrimitasAtas.setText(nvAnak(rs.getString("pengkajian_fungsi_ekstrimitas_atas_keterangan")));
+                    pilihAnak(EkstrimitasBawah, rs.getString("pengkajian_fungsi_ekstrimitas_bawah"));
+                    KeteranganEkstrimitasBawah.setText(nvAnak(rs.getString("pengkajian_fungsi_ekstrimitas_bawah_keterangan")));
+                    pilihAnak(KemampuanMenggenggam, rs.getString("pengkajian_fungsi_menggenggam"));
+                    KeteranganKemampuanMenggenggam.setText(nvAnak(rs.getString("pengkajian_fungsi_menggenggam_keterangan")));
+                    pilihAnak(KemampuanKoordinasi, rs.getString("pengkajian_fungsi_koordinasi"));
+                    KeteranganKemampuanKoordinasi.setText(nvAnak(rs.getString("pengkajian_fungsi_koordinasi_keterangan")));
+                    pilihAnak(KesimpulanGangguanFungsi, rs.getString("pengkajian_fungsi_kesimpulan"));
+                    pilihAnak(KondisiPsikologis, rs.getString("riwayat_psiko_kondisi_psiko"));
+                    pilihAnak(GangguanJiwa, rs.getString("riwayat_psiko_gangguan_jiwa"));
+                    pilihAnak(AdakahPerilaku, rs.getString("riwayat_psiko_perilaku"));
+                    KeteranganAdakahPerilaku.setText(nvAnak(rs.getString("riwayat_psiko_perilaku_keterangan")));
+                    pilihAnak(HubunganAnggotaKeluarga, rs.getString("riwayat_psiko_hubungan_keluarga"));
+                    pilihAnak(TinggalDengan, rs.getString("riwayat_psiko_tinggal"));
+                    KeteranganTinggalDengan.setText(nvAnak(rs.getString("riwayat_psiko_tinggal_keterangan")));
+                    pilihAnak(NilaiKepercayaan, rs.getString("riwayat_psiko_nilai_kepercayaan"));
+                    KeteranganNilaiKepercayaan.setText(nvAnak(rs.getString("riwayat_psiko_nilai_kepercayaan_keterangan")));
+                    pilihAnak(PendidikanPJ, rs.getString("riwayat_psiko_pendidikan_pj"));
+                    pilihAnak(EdukasiPsikolgis, rs.getString("riwayat_psiko_edukasi_diberikan"));
+                    KeteranganEdukasiPsikologis.setText(nvAnak(rs.getString("riwayat_psiko_edukasi_diberikan_keterangan")));
+                    pilihAnak(SkalaWajah, rs.getString("wajah"));
+                    NilaiWajah.setText(nvAnak(rs.getString("nilaiwajah")));
+                    pilihAnak(SkalaKaki, rs.getString("kaki"));
+                    NilaiKaki.setText(nvAnak(rs.getString("nilaikaki")));
+                    pilihAnak(SkalaAktifitas, rs.getString("aktifitas"));
+                    NilaiAktifitas.setText(nvAnak(rs.getString("nilaiaktifitas")));
+                    pilihAnak(SkalaMenangis, rs.getString("menangis"));
+                    NilaiMenangis.setText(nvAnak(rs.getString("nilaimenangis")));
+                    pilihAnak(SkalaBersuara, rs.getString("bersuara"));
+                    NilaiBersuara.setText(nvAnak(rs.getString("nilaibersuara")));
+                    SkalaNyeri1.setText(nvAnak(rs.getString("hasilnyeri")));
+                    pilihAnak(SkalaResiko7, rs.getString("penilaian_humptydumpty_skala1"));
+                    NilaiResiko7.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai1")));
+                    pilihAnak(SkalaResiko8, rs.getString("penilaian_humptydumpty_skala2"));
+                    NilaiResiko8.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai2")));
+                    pilihAnak(SkalaResiko9, rs.getString("penilaian_humptydumpty_skala3"));
+                    NilaiResiko9.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai3")));
+                    pilihAnak(SkalaResiko10, rs.getString("penilaian_humptydumpty_skala4"));
+                    NilaiResiko10.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai4")));
+                    pilihAnak(SkalaResiko11, rs.getString("penilaian_humptydumpty_skala5"));
+                    NilaiResiko11.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai5")));
+                    pilihAnak(SkalaResiko12, rs.getString("penilaian_humptydumpty_skala6"));
+                    NilaiResiko12.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai6")));
+                    pilihAnak(SkalaResiko13, rs.getString("penilaian_humptydumpty_skala7"));
+                    NilaiResiko13.setText(nvAnak(rs.getString("penilaian_humptydumpty_nilai7")));
+                    NilaiResikoTotal1.setText(nvAnak(rs.getString("penilaian_humptydumpty_totalnilai")));
+                    pilihAnak(SkalaGizi1, rs.getString("skrining_gizi1"));
+                    NilaiGizi1.setText(nvAnak(rs.getString("nilai_gizi1")));
+                    pilihAnak(SkalaGizi2, rs.getString("skrining_gizi2"));
+                    NilaiGizi2.setText(nvAnak(rs.getString("nilai_gizi2")));
+                    NilaiGiziTotal.setText(nvAnak(rs.getString("nilai_total_gizi")));
+                    pilihAnak(DiagnosaKhususGizi, rs.getString("skrining_gizi_diagnosa_khusus"));
+                    KeteranganDiagnosaKhususGizi.setText(nvAnak(rs.getString("skrining_gizi_ket_diagnosa_khusus")));
+                    pilihAnak(DiketahuiDietisen, rs.getString("skrining_gizi_diketahui_dietisen"));
+                    KeteranganDiketahuiDietisen.setText(nvAnak(rs.getString("skrining_gizi_jam_diketahui_dietisen")));
+                    Rencana.setText(nvAnak(rs.getString("rencana")));
+                    String nip1 = nvAnak(rs.getString("nip1"));
+                    String nip2 = nvAnak(rs.getString("nip2"));
+                    String kdDok = nvAnak(rs.getString("kd_dokter"));
+                    if (!nip1.equals("")) {
+                        KdPetugas.setText(nip1);
+                        NmPetugas.setText(Sequel.cariIsi("select nama from petugas where nip=?", nip1));
+                    }
+                    if (!nip2.equals("")) {
+                        KdPetugas2.setText(nip2);
+                        NmPetugas2.setText(Sequel.cariIsi("select nama from petugas where nip=?", nip2));
+                    }
+                    if (!kdDok.equals("")) {
+                        KdDPJP.setText(kdDok);
+                        NmDPJP.setText(Sequel.cariIsi("select nm_dokter from dokter where kd_dokter=?", kdDok));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif muat penilaian awal anak : " + e);
+        }
+    }
+
+    private static void pilihAnak(widget.ComboBox combo, String nilai) {
+        if (nilai == null || nilai.trim().equals("")) { return; }
+        for (int idx = 0; idx < combo.getItemCount(); idx++) {
+            Object it = combo.getItemAt(idx);
+            if (it != null && it.toString().equalsIgnoreCase(nilai.trim())) {
+                combo.setSelectedItem(it);
+                return;
+            }
+        }
+    }
+
+    private static String nvAnak(String v) {
+        return v == null ? "" : v;
+    }
 
     private void BtnHapusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnHapusActionPerformed
         if(tbObat.getSelectedRow()>-1){
@@ -6531,8 +6742,9 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
         TCari.setText(norwt);
         Sequel.cariIsi("select reg_periksa.tgl_registrasi from reg_periksa where reg_periksa.no_rawat='"+norwt+"'", DTPCari1);
         CaraBayar.setText(carabayar);
-        DTPCari2.setDate(tgl2);    
-        isRawat(); 
+        DTPCari2.setDate(tgl2);
+        isRawat();
+        muatAnak(norwt);
     }
     
     

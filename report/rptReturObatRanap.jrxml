@@ -16,24 +16,29 @@
 	<parameter name="emailrs" class="java.lang.String"/>
 	<parameter name="logo" class="java.io.InputStream"/>
 	<queryString>
-		<![CDATA[select returpasien.tanggal, returpasien.no_rawat,concat(reg_periksa.no_rkm_medis,' ',pasien.nm_pasien) as pasien,
-concat(returpasien.kode_brng,' ',databarang.nama_brng) as barang, returpasien.jml ,returpasien.no_batch,returpasien.no_faktur
-from returpasien inner join reg_periksa inner join pasien inner join databarang 
-on returpasien.no_rawat=reg_periksa.no_rawat and reg_periksa.no_rkm_medis=pasien.no_rkm_medis 
-and returpasien.kode_brng=databarang.kode_brng]]>
+		<![CDATA[select returjual.tgl_retur as tanggal,substring(returjual.no_retur_jual,1,char_length(returjual.no_retur_jual)-2) as no_rawat,
+concat(returjual.no_rkm_medis,' ',pasien.nm_pasien) as pasien,concat(returjual.nip,' ',petugas.nama) as petugas,
+concat(detreturjual.kode_brng,' ',databarang.nama_brng) as barang, detreturjual.jml_retur as jml,detreturjual.no_batch,detreturjual.no_faktur,detreturjual.catatan
+from detreturjual inner join returjual inner join pasien inner join databarang inner join petugas
+on detreturjual.no_retur_jual=returjual.no_retur_jual and returjual.no_rkm_medis=pasien.no_rkm_medis
+and detreturjual.kode_brng=databarang.kode_brng and returjual.nip=petugas.nip]]>
 	</queryString>
 	<field name="tanggal" class="java.sql.Date">
 		<property name="com.jaspersoft.studio.field.label" value="tanggal"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="returpasien"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="returjual"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="no_rawat" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="no_rawat"/>
-		<property name="com.jaspersoft.studio.field.tree.path" value="returpasien"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="returjual"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="pasien" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="pasien"/>
+		<fieldDescription><![CDATA[]]></fieldDescription>
+	</field>
+	<field name="petugas" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="petugas"/>
 		<fieldDescription><![CDATA[]]></fieldDescription>
 	</field>
 	<field name="barang" class="java.lang.String">
@@ -51,6 +56,10 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 	<field name="no_faktur" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="no_faktur"/>
 		<property name="com.jaspersoft.studio.field.tree.path" value="returpasien"/>
+	</field>
+	<field name="catatan" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="catatan"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="returjual"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
@@ -116,7 +125,7 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 		<band height="18" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="640" y="0" width="59" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="84c4b70f-4b97-4939-895c-33f78283d76d"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="540" y="0" width="50" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="84c4b70f-4b97-4939-895c-33f78283d76d"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
@@ -124,7 +133,7 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 				<text><![CDATA[No.Batch]]></text>
 			</staticText>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="699" y="0" width="103" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="d0c18c34-1dfc-473a-b5cd-b0e3ee56ecee"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="590" y="0" width="80" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="d0c18c34-1dfc-473a-b5cd-b0e3ee56ecee"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
@@ -132,7 +141,7 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 				<text><![CDATA[No.Faktur]]></text>
 			</staticText>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="62" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="8c69d7ed-c6ed-4b71-b879-604a91437d38"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="0" y="0" width="55" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="8c69d7ed-c6ed-4b71-b879-604a91437d38"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
@@ -140,7 +149,7 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 				<text><![CDATA[Tanggal Retur]]></text>
 			</staticText>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="62" y="0" width="84" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="811338cd-6f2a-4b27-bc62-8658d2b79a63"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="55" y="0" width="75" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="811338cd-6f2a-4b27-bc62-8658d2b79a63"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
@@ -148,7 +157,7 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 				<text><![CDATA[No.Rawat]]></text>
 			</staticText>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="146" y="0" width="195" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="cdf91ef1-0aef-4bfa-a5be-69d014aee91d"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="130" y="0" width="120" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="cdf91ef1-0aef-4bfa-a5be-69d014aee91d"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
@@ -156,7 +165,15 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 				<text><![CDATA[Pasien]]></text>
 			</staticText>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="593" y="0" width="47" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="81af64fc-ca78-434e-aeee-9d13fea2a5ba"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="250" y="0" width="90" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="a1b2c3d4-1111-4a2b-9c3d-4e5f6a7b8c9d"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Petugas]]></text>
+			</staticText>
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="500" y="0" width="40" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="81af64fc-ca78-434e-aeee-9d13fea2a5ba"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
@@ -164,12 +181,20 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 				<text><![CDATA[Jml.Retur]]></text>
 			</staticText>
 			<staticText>
-				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="341" y="0" width="252" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="e08a807e-1365-4580-8093-3eb8c321dff7"/>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="340" y="0" width="160" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="e08a807e-1365-4580-8093-3eb8c321dff7"/>
 				<textElement verticalAlignment="Middle">
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<text><![CDATA[Barang]]></text>
+			</staticText>
+			<staticText>
+				<reportElement stretchType="RelativeToBandHeight" mode="Opaque" x="670" y="0" width="132" height="18" forecolor="#000000" backcolor="#F0F0DC" uuid="f1a2b3c4-3333-4d5e-9f6a-7b8c9d0e1f2a"/>
+				<textElement verticalAlignment="Middle">
+					<font fontName="Tahoma" size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<text><![CDATA[Catatan]]></text>
 			</staticText>
 			<line>
 				<reportElement x="0" y="0" width="802" height="1" uuid="567e6114-a76a-4bcb-bbab-e68a31d24bbf"/>
@@ -188,61 +213,77 @@ and returpasien.kode_brng=databarang.kode_brng]]>
 	<detail>
 		<band height="12" splitType="Stretch">
 			<property name="com.jaspersoft.studio.unit.height" value="px"/>
-			<textField textAdjust="StretchHeight" pattern="dd/MM/yyyy" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="62" height="10" uuid="7dde8171-fa5f-40ff-ac49-da8d79518a7d"/>
+			<textField pattern="dd/MM/yyyy" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="55" height="10" uuid="7dde8171-fa5f-40ff-ac49-da8d79518a7d"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{tanggal}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="62" y="0" width="84" height="10" uuid="3c45087a-fb6e-42cb-8b57-39838af47bcd"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="55" y="0" width="75" height="10" uuid="3c45087a-fb6e-42cb-8b57-39838af47bcd"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{no_rawat}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="146" y="0" width="195" height="10" uuid="d15f1067-8f7c-4c9e-a71f-43c92d3a0050"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="130" y="0" width="120" height="10" uuid="d15f1067-8f7c-4c9e-a71f-43c92d3a0050"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{pasien}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="341" y="0" width="252" height="10" uuid="89af7a28-9e42-4ffb-8344-ce13a9ab9913"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="250" y="0" width="90" height="10" uuid="b2c3d4e5-2222-4b3c-8d4e-5f6a7b8c9d0e"/>
+				<textElement>
+					<font fontName="Tahoma" size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{petugas}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="340" y="0" width="160" height="10" uuid="89af7a28-9e42-4ffb-8344-ce13a9ab9913"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{barang}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" pattern="#,##0" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="593" y="0" width="47" height="10" uuid="d5ce2ba4-e5a9-4271-8247-55745866d2cd"/>
+			<textField pattern="#,##0" isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="500" y="0" width="40" height="10" uuid="d5ce2ba4-e5a9-4271-8247-55745866d2cd"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{jml}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="640" y="0" width="59" height="10" uuid="ab614d36-24b9-4e5d-b341-740dc3f099d6"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="540" y="0" width="50" height="10" uuid="ab614d36-24b9-4e5d-b341-740dc3f099d6"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{no_batch}]]></textFieldExpression>
 			</textField>
-			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
-				<reportElement stretchType="RelativeToBandHeight" x="699" y="0" width="103" height="10" uuid="548b06be-9b74-4072-8e41-9b70e1db2353"/>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="590" y="0" width="80" height="10" uuid="548b06be-9b74-4072-8e41-9b70e1db2353"/>
 				<textElement>
 					<font fontName="Tahoma" size="8"/>
 					<paragraph lineSpacing="Single"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{no_faktur}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement stretchType="RelativeToBandHeight" x="670" y="0" width="132" height="10" uuid="a4b5c6d7-4444-4e5f-8a6b-7c8d9e0f1a2b"/>
+				<textElement>
+					<font fontName="Tahoma" size="8"/>
+					<paragraph lineSpacing="Single"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{catatan}]]></textFieldExpression>
 			</textField>
 			<line>
 				<reportElement x="0" y="11" width="802" height="1" uuid="2d4e1f74-fc6f-4ac0-82e4-2867490f3d18">

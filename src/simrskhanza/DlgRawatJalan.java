@@ -288,7 +288,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         // logic transfer terpisah.
         final javax.swing.JPopupMenu menuPenilaianAwalRalan = new javax.swing.JPopupMenu();
         menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Ringkasan Riwayat Masuk (RM 2a)", ev -> bukaRingkasanRiwayatMasukRalan()));
-        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Pengantar Pasien Rawat Inap (RM 3a)", ev -> bukaPengantarPasienRanapRalan()));
+        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Lembar Transfer Pasien Internal (RM 38)", ev -> bukaPengantarPasienRanapRalan()));
         TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -330,7 +330,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            rekammedis.RMPengantarPasienRanap f = new rekammedis.RMPengantarPasienRanap(null, false);
+            rekammedis.RMTransferPasienInternal f = new rekammedis.RMTransferPasienInternal(null, false);
             f.isCek();
             f.setNoRm(TNoRw.getText());
             f.setLocationRelativeTo(this);
@@ -8200,20 +8200,20 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         if(TPasien.getText().trim().equals("")||TNoRw.getText().trim().equals("")){
             JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
             TCari.requestFocus();
-        }else{      
-            if(Sequel.cariInteger("select count(kamar_inap.no_rawat) from kamar_inap where kamar_inap.no_rawat=?",TNoRw.getText())>0){
-                JOptionPane.showMessageDialog(null,"Maaf, Pasien sudah masuk Kamar Inap. Gunakan billing Ranap..!!!");
-            }else {
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                DlgPermintaanLaboratorium dlgro=new DlgPermintaanLaboratorium(null,false);
-                dlgro.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
-                dlgro.setLocationRelativeTo(internalFrame1);
-                dlgro.emptTeks();
-                dlgro.isCek();
-                dlgro.setNoRm(TNoRw.getText(),"Ralan");
-                dlgro.setVisible(true);
-                this.setCursor(Cursor.getDefaultCursor());  
-            }          
+        }else{
+            // Pasien yg sudah masuk kamar inap TETAP boleh diinputkan Permintaan Lab dari sini (petugas
+            // rawat jalan kadang lupa input sblm pasien dipindah) -- status dikirim "Ranap" (bukan "Ralan")
+            // supaya kelas/tarif pemeriksaan ikut kelas kamar sebenarnya. Pola sama spt fix di DlgIGD.java.
+            boolean sudahKamarInap=Sequel.cariInteger("select count(kamar_inap.no_rawat) from kamar_inap where kamar_inap.no_rawat=?",TNoRw.getText())>0;
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            DlgPermintaanLaboratorium dlgro=new DlgPermintaanLaboratorium(null,false);
+            dlgro.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
+            dlgro.setLocationRelativeTo(internalFrame1);
+            dlgro.emptTeks();
+            dlgro.isCek();
+            dlgro.setNoRm(TNoRw.getText(),sudahKamarInap?"Ranap":"Ralan");
+            dlgro.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_BtnPermintaanLabActionPerformed
 
@@ -8236,20 +8236,20 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         if(TPasien.getText().trim().equals("")||TNoRw.getText().trim().equals("")){
             JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
             TCari.requestFocus();
-        }else{   
-            if(Sequel.cariInteger("select count(kamar_inap.no_rawat) from kamar_inap where kamar_inap.no_rawat=?",TNoRw.getText())>0){
-                JOptionPane.showMessageDialog(null,"Maaf, Pasien sudah masuk Kamar Inap. Gunakan billing Ranap..!!!");
-            }else {
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                DlgPermintaanRadiologi dlgro=new DlgPermintaanRadiologi(null,false);
-                dlgro.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
-                dlgro.setLocationRelativeTo(internalFrame1);
-                dlgro.emptTeks();
-                dlgro.isCek();
-                dlgro.setNoRm(TNoRw.getText(),"Ralan");
-                dlgro.setVisible(true);
-                this.setCursor(Cursor.getDefaultCursor());
-            }            
+        }else{
+            // Sama spt Permintaan Lab: pasien yg sudah masuk kamar inap TETAP boleh diinputkan Permintaan
+            // Radiologi dari sini, tapi status dikirim "Ranap" (bukan "Ralan") supaya kelas/tarif ikut kamar
+            // sebenarnya. Pola sama spt fix di DlgIGD.java.
+            boolean sudahKamarInap=Sequel.cariInteger("select count(kamar_inap.no_rawat) from kamar_inap where kamar_inap.no_rawat=?",TNoRw.getText())>0;
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            DlgPermintaanRadiologi dlgro=new DlgPermintaanRadiologi(null,false);
+            dlgro.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
+            dlgro.setLocationRelativeTo(internalFrame1);
+            dlgro.emptTeks();
+            dlgro.isCek();
+            dlgro.setNoRm(TNoRw.getText(),sudahKamarInap?"Ranap":"Ralan");
+            dlgro.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_BtnPermintaanRadActionPerformed
 

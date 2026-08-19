@@ -31,9 +31,15 @@ import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.event.DocumentEvent;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import simrskhanza.DlgCariCaraBayar;
@@ -44,6 +50,43 @@ import simrskhanza.DlgCariPoli;
  * @author perpustakaan
  */
 public final class DlgStatusDataRM extends javax.swing.JDialog {
+    private static final int KOLOM_KELENGKAPAN_AWAL=7;
+    private static final String[] KODE_RALAN={
+        "A01","A02","A03","A04","A05","A06",
+        "B01","B02","B03","B04","B05","B06","B07","B08","B09",
+        "C01","C02","C03","C04",
+        "D01","D02","D03","D04","D05","D06",
+        "E01","E02","E03","E04","E05","E06"
+    };
+    private static final String[] KODE_RANAP=new String[61];
+    private static final String[] KOLOM_DASAR={"No.Rawat","Tanggal","Dokter Dituju","Nomer RM","Pasien","Poliklinik","Status"};
+    private static final String[] KOLOM_WAKTU={"Jam Daftar","Jam Selesai","Lama Tunggu","Dasar Waktu"};
+    private static final String[] KOLOM_RALAN={
+        "A1 Nama Pasien","A2 Nomor RM","A3 Nomor SEP BPJS","A4 Poli Tujuan","A5 Tanggal Pelayanan","A6 Nama DPJP",
+        "B1 Anamnesis","B2 Pemeriksaan Fisik","B3 Tanda Vital","B4 Diagnosa","B5 Diagnosis Sesuai ICD-10","B6 Terapi/Pengobatan","B7 Resep Obat","B8 Edukasi PX","B9 Rencana Kontrol",
+        "C1 Permintaan Lab","C2 Hasil Lab","C3 Permintaan Radiologi","C4 Hasil Radiologi",
+        "D1 CPPT Dokter","D2 CPPT Perawat","D3 CPPT PPA Lain","D4 Tanggal & Jam","D5 Nama PPA","D6 TTD PPA",
+        "E1 SEP Valid","E2 Diagnosa Sesuai Pelayanan","E3 Indikasi Pemeriksaan","E4 Resume/CPPT","E5 Obat Sesuai Indikasi","E6 Kesesuaian Data Administrasi"
+    };
+    private static final String[] KOLOM_RANAP={
+        "I1 Nama","I2 Tanggal Lahir","I3 JK","I4 Alamat","I5 Nomor Telepon","I6 Identitas PJ",
+        "I7 Surat Pengantar Ranap","I8 Surat Rujukan","I9 Formulir Persetujuan Umum","I10 Identitas Kepesertaan BPJS/Asuransi","I11 General Consent",
+        "I12 Assessment Awal Medis","I13 Assessment Awal Keperawatan","I14 Assessment Gizi","I15 Assessment Risiko Jatuh","I16 Assessment Nyeri",
+        "I17 Anamnesis","I18 Pemeriksaan Fisik","I19 Diagnosis Awal","I20 Rencana Pelayanan","I21 Instruksi Dokter","I22 CPPT","I23 Catatan Konsul",
+        "I24 Pengkajian","I25 Diagnosis Keperawatan","I26 Intervensi (Tindakan)","I27 Implementasi Tindakan","I28 Evaluasi","I29 Monitoring Tanda Vital",
+        "I30 Catatan Pemberian Obat","I31 Instruksi Obat Dokter","I32 Dokumentasi Pemberian Obat",
+        "I33 Permintaan Lab","I34 Hasil Lab","I35 Permintaan Radiologi","I36 Hasil Radiologi","I37 Hasil Pemeriksaan Penunjang",
+        "I38 Informed Consent Tindakan","I39 Informed Consent Operasi","I40 Checklist Keselamatan Operasi","I41 Laporan Tindakan","I42 Laporan Anestesi","I43 Laporan Hasil Tindakan","I44 Laporan Kondisi Pasien",
+        "I45 CPPT Dokter","I46 CPPT Perawat","I47 CPPT PPA Lain","I48 Tanggal & Jam","I49 Nama PPA","I50 TTD PPA",
+        "I51 Edukasi Diagnosis","I52 Edukasi Tindakan","I53 Edukasi Penggunaan Obat","I54 Edukasi Keluarga Pasien",
+        "I55 Kelengkapan Resume","I56 Diagnosis Akhir","I57 Kondisi Saat Pulang","I58 Terapi/Obat","I59 Instruksi Perawatan","I60 Jadwal Kontrol","I61 Surat Kontrol"
+    };
+    static{
+        for(int x=0;x<KODE_RANAP.length;x++) KODE_RANAP[x]=String.format("I%02d",x+1);
+    }
+    private boolean sedangMemuat=false;
+    private final Map<String,Boolean> perubahanBelumDisimpan=new java.util.LinkedHashMap<>();
+    private widget.Button BtnSimpan;
     private final DefaultTableModel tabMode;
     private Connection koneksi=koneksiDB.condb();
     private sekuel Sequel=new sekuel();
@@ -63,20 +106,32 @@ public final class DlgStatusDataRM extends javax.swing.JDialog {
     public DlgStatusDataRM(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        Status.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"Ralan","Ranap"}));
+        Status.setSelectedItem("Ralan");
+        pasangTombolSimpan();
         this.setLocation(8,1);
         setSize(885,674);
 
-        tabMode=new DefaultTableModel(null,new Object[]{
-            "No.Rawat","Tanggal","Dokter Dituju","Nomer RM","Pasien","Poliklinik","Status","SOAPI Ralan","SOAPI Ranap","Resume Ralan","Resume Ranap","Triase IGD","Askep IGD","ICD 10","ICD 9","Jam Daftar","Jam Selesai","Lama Tunggu","Dasar Waktu"
-        }){
-             @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
+        tabMode=new DefaultTableModel(null,kolomModelAktif()){
+             @Override public boolean isCellEditable(int rowIndex, int colIndex){
+                 return colIndex>=KOLOM_KELENGKAPAN_AWAL && colIndex<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif();
+             }
+             @Override public Class<?> getColumnClass(int colIndex){
+                 return colIndex>=KOLOM_KELENGKAPAN_AWAL && colIndex<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif() ? Boolean.class : String.class;
+             }
         };
         tbBangsal.setModel(tabMode);
 
         tbBangsal.setPreferredScrollableViewportSize(new Dimension(800,800));
         tbBangsal.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        tbBangsal.setFont(new java.awt.Font("Tahoma",java.awt.Font.PLAIN,12));
+        tbBangsal.setRowHeight(Math.max(tbBangsal.getRowHeight(),29));
+        tbBangsal.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tbBangsal.setRowSelectionAllowed(true);
+        tbBangsal.setColumnSelectionAllowed(false);
+        tbBangsal.setIntercellSpacing(new Dimension(1,1));
 
-        for (i = 0; i < 19; i++) {
+        for (i = 0; i < tabMode.getColumnCount(); i++) {
             TableColumn column = tbBangsal.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(105);
@@ -92,33 +147,62 @@ public final class DlgStatusDataRM extends javax.swing.JDialog {
                 column.setPreferredWidth(130);
             }else if(i==6){
                 column.setPreferredWidth(43);
-            }else if(i==7){
-                column.setPreferredWidth(70);
-            }else if(i==8){
-                column.setPreferredWidth(75);
-            }else if(i==9){
-                column.setPreferredWidth(78);
-            }else if(i==10){
-                column.setPreferredWidth(80);
-            }else if(i==11){
-                column.setPreferredWidth(64);
-            }else if(i==12){
-                column.setPreferredWidth(64);
-            }else if(i==13){
-                column.setPreferredWidth(54);
-            }else if(i==14){
-                column.setPreferredWidth(54);
-            }else if(i==15){
+            }else if(i>=KOLOM_KELENGKAPAN_AWAL && i<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()){
+                column.setPreferredWidth(82);
+            }else if(i==KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()){
                 column.setPreferredWidth(125);
-            }else if(i==16){
+            }else if(i==KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()+1){
                 column.setPreferredWidth(125);
-            }else if(i==17){
+            }else if(i==KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()+2){
                 column.setPreferredWidth(90);
-            }else if(i==18){
+            }else if(i==KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()+3){
                 column.setPreferredWidth(105);
             }
         }
-        tbBangsal.setDefaultRenderer(Object.class, new WarnaTable());
+        tbBangsal.setDefaultRenderer(Object.class, new WarnaTable(){
+            private final javax.swing.border.Border borderTerpilih=
+                    javax.swing.BorderFactory.createMatteBorder(2,0,2,0,new java.awt.Color(255,193,7));
+            private final javax.swing.border.Border borderNormal=
+                    javax.swing.BorderFactory.createEmptyBorder(3,5,3,5);
+
+            @Override public java.awt.Component getTableCellRendererComponent(JTable table,Object value,
+                    boolean selected,boolean focus,int row,int column){
+                java.awt.Component komponen=super.getTableCellRendererComponent(table,value,selected,focus,row,column);
+                if(selected){
+                    komponen.setBackground(new java.awt.Color(0,82,155));
+                    komponen.setForeground(java.awt.Color.WHITE);
+                    komponen.setFont(table.getFont().deriveFont(java.awt.Font.BOLD));
+                    if(komponen instanceof javax.swing.JComponent){
+                        ((javax.swing.JComponent)komponen).setBorder(borderTerpilih);
+                    }
+                }else{
+                    komponen.setBackground(row%2==0 ? java.awt.Color.WHITE : new java.awt.Color(239,246,252));
+                    komponen.setForeground(new java.awt.Color(34,52,69));
+                    komponen.setFont(table.getFont().deriveFont(java.awt.Font.PLAIN));
+                    if(komponen instanceof javax.swing.JComponent){
+                        ((javax.swing.JComponent)komponen).setBorder(borderNormal);
+                    }
+                }
+                return komponen;
+            }
+        });
+        tbBangsal.setDefaultRenderer(Boolean.class, new RendererCeklis());
+        tbBangsal.getTableHeader().setDefaultRenderer(new RendererHeaderKelompok());
+        tbBangsal.getTableHeader().setPreferredSize(new Dimension(0,78));
+        tbBangsal.getTableHeader().setReorderingAllowed(false);
+        pasangHeaderBerkelompok();
+        tabMode.addTableModelListener((TableModelEvent e) -> {
+            if(!sedangMemuat && e.getType()==TableModelEvent.UPDATE && e.getFirstRow()>=0 &&
+                    e.getColumn()>=KOLOM_KELENGKAPAN_AWAL && e.getColumn()<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()){
+                tandaiPerubahan(e.getFirstRow(),e.getColumn());
+            }
+        });
+        Status.addActionListener((java.awt.event.ActionEvent evt) -> {
+            if(tabMode!=null){
+                konfigurasiKolomAktif();
+                tampil();
+            }
+        });
         WaktuPeriksaRalan.pastikanTabel();
         
         TCari.setDocument(new batasInput((int)90).getKata(TCari));
@@ -207,6 +291,144 @@ public final class DlgStatusDataRM extends javax.swing.JDialog {
         ChkInput.setSelected(false);
         isForm();
     }    
+
+    private void pasangTombolSimpan(){
+        BtnSimpan=new widget.Button();
+        BtnSimpan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/save-16x16.png")));
+        BtnSimpan.setMnemonic('S');
+        BtnSimpan.setText("Simpan");
+        BtnSimpan.setToolTipText("Simpan perubahan checklist (Alt+S)");
+        BtnSimpan.setName("BtnSimpan");
+        BtnSimpan.setPreferredSize(new Dimension(100,30));
+        BtnSimpan.setEnabled(false);
+        BtnSimpan.addActionListener((java.awt.event.ActionEvent evt) -> simpanSemuaPerubahan());
+        panelGlass5.add(BtnSimpan,Math.max(0,panelGlass5.getComponentCount()-2));
+    }
+
+    private boolean modeRanap(){
+        return Status!=null && "Ranap".equals(Status.getSelectedItem());
+    }
+
+    private String[] kodeKelengkapanAktif(){
+        return modeRanap()?KODE_RANAP:KODE_RALAN;
+    }
+
+    private String[] namaKelengkapanAktif(){
+        return modeRanap()?KOLOM_RANAP:KOLOM_RALAN;
+    }
+
+    private int jumlahKelengkapanAktif(){
+        return kodeKelengkapanAktif().length;
+    }
+
+    private Object[] kolomModelAktif(){
+        String[] kelengkapan=namaKelengkapanAktif();
+        Object[] kolom=new Object[KOLOM_DASAR.length+kelengkapan.length+KOLOM_WAKTU.length];
+        int tujuan=0;
+        for(String nama:KOLOM_DASAR) kolom[tujuan++]=nama;
+        for(String nama:kelengkapan) kolom[tujuan++]=hapusNomorHeader(nama);
+        for(String nama:KOLOM_WAKTU) kolom[tujuan++]=nama;
+        return kolom;
+    }
+
+    private String hapusNomorHeader(String nama){
+        return nama.replaceFirst("^[A-EI]\\d+\\s+","");
+    }
+
+    private void konfigurasiKolomAktif(){
+        sedangMemuat=true;
+        Valid.tabelKosong(tabMode);
+        tabMode.setColumnIdentifiers(kolomModelAktif());
+        tbBangsal.setModel(tabMode);
+        for(int kolom=0;kolom<tabMode.getColumnCount();kolom++){
+            TableColumn bagian=tbBangsal.getColumnModel().getColumn(kolom);
+            if(kolom==0) bagian.setPreferredWidth(105);
+            else if(kolom==1) bagian.setPreferredWidth(65);
+            else if(kolom==2) bagian.setPreferredWidth(150);
+            else if(kolom==3) bagian.setPreferredWidth(65);
+            else if(kolom==4) bagian.setPreferredWidth(150);
+            else if(kolom==5) bagian.setPreferredWidth(130);
+            else if(kolom==6) bagian.setPreferredWidth(43);
+            else if(kolom<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()) bagian.setPreferredWidth(82);
+            else if(kolom<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()+2) bagian.setPreferredWidth(125);
+            else if(kolom==KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif()+2) bagian.setPreferredWidth(90);
+            else bagian.setPreferredWidth(105);
+        }
+        tbBangsal.setDefaultRenderer(Boolean.class,new RendererCeklis());
+        tbBangsal.getTableHeader().setDefaultRenderer(new RendererHeaderKelompok());
+        pasangHeaderBerkelompok();
+        sedangMemuat=false;
+    }
+
+    private void pasangHeaderBerkelompok(){
+        javax.swing.JPanel headerGabungan=new javax.swing.JPanel(new java.awt.BorderLayout());
+        headerGabungan.setOpaque(true);
+        headerGabungan.add(new KopKelompok(),java.awt.BorderLayout.NORTH);
+        headerGabungan.add(tbBangsal.getTableHeader(),java.awt.BorderLayout.CENTER);
+        headerGabungan.setPreferredSize(new Dimension(lebarSeluruhKolom(),106));
+        Scroll.setColumnHeaderView(headerGabungan);
+    }
+
+    private int lebarSeluruhKolom(){
+        int lebar=0;
+        for(int kolom=0;kolom<tbBangsal.getColumnModel().getColumnCount();kolom++){
+            lebar+=tbBangsal.getColumnModel().getColumn(kolom).getPreferredWidth();
+        }
+        return lebar;
+    }
+
+    private class KopKelompok extends javax.swing.JComponent{
+        KopKelompok(){
+            setPreferredSize(new Dimension(lebarSeluruhKolom(),28));
+            setOpaque(true);
+        }
+
+        @Override protected void paintComponent(java.awt.Graphics grafis){
+            super.paintComponent(grafis);
+            gambarKelompok(grafis,0,6,"DATA PASIEN",new java.awt.Color(220,230,237));
+            if(modeRanap()){
+                gambarKelompok(grafis,7,12,"IDENTITAS PASIEN",new java.awt.Color(255,174,0));
+                gambarKelompok(grafis,13,17,"DOKUMENTASI PELAYANAN MEDIS",new java.awt.Color(239,145,145));
+                gambarKelompok(grafis,18,22,"BERKAS ASSESSMENT AWAL",new java.awt.Color(255,216,105));
+                gambarKelompok(grafis,23,29,"CATATAN DOKTER",new java.awt.Color(155,198,230));
+                gambarKelompok(grafis,30,35,"CATATAN KEPERAWATAN",new java.awt.Color(190,220,240));
+                gambarKelompok(grafis,36,38,"TERAPI & PENGOBATAN",new java.awt.Color(205,235,205));
+                gambarKelompok(grafis,39,43,"PEMERIKSAAN PENUNJANG",new java.awt.Color(255,216,105));
+                gambarKelompok(grafis,44,50,"TINDAKAN/OPERASI",new java.awt.Color(225,190,235));
+                gambarKelompok(grafis,51,56,"CPPT & MONITORING",new java.awt.Color(155,198,230));
+                gambarKelompok(grafis,57,60,"EDUKASI PASIEN",new java.awt.Color(255,225,170));
+                gambarKelompok(grafis,61,67,"DISCHARGE/PEMULANGAN",new java.awt.Color(180,225,210));
+                gambarKelompok(grafis,68,71,"WAKTU PELAYANAN",new java.awt.Color(220,230,237));
+            }else{
+                gambarKelompok(grafis,7,12,"A. IDENTITAS DAN ADMINISTRASI",new java.awt.Color(255,174,0));
+                gambarKelompok(grafis,13,21,"B. DOKUMENTASI PELAYANAN MEDIS",new java.awt.Color(239,145,145));
+                gambarKelompok(grafis,22,25,"C. PEMERIKSAAN PENUNJANG",new java.awt.Color(255,216,105));
+                gambarKelompok(grafis,26,31,"D. CPPT & MONITORING",new java.awt.Color(155,198,230));
+                gambarKelompok(grafis,32,37,"E. BERKAS KLAIM BPJS (DOUBLE CEK)",new java.awt.Color(244,196,202));
+                gambarKelompok(grafis,38,41,"WAKTU PELAYANAN",new java.awt.Color(220,230,237));
+            }
+        }
+
+        private void gambarKelompok(java.awt.Graphics grafis,int awal,int akhir,String judul,java.awt.Color warna){
+            int x=0;
+            for(int kolom=0;kolom<awal;kolom++) x+=tbBangsal.getColumnModel().getColumn(kolom).getWidth();
+            int lebar=0;
+            for(int kolom=awal;kolom<=akhir;kolom++) lebar+=tbBangsal.getColumnModel().getColumn(kolom).getWidth();
+            grafis.setColor(warna);
+            grafis.fillRect(x,0,lebar,getHeight());
+            grafis.setColor(new java.awt.Color(120,120,120));
+            grafis.drawRect(x,0,lebar-1,getHeight()-1);
+            grafis.setColor(new java.awt.Color(35,35,35));
+            grafis.setFont(new java.awt.Font("Tahoma",java.awt.Font.BOLD,10));
+            java.awt.FontMetrics ukuran=grafis.getFontMetrics();
+            int posisiX=x+Math.max(4,(lebar-ukuran.stringWidth(judul))/2);
+            int posisiY=(getHeight()-ukuran.getHeight())/2+ukuran.getAscent();
+            java.awt.Shape potonganLama=grafis.getClip();
+            grafis.clipRect(x+1,1,Math.max(0,lebar-2),Math.max(0,getHeight()-2));
+            grafis.drawString(judul,posisiX,posisiY);
+            grafis.setClip(potonganLama);
+        }
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -514,6 +736,7 @@ public final class DlgStatusDataRM extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void BtnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnPrintActionPerformed
+        if(cetakKelengkapanDinamis()) return;
         if(tabMode.getRowCount()==0){
             JOptionPane.showMessageDialog(null,"Maaf, data sudah habis. Tidak ada data yang bisa anda print...!!!!");
             BtnPrint.requestFocus();
@@ -715,6 +938,65 @@ public final class DlgStatusDataRM extends javax.swing.JDialog {
         }
 }//GEN-LAST:event_BtnPrintActionPerformed
 
+    private boolean cetakKelengkapanDinamis(){
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, tidak ada data yang dapat dicetak.");
+            return true;
+        }
+        Object jenis=JOptionPane.showInputDialog(null,"Silakan pilih format laporan.","Pilihan Cetak",
+                JOptionPane.QUESTION_MESSAGE,null,new Object[]{"Laporan HTML","Laporan CSV"},"Laporan HTML");
+        if(jenis==null) return true;
+        try{
+            boolean csv=jenis.toString().equals("Laporan CSV");
+            File file=new File(csv?"StatusDataRM.csv":"StatusDataRM.html");
+            try(BufferedWriter tulis=new BufferedWriter(new FileWriter(file))){
+                if(csv){
+                    for(int kolom=0;kolom<tabMode.getColumnCount();kolom++){
+                        if(kolom>0) tulis.write(";");
+                        tulis.write(nilaiCsv(tabMode.getColumnName(kolom)));
+                    }
+                    tulis.newLine();
+                    for(int baris=0;baris<tabMode.getRowCount();baris++){
+                        for(int kolom=0;kolom<tabMode.getColumnCount();kolom++){
+                            if(kolom>0) tulis.write(";");
+                            Object nilai=tabMode.getValueAt(baris,kolom);
+                            tulis.write(nilaiCsv(nilai instanceof Boolean ? (Boolean.TRUE.equals(nilai)?"Ya":"Tidak") : String.valueOf(nilai)));
+                        }
+                        tulis.newLine();
+                    }
+                }else{
+                    tulis.write("<html><head><meta charset='UTF-8'><style>body{font:11px Arial}table{border-collapse:collapse}th,td{border:1px solid #aaa;padding:4px;white-space:nowrap}th{background:#f0f5eb}</style></head><body>");
+                    tulis.write("<h3>Status dan Kelengkapan Berkas Rekam Medis</h3><table><tr>");
+                    for(int kolom=0;kolom<tabMode.getColumnCount();kolom++) tulis.write("<th>"+nilaiHtml(tabMode.getColumnName(kolom))+"</th>");
+                    tulis.write("</tr>");
+                    for(int baris=0;baris<tabMode.getRowCount();baris++){
+                        tulis.write("<tr>");
+                        for(int kolom=0;kolom<tabMode.getColumnCount();kolom++){
+                            Object nilai=tabMode.getValueAt(baris,kolom);
+                            tulis.write("<td>"+nilaiHtml(nilai instanceof Boolean ? (Boolean.TRUE.equals(nilai)?"&#10003;":"") : String.valueOf(nilai))+"</td>");
+                        }
+                        tulis.write("</tr>");
+                    }
+                    tulis.write("</table></body></html>");
+                }
+            }
+            Desktop.getDesktop().browse(file.toURI());
+        }catch(Exception e){
+            JOptionPane.showMessageDialog(null,"Laporan gagal dibuat: "+e.getMessage());
+        }
+        return true;
+    }
+
+    private String nilaiCsv(String nilai){
+        return "\""+(nilai==null?"":nilai.replace("\"","\"\""))+"\"";
+    }
+
+    private String nilaiHtml(String nilai){
+        if(nilai==null) return "";
+        return nilai.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\"","&quot;")
+                .replace("&amp;#10003;","&#10003;");
+    }
+
     private void BtnPrintKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnPrintKeyPressed
         if(evt.getKeyCode()==KeyEvent.VK_SPACE){
             BtnPrintActionPerformed(null);
@@ -724,14 +1006,24 @@ public final class DlgStatusDataRM extends javax.swing.JDialog {
 }//GEN-LAST:event_BtnPrintKeyPressed
 
     private void BtnKeluarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnKeluarActionPerformed
-        dispose();
+        keluarJikaDiizinkan();
 }//GEN-LAST:event_BtnKeluarActionPerformed
 
     private void BtnKeluarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnKeluarKeyPressed
         if(evt.getKeyCode()==KeyEvent.VK_SPACE){
-            dispose();
+            keluarJikaDiizinkan();
         }else{Valid.pindah(evt,BtnKeluar,TKd);}
 }//GEN-LAST:event_BtnKeluarKeyPressed
+
+    private void keluarJikaDiizinkan(){
+        if(!perubahanBelumDisimpan.isEmpty()){
+            int pilihanKeluar=JOptionPane.showConfirmDialog(null,
+                    "Masih ada "+perubahanBelumDisimpan.size()+" perubahan yang belum disimpan. Tetap keluar?",
+                    "Konfirmasi",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+            if(pilihanKeluar!=JOptionPane.YES_OPTION) return;
+        }
+        dispose();
+    }
 
     private void tbBangsalMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbBangsalMouseClicked
         if(tabMode.getRowCount()!=0){
@@ -783,7 +1075,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         nmpoli.setText("");
         kdpenjab.setText("");
         nmpenjab.setText("");
-        Status.setSelectedIndex(0);
+        Status.setSelectedItem("Ralan");
         tampil();
     }//GEN-LAST:event_BtnAllActionPerformed
 
@@ -900,9 +1192,10 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     public void tampil(){        
         try{   
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)); 
+            sedangMemuat=true;
             Valid.tabelKosong(tabMode);   
             ps=koneksi.prepareStatement(
-                "select reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.jam_reg,dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,poliklinik.nm_poli,reg_periksa.status_lanjut, "+
+                "select reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.jam_reg,dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.tgl_lahir,pasien.jk,pasien.alamat,pasien.no_tlp,reg_periksa.p_jawab,poliklinik.nm_poli,reg_periksa.status_lanjut, "+
                 "(select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat) as waktu_soap, "+
                 "ws.waktu_sudah,coalesce((select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat),ws.waktu_sudah) as waktu_selesai "+
                 "from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
@@ -931,71 +1224,20 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 adasoapiralan=0;tidakadasoapiralan=0;adasoapiranap=0;tidakadasoapiranap=0;adaresumeralan=0;tidakadaresumeralan=0;adaresumeranap=0;tidakadaresumeranap=0;
                 adatriaseigd=0;tidakadatriaseigd=0;adaaskepigd=0;tidakadaaskepigd=0;adaicd10=0;tidakadaicd10=0;adaicd9=0;tidakadaicd9=0; 
                 while(rs.next()){
-                    soapiralan=Sequel.cariIsi("select if(count(pemeriksaan_ralan.no_rawat)>0,'Ada','Tidak Ada') from pemeriksaan_ralan where pemeriksaan_ralan.no_rawat=?",rs.getString("no_rawat"));
-                    if(soapiralan.equals("Ada")){
-                        adasoapiralan++;
-                    }else{
-                        tidakadasoapiralan++;
-                    }
-                    soapiranap=Sequel.cariIsi("select if(count(pemeriksaan_ranap.no_rawat)>0,'Ada','Tidak Ada') from pemeriksaan_ranap where pemeriksaan_ranap.no_rawat=?",rs.getString("no_rawat"));
-                    if(soapiranap.equals("Ada")){
-                        adasoapiranap++;
-                    }else{
-                        tidakadasoapiranap++;
-                    }
-                    resumeralan=Sequel.cariIsi("select if(count(resume_medis_ralan_v2.no_rawat)>0,'Ada','Tidak Ada') from resume_medis_ralan_v2 where resume_medis_ralan_v2.no_rawat=?",rs.getString("no_rawat"));
-                    if(resumeralan.equals("Ada")){
-                        adaresumeralan++;
-                    }else{
-                        tidakadaresumeralan++;
-                    }
-                    resumeranap=Sequel.cariIsi("select if(count(resume_medis_ranap_v2.no_rawat)>0,'Ada','Tidak Ada') from resume_medis_ranap_v2 where resume_medis_ranap_v2.no_rawat=?",rs.getString("no_rawat"));
-                    if(resumeranap.equals("Ada")){
-                        adaresumeranap++;
-                    }else{
-                        tidakadaresumeranap++;
-                    }
-                    triaseigd=Sequel.cariIsi("select if(count(data_triase_igd.no_rawat)>0,'Ada','Tidak Ada') from data_triase_igd where data_triase_igd.no_rawat=?",rs.getString("no_rawat"));
-                    if(triaseigd.equals("Ada")){
-                        adatriaseigd++;
-                    }else{
-                        tidakadatriaseigd++;
-                    }
-                    askepigd=Sequel.cariIsi("select if(count(penilaian_awal_keperawatan_igd.no_rawat)>0,'Ada','Tidak Ada') from penilaian_awal_keperawatan_igd where penilaian_awal_keperawatan_igd.no_rawat=?",rs.getString("no_rawat"));
-                    if(askepigd.equals("Ada")){
-                        adaaskepigd++;
-                    }else{
-                        tidakadaaskepigd++;
-                    }
-                    icd10=Sequel.cariIsi("select if(count(diagnosa_pasien.no_rawat)>0,'Ada','Tidak Ada') from diagnosa_pasien where diagnosa_pasien.no_rawat=?",rs.getString("no_rawat"));
-                    if(icd10.equals("Ada")){
-                        adaicd10++;
-                    }else{
-                        tidakadaicd10++;
-                    }
-                    icd9=Sequel.cariIsi("select if(count(prosedur_pasien.no_rawat)>0,'Ada','Tidak Ada') from prosedur_pasien where prosedur_pasien.no_rawat=?",rs.getString("no_rawat"));
-                    if(icd9.equals("Ada")){
-                        adaicd9++;
-                    }else{
-                        tidakadaicd9++;
-                    }
-                    tabMode.addRow(new Object[]{
-                        rs.getString("no_rawat"),rs.getString("tgl_registrasi"),rs.getString("nm_dokter"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),rs.getString("nm_poli"),rs.getString("status_lanjut"),
-                        soapiralan,soapiranap,resumeralan,resumeranap,triaseigd,askepigd,icd10,icd9,
-                        rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),
-                        rs.getString("waktu_selesai")==null?"-":rs.getString("waktu_selesai"),
-                        formatLamaTunggu(rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("waktu_selesai")),
-                        rs.getString("waktu_soap")!=null?"SOAP Pertama":(rs.getString("waktu_sudah")!=null?"Klik Status Sudah":"Tidak Tersedia")
-                    });                    
+                    String noRawat=rs.getString("no_rawat");
+                    Boolean[] ceklis=ambilKelengkapan(noRawat,rs);
+                    Object[] baris=new Object[KOLOM_DASAR.length+ceklis.length+KOLOM_WAKTU.length];
+                    baris[0]=rs.getString("no_rawat"); baris[1]=rs.getString("tgl_registrasi");
+                    baris[2]=rs.getString("nm_dokter"); baris[3]=rs.getString("no_rkm_medis");
+                    baris[4]=rs.getString("nm_pasien"); baris[5]=rs.getString("nm_poli"); baris[6]=rs.getString("status_lanjut");
+                    for(int x=0;x<ceklis.length;x++) baris[KOLOM_KELENGKAPAN_AWAL+x]=ceklis[x];
+                    int waktu=KOLOM_KELENGKAPAN_AWAL+ceklis.length;
+                    baris[waktu]=rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg");
+                    baris[waktu+1]=rs.getString("waktu_selesai")==null?"-":rs.getString("waktu_selesai");
+                    baris[waktu+2]=formatLamaTunggu(rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("waktu_selesai"));
+                    baris[waktu+3]=rs.getString("waktu_soap")!=null?"SOAP Pertama":(rs.getString("waktu_sudah")!=null?"Klik Status Sudah":"Tidak Tersedia");
+                    tabMode.addRow(baris);
                 }
-                if(tabMode.getRowCount()>0){
-                    tabMode.addRow(new Object[]{
-                        "","","","","","Status Data Ada",":",adasoapiralan,adasoapiranap,adaresumeralan,adaresumeranap,adatriaseigd,adaaskepigd,adaicd10,adaicd9
-                    });
-                    tabMode.addRow(new Object[]{
-                        "","","","","","Status Data Tidak Ada",":",tidakadasoapiralan,tidakadasoapiranap,tidakadaresumeralan,tidakadaresumeranap,tidakadatriaseigd,tidakadaaskepigd,tidakadaicd10,tidakadaicd9
-                    });
-                }   
             } catch (Exception e) {
                 System.out.println("Notifikasi : "+e);
             } finally{
@@ -1006,10 +1248,308 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                     ps.close();
                 }
             }       
+            sedangMemuat=false;
             this.setCursor(Cursor.getDefaultCursor());
         }catch(Exception e){
+            sedangMemuat=false;
             System.out.println("Notifikasi : "+e);
         }
+    }
+
+    private Boolean[] ambilKelengkapan(String noRawat, ResultSet dataRegistrasi){
+        return modeRanap()?ambilKelengkapanRanap(noRawat,dataRegistrasi):ambilKelengkapanRalan(noRawat);
+    }
+
+    private Boolean[] ambilKelengkapanRalan(String noRawat){
+        Boolean[] nilai=new Boolean[KODE_RALAN.length];
+        for(int x=0;x<nilai.length;x++) nilai[x]=false;
+
+        boolean soap=adaData("select count(*) from pemeriksaan_ralan where no_rawat=?",noRawat);
+        boolean anamnesis=adaData("select count(*) from pemeriksaan_ralan where no_rawat=? and trim(keluhan)<>''",noRawat);
+        boolean pemeriksaanFisik=adaData("select count(*) from pemeriksaan_ralan where no_rawat=? and trim(pemeriksaan)<>''",noRawat);
+        boolean tandaVital=adaData("select count(*) from pemeriksaan_ralan where no_rawat=? and (trim(tensi)<>'' or trim(nadi)<>'' or trim(suhu_tubuh)<>'')",noRawat);
+        boolean diagnosisSoap=adaData("select count(*) from pemeriksaan_ralan where no_rawat=? and trim(penilaian)<>''",noRawat);
+        boolean terapi=adaData("select count(*) from pemeriksaan_ralan where no_rawat=? and trim(rtl)<>''",noRawat);
+        boolean icd10=adaData("select count(*) from diagnosa_pasien where no_rawat=?",noRawat);
+        boolean resep=adaData("select count(*) from resep_obat where no_rawat=?",noRawat);
+        boolean sep=adaData("select count(*) from bridging_sep where no_rawat=? and trim(no_sep)<>''",noRawat);
+        boolean permintaanLab=adaData("select count(*) from permintaan_lab where no_rawat=?",noRawat);
+        boolean hasilLab=adaData("select count(*) from periksa_lab where no_rawat=?",noRawat) ||
+                adaData("select count(*) from detail_periksa_lab where no_rawat=?",noRawat);
+        boolean permintaanRad=adaData("select count(*) from permintaan_radiologi where no_rawat=?",noRawat);
+        boolean hasilRad=adaData("select count(*) from periksa_radiologi where no_rawat=?",noRawat);
+        boolean resume=adaData("select count(*) from resume_medis_ralan_v2 where no_rawat=?",noRawat);
+        boolean rencanaKontrol=adaData("select count(*) from surat_kontrol where no_rawat=?",noRawat);
+        boolean petugas=adaData("select count(*) from pemeriksaan_ralan where no_rawat=? and trim(nip)<>''",noRawat);
+
+        // A. Identitas dan administrasi sesuai formulir review rawat jalan.
+        nilai[0]=true; nilai[1]=true; nilai[2]=sep; nilai[3]=true; nilai[4]=true; nilai[5]=true;
+        // B. Dokumentasi pelayanan medis.
+        nilai[6]=anamnesis; nilai[7]=pemeriksaanFisik; nilai[8]=tandaVital; nilai[9]=diagnosisSoap;
+        nilai[10]=icd10; nilai[11]=terapi || resep; nilai[12]=resep; nilai[14]=rencanaKontrol;
+        // C. Pemeriksaan penunjang.
+        nilai[15]=permintaanLab; nilai[16]=hasilLab; nilai[17]=permintaanRad; nilai[18]=hasilRad;
+        // D. CPPT & monitoring. Profesi spesifik tetap manual sampai sumber profesinya dipastikan.
+        nilai[19]=soap; nilai[22]=soap; nilai[23]=petugas;
+        // E. Double check klaim BPJS.
+        nilai[25]=sep; nilai[26]=icd10; nilai[27]=permintaanLab || permintaanRad;
+        nilai[28]=resume || soap; nilai[29]=resep;
+
+        return terapkanOverride(noRawat,nilai,KODE_RALAN);
+    }
+
+    private Boolean[] ambilKelengkapanRanap(String noRawat,ResultSet registrasi){
+        Boolean[] nilai=new Boolean[KODE_RANAP.length];
+        for(int x=0;x<nilai.length;x++) nilai[x]=false;
+        try{
+            nilai[0]=terisi(registrasi.getString("nm_pasien"));
+            nilai[1]=terisi(registrasi.getString("tgl_lahir"));
+            nilai[2]=terisi(registrasi.getString("jk"));
+            nilai[3]=terisi(registrasi.getString("alamat"));
+            nilai[4]=terisi(registrasi.getString("no_tlp"));
+            nilai[5]=terisi(registrasi.getString("p_jawab"));
+        }catch(Exception e){}
+
+        boolean sep=adaData("select count(*) from bridging_sep where no_rawat=? and trim(no_sep)<>''",noRawat);
+        boolean persetujuanUmum=adaData("select count(*) from surat_persetujuan_umum where no_rawat=?",noRawat);
+        boolean asesmenMedis=adaSalahSatu(noRawat,
+                "select count(*) from penilaian_medis_ranap where no_rawat=?",
+                "select count(*) from penilaian_medis_ranap_kandungan where no_rawat=?",
+                "select count(*) from ringkasan_riwayat_masuk where no_rawat=?");
+        boolean asesmenKeperawatan=adaSalahSatu(noRawat,
+                "select count(*) from penilaian_awal_keperawatan_ranap where no_rawat=?",
+                "select count(*) from penilaian_awal_keperawatan_kebidanan_ranap where no_rawat=?",
+                "select count(*) from asesmen_keperawatan_bayi where no_rawat=?",
+                "select count(*) from asesmen_kebidanan where no_rawat=?",
+                "select count(*) from penilaian_awal_keperawatan_ranap_anak where no_rawat=?",
+                "select count(*) from asesmen_keperawatan_anak where no_rawat=?");
+        boolean asesmenGizi=adaSalahSatu(noRawat,
+                "select count(*) from skrining_nutrisi_dewasa where no_rawat=?",
+                "select count(*) from skrining_nutrisi_anak where no_rawat=?",
+                "select count(*) from skrining_nutrisi_lansia where no_rawat=?",
+                "select count(*) from skrining_gizi where no_rawat=?",
+                "select count(*) from asuhan_gizi where no_rawat=?",
+                "select count(*) from monitoring_asuhan_gizi where no_rawat=?",
+                "select count(*) from catatan_adime_gizi where no_rawat=?");
+        boolean soap=adaData("select count(*) from pemeriksaan_ranap where no_rawat=?",noRawat);
+        boolean catatanKeperawatan=adaData("select count(*) from catatan_keperawatan_ranap where no_rawat=?",noRawat);
+        boolean resep=adaData("select count(*) from resep_obat where no_rawat=?",noRawat);
+        boolean pemberianObat=adaData("select count(*) from detail_pemberian_obat where no_rawat=?",noRawat);
+        boolean permintaanLab=adaData("select count(*) from permintaan_lab where no_rawat=?",noRawat);
+        boolean hasilLab=adaData("select count(*) from periksa_lab where no_rawat=?",noRawat) || adaData("select count(*) from detail_periksa_lab where no_rawat=?",noRawat);
+        boolean permintaanRad=adaData("select count(*) from permintaan_radiologi where no_rawat=?",noRawat);
+        boolean hasilRad=adaData("select count(*) from periksa_radiologi where no_rawat=?",noRawat);
+        boolean operasi=adaData("select count(*) from operasi where no_rawat=?",noRawat);
+        boolean laporanOperasi=adaData("select count(*) from laporan_operasi where no_rawat=?",noRawat);
+        boolean checklistOperasi=adaSalahSatu(noRawat,
+                "select count(*) from signin_sebelum_anestesi where no_rawat=?",
+                "select count(*) from timeout_sebelum_insisi where no_rawat=?",
+                "select count(*) from signout_sebelum_menutup_luka where no_rawat=?");
+        boolean resume=adaData("select count(*) from resume_medis_ranap_v2 where no_rawat=?",noRawat);
+        boolean diagnosisAkhir=adaData("select count(*) from diagnosa_pasien where no_rawat=? and status='Ranap'",noRawat) ||
+                adaData("select count(*) from resume_medis_ranap_v2 where no_rawat=? and trim(diagnosa_keluar)<>''",noRawat);
+        boolean suratKontrol=adaData("select count(*) from surat_kontrol where no_rawat=?",noRawat);
+        boolean asesmenNyeri=adaData("select count(*) from asesmen_ulang_nyeri where no_rawat=?",noRawat);
+
+        nilai[6]=adaSalahSatu(noRawat,
+                "select count(*) from pengantar_pasien_ranap where no_rawat=?",
+                "select count(*) from lembar_transfer_pasien_internal where no_rawat=?");
+        nilai[7]=adaData("select count(*) from rujuk_masuk where no_rawat=?",noRawat);
+        nilai[8]=persetujuanUmum; nilai[9]=sep; nilai[10]=persetujuanUmum;
+        nilai[11]=asesmenMedis; nilai[12]=asesmenKeperawatan; nilai[13]=asesmenGizi;
+        nilai[15]=asesmenNyeri;
+        nilai[16]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and trim(keluhan)<>''",noRawat);
+        nilai[17]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and trim(pemeriksaan)<>''",noRawat);
+        nilai[18]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and trim(penilaian)<>''",noRawat);
+        nilai[19]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and trim(rtl)<>''",noRawat);
+        nilai[20]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and trim(instruksi)<>''",noRawat);
+        nilai[21]=soap; nilai[22]=adaData("select count(*) from catatan_perawatan where no_rawat=?",noRawat);
+        nilai[23]=asesmenKeperawatan; nilai[27]=catatanKeperawatan;
+        nilai[28]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and (trim(tensi)<>'' or trim(nadi)<>'' or trim(suhu_tubuh)<>'')",noRawat);
+        nilai[29]=pemberianObat; nilai[30]=resep; nilai[31]=pemberianObat;
+        nilai[32]=permintaanLab; nilai[33]=hasilLab; nilai[34]=permintaanRad; nilai[35]=hasilRad; nilai[36]=hasilLab||hasilRad;
+        nilai[37]=operasi; nilai[38]=operasi; nilai[39]=checklistOperasi; nilai[40]=laporanOperasi;
+        nilai[42]=laporanOperasi; nilai[43]=laporanOperasi;
+        nilai[44]=soap; nilai[47]=soap;
+        nilai[48]=adaData("select count(*) from pemeriksaan_ranap where no_rawat=? and trim(nip)<>''",noRawat);
+        nilai[54]=resume; nilai[55]=diagnosisAkhir;
+        nilai[56]=adaData("select count(*) from resume_medis_ranap_v2 where no_rawat=? and trim(keadaan_keluar)<>''",noRawat);
+        nilai[57]=adaData("select count(*) from resume_medis_ranap_v2 where no_rawat=? and trim(terapi_obat)<>''",noRawat) || resep;
+        nilai[58]=adaData("select count(*) from resume_medis_ranap_v2 where no_rawat=? and trim(instruksi_tindak_lanjut)<>''",noRawat);
+        nilai[59]=adaData("select count(*) from resume_medis_ranap_v2 where no_rawat=? and trim(tanggal_kontrol)<>''",noRawat) || suratKontrol;
+        nilai[60]=suratKontrol;
+        return terapkanOverride(noRawat,nilai,KODE_RANAP);
+    }
+
+    private Boolean[] terapkanOverride(String noRawat,Boolean[] nilai,String[] kode){
+        Map<String,Boolean> manual=ambilOverrideManual(noRawat);
+        for(int x=0;x<kode.length;x++){
+            if(manual.containsKey(kode[x])) nilai[x]=manual.get(kode[x]);
+            String kunci=noRawat+"|"+kode[x];
+            if(perubahanBelumDisimpan.containsKey(kunci)) nilai[x]=perubahanBelumDisimpan.get(kunci);
+        }
+        return nilai;
+    }
+
+    private boolean terisi(String nilai){
+        return nilai!=null && !nilai.trim().equals("") && !nilai.trim().equals("-");
+    }
+
+    private boolean adaSalahSatu(String noRawat,String... daftarSql){
+        for(String sql:daftarSql) if(adaData(sql,noRawat)) return true;
+        return false;
+    }
+
+    private boolean adaData(String sql, String noRawat){
+        try(PreparedStatement cek=koneksi.prepareStatement(sql)){
+            cek.setString(1,noRawat);
+            try(ResultSet hasil=cek.executeQuery()){
+                return hasil.next() && hasil.getInt(1)>0;
+            }
+        }catch(Exception e){
+            return false;
+        }
+    }
+
+    private Map<String,Boolean> ambilOverrideManual(String noRawat){
+        Map<String,Boolean> hasil=new HashMap<>();
+        try(PreparedStatement cek=koneksi.prepareStatement(
+                "select kode_komponen,nilai from kelengkapan_berkas_rm where no_rawat=?")){
+            cek.setString(1,noRawat);
+            try(ResultSet data=cek.executeQuery()){
+                while(data.next()) hasil.put(data.getString(1),data.getString(2).equals("1"));
+            }
+        }catch(Exception e){
+            // Tabel dibuat melalui sql/kelengkapan_berkas_rm.sql sebelum fitur manual digunakan.
+        }
+        return hasil;
+    }
+
+    private void tandaiPerubahan(int baris, int kolom){
+        if(baris>=tabMode.getRowCount()) return;
+        String noRawat=String.valueOf(tabMode.getValueAt(baris,0));
+        int indeks=kolom-KOLOM_KELENGKAPAN_AWAL;
+        perubahanBelumDisimpan.put(noRawat+"|"+kodeKelengkapanAktif()[indeks],
+                Boolean.TRUE.equals(tabMode.getValueAt(baris,kolom)));
+        BtnSimpan.setEnabled(true);
+        BtnSimpan.setText("Simpan ("+perubahanBelumDisimpan.size()+")");
+    }
+
+    private void simpanSemuaPerubahan(){
+        if(perubahanBelumDisimpan.isEmpty()){
+            JOptionPane.showMessageDialog(null,"Tidak ada perubahan checklist yang perlu disimpan.");
+            return;
+        }
+        boolean autoCommit=true;
+        try(PreparedStatement simpan=koneksi.prepareStatement(
+                "insert into kelengkapan_berkas_rm(no_rawat,kode_komponen,nilai,diubah_oleh) values(?,?,?,?) "+
+                "on duplicate key update nilai=values(nilai),diubah_oleh=values(diubah_oleh)")){
+            autoCommit=koneksi.getAutoCommit();
+            koneksi.setAutoCommit(false);
+            for(Map.Entry<String,Boolean> perubahan:perubahanBelumDisimpan.entrySet()){
+                int pemisah=perubahan.getKey().lastIndexOf('|');
+                simpan.setString(1,perubahan.getKey().substring(0,pemisah));
+                simpan.setString(2,perubahan.getKey().substring(pemisah+1));
+                simpan.setString(3,Boolean.TRUE.equals(perubahan.getValue())?"1":"0");
+                simpan.setString(4,akses.getkode());
+                simpan.addBatch();
+            }
+            simpan.executeBatch();
+            koneksi.commit();
+            int jumlah=perubahanBelumDisimpan.size();
+            perubahanBelumDisimpan.clear();
+            BtnSimpan.setEnabled(false);
+            BtnSimpan.setText("Simpan");
+            JOptionPane.showMessageDialog(null,jumlah+" perubahan checklist berhasil disimpan.");
+        }catch(Exception e){
+            try{koneksi.rollback();}catch(Exception ex){}
+            JOptionPane.showMessageDialog(null,
+                    "Perubahan belum dapat disimpan. Jalankan sql/kelengkapan_berkas_rm.sql terlebih dahulu.\n"+e.getMessage());
+        }finally{
+            try{koneksi.setAutoCommit(autoCommit);}catch(Exception e){}
+        }
+    }
+
+    private class RendererCeklis extends JCheckBox implements javax.swing.table.TableCellRenderer{
+        private final javax.swing.border.Border borderTerpilih=
+                javax.swing.BorderFactory.createMatteBorder(2,0,2,0,new java.awt.Color(255,193,7));
+        private final javax.swing.border.Border borderNormal=
+                javax.swing.BorderFactory.createEmptyBorder(3,5,3,5);
+        RendererCeklis(){
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setOpaque(true);
+            setFocusPainted(false);
+        }
+        @Override public java.awt.Component getTableCellRendererComponent(JTable table,Object value,
+                boolean selected,boolean focus,int row,int column){
+            setSelected(Boolean.TRUE.equals(value));
+            setBackground(selected ? new java.awt.Color(0,82,155) :
+                    (row%2==0 ? java.awt.Color.WHITE : new java.awt.Color(239,246,252)));
+            setForeground(selected ? java.awt.Color.WHITE : new java.awt.Color(34,52,69));
+            setBorder(selected ? borderTerpilih : borderNormal);
+            return this;
+        }
+    }
+
+    private class RendererHeaderKelompok extends DefaultTableCellRenderer{
+        RendererHeaderKelompok(){
+            setHorizontalAlignment(SwingConstants.CENTER);
+            setVerticalAlignment(SwingConstants.CENTER);
+            setFont(new java.awt.Font("Tahoma",java.awt.Font.PLAIN,9));
+            setOpaque(true);
+        }
+        @Override public java.awt.Component getTableCellRendererComponent(JTable table,Object value,
+                boolean selected,boolean focus,int row,int column){
+            super.getTableCellRendererComponent(table,value,selected,focus,row,column);
+            int model=table.convertColumnIndexToModel(column);
+            String judul=String.valueOf(value);
+            setText(model>=KOLOM_KELENGKAPAN_AWAL && model<KOLOM_KELENGKAPAN_AWAL+jumlahKelengkapanAktif() ?
+                    bungkusJudulHeader(judul) : judul);
+            setBackground(warnaHeaderKolom(model));
+            setBorder(javax.swing.UIManager.getBorder("TableHeader.cellBorder"));
+            return this;
+        }
+    }
+
+    private java.awt.Color warnaHeaderKolom(int model){
+        if(!modeRanap()){
+            if(model>=7 && model<=12) return new java.awt.Color(255,174,0);
+            if(model>=13 && model<=21) return new java.awt.Color(239,145,145);
+            if(model>=22 && model<=25) return new java.awt.Color(255,216,105);
+            if(model>=26 && model<=31) return new java.awt.Color(155,198,230);
+            if(model>=32 && model<=37) return new java.awt.Color(244,196,202);
+        }else{
+            if(model>=7 && model<=12) return new java.awt.Color(255,174,0);
+            if(model>=13 && model<=17) return new java.awt.Color(239,145,145);
+            if(model>=18 && model<=22) return new java.awt.Color(255,216,105);
+            if(model>=23 && model<=29) return new java.awt.Color(155,198,230);
+            if(model>=30 && model<=35) return new java.awt.Color(190,220,240);
+            if(model>=36 && model<=38) return new java.awt.Color(205,235,205);
+            if(model>=39 && model<=43) return new java.awt.Color(255,216,105);
+            if(model>=44 && model<=50) return new java.awt.Color(225,190,235);
+            if(model>=51 && model<=56) return new java.awt.Color(155,198,230);
+            if(model>=57 && model<=60) return new java.awt.Color(255,225,170);
+            if(model>=61 && model<=67) return new java.awt.Color(180,225,210);
+        }
+        return new java.awt.Color(240,245,235);
+    }
+
+    private String bungkusJudulHeader(String judul){
+        String[] kata=judul.split(" ");
+        StringBuilder hasil=new StringBuilder("<html><center>");
+        int panjangBaris=0;
+        for(int x=0;x<kata.length;x++){
+            if(panjangBaris>0 && panjangBaris+kata[x].length()+1>13){
+                hasil.append("<br>");
+                panjangBaris=0;
+            }else if(panjangBaris>0){
+                hasil.append(" ");
+                panjangBaris++;
+            }
+            hasil.append(kata[x]);
+            panjangBaris+=kata[x].length();
+        }
+        return hasil.append("</center></html>").toString();
     }
 
     private String formatLamaTunggu(String mulai, String selesai) {
