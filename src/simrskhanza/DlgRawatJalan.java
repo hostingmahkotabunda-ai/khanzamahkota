@@ -212,6 +212,8 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     private javax.swing.JPanel panelDataPasienRalan;
     private javax.swing.JPanel panelPenilaianAwalKosongRalan;
     private rekammedis.RMAsesmenRalan panelAsesmenRalan;
+    private javax.swing.JPanel panelRisikoJatuhKosong;
+    private rekammedis.RMRisikoJatuhGetUpAndGo panelRisikoJatuh;
     private rekammedis.RMRiwayatObatPasien panelRiwayatObat;
     private javax.swing.JTextField txtDPRNoRM, txtDPRNama, txtDPRNIK, txtDPRTempatLahir, txtDPRTglLahir,
             txtDPRTelepon, txtDPRPekerjaan, txtDPRNamaKeluarga, txtDPRPekerjaanPJ;
@@ -294,6 +296,21 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 if (TabRawat.indexAtLocation(evt.getX(), evt.getY()) == idxPenilaianAwalRalan) {
                     menuPenilaianAwalRalan.show(TabRawat, evt.getX(), evt.getY());
+                }
+            }
+        });
+    }
+
+    private void pasangTabRisikoJatuh() {
+        panelRisikoJatuhKosong = new javax.swing.JPanel(new java.awt.BorderLayout());
+        panelRisikoJatuhKosong.setName("panelRisikoJatuhKosong");
+        panelRisikoJatuh = new rekammedis.RMRisikoJatuhGetUpAndGo();
+        panelRisikoJatuhKosong.add(panelRisikoJatuh, java.awt.BorderLayout.CENTER);
+        TabRawat.addTab("Risiko Jatuh (Get Up and Go)", panelRisikoJatuhKosong);
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e) {
+                if (TabRawat.getSelectedComponent() == panelRisikoJatuhKosong) {
+                    panelRisikoJatuh.setKonteks(TNoRw.getText());
                 }
             }
         });
@@ -935,6 +952,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         initTabResepTerintegrasi();
         sesuaikanTabRalanDenganRanap();
         pasangTabPenilaianAwalKosongRalan();
+        pasangTabRisikoJatuh();
         pasangTabRiwayatObat();
         pasangTabDataPasienRalan();
         hiasTabRalan();

@@ -191,8 +191,11 @@ public final class DlgIGD extends javax.swing.JDialog {
     private int i=0,jmlparsial=0;
     private DlgPeresepanDokter resepTerintegrasiIgd;
     private DlgRawatJalan soapTtvTerintegrasiIgd;
+    private rekammedis.RMRisikoJatuhGetUpAndGo risikoJatuhTerintegrasiIgd;
+    private javax.swing.JPanel PanelRisikoJatuhTerintegrasiIgd;
     private String konteksResepTerintegrasiIgd="";
     private String konteksSoapTtvTerintegrasiIgd="";
+    private String konteksRisikoJatuhTerintegrasiIgd="";
     private final Set<String> noRawatRanapIgd = new HashSet<>();
     private final Set<String> noRawatBelumSoapIgd = new HashSet<>();
     private final javax.swing.JComboBox<String> CmbFilterRanapIgd = new javax.swing.JComboBox<String>(
@@ -263,6 +266,7 @@ public final class DlgIGD extends javax.swing.JDialog {
         initComponents();
         pasangMenuCetakCPPT();
         pasangMenuRingkasanDanPengantarRanap();
+        pasangMenuRisikoJatuhIgd();
         initFilterDanKeteranganWarnaIgd();
         initIGD();
         initHostKerjaIgd();
@@ -11108,6 +11112,25 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
         MnDataRM.add(mnPengantar);
     }
 
+    private void pasangMenuRisikoJatuhIgd() {
+        javax.swing.JMenuItem mnRisikoJatuh = new javax.swing.JMenuItem();
+        mnRisikoJatuh.setBackground(new java.awt.Color(255, 255, 254));
+        mnRisikoJatuh.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mnRisikoJatuh.setForeground(new java.awt.Color(50, 50, 50));
+        mnRisikoJatuh.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        mnRisikoJatuh.setText("Risiko Jatuh - Get Up and Go Test");
+        mnRisikoJatuh.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mnRisikoJatuh.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mnRisikoJatuh.setPreferredSize(new java.awt.Dimension(250, 26));
+        mnRisikoJatuh.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tampilkanTabRisikoJatuhIgd();
+            }
+        });
+        MnDataRM.add(mnRisikoJatuh);
+    }
+
     private void bukaRingkasanRiwayatMasukIgd() {
         if (TNoRw.getText().trim().equals("")) {
             JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
@@ -11157,6 +11180,9 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
             }else if(TabHostKerja.getSelectedComponent()==PanelSoapTtvTerintegrasiIgd){
                 aturUkuranWorkspaceIgd(true,true);
                 sinkronkanTabSoapTtvIgd(false,false);
+            }else if(TabHostKerja.getSelectedComponent()==PanelRisikoJatuhTerintegrasiIgd){
+                aturUkuranWorkspaceIgd(true,true);
+                sinkronkanTabRisikoJatuhIgd(false,false);
             }
         });
     }
@@ -11223,6 +11249,17 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
         TabHostKerja.addTab("SOAP & TTV",PanelSoapTtvTerintegrasiIgd);
     }
 
+    private void initTabRisikoJatuhTerintegrasiIgd() {
+        if(risikoJatuhTerintegrasiIgd!=null){
+            return;
+        }
+        PanelRisikoJatuhTerintegrasiIgd=new javax.swing.JPanel(new java.awt.BorderLayout(1,1));
+        PanelRisikoJatuhTerintegrasiIgd.setOpaque(false);
+        risikoJatuhTerintegrasiIgd=new rekammedis.RMRisikoJatuhGetUpAndGo();
+        PanelRisikoJatuhTerintegrasiIgd.add(risikoJatuhTerintegrasiIgd,java.awt.BorderLayout.CENTER);
+        TabHostKerja.addTab("Risiko Jatuh",PanelRisikoJatuhTerintegrasiIgd);
+    }
+
     private boolean sinkronkanTabResepIgd(boolean paksa, boolean tampilPesan) {
         if(!validasiBukaHostIgd(tampilPesan,true)){
             return false;
@@ -11260,6 +11297,20 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
         return true;
     }
 
+    private boolean sinkronkanTabRisikoJatuhIgd(boolean paksa, boolean tampilPesan) {
+        if(!validasiBukaHostIgd(tampilPesan,true)){
+            return false;
+        }
+        initTabRisikoJatuhTerintegrasiIgd();
+        String kunci=TNoRw.getText();
+        if(!paksa && kunci.equals(konteksRisikoJatuhTerintegrasiIgd)){
+            return true;
+        }
+        risikoJatuhTerintegrasiIgd.setKonteks(TNoRw.getText());
+        konteksRisikoJatuhTerintegrasiIgd=kunci;
+        return true;
+    }
+
     private void sinkronkanHostKerjaIgdJikaAktif() {
         if(!PanelHostKerja.isVisible() || TabHostKerja.getTabCount()==0){
             return;
@@ -11268,6 +11319,8 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
             sinkronkanTabResepIgd(true,false);
         }else if(TabHostKerja.getSelectedComponent()==PanelSoapTtvTerintegrasiIgd){
             sinkronkanTabSoapTtvIgd(true,false);
+        }else if(TabHostKerja.getSelectedComponent()==PanelRisikoJatuhTerintegrasiIgd){
+            sinkronkanTabRisikoJatuhIgd(true,false);
         }
     }
 
@@ -11287,6 +11340,16 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
         aturUkuranWorkspaceIgd(true,true);
         if(sinkronkanTabSoapTtvIgd(true,true)){
             TabHostKerja.setSelectedComponent(PanelSoapTtvTerintegrasiIgd);
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    private void tampilkanTabRisikoJatuhIgd() {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        PanelHostKerja.setVisible(true);
+        aturUkuranWorkspaceIgd(true,true);
+        if(sinkronkanTabRisikoJatuhIgd(true,true)){
+            TabHostKerja.setSelectedComponent(PanelRisikoJatuhTerintegrasiIgd);
         }
         this.setCursor(Cursor.getDefaultCursor());
     }
