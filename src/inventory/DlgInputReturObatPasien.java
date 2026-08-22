@@ -109,7 +109,7 @@ public final class DlgInputReturObatPasien extends JDialog {
             public boolean isCellEditable(int rowIndex, int colIndex) {
                 Object marker = getValueAt(rowIndex, 1);
                 if (RUANGAN_MARKER.equals(marker) || RESEP_MARKER.equals(marker)) { return false; }
-                return colIndex == 0 || colIndex == 5 || colIndex == 6 || colIndex == KOLOM_CATATAN;
+                return colIndex == 5 || colIndex == 6 || colIndex == KOLOM_CATATAN;
             }
             Class[] types = new Class[]{
                 java.lang.Boolean.class, java.lang.String.class, java.lang.String.class, java.lang.String.class,
@@ -168,7 +168,7 @@ public final class DlgInputReturObatPasien extends JDialog {
         tbObat.setPreferredScrollableViewportSize(new Dimension(900, 420));
         tbObat.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tbObat.setRowHeight(22);
-        int[] lebar = {45, 90, 220, 60, 80, 90, 70, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 200};
+        int[] lebar = {0, 90, 220, 60, 80, 90, 70, 90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 200};
         RuanganHeaderRenderer renderer = new RuanganHeaderRenderer();
         for (int i = 0; i < tbObat.getColumnModel().getColumnCount(); i++) {
             TableColumn kolom = tbObat.getColumnModel().getColumn(i);
@@ -482,7 +482,7 @@ public final class DlgInputReturObatPasien extends JDialog {
         double total = 0;
         for (int row = 0; row < tabMode.getRowCount(); row++) {
             if (isHeaderRow(row)) { continue; }
-            if (Boolean.TRUE.equals(tabMode.getValueAt(row, 0))) {
+            if (ambilDouble(tabMode.getValueAt(row, 6)) > 0) {
                 total += ambilDouble(tabMode.getValueAt(row, 7));
             }
         }
@@ -492,11 +492,14 @@ public final class DlgInputReturObatPasien extends JDialog {
     // ====================== Simpan ======================
 
     /**
-     * Validasi semua baris tercentang, lalu simpan LANGSUNG ke returjual/detreturjual
-     * (bukan lewat tabel staging tampreturjual spt halaman lama -- grid ITU SENDIRI
-     * sudah representasi final yg mau disimpan, jadi staging tidak perlu lagi).
-     * Alur & tabel yg ditulis identik dgn DlgReturJual.java lama (BtnSimpanActionPerformed+simpan())
-     * yg sudah terbukti benar -- TIDAK posting tampjurnal krn itu cuma utk retur non-pasien.
+     * Baris "dipilih utk diretur" ditentukan OTOMATIS dari Jml.Retur > 0 (bukan
+     * checkbox lagi -- kolom "Retur?" masih ada di model tapi disembunyikan/tidak
+     * dipakai, tinggal isi jumlahnya berarti itu yang diretur). Simpan LANGSUNG ke
+     * returjual/detreturjual (bukan lewat tabel staging tampreturjual spt halaman
+     * lama -- grid ITU SENDIRI sudah representasi final yg mau disimpan). Alur &
+     * tabel yg ditulis identik dgn DlgReturJual.java lama (BtnSimpanActionPerformed+
+     * simpan()) yg sudah terbukti benar -- TIDAK posting tampjurnal krn itu cuma
+     * utk retur non-pasien.
      */
     private void simpan() {
         if (norawat.trim().equals("")) {
@@ -506,14 +509,10 @@ public final class DlgInputReturObatPasien extends JDialog {
         List<Integer> barisValid = new ArrayList<>();
         for (int i = 0; i < tabMode.getRowCount(); i++) {
             if (isHeaderRow(i)) { continue; }
-            if (!Boolean.TRUE.equals(tabMode.getValueAt(i, 0))) { continue; }
-            String nama = String.valueOf(tabMode.getValueAt(i, 2));
             double jml = ambilDouble(tabMode.getValueAt(i, 6));
+            if (jml <= 0) { continue; }
+            String nama = String.valueOf(tabMode.getValueAt(i, 2));
             double dimiliki = ambilDouble(tabMode.getValueAt(i, 4));
-            if (jml <= 0) {
-                JOptionPane.showMessageDialog(this, "Jumlah retur \""+nama+"\" harus diisi lebih dari 0.");
-                return;
-            }
             if (jml > dimiliki) {
                 JOptionPane.showMessageDialog(this, "Jumlah retur \""+nama+"\" ("+Valid.SetAngka(jml)+") melebihi jumlah yang dimiliki pasien ("+Valid.SetAngka(dimiliki)+").");
                 return;
@@ -538,7 +537,10 @@ public final class DlgInputReturObatPasien extends JDialog {
             if (sukses) {
                 for (int i : barisValid) {
                     String kodeBrng = String.valueOf(tabMode.getValueAt(i, 1));
-                    String satuan = String.valueOf(tabMode.getValueAt(i, 3));
+                    // PENTING: kolom "Satuan" di grid (index 3) itu NAMA satuan utk ditampilkan
+                    // (mis. "Vial","Ampul") -- BUKAN kode_sat yg jadi FK ke kodesatuan.kode_sat
+                    // (mis. "VL","AMP5"). Harus ditarik ulang dari databarang, bukan dari grid.
+                    String kodeSat = Sequel.cariIsi("select kode_sat from databarang where kode_brng=?", kodeBrng);
                     double hrgRetur = ambilDouble(tabMode.getValueAt(i, 5));
                     double jmlRetur = ambilDouble(tabMode.getValueAt(i, 6));
                     double subtotal = ambilDouble(tabMode.getValueAt(i, 7));
@@ -547,7 +549,7 @@ public final class DlgInputReturObatPasien extends JDialog {
                     String catatan = ambilCatatanBaris(i);
 
                     boolean okDetail = Sequel.menyimpantf2("detreturjual", "?,?,?,?,?,?,?,?,?,?,?,?", "data barang sama", 12, new String[]{
-                        TNoRetur.getText(), "", kodeBrng, satuan, "0", "0",
+                        TNoRetur.getText(), "", kodeBrng, kodeSat, "0", "0",
                         String.valueOf(jmlRetur), String.valueOf(hrgRetur), String.valueOf(subtotal), noBatch, noFaktur, catatan
                     });
                     if (!okDetail) { sukses = false; break; }
