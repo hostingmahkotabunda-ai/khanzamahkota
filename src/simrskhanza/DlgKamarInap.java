@@ -97,6 +97,7 @@ import rekammedis.RMDataMonitoringReaksiTranfusi;
 import rekammedis.RMDataResumePasienRanap;
 import rekammedis.RMResumeMedisRanapV2;
 import rekammedis.RMDataSkriningGiziLanjut;
+import rekammedis.RMDokumentasiOperasi;
 import rekammedis.RMHasilEndoskopiFaringLaring;
 import rekammedis.RMHasilPemeriksaanEKG;
 import rekammedis.RMHasilPemeriksaanUSG;
@@ -1078,7 +1079,7 @@ public class DlgKamarInap extends javax.swing.JDialog {
         MnPenilaianAwalMedisKandungan = new javax.swing.JMenuItem();
         MnPenilaianAwalMedisHemodialisa = new javax.swing.JMenuItem();
         MnPenilaianFisioterapi = new javax.swing.JMenuItem();
-        MnRMOperasi = new javax.swing.JMenu();
+        MnRMOperasi = new javax.swing.JMenuItem();
         MnChecklistPreOperasi = new javax.swing.JMenuItem();
         MnSignInSebelumAnestesi = new javax.swing.JMenuItem();
         MnTimeOutSebelumInsisi = new javax.swing.JMenuItem();
@@ -1963,6 +1964,11 @@ public class DlgKamarInap extends javax.swing.JDialog {
         MnRMOperasi.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         MnRMOperasi.setName("MnRMOperasi"); // NOI18N
         MnRMOperasi.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnRMOperasi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnRMOperasiActionPerformed(evt);
+            }
+        });
 
         MnChecklistPreOperasi.setBackground(new java.awt.Color(255, 255, 254));
         MnChecklistPreOperasi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
@@ -1978,8 +1984,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnChecklistPreOperasiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnChecklistPreOperasi);
-
         MnSignInSebelumAnestesi.setBackground(new java.awt.Color(255, 255, 254));
         MnSignInSebelumAnestesi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnSignInSebelumAnestesi.setForeground(new java.awt.Color(50, 50, 50));
@@ -1994,8 +1998,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnSignInSebelumAnestesiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnSignInSebelumAnestesi);
-
         MnTimeOutSebelumInsisi.setBackground(new java.awt.Color(255, 255, 254));
         MnTimeOutSebelumInsisi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnTimeOutSebelumInsisi.setForeground(new java.awt.Color(50, 50, 50));
@@ -2010,8 +2012,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnTimeOutSebelumInsisiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnTimeOutSebelumInsisi);
-
         MnSignOutSebelumMenutupLuka.setBackground(new java.awt.Color(255, 255, 254));
         MnSignOutSebelumMenutupLuka.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnSignOutSebelumMenutupLuka.setForeground(new java.awt.Color(50, 50, 50));
@@ -2026,8 +2026,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnSignOutSebelumMenutupLukaActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnSignOutSebelumMenutupLuka);
-
         MnChecklistPostOperasi.setBackground(new java.awt.Color(255, 255, 254));
         MnChecklistPostOperasi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnChecklistPostOperasi.setForeground(new java.awt.Color(50, 50, 50));
@@ -2042,8 +2040,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnChecklistPostOperasiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnChecklistPostOperasi);
-
         MnPenilaianPreOp.setBackground(new java.awt.Color(255, 255, 254));
         MnPenilaianPreOp.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnPenilaianPreOp.setForeground(new java.awt.Color(50, 50, 50));
@@ -2058,8 +2054,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnPenilaianPreOpActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnPenilaianPreOp);
-
         MnPenilaianPreAnestesi.setBackground(new java.awt.Color(255, 255, 254));
         MnPenilaianPreAnestesi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnPenilaianPreAnestesi.setForeground(new java.awt.Color(50, 50, 50));
@@ -2074,8 +2068,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnPenilaianPreAnestesiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnPenilaianPreAnestesi);
-
         MnSkorAldrettePascaAnestesi.setBackground(new java.awt.Color(255, 255, 254));
         MnSkorAldrettePascaAnestesi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnSkorAldrettePascaAnestesi.setForeground(new java.awt.Color(50, 50, 50));
@@ -2090,8 +2082,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnSkorAldrettePascaAnestesiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnSkorAldrettePascaAnestesi);
-
         MnSkorStewardPascaAnestesi.setBackground(new java.awt.Color(255, 255, 254));
         MnSkorStewardPascaAnestesi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnSkorStewardPascaAnestesi.setForeground(new java.awt.Color(50, 50, 50));
@@ -2106,8 +2096,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnSkorStewardPascaAnestesiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnSkorStewardPascaAnestesi);
-
         MnSkorBromagePascaAnestesi.setBackground(new java.awt.Color(255, 255, 254));
         MnSkorBromagePascaAnestesi.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnSkorBromagePascaAnestesi.setForeground(new java.awt.Color(50, 50, 50));
@@ -2122,8 +2110,6 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 MnSkorBromagePascaAnestesiActionPerformed(evt);
             }
         });
-        MnRMOperasi.add(MnSkorBromagePascaAnestesi);
-
         MnDataRM.add(MnRMOperasi);
 
         MnRMHCU.setBackground(new java.awt.Color(255, 255, 254));
@@ -14256,6 +14242,27 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         } 
     }//GEN-LAST:event_MnCatatanCekGDSActionPerformed
 
+    /**
+     * RM Operasi (2026-08-19): dulu submenu bercabang ke ~11 dialog form digital terpisah,
+     * sekarang jadi 1 menu langsung yg buka halaman dokumentasi foto per blok (RMDokumentasiOperasi) --
+     * form nya TETAP fisik, sistem cuma menyimpan hasil foto per kategori.
+     */
+    private void MnRMOperasiActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            RMDokumentasiOperasi form=new RMDokumentasiOperasi(null,false);
+            form.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+            form.setLocationRelativeTo(internalFrame1);
+            form.setNoRm(norawat.getText());
+            form.setVisible(true);
+        }
+    }
+
     private void MnChecklistPreOperasiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MnChecklistPreOperasiActionPerformed
         if(tabMode.getRowCount()==0){
             JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
@@ -17073,7 +17080,7 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenuItem MnPulangAtasPermintaanSendiri;
     private javax.swing.JMenu MnRMFarmasi;
     private javax.swing.JMenu MnRMHCU;
-    private javax.swing.JMenu MnRMOperasi;
+    private javax.swing.JMenuItem MnRMOperasi;
     private javax.swing.JMenu MnRMRisikoJatuh;
     private javax.swing.JMenuItem MnRanapGabung;
     private javax.swing.JMenuItem MnRawatInap;
@@ -18201,18 +18208,6 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         MnHasilEndoskopiFaringLaring.setName("MnHasilEndoskopiFaringLaring");
         MnHasilEndoskopiFaringLaring.setPreferredSize(new java.awt.Dimension(200, 26));
         MnHasilEndoskopiFaringLaring.addActionListener(this::MnHasilEndoskopiFaringLaringActionPerformed);
-        
-        MnRMOperasi.add(MnPenilaianPreInduksi);
-        MnRMOperasi.add(MnChecklistPreOperasi);
-        MnRMOperasi.add(MnSignInSebelumAnestesi);
-        MnRMOperasi.add(MnTimeOutSebelumInsisi);
-        MnRMOperasi.add(MnSignOutSebelumMenutupLuka);
-        MnRMOperasi.add(MnChecklistPostOperasi);
-        MnRMOperasi.add(MnPenilaianPreOp);
-        MnRMOperasi.add(MnPenilaianPreAnestesi);
-        MnRMOperasi.add(MnSkorAldrettePascaAnestesi);
-        MnRMOperasi.add(MnSkorStewardPascaAnestesi);
-        MnRMOperasi.add(MnSkorBromagePascaAnestesi);
         
         MnObservasi.add(MnCatatanObservasiRanap);
         MnObservasi.add(MnCatatanObservasiRanapKebidanan);

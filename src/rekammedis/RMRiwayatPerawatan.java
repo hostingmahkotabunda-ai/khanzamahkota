@@ -96,6 +96,7 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
     private final javax.swing.JMenuItem ppCetakAsesmen = new javax.swing.JMenuItem();
     private String linkAsesmenAktif = "";
     private final JPanel panelMediaGrid = new JPanel();
+    private final JPanel panelRmOperasiGrid = new JPanel();
 
     /** Creates new form DlgLhtBiaya
      * @param parent
@@ -314,12 +315,20 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
 
     /**
      * Tab tambahan (di luar form NetBeans/GEN): Resume, Penilaian Awal Rawat
-     * Jalan, dan Penilaian Awal Rawat Inap. Semua read-only, mengikuti filter
-     * R1-R4/NoRM yang sama dengan tab lain di layar ini. Dibangun manual
-     * (bukan lewat GEN block) supaya tidak mengganggu initComponents() yang
-     * auto-generate dari .form.
+     * Jalan, Penilaian Awal Rawat Inap, Media, dan RM Operasi. Semua read-only,
+     * mengikuti filter R1-R4/NoRM yang sama dengan tab lain di layar ini.
+     * Dibangun manual (bukan lewat GEN block) supaya tidak mengganggu
+     * initComponents() yang auto-generate dari .form. Tab "Pembelian Obat",
+     * "Piutang Obat", "Retensi Berkas" (dari GEN block) DISEMBUNYIKAN di sini
+     * (bukan dihapus dari initComponents() spy tidak mengusik kode generated) --
+     * method tampilPembelian()/tampilPiutang()/tampilRetensi() dibiarkan ada
+     * (tidak dipanggil lagi) kalau-kalau tab ini mau dimunculkan lagi nanti.
      */
     private void pasangTabTambahan() {
+        TabRawat.remove(Scroll4); // Pembelian Obat
+        TabRawat.remove(Scroll5); // Piutang Obat
+        TabRawat.remove(Scroll3); // Retensi Berkas
+
         LoadHTMLResume = buatEditorPaneHtml();
         pasangPopupCetakResume();
         TabRawat.addTab("Resume", new javax.swing.JScrollPane(LoadHTMLResume));
@@ -337,6 +346,12 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
         JScrollPane scrollMedia = new JScrollPane(panelMediaGrid);
         scrollMedia.getVerticalScrollBar().setUnitIncrement(16);
         TabRawat.addTab("Media", scrollMedia);
+
+        panelRmOperasiGrid.setLayout(new BoxLayout(panelRmOperasiGrid, BoxLayout.Y_AXIS));
+        panelRmOperasiGrid.setBackground(Color.WHITE);
+        JScrollPane scrollRmOperasi = new JScrollPane(panelRmOperasiGrid);
+        scrollRmOperasi.getVerticalScrollBar().setUnitIncrement(16);
+        TabRawat.addTab("RM Operasi", scrollRmOperasi);
     }
 
     private javax.swing.JEditorPane buatEditorPaneHtml() {
@@ -2330,25 +2345,19 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                     tampilPerawatan();
                     break;
                 case 3:
-                    tampilPembelian();
-                    break;
-                case 4:
-                    tampilPiutang();
-                    break;
-                case 5:
-                    tampilRetensi();
-                    break;
-                case 6:
                     tampilResumeV2();
                     break;
-                case 7:
+                case 4:
                     tampilAsesmenRalan();
                     break;
-                case 8:
+                case 5:
                     tampilAsesmenRanap();
                     break;
-                case 9:
+                case 6:
                     tampilMedia();
+                    break;
+                case 7:
+                    tampilRmOperasi();
                     break;
                 default:
                     break;
@@ -6149,6 +6158,305 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         l.setForeground(new Color(136, 136, 136));
         l.setFont(new Font("Tahoma", Font.PLAIN, 11));
         return l;
+    }
+
+    /**
+     * Tab "RM Operasi" -- daftar tiap kunjungan operasi pasien (dari tabel
+     * `operasi`, mengikuti filter R1-R4/NoRM yang sama dengan tab lain).
+     * Susunan & urutan 11 blok di sini SAMA PERSIS dgn RMDokumentasiOperasi
+     * (RM Operasi asli) -- blok form digital & Laporan Operasi tombolnya
+     * langsung "Cetak" (preview Jasper, form dibuka headless tanpa
+     * setVisible lalu dispose), blok upload foto tombolnya "Lihat Foto"
+     * (galeri dari tabel dokumentasi_blok_operasi).
+     */
+    private static final String[] JUDUL_BLOK_RM_OPERASI = {
+        "Asesmen Awal Medis Bedah / Pra Bedah",
+        "Informed Consent Tindakan Kedokteran (Persetujuan)",
+        "Informed Consent Tindakan Anastesi - Sedasi",
+        "Asesmen Pra-Sedasi - Pra-Anastesi",
+        "Asesmen Pra Induksi",
+        "Monitoring Intra Anastesi - Sedasi",
+        "Monitoring Pasca Anastesi - Sedasi",
+        "Askep Perioperatif",
+        "Ceklis Keselamatan Pembedahan",
+        "Formulir Penandaan Lokasi Operasi (Wanita)",
+        "Laporan Operasi"
+    };
+    private static final java.util.Set<Integer> INDEX_BLOK_FORM_RM_OPERASI =
+            new java.util.HashSet<>(java.util.Arrays.asList(0, 3, 4, 7, 8, 9));
+    private static final int INDEX_LAPORAN_OPERASI_RM_OPERASI = 10;
+    private static final Map<Integer, String> TABEL_BLOK_RM_OPERASI = new HashMap<>();
+    static {
+        TABEL_BLOK_RM_OPERASI.put(0, "asesmen_awal_medis_bedah");
+        TABEL_BLOK_RM_OPERASI.put(3, "asesmen_pra_sedasi_anestesi");
+        TABEL_BLOK_RM_OPERASI.put(4, "asesmen_pra_sedasi_anestesi");
+        TABEL_BLOK_RM_OPERASI.put(7, "askep_perioperatif");
+        TABEL_BLOK_RM_OPERASI.put(8, "ceklis_keselamatan_pembedahan");
+        TABEL_BLOK_RM_OPERASI.put(9, "penandaan_lokasi_operasi");
+    }
+
+    private void tampilRmOperasi() {
+        panelRmOperasiGrid.removeAll();
+        if (NoRM.getText().trim().equals("")) {
+            panelRmOperasiGrid.add(labelKosongMedia("Pasien belum dipilih."));
+            panelRmOperasiGrid.revalidate();
+            panelRmOperasiGrid.repaint();
+            return;
+        }
+        String where;
+        String urut;
+        if (R4.isSelected()) {
+            where = " where operasi.no_rawat='" + NoRawat.getText().trim() + "' ";
+            urut = " order by operasi.tgl_operasi desc ";
+        } else {
+            where = " where reg_periksa.no_rkm_medis='" + NoRM.getText().trim() + "' ";
+            if (R3.isSelected()) {
+                where += " and operasi.tgl_operasi between '" + Valid.SetTgl(Tgl1.getSelectedItem() + "")
+                        + "' and '" + Valid.SetTgl(Tgl2.getSelectedItem() + "") + "' ";
+            }
+            urut = R1.isSelected() ? " order by operasi.tgl_operasi desc limit 5 "
+                    : " order by operasi.tgl_operasi desc ";
+        }
+        int n = 0;
+        try (PreparedStatement st = koneksi.prepareStatement(
+                "select distinct operasi.no_rawat, operasi.tgl_operasi, "
+                + "date_format(operasi.tgl_operasi,'%d-%m-%Y %H:%i') as tgl_operasi_teks "
+                + "from operasi inner join reg_periksa on operasi.no_rawat=reg_periksa.no_rawat"
+                + where + urut)) {
+            try (ResultSet hasil = st.executeQuery()) {
+                while (hasil.next()) {
+                    panelRmOperasiGrid.add(buatKartuKunjunganRmOperasi(
+                            hasil.getString("no_rawat"), hasil.getString("tgl_operasi_teks"), hasil.getString("tgl_operasi")));
+                    panelRmOperasiGrid.add(javax.swing.Box.createVerticalStrut(10));
+                    n++;
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif tampilRmOperasi : " + e);
+        }
+        if (n == 0) {
+            panelRmOperasiGrid.add(labelKosongMedia("Belum ada data operasi untuk pasien ini."));
+        }
+        panelRmOperasiGrid.revalidate();
+        panelRmOperasiGrid.repaint();
+    }
+
+    private JPanel buatKartuKunjunganRmOperasi(String noRawat, String tglOperasiTeks, String tglOperasiRaw) {
+        JPanel kartu = new JPanel(new BorderLayout(0, 8));
+        kartu.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(215, 224, 230)),
+                new javax.swing.border.EmptyBorder(10, 12, 10, 12)));
+        kartu.setBackground(Color.WHITE);
+        kartu.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+
+        JLabel judul = new JLabel("Operasi tanggal " + tglOperasiTeks + "   •   No. Rawat " + noRawat);
+        judul.setFont(new Font("Tahoma", Font.BOLD, 12));
+        judul.setForeground(new Color(32, 49, 66));
+        kartu.add(judul, BorderLayout.NORTH);
+
+        JPanel grid = new JPanel(new java.awt.GridLayout(0, 3, 10, 10));
+        grid.setOpaque(false);
+        for (int i = 0; i < JUDUL_BLOK_RM_OPERASI.length; i++) {
+            if (INDEX_BLOK_FORM_RM_OPERASI.contains(i) || i == INDEX_LAPORAN_OPERASI_RM_OPERASI) {
+                grid.add(buatMiniKartuCetakRmOperasi(i, noRawat, tglOperasiRaw));
+            } else {
+                grid.add(buatMiniKartuUploadRmOperasi(i, noRawat));
+            }
+        }
+        kartu.add(grid, BorderLayout.CENTER);
+        return kartu;
+    }
+
+    private JPanel kerangkaMiniKartuRmOperasi(int indeks, boolean ada, String labelStatus) {
+        JPanel kartu = new JPanel(new BorderLayout(0, 6));
+        kartu.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(228, 233, 237)),
+                new javax.swing.border.EmptyBorder(8, 8, 8, 8)));
+        kartu.setBackground(Color.WHITE);
+
+        JLabel lblJudul = new JLabel("<html>" + JUDUL_BLOK_RM_OPERASI[indeks] + "</html>");
+        lblJudul.setFont(new Font("Tahoma", Font.BOLD, 10));
+        lblJudul.setForeground(new Color(32, 49, 66));
+
+        JLabel lblStatus = new JLabel(labelStatus);
+        lblStatus.setFont(new Font("Tahoma", Font.BOLD, 9));
+        lblStatus.setOpaque(true);
+        lblStatus.setBorder(new javax.swing.border.EmptyBorder(2, 5, 2, 5));
+        if (ada) {
+            lblStatus.setForeground(new Color(0, 128, 68));
+            lblStatus.setBackground(new Color(224, 246, 234));
+        } else {
+            lblStatus.setForeground(new Color(150, 96, 0));
+            lblStatus.setBackground(new Color(255, 244, 224));
+        }
+
+        JPanel tengah = new JPanel();
+        tengah.setOpaque(false);
+        tengah.setLayout(new BoxLayout(tengah, BoxLayout.Y_AXIS));
+        tengah.add(lblJudul);
+        tengah.add(javax.swing.Box.createVerticalStrut(4));
+        tengah.add(lblStatus);
+        kartu.add(tengah, BorderLayout.CENTER);
+        return kartu;
+    }
+
+    private JPanel buatMiniKartuCetakRmOperasi(int indeks, String noRawat, String tglOperasiRaw) {
+        boolean ada = cekAdaDataBlokRmOperasi(indeks, noRawat, tglOperasiRaw);
+        JPanel kartu = kerangkaMiniKartuRmOperasi(indeks, ada, ada ? "✓ Sudah Diisi" : "Belum Diisi");
+
+        widget.Button btnCetak = new widget.Button();
+        btnCetak.setText("Cetak");
+        btnCetak.addActionListener(e -> cetakBlokRmOperasi(indeks, noRawat));
+        kartu.add(btnCetak, BorderLayout.SOUTH);
+        return kartu;
+    }
+
+    private JPanel buatMiniKartuUploadRmOperasi(int indeks, String noRawat) {
+        int jumlah = 0;
+        try {
+            Integer n = Sequel.cariInteger(
+                    "select count(*) from dokumentasi_blok_operasi where no_rawat=? and indeks_blok=?",
+                    noRawat, String.valueOf(indeks));
+            jumlah = n == null ? 0 : n;
+        } catch (Exception e) {
+            System.out.println("Notif cek foto upload blok " + indeks + " : " + e);
+        }
+        boolean ada = jumlah > 0;
+        JPanel kartu = kerangkaMiniKartuRmOperasi(indeks, ada, ada ? (jumlah + " Foto Tersimpan") : "Belum Ada Foto");
+
+        widget.Button btnLihat = new widget.Button();
+        btnLihat.setText("Lihat Foto");
+        btnLihat.setEnabled(ada);
+        btnLihat.addActionListener(e -> lihatGaleriUploadBlok(indeks, noRawat));
+        kartu.add(btnLihat, BorderLayout.SOUTH);
+        return kartu;
+    }
+
+    private void lihatGaleriUploadBlok(int indeks, String noRawat) {
+        JDialog dlg = new JDialog(this, JUDUL_BLOK_RM_OPERASI[indeks], true);
+        JPanel grid = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        grid.setBackground(Color.WHITE);
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select photo from dokumentasi_blok_operasi where no_rawat=? and indeks_blok=? order by id")) {
+            ps.setString(1, noRawat);
+            ps.setInt(2, indeks);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    byte[] data = rs.getBytes("photo");
+                    if (data == null) { continue; }
+                    JLabel lbl = new JLabel(buatThumbnail(data, 180, 180));
+                    lbl.setBorder(BorderFactory.createLineBorder(new Color(215, 224, 230)));
+                    lbl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    lbl.addMouseListener(new java.awt.event.MouseAdapter() {
+                        @Override public void mouseClicked(java.awt.event.MouseEvent e) {
+                            lihatFotoBesarUploadBlok(data, JUDUL_BLOK_RM_OPERASI[indeks]);
+                        }
+                    });
+                    grid.add(lbl);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif lihatGaleriUploadBlok : " + e);
+        }
+        if (grid.getComponentCount() == 0) {
+            grid.add(labelKosongMedia("Belum ada foto untuk blok ini."));
+        }
+        dlg.getContentPane().add(new JScrollPane(grid));
+        dlg.setSize(650, 520);
+        dlg.setLocationRelativeTo(this);
+        dlg.setVisible(true);
+    }
+
+    private void lihatFotoBesarUploadBlok(byte[] data, String judul) {
+        try {
+            Image img = ImageIO.read(new ByteArrayInputStream(data));
+            if (img == null) {
+                return;
+            }
+            int w = img.getWidth(null);
+            int h = img.getHeight(null);
+            double skala = Math.min(1.0, Math.min(800.0 / w, 700.0 / h));
+            JDialog dlg = new JDialog(this, judul, true);
+            JLabel lbl = new JLabel(new ImageIcon(
+                    img.getScaledInstance((int) (w * skala), (int) (h * skala), Image.SCALE_SMOOTH)));
+            dlg.getContentPane().add(new JScrollPane(lbl));
+            dlg.pack();
+            dlg.setLocationRelativeTo(this);
+            dlg.setVisible(true);
+        } catch (Exception e) {
+            System.out.println("Notif lihatFotoBesarUploadBlok : " + e);
+        }
+    }
+
+    private boolean cekAdaDataBlokRmOperasi(int indeks, String noRawat, String tglOperasiRaw) {
+        try {
+            if (indeks == INDEX_LAPORAN_OPERASI_RM_OPERASI) {
+                return Sequel.cariInteger("select count(*) from laporan_operasi where no_rawat=? and tanggal=?",
+                        noRawat, tglOperasiRaw) > 0;
+            }
+            String tabel = TABEL_BLOK_RM_OPERASI.get(indeks);
+            if (tabel == null) {
+                return false;
+            }
+            return Sequel.cariInteger("select count(*) from " + tabel + " where no_rawat=?", noRawat) > 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private void cetakBlokRmOperasi(int indeks, String noRawat) {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            switch (indeks) {
+                case 0: {
+                    RMAsesmenAwalMedisBedah f = new RMAsesmenAwalMedisBedah(null, false);
+                    f.setNoRm(noRawat);
+                    f.cetak();
+                    f.dispose();
+                    break;
+                }
+                case 3:
+                case 4: {
+                    RMAsesmenPraSedasiAnestesi f = new RMAsesmenPraSedasiAnestesi(null, false);
+                    f.setNoRm(noRawat);
+                    f.cetak();
+                    f.dispose();
+                    break;
+                }
+                case 7: {
+                    RMAskepPerioperatif f = new RMAskepPerioperatif(null, false);
+                    f.setNoRm(noRawat);
+                    f.cetak();
+                    f.dispose();
+                    break;
+                }
+                case 8: {
+                    RMCeklisKeselamatanPembedahan f = new RMCeklisKeselamatanPembedahan(null, false);
+                    f.setNoRm(noRawat);
+                    f.cetak();
+                    f.dispose();
+                    break;
+                }
+                case 9: {
+                    RMPenandaanLokasiOperasi f = new RMPenandaanLokasiOperasi(null, false);
+                    f.setNoRm(noRawat);
+                    f.cetak();
+                    f.dispose();
+                    break;
+                }
+                case 10: {
+                    RMDokumentasiOperasi f = new RMDokumentasiOperasi(null, false);
+                    f.setNoRm(noRawat);
+                    f.cetakLaporanOperasi();
+                    f.dispose();
+                    break;
+                }
+                default:
+                    break;
+            }
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     /** Ganti tiap elemen &lt;input&gt; pada HTML cetak dengan nilai teks-nya

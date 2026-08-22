@@ -1,0 +1,646 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptCeklisKeselamatanPembedahan" pageWidth="595" pageHeight="842" columnWidth="522" leftMargin="36" rightMargin="37" topMargin="20" bottomMargin="20" uuid="d4e5f6a7-4444-4a5b-8c6d-7e8f9a0b1c5a">
+	<parameter name="namars" class="java.lang.String"/>
+	<parameter name="alamatrs" class="java.lang.String"/>
+	<parameter name="kotars" class="java.lang.String"/>
+	<parameter name="propinsirs" class="java.lang.String"/>
+	<parameter name="kontakrs" class="java.lang.String"/>
+	<parameter name="emailrs" class="java.lang.String"/>
+	<parameter name="logo" class="java.io.InputStream"/>
+	<parameter name="url_penggajian" class="java.lang.String"/>
+	<queryString>
+		<![CDATA[]]>
+	</queryString>
+	<field name="no_rkm_medis" class="java.lang.String"/>
+	<field name="nm_pasien" class="java.lang.String"/>
+	<field name="jk" class="java.lang.String"/>
+	<field name="tgl_lahir" class="java.lang.String"/>
+	<field name="jam_cetak" class="java.lang.String"/>
+	<field name="tanggal_cetak" class="java.lang.String"/>
+<field name="nama_petugas" class="java.lang.String"/>
+<field name="diagnose_medis" class="java.lang.String"/>
+<field name="tindakan" class="java.lang.String"/>
+<field name="operator_assisten" class="java.lang.String"/>
+<field name="anesthesi_penata" class="java.lang.String"/>
+<field name="signin_1a_sudah" class="java.lang.String"/>
+<field name="signin_1a_belum" class="java.lang.String"/>
+<field name="signin_1b_sudah" class="java.lang.String"/>
+<field name="signin_1b_belum" class="java.lang.String"/>
+<field name="signin_1c_sudah" class="java.lang.String"/>
+<field name="signin_1c_belum" class="java.lang.String"/>
+<field name="signin_1d_sudah" class="java.lang.String"/>
+<field name="signin_1d_belum" class="java.lang.String"/>
+<field name="signin_2_sudah" class="java.lang.String"/>
+<field name="signin_2_belum" class="java.lang.String"/>
+<field name="signin_3_sudah" class="java.lang.String"/>
+<field name="signin_3_belum" class="java.lang.String"/>
+<field name="signin_4_sudah" class="java.lang.String"/>
+<field name="signin_4_belum" class="java.lang.String"/>
+<field name="signin_5_ya" class="java.lang.String"/>
+<field name="signin_5_tidak" class="java.lang.String"/>
+<field name="signin_6_ya" class="java.lang.String"/>
+<field name="signin_6_tidak" class="java.lang.String"/>
+<field name="signin_7_ya" class="java.lang.String"/>
+<field name="signin_7_tidak" class="java.lang.String"/>
+<field name="signin_8_ya" class="java.lang.String"/>
+<field name="signin_8_tidak" class="java.lang.String"/>
+<field name="nama_petugas1" class="java.lang.String"/>
+<field name="petugas1_photo" class="java.lang.String"/>
+<field name="jam1" class="java.lang.String"/>
+<field name="timeout_1_ya" class="java.lang.String"/>
+<field name="timeout_1_tidak" class="java.lang.String"/>
+<field name="timeout_1a_ya" class="java.lang.String"/>
+<field name="timeout_1a_tidak" class="java.lang.String"/>
+<field name="timeout_1b_ya" class="java.lang.String"/>
+<field name="timeout_1b_tidak" class="java.lang.String"/>
+<field name="timeout_1c_ya" class="java.lang.String"/>
+<field name="timeout_1c_tidak" class="java.lang.String"/>
+<field name="timeout_2_ya" class="java.lang.String"/>
+<field name="timeout_2_tidak" class="java.lang.String"/>
+<field name="timeout_3a_ya" class="java.lang.String"/>
+<field name="timeout_3a_tidak" class="java.lang.String"/>
+<field name="timeout_3b_ya" class="java.lang.String"/>
+<field name="timeout_3b_tidak" class="java.lang.String"/>
+<field name="timeout_3b_diberikanoleh" class="java.lang.String"/>
+<field name="timeout_4_ya" class="java.lang.String"/>
+<field name="timeout_4_tidak" class="java.lang.String"/>
+<field name="timeout_5_ya" class="java.lang.String"/>
+<field name="timeout_5_tidak" class="java.lang.String"/>
+<field name="timeout_6_ya" class="java.lang.String"/>
+<field name="timeout_6_tidak" class="java.lang.String"/>
+<field name="timeout_operator_a_ya" class="java.lang.String"/>
+<field name="timeout_operator_a_tidak" class="java.lang.String"/>
+<field name="timeout_operator_b_ya" class="java.lang.String"/>
+<field name="timeout_operator_b_tidak" class="java.lang.String"/>
+<field name="timeout_operator_b_estimasi" class="java.lang.String"/>
+<field name="timeout_operator_c_ya" class="java.lang.String"/>
+<field name="timeout_operator_c_tidak" class="java.lang.String"/>
+<field name="timeout_operator_c_kehilangandarah" class="java.lang.String"/>
+<field name="timeout_anestesi_ya" class="java.lang.String"/>
+<field name="timeout_anestesi_tidak" class="java.lang.String"/>
+<field name="timeout_anestesi_masalahkhusus" class="java.lang.String"/>
+<field name="timeout_perawat_catatan" class="java.lang.String"/>
+<field name="timeout_perawat_a_ya" class="java.lang.String"/>
+<field name="timeout_perawat_a_tidak" class="java.lang.String"/>
+<field name="timeout_perawat_a_sterilisasi" class="java.lang.String"/>
+<field name="timeout_perawat_b_ya" class="java.lang.String"/>
+<field name="timeout_perawat_b_tidak" class="java.lang.String"/>
+<field name="timeout_perawat_c_ya" class="java.lang.String"/>
+<field name="timeout_perawat_c_tidak" class="java.lang.String"/>
+<field name="timeout_perawat_c_bighass" class="java.lang.String"/>
+<field name="timeout_perawat_d_ya" class="java.lang.String"/>
+<field name="timeout_perawat_d_tidak" class="java.lang.String"/>
+<field name="timeout_perawat_d_jarum" class="java.lang.String"/>
+<field name="timeout_perawat_e_ya" class="java.lang.String"/>
+<field name="timeout_perawat_e_tidak" class="java.lang.String"/>
+<field name="timeout_perawat_e_alat" class="java.lang.String"/>
+<field name="nama_petugas2" class="java.lang.String"/>
+<field name="petugas2_photo" class="java.lang.String"/>
+<field name="jam2" class="java.lang.String"/>
+<field name="signout_1_ya" class="java.lang.String"/>
+<field name="signout_1_tidak" class="java.lang.String"/>
+<field name="signout_2_ya" class="java.lang.String"/>
+<field name="signout_2_tidak" class="java.lang.String"/>
+<field name="signout_pra_instrumen" class="java.lang.String"/>
+<field name="signout_pra_kassa" class="java.lang.String"/>
+<field name="signout_pra_bighass" class="java.lang.String"/>
+<field name="signout_pra_jarum" class="java.lang.String"/>
+<field name="signout_intra_instrumen" class="java.lang.String"/>
+<field name="signout_intra_kassa" class="java.lang.String"/>
+<field name="signout_intra_bighass" class="java.lang.String"/>
+<field name="signout_intra_jarum" class="java.lang.String"/>
+<field name="signout_pasca_instrumen" class="java.lang.String"/>
+<field name="signout_pasca_kassa" class="java.lang.String"/>
+<field name="signout_pasca_bighass" class="java.lang.String"/>
+<field name="signout_pasca_jarum" class="java.lang.String"/>
+<field name="signout_total_instrumen" class="java.lang.String"/>
+<field name="signout_total_kassa" class="java.lang.String"/>
+<field name="signout_total_bighass" class="java.lang.String"/>
+<field name="signout_total_jarum" class="java.lang.String"/>
+<field name="signout_3_ya" class="java.lang.String"/>
+<field name="signout_3_tidak" class="java.lang.String"/>
+<field name="signout_4_ya" class="java.lang.String"/>
+<field name="signout_4_tidak" class="java.lang.String"/>
+<field name="signout_5_ya" class="java.lang.String"/>
+<field name="signout_5_tidak" class="java.lang.String"/>
+<field name="signout_6_ya" class="java.lang.String"/>
+<field name="signout_6_tidak" class="java.lang.String"/>
+<field name="signout_6_pesan" class="java.lang.String"/>
+<field name="nama_petugas3" class="java.lang.String"/>
+<field name="petugas3_photo" class="java.lang.String"/>
+<field name="jam3" class="java.lang.String"/>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="186" splitType="Stretch">
+			<image scaleImage="RetainShape" hAlign="Left" vAlign="Middle" onErrorType="Blank">
+				<reportElement x="0" y="0" width="100" height="88" uuid="c1c2c3c4-0000-4000-8000-000000000001"/>
+				<imageExpression><![CDATA[$P{logo}]]></imageExpression>
+			</image>
+			<rectangle>
+				<reportElement x="478" y="2" width="44" height="20" uuid="c1c2c3c4-0000-4000-8000-000000000002"/>
+			</rectangle>
+			<staticText>
+				<reportElement x="478" y="7" width="44" height="11" uuid="c1c2c3c4-0000-4000-8000-000000000003"/>
+				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<text><![CDATA[RM 29]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="10" width="522" height="24" uuid="c1c2c3c4-0000-4000-8000-000000000004"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="16" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$P{namars}]]></textFieldExpression>
+			</textField>
+			<textField isBlankWhenNull="true">
+				<reportElement x="0" y="36" width="522" height="12" uuid="c1c2c3c4-0000-4000-8000-000000000005"/>
+				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<textFieldExpression><![CDATA[$P{alamatrs}+", "+$P{kotars}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="48" width="522" height="12" uuid="c1c2c3c4-0000-4000-8000-000000000006"/>
+				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<text><![CDATA[IG: mahkotabunda.bjm          WA: 0852-4908-5858 (Chat Only)]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="60" width="522" height="12" uuid="c1c2c3c4-0000-4000-8000-000000000007"/>
+				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<text><![CDATA[Email: rskia.mahkotabunda@gmail.com]]></text>
+			</staticText>
+			<line>
+				<reportElement x="0" y="74" width="522" height="1" forecolor="#69BE28" uuid="c1c2c3c4-0000-4000-8000-000000000008"/>
+				<graphicElement><pen lineWidth="2.5"/></graphicElement>
+			</line>
+			<rectangle>
+				<reportElement x="0" y="80" width="522" height="20" mode="Opaque" backcolor="#69BE28" uuid="c1c2c3c4-0000-4000-8000-000000000009"/>
+				<graphicElement><pen lineWidth="0"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="0" y="80" width="522" height="20" forecolor="#FFFFFF" uuid="c1c2c3c4-0000-4000-8000-00000000000a"/>
+				<textElement textAlignment="Center" verticalAlignment="Middle">
+					<font fontName="Tahoma" size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+				</textElement>
+				<text><![CDATA[CEKLIS KESELAMATAN PEMBEDAHAN]]></text>
+			</staticText>
+			<rectangle radius="10">
+				<reportElement x="0" y="106" width="522" height="72" mode="Transparent" uuid="c1c2c3c4-0000-4000-8000-00000000000b"/>
+				<graphicElement><pen lineWidth="0.75" lineColor="#CBD5E1"/></graphicElement>
+			</rectangle>
+			<staticText>
+				<reportElement x="10" y="114" width="95" height="14" uuid="c1c2c3c4-0000-4000-8000-00000000000c"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[NO. RM]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="105" y="114" width="145" height="14" uuid="c1c2c3c4-0000-4000-8000-00000000000d"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": "+$F{no_rkm_medis}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="10" y="128" width="95" height="14" uuid="c1c2c3c4-0000-4000-8000-00000000000e"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[NAMA PASIEN]]></text>
+			</staticText>
+			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
+				<reportElement x="105" y="128" width="145" height="14" uuid="c1c2c3c4-0000-4000-8000-00000000000f"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": "+$F{nm_pasien}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="10" y="142" width="95" height="14" uuid="c1c2c3c4-0000-4000-8000-000000000010"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[TGL LAHIR / JK]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="105" y="142" width="145" height="14" uuid="c1c2c3c4-0000-4000-8000-000000000011"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": "+$F{tgl_lahir}+" / "+$F{jk}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="272" y="114" width="95" height="14" uuid="c1c2c3c4-0000-4000-8000-000000000012"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[TANGGAL PERIKSA]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="367" y="114" width="145" height="14" uuid="c1c2c3c4-0000-4000-8000-000000000013"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": "+$F{tanggal_cetak}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="272" y="128" width="95" height="14" uuid="c1c2c3c4-0000-4000-8000-000000000014"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<text><![CDATA[JAM PERIKSA]]></text>
+			</staticText>
+			<textField isBlankWhenNull="true">
+				<reportElement x="367" y="128" width="145" height="14" uuid="c1c2c3c4-0000-4000-8000-000000000015"/>
+				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textFieldExpression><![CDATA[": "+$F{jam_cetak}]]></textFieldExpression>
+			</textField>
+		</band>
+	</title>
+	<pageHeader>
+		<band splitType="Stretch"/>
+	</pageHeader>
+	<columnHeader>
+		<band splitType="Stretch"/>
+	</columnHeader>
+	<detail>
+<band height="591" splitType="Stretch">
+<staticText><reportElement x="0" y="4" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000001"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Nama Petugas]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="14" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-000000000002"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{nama_petugas}]]></textFieldExpression></textField>
+<staticText><reportElement x="260" y="4" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000003"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Diagnose Medis]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="260" y="14" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-000000000004"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{diagnose_medis}]]></textFieldExpression></textField>
+<staticText><reportElement x="0" y="26" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000005"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Tindakan]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="36" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-000000000006"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{tindakan}]]></textFieldExpression></textField>
+<staticText><reportElement x="260" y="26" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000007"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Operator / Assisten]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="260" y="36" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-000000000008"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{operator_assisten}]]></textFieldExpression></textField>
+<staticText><reportElement x="0" y="48" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000009"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Anesthesi / Penata]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="58" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-00000000000a"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{anesthesi_penata}]]></textFieldExpression></textField>
+<rectangle><reportElement x="0" y="74" width="522" height="16" mode="Opaque" backcolor="#69BE28" uuid="cccccccc-dddd-4eee-8fff-00000000000b"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
+<staticText><reportElement x="0" y="74" width="522" height="16" forecolor="#FFFFFF" uuid="cccccccc-dddd-4eee-8fff-00000000000c"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement><text><![CDATA[SIGN IN]]></text></staticText>
+<staticText><reportElement x="0" y="93" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000000d"/><textElement><font fontName="Tahoma" size="7" isItalic="true"/></textElement><text><![CDATA[Dilakukan sebelum induksi anesthesia, dihadiri minimal oleh perawat dan ahli anesthesi]]></text></staticText>
+<rectangle><reportElement x="0" y="106" width="522" height="12" mode="Opaque" backcolor="#EEF2F5" uuid="cccccccc-dddd-4eee-8fff-00000000000e"/><graphicElement><pen lineWidth="0.5"/></graphicElement></rectangle>
+<staticText><reportElement x="2" y="106" width="400" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000000f"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[1. Pasien telah dikonfirmasi meliputi]]></text></staticText>
+<staticText><reportElement x="420" y="106" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000010"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Sudah]]></text></staticText>
+<staticText><reportElement x="470" y="106" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000011"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Belum]]></text></staticText>
+<staticText><reportElement x="2" y="119" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000012"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[a). Identitas dan gelang pasien]]></text></staticText>
+<rectangle><reportElement x="425" y="120" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000013"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="124" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000014"><printWhenExpression><![CDATA["1".equals($F{signin_1a_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="121" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000015"><printWhenExpression><![CDATA["1".equals($F{signin_1a_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="120" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000016"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="124" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000017"><printWhenExpression><![CDATA["1".equals($F{signin_1a_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="121" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000018"><printWhenExpression><![CDATA["1".equals($F{signin_1a_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="133" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000019"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[b). Lokasi operasi]]></text></staticText>
+<rectangle><reportElement x="425" y="134" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000001a"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="138" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000001b"><printWhenExpression><![CDATA["1".equals($F{signin_1b_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="135" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000001c"><printWhenExpression><![CDATA["1".equals($F{signin_1b_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="134" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000001d"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="138" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000001e"><printWhenExpression><![CDATA["1".equals($F{signin_1b_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="135" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000001f"><printWhenExpression><![CDATA["1".equals($F{signin_1b_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="147" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000020"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[c). Prosedur]]></text></staticText>
+<rectangle><reportElement x="425" y="148" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000021"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="152" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000022"><printWhenExpression><![CDATA["1".equals($F{signin_1c_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="149" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000023"><printWhenExpression><![CDATA["1".equals($F{signin_1c_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="148" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000024"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="152" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000025"><printWhenExpression><![CDATA["1".equals($F{signin_1c_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="149" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000026"><printWhenExpression><![CDATA["1".equals($F{signin_1c_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="161" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000027"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[d). persetujuan operasi]]></text></staticText>
+<rectangle><reportElement x="425" y="162" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000028"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="166" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000029"><printWhenExpression><![CDATA["1".equals($F{signin_1d_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="163" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000002a"><printWhenExpression><![CDATA["1".equals($F{signin_1d_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="162" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000002b"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="166" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000002c"><printWhenExpression><![CDATA["1".equals($F{signin_1d_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="163" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000002d"><printWhenExpression><![CDATA["1".equals($F{signin_1d_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="175" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000002e"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[2. Mesin dan obat-obatan anesthesia sudah di cek lengkap]]></text></staticText>
+<rectangle><reportElement x="425" y="176" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000002f"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="180" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000030"><printWhenExpression><![CDATA["1".equals($F{signin_2_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="177" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000031"><printWhenExpression><![CDATA["1".equals($F{signin_2_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="176" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000032"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="180" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000033"><printWhenExpression><![CDATA["1".equals($F{signin_2_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="177" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000034"><printWhenExpression><![CDATA["1".equals($F{signin_2_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="189" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000035"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[3. pulse oximeter sudah terpasang dan berfungsi]]></text></staticText>
+<rectangle><reportElement x="425" y="190" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000036"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="194" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000037"><printWhenExpression><![CDATA["1".equals($F{signin_3_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="191" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000038"><printWhenExpression><![CDATA["1".equals($F{signin_3_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="190" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000039"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="194" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000003a"><printWhenExpression><![CDATA["1".equals($F{signin_3_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="191" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000003b"><printWhenExpression><![CDATA["1".equals($F{signin_3_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="203" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000003c"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[4. Kelengkapan persiapan impian]]></text></staticText>
+<rectangle><reportElement x="425" y="204" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000003d"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="208" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000003e"><printWhenExpression><![CDATA["1".equals($F{signin_4_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="205" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000003f"><printWhenExpression><![CDATA["1".equals($F{signin_4_sudah})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="204" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000040"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="208" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000041"><printWhenExpression><![CDATA["1".equals($F{signin_4_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="205" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000042"><printWhenExpression><![CDATA["1".equals($F{signin_4_belum})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="0" y="217" width="522" height="12" mode="Opaque" backcolor="#EEF2F5" uuid="cccccccc-dddd-4eee-8fff-000000000043"/><graphicElement><pen lineWidth="0.5"/></graphicElement></rectangle>
+<staticText><reportElement x="2" y="217" width="400" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000044"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Indikator]]></text></staticText>
+<staticText><reportElement x="420" y="217" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000045"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Ya]]></text></staticText>
+<staticText><reportElement x="470" y="217" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000046"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Tidak]]></text></staticText>
+<staticText><reportElement x="2" y="230" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000047"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[5. Apakah pasien mmpunyai riwayat alergi]]></text></staticText>
+<rectangle><reportElement x="425" y="231" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000048"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="235" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000049"><printWhenExpression><![CDATA["1".equals($F{signin_5_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="232" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000004a"><printWhenExpression><![CDATA["1".equals($F{signin_5_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="231" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000004b"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="235" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000004c"><printWhenExpression><![CDATA["1".equals($F{signin_5_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="232" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000004d"><printWhenExpression><![CDATA["1".equals($F{signin_5_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="244" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000004e"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[6. Kesulitan bernafas/ resiko aspirasi? Ketersediaan peralatan bantuan]]></text></staticText>
+<rectangle><reportElement x="425" y="245" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000004f"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="249" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000050"><printWhenExpression><![CDATA["1".equals($F{signin_6_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="246" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000051"><printWhenExpression><![CDATA["1".equals($F{signin_6_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="245" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000052"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="249" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000053"><printWhenExpression><![CDATA["1".equals($F{signin_6_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="246" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000054"><printWhenExpression><![CDATA["1".equals($F{signin_6_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="258" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000055"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[7. Resiko kehilangan darah &gt;500 ml (7ml/kg BB pada anak)]]></text></staticText>
+<rectangle><reportElement x="425" y="259" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000056"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="263" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000057"><printWhenExpression><![CDATA["1".equals($F{signin_7_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="260" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000058"><printWhenExpression><![CDATA["1".equals($F{signin_7_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="259" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000059"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="263" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000005a"><printWhenExpression><![CDATA["1".equals($F{signin_7_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="260" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000005b"><printWhenExpression><![CDATA["1".equals($F{signin_7_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="272" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000005c"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[8. Dua akses intervena/akses sentral dan rencana terapi cairan]]></text></staticText>
+<rectangle><reportElement x="425" y="273" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000005d"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="277" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000005e"><printWhenExpression><![CDATA["1".equals($F{signin_8_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="274" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000005f"><printWhenExpression><![CDATA["1".equals($F{signin_8_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="273" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000060"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="277" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000061"><printWhenExpression><![CDATA["1".equals($F{signin_8_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="274" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000062"><printWhenExpression><![CDATA["1".equals($F{signin_8_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<frame><reportElement x="0" y="292" width="522" height="78" uuid="cccccccc-dddd-4eee-8fff-000000000063"/><box></box>
+<staticText><reportElement x="0" y="0" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000064"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Dokter Anesthesi/Penata Perawat Pre Med]]></text></staticText>
+<line><reportElement x="0" y="13" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-000000000065"/></line>
+<staticText><reportElement x="0" y="20" width="35" height="13" uuid="cccccccc-dddd-4eee-8fff-000000000066"/><textElement><font fontName="Tahoma" size="8"/></textElement><text><![CDATA[Jam :]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="35" y="20" width="100" height="13" uuid="cccccccc-dddd-4eee-8fff-000000000067"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{jam1}]]></textFieldExpression></textField>
+<image scaleImage="RetainShape" onErrorType="Blank" hAlign="Left"><reportElement x="0" y="36" width="115" height="32" uuid="cccccccc-dddd-4eee-8fff-000000000068"><printWhenExpression><![CDATA[$F{petugas1_photo} != null && !$F{petugas1_photo}.equals("")]]></printWhenExpression></reportElement><imageExpression class="java.awt.Image"><![CDATA[rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + $F{petugas1_photo})]]></imageExpression></image>
+<textField><reportElement x="0" y="70" width="300" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000069"/><textElement><font fontName="Tahoma" size="8" isUnderline="true"/></textElement><textFieldExpression><![CDATA["( "+$F{nama_petugas1}+" )"]]></textFieldExpression></textField>
+</frame>
+<rectangle><reportElement x="0" y="374" width="522" height="16" mode="Opaque" backcolor="#69BE28" uuid="cccccccc-dddd-4eee-8fff-00000000006a"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
+<staticText><reportElement x="0" y="374" width="522" height="16" forecolor="#FFFFFF" uuid="cccccccc-dddd-4eee-8fff-00000000006b"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement><text><![CDATA[TIME OUT]]></text></staticText>
+<staticText><reportElement x="0" y="393" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000006c"/><textElement><font fontName="Tahoma" size="7" isItalic="true"/></textElement><text><![CDATA[Dilakukan sebelum insisi, dihadiri minimal oleh perawat, ahli anesthesia dan operator]]></text></staticText>
+<rectangle><reportElement x="0" y="406" width="522" height="12" mode="Opaque" backcolor="#EEF2F5" uuid="cccccccc-dddd-4eee-8fff-00000000006d"/><graphicElement><pen lineWidth="0.5"/></graphicElement></rectangle>
+<staticText><reportElement x="2" y="406" width="400" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000006e"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Indikator]]></text></staticText>
+<staticText><reportElement x="420" y="406" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000006f"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Ya]]></text></staticText>
+<staticText><reportElement x="470" y="406" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000070"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Tidak]]></text></staticText>
+<staticText><reportElement x="2" y="419" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000071"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[1. Konfirmasi meliputi :]]></text></staticText>
+<rectangle><reportElement x="425" y="420" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000072"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="424" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000073"><printWhenExpression><![CDATA["1".equals($F{timeout_1_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="421" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000074"><printWhenExpression><![CDATA["1".equals($F{timeout_1_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="420" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000075"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="424" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000076"><printWhenExpression><![CDATA["1".equals($F{timeout_1_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="421" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000077"><printWhenExpression><![CDATA["1".equals($F{timeout_1_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="433" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000078"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[a). Nama pasien]]></text></staticText>
+<rectangle><reportElement x="425" y="434" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000079"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="438" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000007a"><printWhenExpression><![CDATA["1".equals($F{timeout_1a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="435" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000007b"><printWhenExpression><![CDATA["1".equals($F{timeout_1a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="434" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000007c"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="438" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000007d"><printWhenExpression><![CDATA["1".equals($F{timeout_1a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="435" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000007e"><printWhenExpression><![CDATA["1".equals($F{timeout_1a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="447" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000007f"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[b). Prosedur]]></text></staticText>
+<rectangle><reportElement x="425" y="448" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000080"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="452" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000081"><printWhenExpression><![CDATA["1".equals($F{timeout_1b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="449" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000082"><printWhenExpression><![CDATA["1".equals($F{timeout_1b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="448" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000083"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="452" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000084"><printWhenExpression><![CDATA["1".equals($F{timeout_1b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="449" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000085"><printWhenExpression><![CDATA["1".equals($F{timeout_1b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="461" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000086"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[c). Lokasi insisi]]></text></staticText>
+<rectangle><reportElement x="425" y="462" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000087"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="466" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000088"><printWhenExpression><![CDATA["1".equals($F{timeout_1c_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="463" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000089"><printWhenExpression><![CDATA["1".equals($F{timeout_1c_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="462" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000008a"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="466" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000008b"><printWhenExpression><![CDATA["1".equals($F{timeout_1c_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="463" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000008c"><printWhenExpression><![CDATA["1".equals($F{timeout_1c_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="475" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000008d"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[2. Sebutkan nama dan peran masing-masing anggota tim]]></text></staticText>
+<rectangle><reportElement x="425" y="476" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000008e"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="480" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000008f"><printWhenExpression><![CDATA["1".equals($F{timeout_2_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="477" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000090"><printWhenExpression><![CDATA["1".equals($F{timeout_2_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="476" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000091"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="480" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000092"><printWhenExpression><![CDATA["1".equals($F{timeout_2_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="477" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000093"><printWhenExpression><![CDATA["1".equals($F{timeout_2_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="489" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000094"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[3. a) sudahkan antibiotic diberikan 60 menit sebelumnya]]></text></staticText>
+<rectangle><reportElement x="425" y="490" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000095"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="494" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000096"><printWhenExpression><![CDATA["1".equals($F{timeout_3a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="491" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000097"><printWhenExpression><![CDATA["1".equals($F{timeout_3a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="490" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000098"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="494" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000099"><printWhenExpression><![CDATA["1".equals($F{timeout_3a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="491" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000009a"><printWhenExpression><![CDATA["1".equals($F{timeout_3a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="503" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000009b"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[b) diberikan oleh]]></text></staticText>
+<rectangle><reportElement x="425" y="504" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000009c"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="508" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000009d"><printWhenExpression><![CDATA["1".equals($F{timeout_3b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="505" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000009e"><printWhenExpression><![CDATA["1".equals($F{timeout_3b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="504" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000009f"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="508" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000a0"><printWhenExpression><![CDATA["1".equals($F{timeout_3b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="505" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000a1"><printWhenExpression><![CDATA["1".equals($F{timeout_3b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="517" width="500" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000a2"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[(nama pemberi antibiotik)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="527" width="500" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000a3"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_3b_diberikanoleh}]]></textFieldExpression></textField>
+<staticText><reportElement x="2" y="539" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000a4"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[4. Implan yang akan dipasang sesuai rencana dan steril]]></text></staticText>
+<rectangle><reportElement x="425" y="540" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000a5"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="544" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000a6"><printWhenExpression><![CDATA["1".equals($F{timeout_4_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="541" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000a7"><printWhenExpression><![CDATA["1".equals($F{timeout_4_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="540" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000a8"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="544" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000a9"><printWhenExpression><![CDATA["1".equals($F{timeout_4_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="541" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000aa"><printWhenExpression><![CDATA["1".equals($F{timeout_4_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="553" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000ab"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[5. Pencegahan kejadian tidak diharapkan (KTD)]]></text></staticText>
+<rectangle><reportElement x="425" y="554" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000ac"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="558" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000ad"><printWhenExpression><![CDATA["1".equals($F{timeout_5_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="555" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000ae"><printWhenExpression><![CDATA["1".equals($F{timeout_5_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="554" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000af"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="558" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000b0"><printWhenExpression><![CDATA["1".equals($F{timeout_5_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="555" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000b1"><printWhenExpression><![CDATA["1".equals($F{timeout_5_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+</band>
+<band height="540" splitType="Stretch">
+<staticText><reportElement x="2" y="0" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000b2"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[6. Perlakukan hasil MRI,CT Scan, Foto dipasang?]]></text></staticText>
+<rectangle><reportElement x="425" y="1" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000b3"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="5" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000b4"><printWhenExpression><![CDATA["1".equals($F{timeout_6_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="2" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000b5"><printWhenExpression><![CDATA["1".equals($F{timeout_6_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="1" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000b6"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="5" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000b7"><printWhenExpression><![CDATA["1".equals($F{timeout_6_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="2" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000b8"><printWhenExpression><![CDATA["1".equals($F{timeout_6_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="14" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000b9"/><textElement><font fontName="Tahoma" size="7" isItalic="true"/></textElement><text><![CDATA[Operator]]></text></staticText>
+<staticText><reportElement x="2" y="27" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000ba"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[a). apakah memungkinkan timbul kesulitan dalam operasi apakah tidak untuk itu?]]></text></staticText>
+<rectangle><reportElement x="425" y="28" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000bb"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="32" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000bc"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="29" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000bd"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="28" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000be"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="32" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000bf"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="29" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000c0"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="41" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000c1"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[b). berapa lama estimasi operasi? ........... jam]]></text></staticText>
+<rectangle><reportElement x="425" y="42" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000c2"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="46" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000c3"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="43" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000c4"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="42" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000c5"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="46" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000c6"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="43" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000c7"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="55" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000c8"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Estimasi (jam)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="65" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000c9"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_operator_b_estimasi}]]></textFieldExpression></textField>
+<staticText><reportElement x="2" y="77" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000ca"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[c). perkiraan kehilangan darah ……….Cc]]></text></staticText>
+<rectangle><reportElement x="425" y="78" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000cb"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="82" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000cc"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_c_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="79" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000cd"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_c_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="78" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000ce"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="82" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000cf"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_c_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="79" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000d0"><printWhenExpression><![CDATA["1".equals($F{timeout_operator_c_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="91" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000d1"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Kehilangan Darah (Cc)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="101" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000d2"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_operator_c_kehilangandarah}]]></textFieldExpression></textField>
+<staticText><reportElement x="0" y="113" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000d3"/><textElement><font fontName="Tahoma" size="7" isItalic="true"/></textElement><text><![CDATA[Ahli anesthesi]]></text></staticText>
+<staticText><reportElement x="2" y="126" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000d4"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[Apakah masalah khusus pada pasien dan langkah antisipasi]]></text></staticText>
+<rectangle><reportElement x="425" y="127" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000d5"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="131" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000d6"><printWhenExpression><![CDATA["1".equals($F{timeout_anestesi_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="128" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000d7"><printWhenExpression><![CDATA["1".equals($F{timeout_anestesi_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="127" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000d8"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="131" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000d9"><printWhenExpression><![CDATA["1".equals($F{timeout_anestesi_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="128" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000da"><printWhenExpression><![CDATA["1".equals($F{timeout_anestesi_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="140" width="500" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000db"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[(catatan)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="150" width="500" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000dc"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_anestesi_masalahkhusus}]]></textFieldExpression></textField>
+<staticText><reportElement x="0" y="162" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000dd"/><textElement><font fontName="Tahoma" size="7" isItalic="true"/></textElement><text><![CDATA[perawat]]></text></staticText>
+<staticText><reportElement x="0" y="175" width="500" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000de"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[(catatan)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="185" width="500" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000df"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_perawat_catatan}]]></textFieldExpression></textField>
+<staticText><reportElement x="2" y="197" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000e0"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[a). bukti sterilisasi alat]]></text></staticText>
+<rectangle><reportElement x="425" y="198" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000e1"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="202" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000e2"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="199" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000e3"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_a_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="198" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000e4"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="202" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000e5"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="199" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000e6"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_a_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="211" width="500" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000e7"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[(keterangan)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="221" width="500" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000e8"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_perawat_a_sterilisasi}]]></textFieldExpression></textField>
+<staticText><reportElement x="2" y="233" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000e9"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[b). adakah alat khusus]]></text></staticText>
+<rectangle><reportElement x="425" y="234" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000ea"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="238" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000eb"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="235" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000ec"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_b_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="234" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000ed"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="238" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000ee"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="235" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000ef"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_b_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="247" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000f0"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[c). jumlah bighass]]></text></staticText>
+<rectangle><reportElement x="425" y="248" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000f1"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="252" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000f2"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_c_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="249" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000f3"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_c_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="248" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000f4"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="252" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000f5"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_c_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="249" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000f6"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_c_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="261" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-0000000000f7"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Jumlah Bighass]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="271" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-0000000000f8"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_perawat_c_bighass}]]></textFieldExpression></textField>
+<staticText><reportElement x="2" y="283" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-0000000000f9"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[d). jumlah jarum]]></text></staticText>
+<rectangle><reportElement x="425" y="284" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000fa"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="288" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000fb"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_d_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="285" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000fc"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_d_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="284" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-0000000000fd"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="288" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-0000000000fe"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_d_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="285" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-0000000000ff"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_d_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="297" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000100"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Jumlah Jarum]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="307" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-000000000101"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_perawat_d_jarum}]]></textFieldExpression></textField>
+<staticText><reportElement x="2" y="319" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000102"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[e). jumlah alat]]></text></staticText>
+<rectangle><reportElement x="425" y="320" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000103"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="324" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000104"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_e_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="321" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000105"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_e_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="320" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000106"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="324" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000107"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_e_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="321" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000108"><printWhenExpression><![CDATA["1".equals($F{timeout_perawat_e_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="333" width="260" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000109"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Jumlah Alat]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="343" width="260" height="11" uuid="cccccccc-dddd-4eee-8fff-00000000010a"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{timeout_perawat_e_alat}]]></textFieldExpression></textField>
+<frame><reportElement x="0" y="361" width="522" height="78" uuid="cccccccc-dddd-4eee-8fff-00000000010b"/><box></box>
+<staticText><reportElement x="0" y="0" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000010c"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Perawat Sirkuler]]></text></staticText>
+<line><reportElement x="0" y="13" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-00000000010d"/></line>
+<staticText><reportElement x="0" y="20" width="35" height="13" uuid="cccccccc-dddd-4eee-8fff-00000000010e"/><textElement><font fontName="Tahoma" size="8"/></textElement><text><![CDATA[Jam :]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="35" y="20" width="100" height="13" uuid="cccccccc-dddd-4eee-8fff-00000000010f"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{jam2}]]></textFieldExpression></textField>
+<image scaleImage="RetainShape" onErrorType="Blank" hAlign="Left"><reportElement x="0" y="36" width="115" height="32" uuid="cccccccc-dddd-4eee-8fff-000000000110"><printWhenExpression><![CDATA[$F{petugas2_photo} != null && !$F{petugas2_photo}.equals("")]]></printWhenExpression></reportElement><imageExpression class="java.awt.Image"><![CDATA[rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + $F{petugas2_photo})]]></imageExpression></image>
+<textField><reportElement x="0" y="70" width="300" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000111"/><textElement><font fontName="Tahoma" size="8" isUnderline="true"/></textElement><textFieldExpression><![CDATA["( "+$F{nama_petugas2}+" )"]]></textFieldExpression></textField>
+</frame>
+<rectangle><reportElement x="0" y="443" width="522" height="16" mode="Opaque" backcolor="#69BE28" uuid="cccccccc-dddd-4eee-8fff-000000000112"/><graphicElement><pen lineWidth="0"/></graphicElement></rectangle>
+<staticText><reportElement x="0" y="443" width="522" height="16" forecolor="#FFFFFF" uuid="cccccccc-dddd-4eee-8fff-000000000113"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement><text><![CDATA[SIGN OUT]]></text></staticText>
+<staticText><reportElement x="0" y="462" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000114"/><textElement><font fontName="Tahoma" size="7" isItalic="true"/></textElement><text><![CDATA[Dilakukan sebelum pasien meninggalkan OK, dihadiri oleh perawat, ahli anesthesi dan operator]]></text></staticText>
+<rectangle><reportElement x="0" y="475" width="522" height="12" mode="Opaque" backcolor="#EEF2F5" uuid="cccccccc-dddd-4eee-8fff-000000000115"/><graphicElement><pen lineWidth="0.5"/></graphicElement></rectangle>
+<staticText><reportElement x="2" y="475" width="400" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000116"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Indikator]]></text></staticText>
+<staticText><reportElement x="420" y="475" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000117"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Ya]]></text></staticText>
+<staticText><reportElement x="470" y="475" width="50" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000118"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Tidak]]></text></staticText>
+<staticText><reportElement x="2" y="488" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000119"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[1. Konfirmasi secara verbal tentang nama prosedur/tindakan]]></text></staticText>
+<rectangle><reportElement x="425" y="489" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000011a"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="493" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000011b"><printWhenExpression><![CDATA["1".equals($F{signout_1_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="490" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000011c"><printWhenExpression><![CDATA["1".equals($F{signout_1_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="489" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000011d"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="493" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000011e"><printWhenExpression><![CDATA["1".equals($F{signout_1_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="490" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000011f"><printWhenExpression><![CDATA["1".equals($F{signout_1_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="502" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000120"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[2. Jumlah instrument, kassa, bighass dan jarum]]></text></staticText>
+<rectangle><reportElement x="425" y="503" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000121"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="507" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000122"><printWhenExpression><![CDATA["1".equals($F{signout_2_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="504" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000123"><printWhenExpression><![CDATA["1".equals($F{signout_2_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="503" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000124"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="507" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000125"><printWhenExpression><![CDATA["1".equals($F{signout_2_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="504" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000126"><printWhenExpression><![CDATA["1".equals($F{signout_2_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+</band>
+<band height="260" splitType="Stretch">
+<frame><reportElement x="0" y="0" width="522" height="88" uuid="cccccccc-dddd-4eee-8fff-000000000127"/><box></box>
+<rectangle><reportElement x="0" y="0" width="522" height="88" uuid="cccccccc-dddd-4eee-8fff-000000000128"/><graphicElement><pen lineWidth="0.75"/></graphicElement></rectangle>
+<line><reportElement x="62" y="0" width="1" height="88" uuid="cccccccc-dddd-4eee-8fff-000000000129"/></line>
+<line><reportElement x="177" y="0" width="1" height="88" uuid="cccccccc-dddd-4eee-8fff-00000000012a"/></line>
+<line><reportElement x="292" y="0" width="1" height="88" uuid="cccccccc-dddd-4eee-8fff-00000000012b"/></line>
+<line><reportElement x="407" y="0" width="1" height="88" uuid="cccccccc-dddd-4eee-8fff-00000000012c"/></line>
+<staticText><reportElement x="2" y="2" width="58" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000012d"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Item]]></text></staticText>
+<staticText><reportElement x="62" y="2" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000012e"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Instrumen]]></text></staticText>
+<staticText><reportElement x="177" y="2" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000012f"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Kassa]]></text></staticText>
+<staticText><reportElement x="292" y="2" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000130"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Bighass]]></text></staticText>
+<staticText><reportElement x="407" y="2" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000131"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Jarum]]></text></staticText>
+<line><reportElement x="0" y="18" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-000000000132"/></line>
+<staticText><reportElement x="2" y="20" width="58" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000133"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Pra]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="62" y="20" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000134"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pra_instrumen}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="177" y="20" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000135"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pra_kassa}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="292" y="20" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000136"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pra_bighass}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="407" y="20" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000137"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pra_jarum}]]></textFieldExpression></textField>
+<line><reportElement x="0" y="36" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-000000000138"/></line>
+<staticText><reportElement x="2" y="38" width="58" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000139"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Intra]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="62" y="38" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000013a"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_intra_instrumen}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="177" y="38" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000013b"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_intra_kassa}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="292" y="38" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000013c"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_intra_bighass}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="407" y="38" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000013d"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_intra_jarum}]]></textFieldExpression></textField>
+<line><reportElement x="0" y="53" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-00000000013e"/></line>
+<staticText><reportElement x="2" y="55" width="58" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000013f"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Pasca]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="62" y="55" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000140"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pasca_instrumen}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="177" y="55" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000141"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pasca_kassa}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="292" y="55" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000142"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pasca_bighass}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="407" y="55" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000143"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_pasca_jarum}]]></textFieldExpression></textField>
+<line><reportElement x="0" y="71" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-000000000144"/></line>
+<staticText><reportElement x="2" y="73" width="58" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000145"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[Total]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="62" y="73" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000146"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_total_instrumen}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="177" y="73" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000147"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_total_kassa}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="292" y="73" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000148"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_total_bighass}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="407" y="73" width="113" height="14" uuid="cccccccc-dddd-4eee-8fff-000000000149"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7"/></textElement><textFieldExpression><![CDATA[$F{signout_total_jarum}]]></textFieldExpression></textField>
+</frame>
+<staticText><reportElement x="2" y="88" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000014a"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[3. Specimen telah habis label (minimal nama, no.RM dan asal jaringan spesimen)]]></text></staticText>
+<rectangle><reportElement x="425" y="89" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000014b"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="93" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000014c"><printWhenExpression><![CDATA["1".equals($F{signout_3_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="90" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000014d"><printWhenExpression><![CDATA["1".equals($F{signout_3_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="89" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000014e"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="93" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000014f"><printWhenExpression><![CDATA["1".equals($F{signout_3_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="90" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000150"><printWhenExpression><![CDATA["1".equals($F{signout_3_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="102" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000151"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[4. Nomor register implan dimasukkan dakam rekam medis pasien]]></text></staticText>
+<rectangle><reportElement x="425" y="103" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000152"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="107" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000153"><printWhenExpression><![CDATA["1".equals($F{signout_4_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="104" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000154"><printWhenExpression><![CDATA["1".equals($F{signout_4_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="103" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000155"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="107" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000156"><printWhenExpression><![CDATA["1".equals($F{signout_4_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="104" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000157"><printWhenExpression><![CDATA["1".equals($F{signout_4_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="116" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000158"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[5. Adakah masalah dengan peralatan selama operasi]]></text></staticText>
+<rectangle><reportElement x="425" y="117" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000159"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="121" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000015a"><printWhenExpression><![CDATA["1".equals($F{signout_5_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="118" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000015b"><printWhenExpression><![CDATA["1".equals($F{signout_5_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="117" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-00000000015c"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="121" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-00000000015d"><printWhenExpression><![CDATA["1".equals($F{signout_5_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="118" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-00000000015e"><printWhenExpression><![CDATA["1".equals($F{signout_5_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="2" y="130" width="410" height="12" uuid="cccccccc-dddd-4eee-8fff-00000000015f"/><textElement><font fontName="Tahoma" size="7"/></textElement><text><![CDATA[6. Pesan khusus dari operator, ahli anesthesi dan perawat untuk asuhan selnjutnya]]></text></staticText>
+<rectangle><reportElement x="425" y="131" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000160"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="427" y="135" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000161"><printWhenExpression><![CDATA["1".equals($F{signout_6_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="429" y="132" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000162"><printWhenExpression><![CDATA["1".equals($F{signout_6_ya})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<rectangle><reportElement x="475" y="131" width="9" height="9" uuid="cccccccc-dddd-4eee-8fff-000000000163"/><graphicElement><pen lineWidth="0.6"/></graphicElement></rectangle>
+<line><reportElement x="477" y="135" width="2" height="2" uuid="cccccccc-dddd-4eee-8fff-000000000164"><printWhenExpression><![CDATA["1".equals($F{signout_6_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<line direction="BottomUp"><reportElement x="479" y="132" width="4" height="6" uuid="cccccccc-dddd-4eee-8fff-000000000165"><printWhenExpression><![CDATA["1".equals($F{signout_6_tidak})]]></printWhenExpression></reportElement><graphicElement><pen lineWidth="1.1"/></graphicElement></line>
+<staticText><reportElement x="0" y="144" width="500" height="10" uuid="cccccccc-dddd-4eee-8fff-000000000166"/><textElement><font fontName="Tahoma" size="7" isBold="true"/></textElement><text><![CDATA[(pesan khusus)]]></text></staticText>
+<textField isBlankWhenNull="true" isStretchWithOverflow="true"><reportElement x="0" y="154" width="500" height="11" uuid="cccccccc-dddd-4eee-8fff-000000000167"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{signout_6_pesan}]]></textFieldExpression></textField>
+<frame><reportElement x="0" y="172" width="522" height="78" uuid="cccccccc-dddd-4eee-8fff-000000000168"/><box></box>
+<staticText><reportElement x="0" y="0" width="522" height="12" uuid="cccccccc-dddd-4eee-8fff-000000000169"/><textElement><font fontName="Tahoma" size="8" isBold="true"/></textElement><text><![CDATA[Operator]]></text></staticText>
+<line><reportElement x="0" y="13" width="522" height="1" uuid="cccccccc-dddd-4eee-8fff-00000000016a"/></line>
+<staticText><reportElement x="0" y="20" width="35" height="13" uuid="cccccccc-dddd-4eee-8fff-00000000016b"/><textElement><font fontName="Tahoma" size="8"/></textElement><text><![CDATA[Jam :]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="35" y="20" width="100" height="13" uuid="cccccccc-dddd-4eee-8fff-00000000016c"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[$F{jam3}]]></textFieldExpression></textField>
+<image scaleImage="RetainShape" onErrorType="Blank" hAlign="Left"><reportElement x="0" y="36" width="115" height="32" uuid="cccccccc-dddd-4eee-8fff-00000000016d"><printWhenExpression><![CDATA[$F{petugas3_photo} != null && !$F{petugas3_photo}.equals("")]]></printWhenExpression></reportElement><imageExpression class="java.awt.Image"><![CDATA[rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + $F{petugas3_photo})]]></imageExpression></image>
+<textField><reportElement x="0" y="70" width="300" height="14" uuid="cccccccc-dddd-4eee-8fff-00000000016e"/><textElement><font fontName="Tahoma" size="8" isUnderline="true"/></textElement><textFieldExpression><![CDATA["( "+$F{nama_petugas3}+" )"]]></textFieldExpression></textField>
+</frame>
+</band>
+	</detail>
+	<columnFooter>
+		<band splitType="Stretch"/>
+	</columnFooter>
+	<pageFooter>
+		<band height="18" splitType="Stretch">
+			<textField evaluationTime="Report" pattern="">
+				<reportElement x="428" y="2" width="64" height="14" uuid="c1c2c3c4-0000-4000-8000-0000000000f0"/>
+				<textElement><font fontName="Tahoma" size="8"/></textElement>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField pattern="dd/MM/yyyy HH.mm.ss">
+				<reportElement x="1" y="2" width="120" height="14" uuid="c1c2c3c4-0000-4000-8000-0000000000f1"/>
+				<textElement><font fontName="Tahoma" size="8"/></textElement>
+				<textFieldExpression><![CDATA[new Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band splitType="Stretch"/>
+	</summary>
+</jasperReport>
