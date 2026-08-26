@@ -100,9 +100,11 @@ img.logo { width: 35px; height: 35px; }
             echo "<div class='section-header'>OBAT & DAFTAR</div>";
 
             $i=1;
-            $obat=bukaquery("select resep_dokter.jml,databarang.kode_sat,databarang.nama_brng,resep_dokter.aturan_pakai ".
+            // group by kode_brng utk cegah baris dobel (no_resep,kode_brng) tercetak dua kali/jumlah salah
+            $obat=bukaquery("select sum(resep_dokter.jml) as jml,databarang.kode_sat,databarang.nama_brng,max(resep_dokter.aturan_pakai) as aturan_pakai ".
                             "from resep_dokter inner join databarang on resep_dokter.kode_brng=databarang.kode_brng ".
-                            "where resep_dokter.no_resep='$no_resep' order by databarang.nama_brng");
+                            "where resep_dokter.no_resep='$no_resep' ".
+                            "group by resep_dokter.kode_brng,databarang.kode_sat,databarang.nama_brng order by databarang.nama_brng");
             $adaObat = false;
             while($barisobat=mysqli_fetch_array($obat)){
                 $adaObat = true;
@@ -130,9 +132,10 @@ img.logo { width: 35px; height: 35px; }
                 echo "</div>";
                 
                 // Detail racikan
-                $detail=bukaquery("select resep_dokter_racikan_detail.jml,databarang.kode_sat,databarang.nama_brng ".
+                $detail=bukaquery("select sum(resep_dokter_racikan_detail.jml) as jml,databarang.kode_sat,databarang.nama_brng ".
                                   "from resep_dokter_racikan_detail inner join databarang on resep_dokter_racikan_detail.kode_brng=databarang.kode_brng ".
                                   "where resep_dokter_racikan_detail.no_resep='$no_resep' and resep_dokter_racikan_detail.no_racik='".validTeks4($barisracik['no_racik'],2)."' ".
+                                  "group by resep_dokter_racikan_detail.kode_brng,databarang.kode_sat,databarang.nama_brng ".
                                   "order by databarang.nama_brng");
                 while($barisdetail=mysqli_fetch_array($detail)){
                     echo "<div class='row s' style='padding-left:3mm;'>";

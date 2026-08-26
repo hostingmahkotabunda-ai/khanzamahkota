@@ -137,11 +137,35 @@ public final class DlgCariObat2 extends javax.swing.JDialog {
     private widget.Label labelCatatanDokter;
     private widget.Label labelCatatanDokterRacikan;
     private widget.Label labelDetailRacikanFarmasi;
+    /** Buka dialog ini sbg anak resmi dari window pemanggil (owner tersambung
+     * dgn benar) supaya tidak bisa ketiban/ketutup window lain saat frmUtama
+     * menyusun ulang z-order semua JDialog yg terbuka (lihat formComponentMoved /
+     * PanelWallMouseMoved) -- dulu selalu dibuka dgn owner=null shg dianggap
+     * window mandiri yg tak terhubung ke layar pemanggilnya. */
+    public static DlgCariObat2 buatDari(java.awt.Component parent) {
+        java.awt.Window owner = parent instanceof java.awt.Window ? (java.awt.Window) parent : javax.swing.SwingUtilities.getWindowAncestor(parent);
+        if (owner instanceof java.awt.Dialog) {
+            return new DlgCariObat2((java.awt.Dialog) owner, false);
+        } else if (owner instanceof java.awt.Frame) {
+            return new DlgCariObat2((java.awt.Frame) owner, false);
+        }
+        return new DlgCariObat2((java.awt.Frame) null, false);
+    }
+
     /** Creates new form DlgPenyakit
      * @param parent
      * @param modal */
     public DlgCariObat2(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+        this((java.awt.Window) parent, modal);
+    }
+
+    public DlgCariObat2(java.awt.Dialog parent, boolean modal) {
+        this((java.awt.Window) parent, modal);
+    }
+
+    private DlgCariObat2(java.awt.Window parent, boolean modal) {
+        super(parent);
+        setModalityType(modal ? java.awt.Dialog.ModalityType.APPLICATION_MODAL : java.awt.Dialog.ModalityType.MODELESS);
         initComponents();
         inisialisasiPanelTindakanPasien();
         this.setLocation(10,2);

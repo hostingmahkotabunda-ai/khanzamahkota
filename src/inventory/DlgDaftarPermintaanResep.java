@@ -3747,7 +3747,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
         }else{
             akses.setkdbangsal(bangsal);
         }
-        DlgCariObat2 dlgobt2=new DlgCariObat2(null,false);
+        DlgCariObat2 dlgobt2=DlgCariObat2.buatDari(this);
         dlgobt2.setNoRm(NoRawat,NoRM,Pasien,Valid.SetTgl2(TglPeresepan));
         dlgobt2.isCek();
         dlgobt2.tampilobat2(NoResep);

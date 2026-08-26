@@ -56,7 +56,7 @@ public class DlgPemberianObat extends javax.swing.JDialog {
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
     public  DlgCariObat dlgobtjalan;
-    public  DlgCariObat2 dlgobt=new DlgCariObat2(null,false);
+    public  DlgCariObat2 dlgobt=new DlgCariObat2((java.awt.Frame)null,false);
     public  DlgCariObat3 dlgobt2=new DlgCariObat3(null,false);
     private riwayatobat Trackobat=new riwayatobat();
     private DlgCariPasien pasien=new DlgCariPasien(null,false);

@@ -7638,7 +7638,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                     dlgobt.setLocationRelativeTo(internalFrame1);
                     dlgobt.setVisible(true);
                 }else{
-                    DlgCariObat2 dlgobt=new DlgCariObat2(null,false);
+                    DlgCariObat2 dlgobt=new DlgCariObat2((java.awt.Frame)null,false);
                     dlgobt.setNoRm(TNoRw.getText(),TNoRM.getText(),TPasien.getText(),DTPTgl.getDate());
                     dlgobt.isCek();
                     dlgobt.tampil();
