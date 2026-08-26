@@ -49,7 +49,9 @@ public final class RMAsesmenAwalMedisBedah extends JDialog {
     private final validasi Valid = new validasi();
     private final Connection koneksi = koneksiDB.condb();
     private final Map<String, ImageIcon> cacheFotoTtd = new java.util.HashMap<>();
-    private final DlgCariDokter pickerDokter = new DlgCariDokter(null, false);
+    // Form ini dibuka sebagai dialog modal dari Dokumentasi RM Operasi.
+    // Picker juga harus modal agar tidak diblokir dan jatuh di belakang form induk.
+    private final DlgCariDokter pickerDokter = new DlgCariDokter(null, true);
 
     // Header identitas (readonly)
     private final widget.TextBox TNoRw = ro();

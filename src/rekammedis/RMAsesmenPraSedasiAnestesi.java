@@ -61,9 +61,11 @@ public final class RMAsesmenPraSedasiAnestesi extends JDialog {
     private final validasi Valid = new validasi();
     private final Connection koneksi = koneksiDB.condb();
     private final Map<String, ImageIcon> cacheFotoTtd = new HashMap<>();
-    private final DlgCariDokter pickerDokter1 = new DlgCariDokter(null, false);
-    private final DlgCariDokter pickerDokter2 = new DlgCariDokter(null, false);
-    private final DlgCariPetugas pickerPetugas = new DlgCariPetugas(null, false);
+    // Picker modal diperlukan karena form ini sendiri dibuka secara modal dari
+    // Dokumentasi RM Operasi; picker nonmodal tanpa owner akan terblokir di belakang.
+    private final DlgCariDokter pickerDokter1 = new DlgCariDokter(null, true);
+    private final DlgCariDokter pickerDokter2 = new DlgCariDokter(null, true);
+    private final DlgCariPetugas pickerPetugas = new DlgCariPetugas(null, true);
 
     // Header identitas (readonly, sama pola RM22)
     private final widget.TextBox TNoRw = ro();

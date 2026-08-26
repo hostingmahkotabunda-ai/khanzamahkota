@@ -60,9 +60,10 @@ public final class RMCeklisKeselamatanPembedahan extends JDialog {
     private final validasi Valid = new validasi();
     private final Connection koneksi = koneksiDB.condb();
     private final Map<String, ImageIcon> cacheFotoTtd = new HashMap<>();
-    private final DlgCariPetugas pickerPetugas1 = new DlgCariPetugas(null, false);
-    private final DlgCariPetugas pickerPetugas2 = new DlgCariPetugas(null, false);
-    private final DlgCariPetugas pickerPetugas3 = new DlgCariPetugas(null, false);
+    // Picker modal diperlukan agar tampil aktif di atas form RM Operasi yang modal.
+    private final DlgCariPetugas pickerPetugas1 = new DlgCariPetugas(null, true);
+    private final DlgCariPetugas pickerPetugas2 = new DlgCariPetugas(null, true);
+    private final DlgCariPetugas pickerPetugas3 = new DlgCariPetugas(null, true);
 
     private final widget.TextBox TNoRw = ro();
     private final widget.TextBox TNoRM = ro();

@@ -59,9 +59,10 @@ public final class RMAskepPerioperatif extends JDialog {
     private final validasi Valid = new validasi();
     private final Connection koneksi = koneksiDB.condb();
     private final Map<String, ImageIcon> cacheFotoTtd = new HashMap<>();
-    private final DlgCariPetugas pickerPetugas1 = new DlgCariPetugas(null, false);
-    private final DlgCariPetugas pickerPetugas2 = new DlgCariPetugas(null, false);
-    private final DlgCariPetugas pickerPetugas3 = new DlgCariPetugas(null, false);
+    // Picker modal diperlukan agar tampil aktif di atas form RM Operasi yang modal.
+    private final DlgCariPetugas pickerPetugas1 = new DlgCariPetugas(null, true);
+    private final DlgCariPetugas pickerPetugas2 = new DlgCariPetugas(null, true);
+    private final DlgCariPetugas pickerPetugas3 = new DlgCariPetugas(null, true);
 
     private final widget.TextBox TNoRw = ro();
     private final widget.TextBox TNoRM = ro();
@@ -1102,8 +1103,13 @@ public final class RMAskepPerioperatif extends JDialog {
         int barisLabel = (row * 2) + 1;
         int barisInput = barisLabel + 1;
         p.add(labelAtas(label), gc(0, barisLabel, 4, 1.0));
-        komponen.setPreferredSize(new Dimension(320, 32));
-        GridBagConstraints g = gc(0, barisInput, 4, 1.0);
+        // Jangan bentangkan baris picker sampai selebar kartu. Tombol "..." berada
+        // di sisi EAST bungkusPicker, sehingga jika baris ikut melebar tombol akan
+        // terdorong jauh ke pojok kanan pada layar lebar.
+        komponen.setPreferredSize(new Dimension(430, 32));
+        GridBagConstraints g = gc(0, barisInput, 4, 0.0);
+        g.fill = GridBagConstraints.NONE;
+        g.anchor = GridBagConstraints.WEST;
         g.insets = new Insets(1, 4, 8, 4);
         p.add(komponen, g);
         return row + 1;
