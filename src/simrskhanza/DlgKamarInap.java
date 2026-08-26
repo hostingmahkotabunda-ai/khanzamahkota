@@ -18086,7 +18086,7 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
     // ==== 4. Resume Medis ====
     int jmlResume = Sequel.cariInteger(
-        "select count(*) from resume_pasien_ranap where no_rawat=?",
+        "select count(*) from resume_medis_ranap_v2 where no_rawat=?",
         norawat
     );
     chkResumeMedis.setSelected(jmlResume > 0);

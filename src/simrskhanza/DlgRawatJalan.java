@@ -923,6 +923,28 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                 rekammedis.CetakCPPT.cetak(TNoRw.getText(), "ralan");
             }
         });
+        tambahTombolMenu("Profil Ringkas Medis RJ", new java.awt.event.ActionListener(){
+            @Override public void actionPerformed(java.awt.event.ActionEvent evt){
+                if (TNoRM.getText().trim().equals("")) {
+                    JOptionPane.showMessageDialog(DlgRawatJalan.this, "Pilih pasien terlebih dahulu.");
+                    return;
+                }
+                final String noRMProfil = TNoRM.getText().trim();
+                final java.awt.Component sumberKlik = (java.awt.Component) evt.getSource();
+                sumberKlik.setEnabled(false);
+                DlgRawatJalan.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                new javax.swing.SwingWorker<Void,Void>() {
+                    @Override protected Void doInBackground() {
+                        rekammedis.CetakProfilRingkasMedisRalan.cetak(noRMProfil);
+                        return null;
+                    }
+                    @Override protected void done() {
+                        sumberKlik.setEnabled(true);
+                        DlgRawatJalan.this.setCursor(Cursor.getDefaultCursor());
+                    }
+                }.execute();
+            }
+        });
     }
 
     private void tambahTombolMenu(String teks, java.awt.event.ActionListener aksi){
@@ -11368,7 +11390,9 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         if(akses.getpenatalaksanaan_terapi_okupasi()==true){
             tinggi=tinggi+24;
         }
-        FormMenu.setPreferredSize(new Dimension(195,(tinggi+10)));
+        // Empat tombol tambahan dari pasangTabSBAR() juga harus masuk tinggi panel.
+        // Jika tidak, tombol dapat tergambar tetapi berada di luar area klik FormMenu.
+        FormMenu.setPreferredSize(new Dimension(195,(tinggi+106)));
         TCari.setPreferredSize(new Dimension(207,23));
         
         if(akses.getjml2()>=1){
