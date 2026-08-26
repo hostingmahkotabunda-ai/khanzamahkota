@@ -124,6 +124,7 @@ public final class RMTransferPasienInternal extends JDialog {
     private final widget.Button BtnBaru = new widget.Button();
     private final widget.Button BtnSimpan = new widget.Button();
     private final widget.Button BtnHapus = new widget.Button();
+    private final widget.Button BtnCetak = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
 
     public RMTransferPasienInternal(Frame parent, boolean modal) {
@@ -389,10 +390,12 @@ public final class RMTransferPasienInternal extends JDialog {
         BtnBaru.setText("Baru");
         BtnSimpan.setText("Simpan Data");
         BtnHapus.setText("Hapus Data");
+        BtnCetak.setText("Cetak");
         BtnKeluar.setText("Keluar");
         BtnBaru.addActionListener(e -> setNoRm(ambil(TNoRw)));
         BtnSimpan.addActionListener(e -> simpan());
         BtnHapus.addActionListener(e -> hapus());
+        BtnCetak.addActionListener(e -> cetak());
         BtnKeluar.addActionListener(e -> dispose());
         JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 9));
         bawah.setBackground(Color.WHITE);
@@ -400,6 +403,7 @@ public final class RMTransferPasienInternal extends JDialog {
         bawah.add(BtnHapus);
         bawah.add(BtnBaru);
         bawah.add(BtnKeluar);
+        bawah.add(BtnCetak);
         bawah.add(BtnSimpan);
         getContentPane().add(bawah, BorderLayout.SOUTH);
     }
@@ -755,6 +759,70 @@ public final class RMTransferPasienInternal extends JDialog {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal menghapus.\n" + e.getMessage());
         }
+    }
+
+    /** Cetak langsung dari no_rawat tanpa membuka dialog (dipakai dari klik-kanan di layar Riwayat). */
+    public static void cetak(String noRawat) {
+        if (noRawat == null || noRawat.trim().isEmpty()) {
+            return;
+        }
+        RMTransferPasienInternal f = new RMTransferPasienInternal(null, false);
+        f.isCek();
+        f.setNoRm(noRawat.trim());
+        f.cetak();
+        f.dispose();
+    }
+
+    private void cetak() {
+        if (ambil(TNoRw).equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        if (Sequel.cariInteger("select count(*) from lembar_transfer_pasien_internal where no_rawat=?", ambil(TNoRw)) == 0) {
+            JOptionPane.showMessageDialog(this, "Simpan data terlebih dahulu sebelum mencetak.");
+            return;
+        }
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("namars", akses.getnamars());
+            param.put("alamatrs", akses.getalamatrs());
+            param.put("kotars", akses.getkabupatenrs());
+            param.put("propinsirs", akses.getpropinsirs());
+            param.put("kontakrs", akses.getkontakrs());
+            param.put("emailrs", akses.getemailrs());
+            param.put("logo", Sequel.cariGambar("select setting.logo from setting"));
+            param.put("url_penggajian", "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/"
+                    + koneksiDB.HYBRIDWEB() + "/penggajian/");
+            String sql = "select t.ruangan_asal,t.ruangan_tujuan,t.petugas_tujuan_dihubungi,"
+                    + "ifnull(date_format(t.tanggal_dihubungi,'%d-%m-%Y'),'') as tanggal_dihubungi,ifnull(t.jam_dihubungi,'') as jam_dihubungi,"
+                    + "ifnull(date_format(t.tanggal_transfer,'%d-%m-%Y'),'') as tanggal_transfer,ifnull(t.jam_transfer,'') as jam_transfer,"
+                    + "t.kategori_transfer,t.petugas_pendamping,t.kualifikasi_btcls,t.kualifikasi_ppgd,t.kualifikasi_apn,"
+                    + "ifnull(date_format(t.tanggal_masuk_rs,'%d-%m-%Y'),'') as tanggal_masuk_rs,ifnull(t.jam_masuk_rs,'') as jam_masuk_rs,"
+                    + "t.anamnesa,t.indikasi_dirawat,t.tindakan_dilakukan,t.terapi_diberikan,t.transportasi,"
+                    + "t.dok_rm_pasien,t.obat_oral,t.obat_injeksi,t.obat_dibawa,t.hasil_lab,t.hasil_usg,t.hasil_rontgen,"
+                    + "t.barang_dompet,t.barang_hp,t.barang_lainnya,t.barang_lainnya_ket,"
+                    + "t.ku_sebelum,t.td_sebelum,t.nadi_sebelum,t.rr_sebelum,t.suhu_sebelum,t.spo2_sebelum,t.pemfisik_sebelum,t.catatan_sebelum,"
+                    + "t.ku_setelah,t.td_setelah,t.nadi_setelah,t.rr_setelah,t.suhu_setelah,t.spo2_setelah,t.pemfisik_setelah,t.catatan_setelah,"
+                    + "t.nama_menyerahkan,t.nama_menerima,"
+                    + "p.no_rkm_medis,p.nm_pasien,if(p.jk='L','Laki-laki','Perempuan') as jk,"
+                    + "ifnull(date_format(p.tgl_lahir,'%d-%m-%Y'),'') as tgl_lahir,"
+                    + fotoSqlByNip("t.nip_menyerahkan", "menyerahkan_photo") + " "
+                    + "from lembar_transfer_pasien_internal t "
+                    + "inner join reg_periksa rp on t.no_rawat=rp.no_rawat "
+                    + "inner join pasien p on rp.no_rkm_medis=p.no_rkm_medis "
+                    + "where t.no_rawat='" + ambil(TNoRw) + "'";
+            Valid.MyReportqry("rptLembarTransferPasienInternal.jasper", "report",
+                    "::[ Lembar Transfer Pasien Internal (RM 38) ]::", sql, param);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal mencetak.\n" + e.getMessage());
+        }
+    }
+
+    private String fotoSqlByNip(String kolomNip, String alias) {
+        String sub = "(select photo from pegawai where nik=" + kolomNip + " limit 1)";
+        return "if(coalesce(nullif(" + sub + ",''),'')='' or coalesce(nullif(" + sub + ",''),'')='-' "
+                + "or coalesce(nullif(" + sub + ",''),'')='pages/pegawai/photo/','',"
+                + "replace(coalesce(" + sub + ",''),'\\\\\\\\','/')) as " + alias;
     }
 
     private void ensureTable() {

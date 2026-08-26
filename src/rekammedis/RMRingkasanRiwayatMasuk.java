@@ -90,6 +90,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
     private final widget.Button BtnBaru = new widget.Button();
     private final widget.Button BtnSimpan = new widget.Button();
     private final widget.Button BtnHapus = new widget.Button();
+    private final widget.Button BtnCetak = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
 
     public RMRingkasanRiwayatMasuk(Frame parent, boolean modal) {
@@ -286,10 +287,12 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         BtnBaru.setText("Baru");
         BtnSimpan.setText("Simpan Data");
         BtnHapus.setText("Hapus Data");
+        BtnCetak.setText("Cetak");
         BtnKeluar.setText("Keluar");
         BtnBaru.addActionListener(e -> setNoRm(ambil(TNoRw)));
         BtnSimpan.addActionListener(e -> simpan());
         BtnHapus.addActionListener(e -> hapus());
+        BtnCetak.addActionListener(e -> cetak());
         BtnKeluar.addActionListener(e -> dispose());
         JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 9));
         bawah.setBackground(Color.WHITE);
@@ -297,6 +300,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         bawah.add(BtnHapus);
         bawah.add(BtnBaru);
         bawah.add(BtnKeluar);
+        bawah.add(BtnCetak);
         bawah.add(BtnSimpan);
         getContentPane().add(bawah, BorderLayout.SOUTH);
     }
@@ -549,6 +553,64 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal menghapus.\n" + e.getMessage());
         }
+    }
+
+    /** Cetak langsung dari no_rawat tanpa membuka dialog (dipakai dari klik-kanan di layar Riwayat). */
+    public static void cetak(String noRawat) {
+        if (noRawat == null || noRawat.trim().isEmpty()) {
+            return;
+        }
+        RMRingkasanRiwayatMasuk f = new RMRingkasanRiwayatMasuk(null, false);
+        f.isCek();
+        f.setNoRm(noRawat.trim());
+        f.cetak();
+        f.dispose();
+    }
+
+    private void cetak() {
+        if (ambil(TNoRw).equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        if (Sequel.cariInteger("select count(*) from ringkasan_riwayat_masuk where no_rawat=?", ambil(TNoRw)) == 0) {
+            JOptionPane.showMessageDialog(this, "Simpan data terlebih dahulu sebelum mencetak.");
+            return;
+        }
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("namars", akses.getnamars());
+            param.put("alamatrs", akses.getalamatrs());
+            param.put("kotars", akses.getkabupatenrs());
+            param.put("propinsirs", akses.getpropinsirs());
+            param.put("kontakrs", akses.getkontakrs());
+            param.put("emailrs", akses.getemailrs());
+            param.put("logo", Sequel.cariGambar("select setting.logo from setting"));
+            param.put("url_penggajian", "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/"
+                    + koneksiDB.HYBRIDWEB() + "/penggajian/");
+            String sql = "select rrm.no_ktp,rrm.no_asuransi,rrm.perkawinan,rrm.petugas_tpp,rrm.petugas_tpp_nip,"
+                    + "rrm.suku_bangsa,rrm.suku_lainnya,rrm.cara_masuk,rrm.agama,rrm.gol_darah,rrm.pendidikan,"
+                    + "rrm.alamat_lengkap,rrm.no_telpon,rrm.pekerjaan,rrm.verifikasi_oleh,rrm.riwayat_ke,"
+                    + "rrm.ruangan_unit,rrm.kelas,rrm.diagnosa_masuk,rrm.kode_diagnosa,rrm.perawat_ruangan,rrm.dokter_merawat,"
+                    + "p.no_rkm_medis,p.nm_pasien,if(p.jk='L','Laki-laki','Perempuan') as jk,"
+                    + "ifnull(date_format(p.tgl_lahir,'%d-%m-%Y'),'') as tgl_lahir,"
+                    + "ifnull(date_format(rp.tgl_registrasi,'%d-%m-%Y'),'') as tgl_masuk,ifnull(rp.jam_reg,'') as jam_masuk,"
+                    + fotoSqlByNip("rrm.petugas_tpp_nip", "petugas_tpp_photo") + " "
+                    + "from ringkasan_riwayat_masuk rrm "
+                    + "inner join reg_periksa rp on rrm.no_rawat=rp.no_rawat "
+                    + "inner join pasien p on rp.no_rkm_medis=p.no_rkm_medis "
+                    + "where rrm.no_rawat='" + ambil(TNoRw) + "'";
+            Valid.MyReportqry("rptRingkasanRiwayatMasuk.jasper", "report",
+                    "::[ Ringkasan Riwayat Masuk dan Keluar Rumah Sakit (RM 2a) ]::", sql, param);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal mencetak.\n" + e.getMessage());
+        }
+    }
+
+    private String fotoSqlByNip(String kolomNip, String alias) {
+        String sub = "(select photo from pegawai where nik=" + kolomNip + " limit 1)";
+        return "if(coalesce(nullif(" + sub + ",''),'')='' or coalesce(nullif(" + sub + ",''),'')='-' "
+                + "or coalesce(nullif(" + sub + ",''),'')='pages/pegawai/photo/','',"
+                + "replace(coalesce(" + sub + ",''),'\\\\\\\\','/')) as " + alias;
     }
 
     private void ensureTable() {

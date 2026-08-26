@@ -91,6 +91,7 @@ public final class RMAsesmenUlangNyeri extends JDialog {
     private final widget.Button BtnUpdate = new widget.Button();
     private final widget.Button BtnHapusBaris = new widget.Button();
     private final widget.Button BtnBersihkan = new widget.Button();
+    private final widget.Button BtnCetak = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
 
     private Integer idSedangDiedit = null;
@@ -307,10 +308,13 @@ public final class RMAsesmenUlangNyeri extends JDialog {
         BtnBersihkan.addActionListener(e -> bersihkanEntri());
         BtnKeluar.setText("Keluar");
         BtnKeluar.addActionListener(e -> dispose());
+        BtnCetak.setText("Cetak");
+        BtnCetak.addActionListener(e -> cetak());
         JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 9));
         bawah.setBackground(Color.WHITE);
         bawah.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, garis));
         bawah.add(BtnKeluar);
+        bawah.add(BtnCetak);
         getContentPane().add(bawah, BorderLayout.SOUTH);
 
         dtpTglVital.setDate(new Date());
@@ -518,6 +522,58 @@ public final class RMAsesmenUlangNyeri extends JDialog {
             muatRiwayat(ambil(TNoRw));
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal menghapus baris.\n" + e.getMessage());
+        }
+    }
+
+    /** Cetak langsung dari no_rawat tanpa membuka dialog (dipakai dari klik-kanan di layar Riwayat). */
+    public static void cetak(String noRawat) {
+        if (noRawat == null || noRawat.trim().isEmpty()) {
+            return;
+        }
+        RMAsesmenUlangNyeri f = new RMAsesmenUlangNyeri(null, false);
+        f.isCek();
+        f.setNoRm(noRawat.trim());
+        f.cetak();
+        f.dispose();
+    }
+
+    private void cetak() {
+        if (ambil(TNoRw).equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        if (Sequel.cariInteger("select count(*) from asesmen_ulang_nyeri where no_rawat=?", ambil(TNoRw)) == 0) {
+            JOptionPane.showMessageDialog(this, "Simpan data terlebih dahulu sebelum mencetak.");
+            return;
+        }
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("namars", akses.getnamars());
+            param.put("alamatrs", akses.getalamatrs());
+            param.put("kotars", akses.getkabupatenrs());
+            param.put("propinsirs", akses.getpropinsirs());
+            param.put("kontakrs", akses.getkontakrs());
+            param.put("emailrs", akses.getemailrs());
+            param.put("logo", Sequel.cariGambar("select setting.logo from setting"));
+            param.put("url_penggajian", "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/"
+                    + koneksiDB.HYBRIDWEB() + "/penggajian/");
+            param.put("no_rkm_medis", ambil(TNoRM));
+            param.put("nm_pasien", ambil(TPasien));
+            param.put("jk", ambil(TJK));
+            param.put("tgl_lahir", ambil(TTglLahir));
+            String sql = "select ifnull(date_format(tgl_jam_vital,'%d-%m-%Y %H:%i'),'') as tgl_jam_vital,"
+                    + "ifnull(skor_nyeri,'') as skor_nyeri,ifnull(skor_sedasi,'') as skor_sedasi,"
+                    + "ifnull(tekanan_darah,'') as tekanan_darah,ifnull(nadi,'') as nadi,ifnull(suhu,'') as suhu,"
+                    + "ifnull(pernafasan,'') as pernafasan,ifnull(perawat_vital_nama,'') as perawat_vital_nama,"
+                    + "ifnull(date_format(tgl_jam_intervensi,'%d-%m-%Y %H:%i'),'') as tgl_jam_intervensi,"
+                    + "ifnull(nama_obat,'') as nama_obat,ifnull(dosis_frekuensi,'') as dosis_frekuensi,ifnull(rute,'') as rute,"
+                    + "ifnull(intervensi_non_farmakologi,'') as intervensi_non_farmakologi,"
+                    + "ifnull(perawat_intervensi_nama,'') as perawat_intervensi_nama,ifnull(waktu_kaji_ulang,'') as waktu_kaji_ulang "
+                    + "from asesmen_ulang_nyeri where no_rawat='" + ambil(TNoRw) + "' order by tgl_jam_vital";
+            Valid.MyReportqry("rptAsesmenUlangNyeri.jasper", "report",
+                    "::[ Asesmen Ulang Nyeri (RM 7.1) ]::", sql, param);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal mencetak.\n" + e.getMessage());
         }
     }
 

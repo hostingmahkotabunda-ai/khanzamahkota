@@ -21,6 +21,7 @@ import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -787,123 +788,61 @@ public final class RMAsesmenKeperawatanDewasa extends JDialog {
             JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
             return;
         }
-        List<Map<String, ?>> rows = CetakAsesmen.mulai();
-        CetakAsesmen.r2(rows, "Ruang / Lantai", tRuang.getText() + " / " + tLantai.getText(), "Kelas", tKelas.getText());
-        CetakAsesmen.r2(rows, "Diagnosa Medis", tDiagnosaMedis.getText(), "Gelang Identitas", s(cmbGelang));
+        try {
+            Map<String, Object> param = new HashMap<>();
+            param.put("namars", akses.getnamars());
+            param.put("alamatrs", akses.getalamatrs());
+            param.put("kotars", akses.getkabupatenrs());
+            param.put("propinsirs", akses.getpropinsirs());
+            param.put("kontakrs", akses.getkontakrs());
+            param.put("emailrs", akses.getemailrs());
+            param.put("logo", Sequel.cariGambar("select setting.logo from setting"));
+            param.put("url_penggajian", "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/"
+                    + koneksiDB.HYBRIDWEB() + "/penggajian/");
 
-        CetakAsesmen.h(rows, "Bagian 1 : Data Umum");
-        CetakAsesmen.r(rows, "Tanggal / Jam", dtpTanggal.getSelectedItem() + "");
-        CetakAsesmen.r(rows, "Kondisi Saat Masuk", grpKondisiMasuk);
-        CetakAsesmen.r(rows, "Via", grpVia);
-        CetakAsesmen.r2(rows, "Nadi", tNadi.getText(), "Respirasi", tRespirasi.getText());
-        CetakAsesmen.r2(rows, "Suhu", tSuhu.getText(), "SpO2", tSpo2.getText());
-        CetakAsesmen.r(rows, "Tekanan Darah / Posisi", tTD.getText() + " (" + grpTdPosisi.get() + ")");
-        CetakAsesmen.r2(rows, "TB", tTB.getText(), "BB", tBB.getText());
-        CetakAsesmen.r(rows, "GCS (E/M/V)", tGcsE.getText() + " / " + tGcsM.getText() + " / " + tGcsV.getText());
-        CetakAsesmen.r(rows, "Diagnosis Masuk", taDiagnosaMasuk.getText());
-        CetakAsesmen.r(rows, "Keluhan Utama", taKeluhan.getText());
-        CetakAsesmen.r2(rows, "Alergi (Lateks, Makanan, Obat)", s(cmbAlergi), "Snap Alert", cekSnapAlert.isSelected() ? "Ya" : "");
-        CetakAsesmen.r2(rows, "Jenis Alergi (Lateks)", CetakAsesmen.fmt(grpLateks), "Obat / Jenis / Reaksi", tAlergiObat.getText());
-        CetakAsesmen.r2(rows, "Barang Berharga", CetakAsesmen.fmt(grpBarang), "Tindakan Barang", CetakAsesmen.fmt(grpBarangTindakan));
+            String sql = "select p.no_rkm_medis,ak.ruang,ak.lantai,p.nm_pasien,ak.kelas,"
+                    + "ifnull(date_format(p.tgl_lahir,'%d-%m-%Y'),'') as tgl_lahir,"
+                    + "if(p.jk='L','Laki-laki','Perempuan') as jk,"
+                    + "ak.diagnosa_medis,ak.gelang,"
+                    + "ifnull(date_format(ak.tanggal,'%d-%m-%Y'),'') as tanggal,ak.jam,"
+                    + "ak.kondisi_masuk,ak.via,ak.nadi,ak.respirasi,ak.suhu,ak.spo2,ak.td,ak.td_posisi,ak.tb,ak.bb,"
+                    + "ak.gcs_e,ak.gcs_m,ak.gcs_v,ak.diagnosa_masuk,ak.keluhan_utama,"
+                    + "ak.alergi,ak.snap_alert,ak.alergi_lateks,ak.alergi_obat,ak.barang_jenis,ak.barang_tindakan,"
+                    + "ak.riwayat_pasien,ak.masalah_anastesi,ak.deskripsi_penyakit,"
+                    + "ak.alkohol,ak.alkohol_jumlah,ak.alkohol_jenis,ak.merokok,ak.merokok_jumlah,ak.merokok_jenis,"
+                    + "ak.influenza_12bln,ak.pneumonia_5thn,ak.vaksinasi_lainnya,ak.riwayat_keluarga,"
+                    + "ak.status_nikah,ak.keluarga_tinggal,ak.tempat_tinggal,ak.pekerjaan,ak.agama_keyakinan,"
+                    + "ak.aktivitas_psiko,ak.curiga_aniaya,ak.status_emosional,ak.keluarga_terdekat,ak.hubungan_keluarga,"
+                    + "ak.telepon,ak.informasi_dari,"
+                    + "ak.fisik_mata,ak.fisik_mata_ket,ak.fisik_kardio,ak.fisik_kardio_ket,ak.fisik_gastro,ak.fisik_gastro_ket,"
+                    + "ak.mst_bb,ak.mst_asupan,ak.mst_total,"
+                    + "ak.fisik_genito,ak.fisik_genito_ket,ak.fisik_neuro,ak.fisik_neuro_ket,ak.fisik_musculo,ak.fisik_musculo_ket,ak.luka_rujuk,"
+                    + "ak.norton_fisik,ak.norton_mental,ak.norton_aktivitas,ak.norton_mobilitas,ak.norton_inkontinensia,ak.norton_total,ak.norton_catatan,"
+                    + "ak.adl_makan,ak.adl_mandi,ak.adl_grooming,ak.adl_berpakaian,ak.adl_bak,ak.adl_bab,ak.adl_toilet,ak.adl_transfer,ak.adl_mobilitas,ak.adl_tangga,ak.adl_total,ak.adl_interpretasi,"
+                    + "ak.morse_jatuh,ak.morse_diagnosis,ak.morse_alat,ak.morse_infus,ak.morse_jalan,ak.morse_mental,ak.morse_total,ak.morse_resiko,"
+                    + "ak.nyeri_skala,ak.nyeri_lokasi,ak.nyeri_onset,ak.nyeri_variasi,ak.nyeri_kualitas,ak.nyeri_pemberat,ak.nyeri_pencetus,ak.nyeri_obat,ak.nyeri_efek,"
+                    + "ak.restraint_pernah,ak.restraint_perlu,"
+                    + "ak.komunikasi,ak.bahasa_harian,ak.hambatan_belajar,ak.cara_belajar,ak.tingkat_pendidikan,ak.kebutuhan_edukasi,"
+                    + "ak.kriteria_discharge,ak.resume_umum,ak.resume_rujuk,ak.rencana_keperawatan,ak.masalah_keperawatan,"
+                    + fotoSqlByNip("ak.nik", "perawat_photo") + ","
+                    + "ifnull((select nama from petugas where nip=ak.nik),'') as nama_perawat,"
+                    + "ifnull((select nm_dokter from dokter where kd_dokter=ak.kd_dokter),'') as nama_dokter,"
+                    + "ifnull(date_format(ak.tgl_ttd,'%d-%m-%Y'),'') as tgl_ttd "
+                    + "from asesmen_keperawatan_dewasa ak "
+                    + "inner join reg_periksa rp on rp.no_rawat=ak.no_rawat "
+                    + "inner join pasien p on p.no_rkm_medis=rp.no_rkm_medis "
+                    + "where ak.no_rawat='" + TNoRw.getText().trim() + "'";
+            Valid.MyReportqry("rptAsesmenKeperawatanDewasa.jasper", "report", "::[ Asesmen Keperawatan Dewasa (RM 5d) ]::", sql, param);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal mencetak.\n" + e.getMessage());
+        }
+    }
 
-        CetakAsesmen.h(rows, "Bagian 2 : Riwayat Pasien");
-        CetakAsesmen.r(rows, "Riwayat Penyakit/Operasi/Cedera", grpRiwayatPasien);
-        CetakAsesmen.r2(rows, "Masalah Anastesi", cekMasalahAnastesi.isSelected() ? "Panggil dokter" : "", "Deskripsi Penyakit & Operasi", taDeskripsiPenyakit.getText());
-        CetakAsesmen.r(rows, "Alkohol/Obat", s(cmbAlkohol) + " | Jumlah: " + tAlkoholJumlah.getText() + " | Jenis: " + tAlkoholJenis.getText());
-        CetakAsesmen.r(rows, "Merokok", s(cmbMerokok) + " | Jumlah: " + tMerokokJumlah.getText() + " | Jenis: " + tMerokokJenis.getText());
-        CetakAsesmen.r2(rows, "Influenza 12 bln", s(cmbInfluenza), "Pneumonia 5 thn", s(cmbPneumonia));
-        CetakAsesmen.r(rows, "Vaksinasi Lainnya", tVaksinasiLain.getText());
-        CetakAsesmen.r(rows, "Riwayat Keluarga", grpRiwayatKeluarga);
-
-        CetakAsesmen.h(rows, "Psikososial / Ekonomi / Spiritual");
-        CetakAsesmen.r2(rows, "Status Pernikahan", s(cmbStatusNikah), "Keluarga", s(cmbKeluargaTinggal));
-        CetakAsesmen.r2(rows, "Tempat Tinggal", s(cmbTempatTinggal), "Pekerjaan", s(cmbPekerjaan));
-        CetakAsesmen.r(rows, "Agama / Nilai Keyakinan", tAgama.getText());
-        CetakAsesmen.r(rows, "Aktivitas", grpAktivitasPsiko);
-        CetakAsesmen.r(rows, "Curiga Penganiayaan", grpAniaya);
-        CetakAsesmen.r(rows, "Status Emosional", grpEmosional);
-        CetakAsesmen.r2(rows, "Keluarga Terdekat", tKeluargaTerdekat.getText(), "Hubungan", tHubungan.getText());
-        CetakAsesmen.r(rows, "Telepon", tTelepon.getText());
-        CetakAsesmen.r(rows, "Informasi Didapat Dari", grpInformasi);
-
-        CetakAsesmen.h(rows, "Bagian 3 : Pemeriksaan Fisik");
-        CetakAsesmen.r2(rows, "Mata/Telinga/Hidung/Tenggorokan", CetakAsesmen.fmt(grpFisikMata), "Catatan (THT)", tFisikMataKet.getText());
-        CetakAsesmen.r2(rows, "Kardiovaskular", CetakAsesmen.fmt(grpFisikKardio), "Catatan (Kardio)", tFisikKardioKet.getText());
-        CetakAsesmen.r2(rows, "Gastrointestinal", CetakAsesmen.fmt(grpFisikGastro), "Catatan (Gastro)", tFisikGastroKet.getText());
-
-        CetakAsesmen.h(rows, "Skrining Gizi (MST)");
-        CetakAsesmen.r2(rows, "Penurunan BB 6 bln", s(cmbMst1), "Asupan makan berkurang", s(cmbMst2));
-        CetakAsesmen.r(rows, "Skor Total MST", tMstTotal.getText());
-        CetakAsesmen.r2(rows, "Genitourinaria & Ginekologi", CetakAsesmen.fmt(grpFisikGenito), "Catatan (Genito)", tFisikGenitoKet.getText());
-        CetakAsesmen.r2(rows, "Neurologi", CetakAsesmen.fmt(grpFisikNeuro), "Catatan (Neuro)", tFisikNeuroKet.getText());
-        CetakAsesmen.r2(rows, "Muskuloskeletal & Kulit", CetakAsesmen.fmt(grpFisikMusculo), "Catatan (Muskulo) / Luka", tFisikMusculoKet.getText() + (cekLukaRujuk.isSelected() ? " (Rujuk Penanganan Luka)" : ""));
-
-        CetakAsesmen.h(rows, "Norton Scale (Risiko Kulit)");
-        CetakAsesmen.r2(rows, "Kondisi Fisik", s(cmbNortonFisik), "Kondisi Mental", s(cmbNortonMental));
-        CetakAsesmen.r2(rows, "Aktivitas", s(cmbNortonAktivitas), "Mobilitas", s(cmbNortonMobilitas));
-        CetakAsesmen.r2(rows, "Inkontinensia", s(cmbNortonInkontinensia), "Total Skor", tNortonTotal.getText());
-        CetakAsesmen.r(rows, "Catatan (Norton)", tNortonCatatan.getText());
-
-        CetakAsesmen.h(rows, "ADL / Indeks Barthel");
-        CetakAsesmen.r2(rows, "Makan", s(cmbAdlMakan), "Mandi", s(cmbAdlMandi));
-        CetakAsesmen.r2(rows, "Perawatan Diri", s(cmbAdlGrooming), "Berpakaian", s(cmbAdlBerpakaian));
-        CetakAsesmen.r2(rows, "BAK", s(cmbAdlBak), "BAB", s(cmbAdlBab));
-        CetakAsesmen.r2(rows, "Toilet", s(cmbAdlToilet), "Transfer", s(cmbAdlTransfer));
-        CetakAsesmen.r2(rows, "Mobilitas", s(cmbAdlMobilitas), "Naik Turun Tangga", s(cmbAdlTangga));
-        CetakAsesmen.r2(rows, "Total Skor ADL", tAdlTotal.getText(), "Interpretasi", tAdlInterpretasi.getText());
-
-        CetakAsesmen.h(rows, "Faktor Resiko Jatuh (Morse)");
-        CetakAsesmen.r2(rows, "Riwayat Jatuh", s(cmbMorseJatuh), "Diagnosis Sekunder", s(cmbMorseDiagnosis));
-        CetakAsesmen.r2(rows, "Alat Bantu", s(cmbMorseAlat), "Terpasang Infus", s(cmbMorseInfus));
-        CetakAsesmen.r2(rows, "Gaya Berjalan", s(cmbMorseJalan), "Status Mental", s(cmbMorseMental));
-        CetakAsesmen.r2(rows, "Total Skor Morse", tMorseTotal.getText(), "Tingkat Resiko", tMorseResiko.getText());
-
-        CetakAsesmen.h(rows, "Pemeriksaan Nyeri (NRS)");
-        CetakAsesmen.r2(rows, "Skala Nyeri (0-10)", tNyeriSkala.getText(), "Lokasi", tNyeriLokasi.getText());
-        CetakAsesmen.r2(rows, "Onset", tNyeriOnset.getText(), "Variasi", tNyeriVariasi.getText());
-        CetakAsesmen.r(rows, "Kualitas", grpNyeriKualitas);
-        CetakAsesmen.r(rows, "Faktor Pemberat", grpNyeriPemberat);
-        CetakAsesmen.r(rows, "Faktor Pencetus", grpNyeriPencetus);
-        CetakAsesmen.r(rows, "Obat-obatan", tNyeriObat.getText());
-        CetakAsesmen.r(rows, "Efek Nyeri", grpNyeriEfek);
-
-        CetakAsesmen.h(rows, "Restraint");
-        CetakAsesmen.r2(rows, "Pernah menggunakan Restraint", s(cmbRestraintPernah), "Perlu Restraint", s(cmbRestraintPerlu));
-
-        CetakAsesmen.h(rows, "Komunikasi & Edukasi");
-        CetakAsesmen.r(rows, "Komunikasi", grpKomunikasi);
-        CetakAsesmen.r(rows, "Bahasa Sehari-hari", grpBahasa);
-        CetakAsesmen.r(rows, "Hambatan Belajar", grpHambatanBelajar);
-        CetakAsesmen.r(rows, "Cara Belajar", grpCaraBelajar);
-        CetakAsesmen.r(rows, "Tingkat Pendidikan", grpPendidikan);
-        CetakAsesmen.r(rows, "Kebutuhan Edukasi", grpEdukasi);
-
-        CetakAsesmen.h(rows, "Discharge Planning / Pasien Kritis");
-        CetakAsesmen.r(rows, "Kriteria", grpKriteria);
-
-        CetakAsesmen.h(rows, "Resume");
-        CetakAsesmen.r(rows, "Umum", grpResumeUmum);
-        CetakAsesmen.r(rows, "Rujuk", grpResumeRujuk);
-        CetakAsesmen.r(rows, "Rencana Keperawatan", grpRencana);
-        CetakAsesmen.r(rows, "Masalah Keperawatan", grpMasalah);
-
-        CetakAsesmen.Identitas id = new CetakAsesmen.Identitas();
-        id.nama = TPasien.getText();
-        id.noRawat = TNoRw.getText();
-        id.kelas = tKelas.getText();
-        id.nik = Sequel.cariIsi("select no_ktp from pasien where no_rkm_medis=?", TNoRM.getText());
-        id.tglMasuk = Sequel.cariIsi("select concat(date_format(tgl_registrasi,'%d-%m-%Y'),' ',jam_reg) "
-                + "from reg_periksa where no_rawat=?", TNoRw.getText());
-        id.pembayaran = TCaraBayar.getText();
-        id.jk = TJK.getText();
-        id.noRM = TNoRM.getText();
-        id.unit = TUnit.getText();
-        id.tglLahir = TTglLahir.getText();
-        id.alamat = TAlamat.getText();
-
-        CetakAsesmen.cetak("ASESMEN KEPERAWATAN DEWASA", "RM 5d", rows, id,
-                dtpTtd.getSelectedItem() + "", "Perawat Pengkaji", KdPetugas.getText(), NmPetugas.getText(),
-                "Dokter Penanggung Jawab", NmDokter.getText());
+    private String fotoSqlByNip(String kolomNip, String alias) {
+        String sub = "(select photo from pegawai where nik=" + kolomNip + " limit 1)";
+        return "if(coalesce(nullif(" + sub + ",''),'')='' or coalesce(nullif(" + sub + ",''),'')='-' "
+                + "or coalesce(nullif(" + sub + ",''),'')='pages/pegawai/photo/','',"
+                + "replace(coalesce(" + sub + ",''),'\\\\\\\\','/')) as " + alias;
     }
 
     /** Cetak langsung dari no_rawat tanpa membuka dialog (dipakai dari klik-kanan di layar Riwayat). */

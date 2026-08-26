@@ -88,7 +88,6 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
     private String linkSOAPIEAktif="";
     private javax.swing.JEditorPane LoadHTMLResume;
     private javax.swing.JEditorPane LoadHTMLAsesmenRalan;
-    private javax.swing.JEditorPane LoadHTMLAsesmenRanap;
     private final javax.swing.JPopupMenu popupResume = new javax.swing.JPopupMenu();
     private final javax.swing.JMenuItem ppCetakResume = new javax.swing.JMenuItem();
     private String linkResumeAktif = "";
@@ -97,6 +96,9 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
     private String linkAsesmenAktif = "";
     private final JPanel panelMediaGrid = new JPanel();
     private final JPanel panelRmOperasiGrid = new JPanel();
+    /** Grid blok "Penilaian Awal Rawat Inap" -- pola sama persis dgn panelRmOperasiGrid
+     *  (satu grup kartu per no_rawat kunjungan, biar riwayat kunjungan lama tetap kelihatan). */
+    private final JPanel panelAsesmenRanapGrid = new JPanel();
 
     /** Creates new form DlgLhtBiaya
      * @param parent
@@ -336,8 +338,11 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
         LoadHTMLAsesmenRalan = buatEditorPaneHtml();
         TabRawat.addTab("Penilaian Awal Rawat Jalan", new javax.swing.JScrollPane(LoadHTMLAsesmenRalan));
 
-        LoadHTMLAsesmenRanap = buatEditorPaneHtml();
-        TabRawat.addTab("Penilaian Awal Rawat Inap", new javax.swing.JScrollPane(LoadHTMLAsesmenRanap));
+        panelAsesmenRanapGrid.setLayout(new BoxLayout(panelAsesmenRanapGrid, BoxLayout.Y_AXIS));
+        panelAsesmenRanapGrid.setBackground(Color.WHITE);
+        JScrollPane scrollAsesmenRanap = new JScrollPane(panelAsesmenRanapGrid);
+        scrollAsesmenRanap.getVerticalScrollBar().setUnitIncrement(16);
+        TabRawat.addTab("Penilaian Awal Rawat Inap", scrollAsesmenRanap);
 
         pasangPopupCetakAsesmen();
 
@@ -443,9 +448,10 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
     }
 
     /**
-     * Pasang popup klik-kanan "Cetak" di tab Penilaian Awal Rawat Jalan & Rawat
-     * Inap (satu popup dipakai bersama, karena hanya satu tab yang aktif dalam
-     * satu waktu). Sama polanya dengan pasangPopupCetakResume().
+     * Pasang popup klik-kanan "Cetak" di tab Penilaian Awal Rawat Jalan (dulu
+     * dipakai bersama Rawat Inap juga, tapi Rawat Inap sekarang pakai grid
+     * kartu blok spt tab RM Operasi -- lihat tampilAsesmenRanap()). Sama
+     * polanya dengan pasangPopupCetakResume().
      */
     private void pasangPopupCetakAsesmen() {
         ppCetakAsesmen.setText("Cetak Penilaian Awal");
@@ -470,8 +476,6 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
         };
         LoadHTMLAsesmenRalan.addHyperlinkListener(listenerLink);
         LoadHTMLAsesmenRalan.addMouseListener(popupTrigger);
-        LoadHTMLAsesmenRanap.addHyperlinkListener(listenerLink);
-        LoadHTMLAsesmenRanap.addMouseListener(popupTrigger);
     }
 
     private void tampilkanPopupAsesmen(java.awt.event.MouseEvent evt) {
@@ -505,13 +509,7 @@ public final class RMRiwayatPerawatan extends javax.swing.JDialog {
         }
         this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         try {
-            switch (jenis) {
-                case "dewasa": RMAsesmenKeperawatanDewasa.cetak(noRawat); break;
-                case "anak": RMAsesmenKeperawatanAnak.cetak(noRawat); break;
-                case "kebidanan": RMAsesmenKebidanan.cetak(noRawat); break;
-                case "bayi": RMPenilaianAwalKeperawatanRanapBayi.cetak(noRawat); break;
-                default: RMAsesmenRalan.cetak(noRawat); break;
-            }
+            RMAsesmenRalan.cetak(noRawat);
         } finally {
             this.setCursor(Cursor.getDefaultCursor());
         }
@@ -5976,30 +5974,176 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         LoadHTMLAsesmenRalan.setText("<html><body style='font-family:Tahoma;font-size:11px;'>" + htmlContent.toString() + "</body></html>");
     }
 
+    /**
+     * Tab "Penilaian Awal Rawat Inap" -- grid blok per kunjungan, pola SAMA
+     * PERSIS dgn tab "RM Operasi" (lihat tampilRmOperasi()): satu grup kartu
+     * per no_rawat rawat inap (bukan digabung/diagregasi), spy riwayat
+     * kunjungan2 lama tetap kelihatan & bisa dibandingkan. Daftar no_rawat
+     * ditarik dari reg_periksa (status_lanjut='Ranap') mengikuti filter
+     * R1-R4/NoRM yg sama dgn tab lain -- BUKAN dari tabel asesmen itu sendiri,
+     * spy kunjungan yg asesmennya belum diisi sama sekali tetap muncul (biar
+     * kelihatan sbg "Belum Diisi", bukan hilang dari daftar).
+     */
+    private static final String[] JUDUL_BLOK_PENILAIAN_AWAL = {
+        "Asesmen Keperawatan Dewasa",
+        "Asesmen Keperawatan Anak",
+        "Asesmen Keperawatan Bayi",
+        "Asesmen Kebidanan",
+        "Ringkasan Riwayat Masuk (RM 2a)",
+        "Lembar Transfer Pasien Internal (RM 38)",
+        "Asesmen Ulang Nyeri (RM 7.1)"
+    };
+    private static final String[] TABEL_BLOK_PENILAIAN_AWAL = {
+        "asesmen_keperawatan_dewasa", "asesmen_keperawatan_anak", "asesmen_keperawatan_bayi",
+        "asesmen_kebidanan", "ringkasan_riwayat_masuk", "lembar_transfer_pasien_internal", "asesmen_ulang_nyeri"
+    };
+
     private void tampilAsesmenRanap() {
-        htmlContent = new StringBuilder();
+        panelAsesmenRanapGrid.removeAll();
         if (NoRM.getText().trim().equals("")) {
-            LoadHTMLAsesmenRanap.setText("<html><body style='font-family:Tahoma;font-size:11px;color:#888;margin:8px;'>Pasien belum dipilih.</body></html>");
+            panelAsesmenRanapGrid.add(labelKosongMedia("Pasien belum dipilih."));
+            panelAsesmenRanapGrid.revalidate();
+            panelAsesmenRanapGrid.repaint();
             return;
         }
-        String[] skip = {"no_rawat", "tgl_ttd", "jam_ttd", "nik"};
-        int n = 0;
-        n += renderRiwayatTabel("asesmen_keperawatan_dewasa", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Dewasa", "dewasa", rs, skip), htmlContent);
-        n += renderRiwayatTabel("asesmen_keperawatan_anak", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Anak", "anak", rs, skip), htmlContent);
-        n += renderRiwayatTabel("asesmen_kebidanan", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Kebidanan", "kebidanan", rs, skip), htmlContent);
-        n += renderRiwayatTabel("asesmen_keperawatan_bayi", "tanggal", true, (rs, sb) -> tulisBlokAsesmenRanap(sb, "Bayi", "bayi", rs, skip), htmlContent);
-        if (n == 0) { htmlContent.append("<i>Data penilaian awal rawat inap tidak ditemukan.</i>"); }
-        LoadHTMLAsesmenRanap.setText("<html><body style='font-family:Tahoma;font-size:11px;'>" + htmlContent.toString() + "</body></html>");
+        String where;
+        String urut;
+        if (R4.isSelected()) {
+            where = " where reg_periksa.no_rawat='" + NoRawat.getText().trim() + "' ";
+            urut = " order by reg_periksa.tgl_registrasi desc ";
+        } else {
+            where = " where reg_periksa.no_rkm_medis='" + NoRM.getText().trim() + "' and reg_periksa.status_lanjut='Ranap' ";
+            if (R3.isSelected()) {
+                where += " and reg_periksa.tgl_registrasi between '" + Valid.SetTgl(Tgl1.getSelectedItem() + "")
+                        + "' and '" + Valid.SetTgl(Tgl2.getSelectedItem() + "") + "' ";
+            }
+            urut = R1.isSelected() ? " order by reg_periksa.tgl_registrasi desc limit 5 "
+                    : " order by reg_periksa.tgl_registrasi desc ";
+        }
+        java.util.List<String[]> daftarKunjungan = new java.util.ArrayList<>(); // {no_rawat, tgl_teks}
+        try (PreparedStatement st = koneksi.prepareStatement(
+                "select reg_periksa.no_rawat, date_format(reg_periksa.tgl_registrasi,'%d-%m-%Y') as tgl_teks "
+                + "from reg_periksa" + where + urut)) {
+            try (ResultSet hasil = st.executeQuery()) {
+                while (hasil.next()) {
+                    daftarKunjungan.add(new String[]{hasil.getString("no_rawat"), hasil.getString("tgl_teks")});
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif tampilAsesmenRanap : " + e);
+        }
+        if (daftarKunjungan.isEmpty()) {
+            panelAsesmenRanapGrid.add(labelKosongMedia("Belum ada riwayat rawat inap untuk pasien ini."));
+        } else if (daftarKunjungan.size() == 1) {
+            panelAsesmenRanapGrid.add(buatKartuKunjunganAsesmenRanap(daftarKunjungan.get(0)[0], daftarKunjungan.get(0)[1]));
+        } else {
+            panelAsesmenRanapGrid.add(buatPemilihKunjunganAsesmenRanap(daftarKunjungan));
+        }
+        panelAsesmenRanapGrid.revalidate();
+        panelAsesmenRanapGrid.repaint();
     }
 
-    private void tulisBlokAsesmenRanap(StringBuilder sb, String jenisTampil, String jenisKunci, ResultSet rs, String[] skip) throws Exception {
-        String judul = "Penilaian Awal Rawat Inap (Keperawatan " + jenisTampil + ") &mdash; No.Rawat "
-                + rs.getString("no_rawat") + " (" + nz(rs.getString("tanggal")) + " " + nz(rs.getString("jam")) + ")";
-        sb.append("<div style='margin-bottom:14px;padding:8px;border:1px solid #ded;background:#fbfffb;'>")
-                .append(buatLinkCetakAsesmen(jenisKunci, rs.getString("no_rawat"), judul))
-                .append("<br/>")
-                .append(renderBarisGenerik(rs, skip))
-                .append("</div>");
+    /** Kalau riwayat rawat inap lebih dari 1, jangan langsung render semua kartu (berat &amp; panjang) --
+     * tampilkan dropdown pemilih dulu, kartu blok baru muncul setelah tombol Tampilkan diklik. */
+    private JPanel buatPemilihKunjunganAsesmenRanap(java.util.List<String[]> daftarKunjungan) {
+        JPanel wadah = new JPanel();
+        wadah.setLayout(new BoxLayout(wadah, BoxLayout.Y_AXIS));
+        wadah.setOpaque(false);
+        wadah.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+
+        JPanel baris = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        baris.setOpaque(false);
+        baris.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+        JLabel lbl = new JLabel("Pilih Rawat Inap :");
+        lbl.setFont(new Font("Tahoma", Font.BOLD, 12));
+
+        String[] tampilan = new String[daftarKunjungan.size()];
+        for (int i = 0; i < daftarKunjungan.size(); i++) {
+            tampilan[i] = "Rawat Inap tanggal " + daftarKunjungan.get(i)[1] + "   •   No. Rawat " + daftarKunjungan.get(i)[0];
+        }
+        javax.swing.JComboBox<String> cmbKunjungan = new javax.swing.JComboBox<>(tampilan);
+        cmbKunjungan.setPreferredSize(new Dimension(420, 24));
+        widget.Button btnTampilkan = new widget.Button();
+        btnTampilkan.setText("Tampilkan");
+
+        JPanel wadahHasil = new JPanel();
+        wadahHasil.setLayout(new BoxLayout(wadahHasil, BoxLayout.Y_AXIS));
+        wadahHasil.setOpaque(false);
+        wadahHasil.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+
+        btnTampilkan.addActionListener(e -> {
+            int idx = cmbKunjungan.getSelectedIndex();
+            if (idx < 0) { return; }
+            wadahHasil.removeAll();
+            wadahHasil.add(buatKartuKunjunganAsesmenRanap(daftarKunjungan.get(idx)[0], daftarKunjungan.get(idx)[1]));
+            wadahHasil.revalidate();
+            wadahHasil.repaint();
+        });
+
+        baris.add(lbl);
+        baris.add(cmbKunjungan);
+        baris.add(btnTampilkan);
+        wadah.add(baris);
+        wadah.add(javax.swing.Box.createVerticalStrut(10));
+        wadah.add(wadahHasil);
+        return wadah;
+    }
+
+    private JPanel buatKartuKunjunganAsesmenRanap(String noRawat, String tglTeks) {
+        JPanel kartu = new JPanel(new BorderLayout(0, 8));
+        kartu.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(215, 224, 230)),
+                new javax.swing.border.EmptyBorder(10, 12, 10, 12)));
+        kartu.setBackground(Color.WHITE);
+        kartu.setAlignmentX(java.awt.Component.LEFT_ALIGNMENT);
+
+        JLabel judul = new JLabel("Rawat Inap tanggal " + tglTeks + "   •   No. Rawat " + noRawat);
+        judul.setFont(new Font("Tahoma", Font.BOLD, 12));
+        judul.setForeground(new Color(32, 49, 66));
+        kartu.add(judul, BorderLayout.NORTH);
+
+        JPanel grid = new JPanel(new java.awt.GridLayout(0, 3, 10, 10));
+        grid.setOpaque(false);
+        for (int i = 0; i < JUDUL_BLOK_PENILAIAN_AWAL.length; i++) {
+            grid.add(buatMiniKartuPenilaianAwal(i, noRawat));
+        }
+        kartu.add(grid, BorderLayout.CENTER);
+        return kartu;
+    }
+
+    private JPanel buatMiniKartuPenilaianAwal(int indeks, String noRawat) {
+        boolean ada = false;
+        try {
+            ada = Sequel.cariInteger("select count(*) from " + TABEL_BLOK_PENILAIAN_AWAL[indeks]
+                    + " where no_rawat=?", noRawat) > 0;
+        } catch (Exception e) {
+            System.out.println("Notif cek data blok penilaian awal " + indeks + " : " + e);
+        }
+        JPanel kartu = kerangkaMiniKartu(JUDUL_BLOK_PENILAIAN_AWAL[indeks], ada, ada ? "✓ Sudah Diisi" : "Belum Diisi");
+
+        widget.Button btnCetak = new widget.Button();
+        btnCetak.setText("Cetak");
+        btnCetak.addActionListener(e -> cetakBlokPenilaianAwal(indeks, noRawat));
+        kartu.add(btnCetak, BorderLayout.SOUTH);
+        return kartu;
+    }
+
+    private void cetakBlokPenilaianAwal(int indeks, String noRawat) {
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            switch (indeks) {
+                case 0: RMAsesmenKeperawatanDewasa.cetak(noRawat); break;
+                case 1: RMAsesmenKeperawatanAnak.cetak(noRawat); break;
+                case 2: RMPenilaianAwalKeperawatanRanapBayi.cetak(noRawat); break;
+                case 3: RMAsesmenKebidanan.cetak(noRawat); break;
+                case 4: RMRingkasanRiwayatMasuk.cetak(noRawat); break;
+                case 5: RMTransferPasienInternal.cetak(noRawat); break;
+                case 6: RMAsesmenUlangNyeri.cetak(noRawat); break;
+                default: break;
+            }
+        } finally {
+            this.setCursor(Cursor.getDefaultCursor());
+        }
     }
 
     /**
@@ -6267,14 +6411,16 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         return kartu;
     }
 
-    private JPanel kerangkaMiniKartuRmOperasi(int indeks, boolean ada, String labelStatus) {
+    /** Kerangka mini-kartu blok generik (border+judul+badge status) -- dipakai bareng oleh RM Operasi
+     *  dan Penilaian Awal Rawat Inap, biar tampilannya konsisten tanpa duplikasi kode. */
+    private JPanel kerangkaMiniKartu(String judulBlok, boolean ada, String labelStatus) {
         JPanel kartu = new JPanel(new BorderLayout(0, 6));
         kartu.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(new Color(228, 233, 237)),
                 new javax.swing.border.EmptyBorder(8, 8, 8, 8)));
         kartu.setBackground(Color.WHITE);
 
-        JLabel lblJudul = new JLabel("<html>" + JUDUL_BLOK_RM_OPERASI[indeks] + "</html>");
+        JLabel lblJudul = new JLabel("<html>" + judulBlok + "</html>");
         lblJudul.setFont(new Font("Tahoma", Font.BOLD, 10));
         lblJudul.setForeground(new Color(32, 49, 66));
 
@@ -6302,7 +6448,7 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
 
     private JPanel buatMiniKartuCetakRmOperasi(int indeks, String noRawat, String tglOperasiRaw) {
         boolean ada = cekAdaDataBlokRmOperasi(indeks, noRawat, tglOperasiRaw);
-        JPanel kartu = kerangkaMiniKartuRmOperasi(indeks, ada, ada ? "✓ Sudah Diisi" : "Belum Diisi");
+        JPanel kartu = kerangkaMiniKartu(JUDUL_BLOK_RM_OPERASI[indeks], ada, ada ? "✓ Sudah Diisi" : "Belum Diisi");
 
         widget.Button btnCetak = new widget.Button();
         btnCetak.setText("Cetak");
@@ -6322,7 +6468,7 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
             System.out.println("Notif cek foto upload blok " + indeks + " : " + e);
         }
         boolean ada = jumlah > 0;
-        JPanel kartu = kerangkaMiniKartuRmOperasi(indeks, ada, ada ? (jumlah + " Foto Tersimpan") : "Belum Ada Foto");
+        JPanel kartu = kerangkaMiniKartu(JUDUL_BLOK_RM_OPERASI[indeks], ada, ada ? (jumlah + " Foto Tersimpan") : "Belum Ada Foto");
 
         widget.Button btnLihat = new widget.Button();
         btnLihat.setText("Lihat Foto");

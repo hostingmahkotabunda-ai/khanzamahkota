@@ -22,6 +22,14 @@
 	<field name="a2_alat_bantu" class="java.lang.String"/>
 	<field name="b_menopang_duduk" class="java.lang.String"/>
 	<field name="hasil" class="java.lang.String"/>
+	<field name="t1_ya" class="java.lang.String"/>
+	<field name="t1_tidak" class="java.lang.String"/>
+	<field name="t2_ya" class="java.lang.String"/>
+	<field name="t2_tidak" class="java.lang.String"/>
+	<field name="t3_ya" class="java.lang.String"/>
+	<field name="t3_tidak" class="java.lang.String"/>
+	<field name="t4_ya" class="java.lang.String"/>
+	<field name="t4_tidak" class="java.lang.String"/>
 	<field name="nama_petugas" class="java.lang.String"/>
 	<field name="petugas_photo" class="java.lang.String"/>
 	<background>
@@ -35,22 +43,22 @@
 			</image>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="10" width="522" height="24" uuid="d0000003-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="16" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="17" isBold="true"/></textElement>
 				<textFieldExpression><![CDATA[$P{namars}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="36" width="522" height="12" uuid="d0000004-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<textFieldExpression><![CDATA[$P{alamatrs}+", "+$P{kotars}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="0" y="48" width="522" height="12" uuid="d0000005-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[IG: mahkotabunda.bjm          WA: 0852-4908-5858 (Chat Only)]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="60" width="522" height="12" uuid="d0000006-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<textFieldExpression><![CDATA["Email: "+$P{emailrs}]]></textFieldExpression>
 			</textField>
 			<rectangle>
@@ -63,7 +71,7 @@
 			</rectangle>
 			<staticText>
 				<reportElement x="0" y="80" width="522" height="20" forecolor="#FFFFFF" uuid="d0000009-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="11" isBold="true"/></textElement>
 				<text><![CDATA[PENGKAJIAN DAN INTERVENSI RISIKO JATUH PASIEN POLI KLINIK - GET UP AND GO TEST]]></text>
 			</staticText>
 			<rectangle>
@@ -72,72 +80,72 @@
 			</rectangle>
 			<staticText>
 				<reportElement x="10" y="114" width="95" height="14" uuid="d0000011-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[NAMA PASIEN]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="105" y="114" width="155" height="14" uuid="d0000012-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{nm_pasien}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="280" y="114" width="95" height="14" uuid="d0000013-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[RUANG]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="375" y="114" width="147" height="14" uuid="d0000014-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{ruang}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="10" y="128" width="95" height="14" uuid="d0000015-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[NO. RM]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="105" y="128" width="155" height="14" uuid="d0000016-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{no_rkm_medis}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="280" y="128" width="95" height="14" uuid="d0000017-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[TANGGAL]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="375" y="128" width="147" height="14" uuid="d0000018-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{tanggal_cetak}+" "+$F{jam_cetak}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="10" y="142" width="95" height="14" uuid="d0000019-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[JK / TGL LAHIR]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="105" y="142" width="155" height="14" uuid="d0000020-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{jk}+" / "+$F{tgl_lahir}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="280" y="142" width="95" height="14" uuid="d0000021-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[NO. RAWAT]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="375" y="142" width="147" height="14" uuid="d0000022-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{no_rawat}]]></textFieldExpression>
 			</textField>
 			<staticText>
 				<reportElement x="10" y="156" width="95" height="14" uuid="d0000023-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<text><![CDATA[DX]]></text>
 			</staticText>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="105" y="156" width="252" height="14" uuid="d0000024-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="9"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10"/></textElement>
 				<textFieldExpression><![CDATA[": "+$F{dx}]]></textFieldExpression>
 			</textField>
 		</band>
@@ -156,7 +164,7 @@
 			</rectangle>
 			<staticText>
 				<reportElement x="6" y="0" width="500" height="18" forecolor="#FFFFFF" uuid="d0000026-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="11" isBold="true"/></textElement>
 				<text><![CDATA[1. PENGKAJIAN]]></text>
 			</staticText>
 			<rectangle>
@@ -169,22 +177,22 @@
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="18" width="30" height="18" uuid="d0000029-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[No.]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="34" y="18" width="380" height="18" uuid="d0000030-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Penilaian / Pengkajian]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="414" y="18" width="54" height="18" uuid="d0000031-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Ya]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="468" y="18" width="54" height="18" uuid="d0000032-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Tdk]]></text>
 			</staticText>
 			<rectangle>
@@ -201,12 +209,12 @@
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="36" width="30" height="56" uuid="d0000036-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[a]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="34" y="36" width="380" height="56" uuid="d0000037-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Top"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Cara berjalan pasien ( salah satu atau lebih ) :
 1. Tidak seimbang/ sempoyongan/ limbung
 2. Jalan dengan menggunakan alat bantu ( kruk, tripot,
@@ -242,12 +250,12 @@
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="92" width="30" height="40" uuid="d0000043-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Top"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[b]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="34" y="92" width="380" height="40" uuid="d0000044-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Top"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Top"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Menopang saat akan duduk : tampak memegang pinggiran
 kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</staticText>
@@ -281,7 +289,7 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="6" y="144" width="500" height="18" forecolor="#FFFFFF" uuid="d0000050-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="11" isBold="true"/></textElement>
 				<text><![CDATA[2. HASIL]]></text>
 			</staticText>
 			<rectangle>
@@ -294,22 +302,22 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="162" width="26" height="16" uuid="d0000053-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[No]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="162" width="110" height="16" uuid="d0000054-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Hasil]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="162" width="300" height="16" uuid="d0000055-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Penilaian / Pengkajian]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="440" y="162" width="82" height="16" uuid="d0000056-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Ket]]></text>
 			</staticText>
 			<rectangle>
@@ -326,17 +334,17 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="178" width="26" height="16" uuid="d0000060-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[1]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="178" width="110" height="16" uuid="d0000061-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Tidak Berisiko]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="178" width="300" height="16" uuid="d0000062-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Tidak ditemukan a & b]]></text>
 			</staticText>
 			<line>
@@ -357,17 +365,17 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="194" width="26" height="16" uuid="d0000066-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[2]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="194" width="110" height="16" uuid="d0000067-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Risiko Rendah]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="194" width="300" height="16" uuid="d0000068-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Ditemukan salah satu dari a / b]]></text>
 			</staticText>
 			<line>
@@ -388,17 +396,17 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="210" width="26" height="16" uuid="d0000072-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[3]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="210" width="110" height="16" uuid="d0000073-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Risiko Tinggi]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="210" width="300" height="16" uuid="d0000074-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Ditemukan a & b]]></text>
 			</staticText>
 			<line>
@@ -423,7 +431,7 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="6" y="238" width="500" height="18" forecolor="#FFFFFF" uuid="d0000079-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="10" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="11" isBold="true"/></textElement>
 				<text><![CDATA[3. TINDAKAN]]></text>
 			</staticText>
 			<rectangle>
@@ -436,27 +444,27 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="256" width="26" height="16" uuid="d0000082-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[No]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="256" width="110" height="16" uuid="d0000083-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Hasil Kajian]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="256" width="220" height="16" uuid="d0000084-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Tindakan]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="360" y="256" width="40" height="16" uuid="d0000085-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Ya]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="400" y="256" width="40" height="16" uuid="d0000086-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8" isBold="true"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Bold" pdfEncoding="Cp1252" size="9" isBold="true"/></textElement>
 				<text><![CDATA[Tidak]]></text>
 			</staticText>
 			<rectangle>
@@ -477,40 +485,40 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="272" width="26" height="16" uuid="d0000091-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[1]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="272" width="110" height="16" uuid="d0000092-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Tidak Berisiko]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="272" width="220" height="16" uuid="d0000093-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Tidak ada tindakan]]></text>
 			</staticText>
 			<line>
 				<reportElement x="376" y="279" width="3" height="3" uuid="d0000094-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Tidak Berisiko".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t1_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="379" y="274" width="6" height="9" uuid="d0000095-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Tidak Berisiko".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t1_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line>
 				<reportElement x="416" y="279" width="3" height="3" uuid="d0000096-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Tidak Berisiko".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t1_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="419" y="274" width="6" height="9" uuid="d0000097-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Tidak Berisiko".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t1_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
@@ -520,40 +528,40 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="288" width="26" height="16" uuid="d0000099-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[2]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="288" width="110" height="16" uuid="d0000100-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Risiko Rendah]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="288" width="220" height="16" uuid="d0000101-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Edukasi]]></text>
 			</staticText>
 			<line>
 				<reportElement x="376" y="295" width="3" height="3" uuid="d0000102-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Risiko Rendah".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t2_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="379" y="290" width="6" height="9" uuid="d0000103-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Risiko Rendah".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t2_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line>
 				<reportElement x="416" y="295" width="3" height="3" uuid="d0000104-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Risiko Rendah".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t2_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="419" y="290" width="6" height="9" uuid="d0000105-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Risiko Rendah".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t2_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
@@ -563,40 +571,40 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="304" width="26" height="16" uuid="d0000107-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[3]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="304" width="110" height="16" uuid="d0000108-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Risiko Tinggi]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="304" width="220" height="16" uuid="d0000109-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Pasang pita kuning]]></text>
 			</staticText>
 			<line>
 				<reportElement x="376" y="311" width="3" height="3" uuid="d0000110-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Risiko Tinggi".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t3_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="379" y="306" width="6" height="9" uuid="d0000111-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Risiko Tinggi".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t3_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line>
 				<reportElement x="416" y="311" width="3" height="3" uuid="d0000112-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Risiko Tinggi".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t3_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="419" y="306" width="6" height="9" uuid="d0000113-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Risiko Tinggi".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t3_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
@@ -606,40 +614,40 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="4" y="320" width="26" height="16" uuid="d0000115-0000-4000-8000-000000000000"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="30" y="320" width="110" height="16" uuid="d0000116-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[]]></text>
 			</staticText>
 			<staticText>
 				<reportElement x="140" y="320" width="220" height="16" uuid="d0000117-0000-4000-8000-000000000000"/>
-				<textElement verticalAlignment="Middle"><font fontName="Tahoma" size="8"/></textElement>
+				<textElement verticalAlignment="Middle"><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[Edukasi]]></text>
 			</staticText>
 			<line>
 				<reportElement x="376" y="327" width="3" height="3" uuid="d0000118-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Risiko Tinggi".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t4_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="379" y="322" width="6" height="9" uuid="d0000119-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA["Risiko Tinggi".equals($F{hasil})]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t4_ya})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line>
 				<reportElement x="416" y="327" width="3" height="3" uuid="d0000120-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Risiko Tinggi".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t4_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
 			<line direction="BottomUp">
 				<reportElement x="419" y="322" width="6" height="9" uuid="d0000121-0000-4000-8000-000000000000">
-					<printWhenExpression><![CDATA[!("Risiko Tinggi".equals($F{hasil}))]]></printWhenExpression>
+					<printWhenExpression><![CDATA["1".equals($F{t4_tidak})]]></printWhenExpression>
 				</reportElement>
 				<graphicElement><pen lineWidth="1.4"/></graphicElement>
 			</line>
@@ -649,7 +657,7 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</rectangle>
 			<staticText>
 				<reportElement x="0" y="352" width="522" height="12" uuid="d0000123-0000-4000-8000-000000000000"/>
-				<textElement><font fontName="Tahoma" size="8"/></textElement>
+				<textElement><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="9"/></textElement>
 				<text><![CDATA[TTD / Nama Petugas :]]></text>
 			</staticText>
 			<image scaleImage="RetainShape" onErrorType="Blank" hAlign="Left">
@@ -660,7 +668,7 @@ kursi atau meja / benda lain sebagai penopang saat akan duduk]]></text>
 			</image>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
 				<reportElement x="0" y="412" width="260" height="14" uuid="d0000125-0000-4000-8000-000000000000"/>
-				<textElement><font fontName="Tahoma" size="9" isUnderline="true"/></textElement>
+				<textElement><font fontName="Times New Roman" pdfFontName="Times-Roman" pdfEncoding="Cp1252" size="10" isUnderline="true"/></textElement>
 				<textFieldExpression><![CDATA["( "+$F{nama_petugas}+" )"]]></textFieldExpression>
 			</textField>
 		</band>

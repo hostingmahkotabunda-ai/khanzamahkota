@@ -247,6 +247,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
             }
         });
         pasangTabPenilaianAwal();
+        pasangTabRisikoJatuh();
         pasangTabSuratKeteranganLahir();
     }
 
@@ -300,6 +301,69 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         javax.swing.JMenuItem item = new javax.swing.JMenuItem(teks);
         item.addActionListener(aksi);
         return item;
+    }
+
+    /**
+     * Tab "Risiko Jatuh" -- pola sama persis dgn tab "Penilaian Awal" (placeholder
+     * kosong, diklik langsung muncul JPopupMenu). Sekarang baru 1 pilihan (Bayi & Anak),
+     * nanti gampang ditambah pilihan lain (Dewasa, Geriatri, dst) tanpa ubah tab-nya.
+     */
+    private void pasangTabRisikoJatuh() {
+        javax.swing.JPanel placeholder = new javax.swing.JPanel();
+        placeholder.setOpaque(false);
+        TabRawat.addTab("Risiko Jatuh", placeholder);
+        final int idxRisikoJatuh = TabRawat.indexOfComponent(placeholder);
+
+        final javax.swing.JPopupMenu menuRisikoJatuh = new javax.swing.JPopupMenu();
+        menuRisikoJatuh.add(itemMenuPenilaianAwal("Risiko Jatuh Bayi & Anak (Humpty Dumpty Scale)", e -> bukaRisikoJatuhBayiAnak()));
+        menuRisikoJatuh.add(itemMenuPenilaianAwal("Risiko Jatuh Dewasa (Morse Fall Scale)", e -> bukaRisikoJatuhMorse()));
+
+        TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                if (TabRawat.indexAtLocation(evt.getX(), evt.getY()) == idxRisikoJatuh) {
+                    menuRisikoJatuh.show(TabRawat, evt.getX(), evt.getY());
+                }
+            }
+        });
+    }
+
+    /** Buka form Asesmen Risiko Jatuh Bayi dan Anak (Humpty Dumpty Scale) untuk pasien yang aktif. */
+    private void bukaRisikoJatuhBayiAnak() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMAsesmenRisikoJatuhBayiAnak f = new rekammedis.RMAsesmenRisikoJatuhBayiAnak(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Asesmen Risiko Jatuh Pasien Dewasa (Morse Fall Scale) untuk pasien yang aktif. */
+    private void bukaRisikoJatuhMorse() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMAsesmenRisikoJatuhMorse f = new rekammedis.RMAsesmenRisikoJatuhMorse(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
     }
 
     /**

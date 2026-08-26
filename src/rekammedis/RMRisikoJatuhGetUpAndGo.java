@@ -25,6 +25,9 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.table.DefaultTableModel;
 import kepegawaian.DlgCariPetugas;
 
 /**
@@ -42,6 +45,8 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
 
     private static final Font FONT_FORM = new Font("Times New Roman", Font.PLAIN, 13);
     private static final Font FONT_FORM_BOLD = new Font("Times New Roman", Font.BOLD, 13);
+    private static final Color GARIS_TABEL = new Color(153, 153, 153);
+    private static final Color LATAR_HEADER_TABEL = new Color(238, 242, 245);
 
     private final sekuel Sequel = new sekuel();
     private final validasi Valid = new validasi();
@@ -58,12 +63,28 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
     private final widget.TextBox TDx = tf();
     private final widget.Tanggal dtpTanggal = dt();
 
-    private final JCheckBox chkA1 = new JCheckBox("Tidak seimbang / sempoyongan / limbung");
-    private final JCheckBox chkA2 = new JCheckBox("Jalan dengan menggunakan alat bantu ( kruk, tripot, kursi roda, orang lain )");
+    private final JCheckBox chkA1 = new JCheckBox("1. Tidak seimbang / sempoyongan / limbung");
+    private final JCheckBox chkA2 = new JCheckBox("2. Jalan dengan menggunakan alat bantu ( kruk, tripot, kursi roda, orang lain )");
     private final JCheckBox chkB = new JCheckBox("Menopang saat akan duduk : tampak memegang pinggiran kursi atau meja / benda lain sebagai penopang saat akan duduk");
+    /** Indikator Ya/Tdk per baris "a"/"b" -- BUKAN dicentang manual, cuma cerminan otomatis dari
+     *  chkA1/chkA2 (baris a, salah satu = Ya) & chkB (baris b), spy tampil sbg kolom Ya/Tdk spt di
+     *  kertas asli (lihat rptRisikoJatuhGetUpAndGo.jrxml bagian "1. PENGKAJIAN"). */
+    private final JCheckBox chkYaA = new JCheckBox();
+    private final JCheckBox chkTdkA = new JCheckBox();
+    private final JCheckBox chkYaB = new JCheckBox();
+    private final JCheckBox chkTdkB = new JCheckBox();
 
     private final JLabel lblHasil = new JLabel("-");
-    private final JLabel lblTindakan = new JLabel("-");
+    /** Tabel "3. Tindakan" -- 4 baris tetap (persis kertas asli), kolom Ya/Tdk DICENTANG MANUAL
+     *  oleh petugas (bukan otomatis) -- lihat pasangRadioTindakan(). Baris "2. Hasil" di atasnya
+     *  tetap otomatis, jadi cukup jadi acuan petugas utk menentukan mana yg dicentang di sini. */
+    private final DefaultTableModel modelTindakan = new DefaultTableModel(
+            new Object[]{"No", "Hasil Kajian", "Tindakan", "Ya", "Tidak"}, 0) {
+        @Override public Class<?> getColumnClass(int c) { return c >= 3 ? Boolean.class : String.class; }
+        @Override public boolean isCellEditable(int row, int col) { return col >= 3; }
+    };
+    private final widget.Table tblTindakan = new widget.Table();
+    private boolean sedangMemuatTindakan = false;
 
     private final DlgCariPetugas pickerPetugas = new DlgCariPetugas(null, true);
     private final widget.TextBox tPetugasNama = ro();
@@ -77,6 +98,8 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         setLayout(new BorderLayout());
         setOpaque(false);
         ensureTable();
+        isiBarisTindakanTetap();
+        pasangRadioTindakan();
 
         JPanel isi = new JPanel();
         isi.setOpaque(false);
@@ -160,19 +183,95 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         return kartu;
     }
 
+    /** Kolom "No."/"Penilaian & Pengkajian"/"Ya"/"Tdk" -- persis susunan tabel "1. PENGKAJIAN" di kertas asli. */
     private JPanel panelPengkajian() {
         JPanel kartu = kartu();
         kartu.setLayout(new BoxLayout(kartu, BoxLayout.Y_AXIS));
         kartu.add(judulSeksi("1. Pengkajian"));
-        JLabel ket = new JLabel("Cara berjalan pasien ( salah satu atau lebih ) :");
-        ket.setFont(FONT_FORM_BOLD);
-        ket.setAlignmentX(Component.LEFT_ALIGNMENT);
-        kartu.add(ket);
-        kartu.add(baris(chkA1, 18));
-        kartu.add(baris(chkA2, 18));
-        kartu.add(Box.createVerticalStrut(6));
-        kartu.add(baris(chkB, 0));
+
+        JPanel tabel = new JPanel(new java.awt.GridBagLayout());
+        tabel.setOpaque(false);
+        tabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        tabel.setBorder(BorderFactory.createLineBorder(GARIS_TABEL));
+        java.awt.GridBagConstraints g = new java.awt.GridBagConstraints();
+        g.fill = java.awt.GridBagConstraints.BOTH;
+
+        g.gridy = 0;
+        tabel.add(selHeaderTabel("No.", JLabel.CENTER), kolTabel(g, 0, 0.06));
+        tabel.add(selHeaderTabel("Penilaian / Pengkajian", JLabel.LEFT), kolTabel(g, 1, 0.72));
+        tabel.add(selHeaderTabel("Ya", JLabel.CENTER), kolTabel(g, 2, 0.11));
+        tabel.add(selHeaderTabel("Tdk", JLabel.CENTER), kolTabel(g, 3, 0.11));
+
+        JPanel isiA = new JPanel();
+        isiA.setOpaque(false);
+        isiA.setLayout(new BoxLayout(isiA, BoxLayout.Y_AXIS));
+        isiA.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 1, GARIS_TABEL), BorderFactory.createEmptyBorder(4, 6, 4, 4)));
+        JLabel ketA = new JLabel("Cara berjalan pasien ( salah satu atau lebih ) :");
+        ketA.setFont(FONT_FORM);
+        ketA.setAlignmentX(Component.LEFT_ALIGNMENT);
+        isiA.add(ketA);
+        isiA.add(baris(chkA1, 12));
+        isiA.add(baris(chkA2, 12));
+
+        g.gridy = 1;
+        tabel.add(selNoTabel("a"), kolTabel(g, 0, 0.06));
+        tabel.add(isiA, kolTabel(g, 1, 0.72));
+        tabel.add(selIndikator(chkYaA), kolTabel(g, 2, 0.11));
+        tabel.add(selIndikator(chkTdkA), kolTabel(g, 3, 0.11));
+
+        JPanel isiB = new JPanel(new BorderLayout());
+        isiB.setOpaque(false);
+        isiB.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 4));
+        isiB.add(baris(chkB, 0), BorderLayout.CENTER);
+
+        g.gridy = 2;
+        tabel.add(selNoTabel("b"), kolTabel(g, 0, 0.06));
+        tabel.add(isiB, kolTabel(g, 1, 0.72));
+        tabel.add(selIndikator(chkYaB), kolTabel(g, 2, 0.11));
+        tabel.add(selIndikator(chkTdkB), kolTabel(g, 3, 0.11));
+
+        kartu.add(tabel);
         return kartu;
+    }
+
+    private java.awt.GridBagConstraints kolTabel(java.awt.GridBagConstraints base, int gridx, double weightx) {
+        java.awt.GridBagConstraints g = (java.awt.GridBagConstraints) base.clone();
+        g.gridx = gridx;
+        g.weightx = weightx;
+        return g;
+    }
+
+    private JLabel selHeaderTabel(String teks, int align) {
+        JLabel l = new JLabel(teks, align);
+        l.setFont(new Font("Tahoma", Font.BOLD, 11));
+        l.setForeground(new Color(32, 49, 66));
+        l.setOpaque(true);
+        l.setBackground(LATAR_HEADER_TABEL);
+        l.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 1, GARIS_TABEL), BorderFactory.createEmptyBorder(4, 6, 4, 6)));
+        return l;
+    }
+
+    private JLabel selNoTabel(String teks) {
+        JLabel l = new JLabel(teks, JLabel.CENTER);
+        l.setFont(FONT_FORM);
+        l.setVerticalAlignment(JLabel.TOP);
+        l.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 1, GARIS_TABEL), BorderFactory.createEmptyBorder(6, 4, 4, 4)));
+        return l;
+    }
+
+    /** Kotak centang Ya/Tdk di kolom kanan tabel Pengkajian -- BUKAN diklik manual, cuma cermin
+     *  otomatis (lihat perbaruiHasilDanTindakan()), makanya di-nonaktifkan (disabled). */
+    private JPanel selIndikator(JCheckBox indikator) {
+        indikator.setEnabled(false);
+        indikator.setOpaque(false);
+        JPanel wrap = new JPanel(new java.awt.GridBagLayout());
+        wrap.setOpaque(false);
+        wrap.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 1, GARIS_TABEL));
+        wrap.add(indikator);
+        return wrap;
     }
 
     private JPanel panelHasil() {
@@ -191,14 +290,31 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         return kartu;
     }
 
+    /** Tabel "No. / Hasil Kajian / Tindakan / Ya / Tdk" -- persis kertas asli, 4 baris tetap,
+     *  kolom Ya/Tdk terisi otomatis dari hasil skor (lihat perbaruiHasilDanTindakan()). */
     private JPanel panelTindakan() {
         JPanel kartu = kartu();
         kartu.setLayout(new BoxLayout(kartu, BoxLayout.Y_AXIS));
         kartu.add(judulSeksi("3. Tindakan"));
-        lblTindakan.setFont(new Font("Tahoma", Font.BOLD, 13));
-        lblTindakan.setForeground(new Color(32, 49, 66));
-        lblTindakan.setAlignmentX(Component.LEFT_ALIGNMENT);
-        kartu.add(lblTindakan);
+
+        tblTindakan.setModel(modelTindakan);
+        tblTindakan.setFont(FONT_FORM);
+        tblTindakan.getTableHeader().setFont(new Font("Tahoma", Font.BOLD, 11));
+        tblTindakan.setRowHeight(24);
+        tblTindakan.setRowSelectionAllowed(false);
+        tblTindakan.setFocusable(false);
+        int[] lebarTindakan = {40, 150, 280, 60, 60};
+        for (int i = 0; i < lebarTindakan.length; i++) {
+            tblTindakan.getColumnModel().getColumn(i).setPreferredWidth(lebarTindakan[i]);
+        }
+        tblTindakan.getColumnModel().getColumn(0).setCellRenderer(rendererTengah());
+        tblTindakan.setPreferredScrollableViewportSize(new Dimension(590, 24 * 4));
+        JScrollPane scrollTindakan = new JScrollPane(tblTindakan);
+        scrollTindakan.setAlignmentX(Component.LEFT_ALIGNMENT);
+        scrollTindakan.setBorder(BorderFactory.createLineBorder(GARIS_TABEL));
+        scrollTindakan.setPreferredSize(new Dimension(590, 24 * 4 + 26));
+        scrollTindakan.setMaximumSize(new Dimension(Integer.MAX_VALUE, 24 * 4 + 26));
+        kartu.add(scrollTindakan);
         kartu.add(Box.createVerticalStrut(10));
 
         JPanel baris = new JPanel(new java.awt.GridBagLayout());
@@ -268,12 +384,50 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         return p;
     }
 
+    private javax.swing.table.DefaultTableCellRenderer rendererTengah() {
+        javax.swing.table.DefaultTableCellRenderer r = new javax.swing.table.DefaultTableCellRenderer();
+        r.setHorizontalAlignment(JLabel.CENTER);
+        return r;
+    }
+
+    /** 4 baris tetap tabel "3. Tindakan" persis kertas asli (No / Hasil Kajian / Tindakan) --
+     *  kolom Ya/Tdk-nya DICENTANG MANUAL oleh petugas, mulai kosong (lihat pasangRadioTindakan()). */
+    private void isiBarisTindakanTetap() {
+        modelTindakan.addRow(new Object[]{"1", "Tidak Berisiko", "Tidak ada tindakan", false, false});
+        modelTindakan.addRow(new Object[]{"2", "Risiko Rendah", "Edukasi", false, false});
+        modelTindakan.addRow(new Object[]{"3", "Risiko Tinggi", "Pasang pita kuning", false, false});
+        modelTindakan.addRow(new Object[]{"", "", "Edukasi", false, false});
+    }
+
+    /** Sekali kolom "Ya" atau "Tidak" dicentang di suatu baris, pasangannya di baris yg sama
+     *  otomatis lepas (perilaku radio) -- spy tdk bisa Ya & Tidak sama2 tercentang di 1 baris. */
+    private void pasangRadioTindakan() {
+        modelTindakan.addTableModelListener(e -> {
+            if (sedangMemuatTindakan) { return; }
+            if (e.getType() != TableModelEvent.UPDATE || e.getColumn() < 3) { return; }
+            int row = e.getFirstRow();
+            int col = e.getColumn();
+            if (Boolean.TRUE.equals(modelTindakan.getValueAt(row, col))) {
+                int lawan = col == 3 ? 4 : 3;
+                sedangMemuatTindakan = true;
+                modelTindakan.setValueAt(false, row, lawan);
+                sedangMemuatTindakan = false;
+            }
+        });
+    }
+
     // ====================== Hasil & Tindakan otomatis ======================
     private void perbaruiHasilDanTindakan() {
+        boolean a = chkA1.isSelected() || chkA2.isSelected();
+        boolean b = chkB.isSelected();
+        chkYaA.setSelected(a);
+        chkTdkA.setSelected(!a);
+        chkYaB.setSelected(b);
+        chkTdkB.setSelected(!b);
+
         int skor = hitungSkor();
         String hasil = teksHasil(skor);
         lblHasil.setText(hasil.toUpperCase());
-        lblTindakan.setText("Tindakan : " + teksTindakan(skor));
         if (skor == 0) {
             lblHasil.setForeground(new Color(0, 128, 68));
             lblHasil.setBackground(new Color(224, 246, 234));
@@ -296,12 +450,6 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         if (skor == 0) { return "Tidak Berisiko"; }
         if (skor == 1) { return "Risiko Rendah"; }
         return "Risiko Tinggi";
-    }
-
-    private static String teksTindakan(int skor) {
-        if (skor == 0) { return "Tidak ada tindakan"; }
-        if (skor == 1) { return "Edukasi"; }
-        return "Pasang pita kuning + Edukasi";
     }
 
     // ====================== Petugas (auto login + bisa ganti) ======================
@@ -360,6 +508,12 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         chkB.setSelected(false);
         tPetugasNama.setText("");
         kdPetugas = "";
+        sedangMemuatTindakan = true;
+        for (int r = 0; r < modelTindakan.getRowCount(); r++) {
+            modelTindakan.setValueAt(false, r, 3);
+            modelTindakan.setValueAt(false, r, 4);
+        }
+        sedangMemuatTindakan = false;
     }
 
     private void tarikDataPasien(String norwt) {
@@ -401,6 +555,12 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
                     chkA1.setSelected("1".equals(rs.getString("a1_tidak_seimbang")));
                     chkA2.setSelected("1".equals(rs.getString("a2_alat_bantu")));
                     chkB.setSelected("1".equals(rs.getString("b_menopang_duduk")));
+                    sedangMemuatTindakan = true;
+                    for (int r = 1; r <= 4; r++) {
+                        modelTindakan.setValueAt("1".equals(rs.getString("t" + r + "_ya")), r - 1, 3);
+                        modelTindakan.setValueAt("1".equals(rs.getString("t" + r + "_tidak")), r - 1, 4);
+                    }
+                    sedangMemuatTindakan = false;
                     kdPetugas = nvl(rs.getString("kd_petugas"));
                     tPetugasNama.setText(nvl(rs.getString("nama_petugas")));
                     return true;
@@ -421,11 +581,15 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
         try (PreparedStatement ps = koneksi.prepareStatement(
                 "insert into risiko_jatuh_getupandgo "
                 + "(no_rawat,no_rkm_medis,dx,tanggal,jam,a1_tidak_seimbang,a2_alat_bantu,b_menopang_duduk,hasil,"
+                + "t1_ya,t1_tidak,t2_ya,t2_tidak,t3_ya,t3_tidak,t4_ya,t4_tidak,"
                 + "kd_petugas,nama_petugas,created_by,created_at) "
-                + "values (?,(select no_rkm_medis from reg_periksa where no_rawat=?),?,?,?,?,?,?,?,?,?,?,now()) "
+                + "values (?,(select no_rkm_medis from reg_periksa where no_rawat=?),?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,now()) "
                 + "on duplicate key update no_rkm_medis=values(no_rkm_medis),dx=values(dx),tanggal=values(tanggal),"
                 + "jam=values(jam),a1_tidak_seimbang=values(a1_tidak_seimbang),a2_alat_bantu=values(a2_alat_bantu),"
-                + "b_menopang_duduk=values(b_menopang_duduk),hasil=values(hasil),kd_petugas=values(kd_petugas),"
+                + "b_menopang_duduk=values(b_menopang_duduk),hasil=values(hasil),"
+                + "t1_ya=values(t1_ya),t1_tidak=values(t1_tidak),t2_ya=values(t2_ya),t2_tidak=values(t2_tidak),"
+                + "t3_ya=values(t3_ya),t3_tidak=values(t3_tidak),t4_ya=values(t4_ya),t4_tidak=values(t4_tidak),"
+                + "kd_petugas=values(kd_petugas),"
                 + "nama_petugas=values(nama_petugas),updated_by=values(created_by),updated_at=now()")) {
             Date d = dtpTanggal.getDate();
             ps.setString(1, noRawat);
@@ -437,9 +601,14 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
             ps.setString(7, chkA2.isSelected() ? "1" : "0");
             ps.setString(8, chkB.isSelected() ? "1" : "0");
             ps.setString(9, teksHasil(skor));
-            ps.setString(10, kdPetugas);
-            ps.setString(11, ambil(tPetugasNama));
-            ps.setString(12, akses.getkode());
+            int idx = 10;
+            for (int r = 0; r < 4; r++) {
+                ps.setString(idx++, Boolean.TRUE.equals(modelTindakan.getValueAt(r, 3)) ? "1" : "0");
+                ps.setString(idx++, Boolean.TRUE.equals(modelTindakan.getValueAt(r, 4)) ? "1" : "0");
+            }
+            ps.setString(idx++, kdPetugas);
+            ps.setString(idx++, ambil(tPetugasNama));
+            ps.setString(idx, akses.getkode());
             ps.executeUpdate();
             JOptionPane.showMessageDialog(this, "Pengkajian Risiko Jatuh (Get Up and Go Test) tersimpan.");
         } catch (Exception e) {
@@ -510,6 +679,25 @@ public final class RMRisikoJatuhGetUpAndGo extends JPanel {
                 + "created_at datetime null,"
                 + "updated_at datetime null"
                 + ") ROW_FORMAT=DYNAMIC");
+        ensureKolomTindakan();
+    }
+
+    /** Kolom Ya/Tidak tabel "3. Tindakan" (dicentang manual oleh petugas) -- ALTER manual krn table
+     *  risiko_jatuh_getupandgo sudah ada di instalasi lama sblm kolom ini ditambahkan. */
+    private void ensureKolomTindakan() {
+        try {
+            for (int r = 1; r <= 4; r++) {
+                for (String suf : new String[]{"_ya", "_tidak"}) {
+                    String kolom = "t" + r + suf;
+                    if (Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() "
+                            + "and table_name='risiko_jatuh_getupandgo' and column_name='" + kolom + "'") == 0) {
+                        Sequel.queryu2("alter table risiko_jatuh_getupandgo add column " + kolom + " varchar(1) null");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif kolom tindakan get up and go : " + e);
+        }
     }
 
     // ====================== Helpers UI ======================

@@ -378,6 +378,7 @@ public final class RMSuratKeteranganLahir extends JPanel {
             // dengan rasio mendatar tetap dicetak dalam kotak potret.
             param.put("foto1", dataFoto1 == null ? null : new ByteArrayInputStream(seragamkanUkuranFoto(dataFoto1)));
             param.put("foto2", dataFoto2 == null ? null : new ByteArrayInputStream(seragamkanUkuranFoto(dataFoto2)));
+            siapkanReport("rptSuratKeteranganLahir");
             Valid.MyReport("rptSuratKeteranganLahir.jasper", "report", "Surat Keterangan Lahir", param);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal cetak.\n" + e.getMessage());

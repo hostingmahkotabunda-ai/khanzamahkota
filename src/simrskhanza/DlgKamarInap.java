@@ -2342,7 +2342,10 @@ public class DlgKamarInap extends javax.swing.JDialog {
         });
         MnRMRisikoJatuh.add(MnPenilaianRisikoDikubitus);
 
-        MnDataRM.add(MnRMRisikoJatuh);
+        // MnRMRisikoJatuh ("Risiko Jatuh, Fungsional & Dekubitas") SENGAJA tidak ditambahkan ke
+        // MnDataRM -- form lama, sudah digantikan form Risiko Jatuh baru di tab Risiko Jatuh
+        // DlgRawatInap (Humpty Dumpty/Morse/Get Up and Go). Jangan ditambah lagi.
+        // MnDataRM.add(MnRMRisikoJatuh);
 
         MnPenilaianLain.setBackground(new java.awt.Color(255, 255, 254));
         MnPenilaianLain.setForeground(new java.awt.Color(50, 50, 50));
