@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptProfilRingkasMedisRalan" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="18" bottomMargin="18" whenNoDataType="AllSectionsNoDetail">
+    <parameter name="namars" class="java.lang.String"/>
+    <parameter name="logo" class="java.io.InputStream"/>
+    <parameter name="nama" class="java.lang.String"/>
+    <parameter name="norm" class="java.lang.String"/>
+    <parameter name="tgllahir" class="java.lang.String"/>
+    <parameter name="jk" class="java.lang.String"/>
+    <queryString><![CDATA[
+select cast(@urut:=@urut+1 as char) no,
+ concat(date_format(r.tgl_registrasi,'%d-%m-%Y'),' ',left(r.jam_reg,5)) tanggal,
+ ifnull(dx.diagnosa,'') diagnosa,
+ ifnull(soap.klinis,'') klinis,
+ concat_ws('\n',nullif(lab.hasil,''),nullif(rad.hasil,''),nullif(v2.penunjang_lain,'')) penunjang,
+ concat_ws('\n',nullif(inap.riwayat,''),nullif(op.riwayat,'')) riwayat_inap,
+ concat_ws('\n',nullif(v2.terapi_obat,''),nullif(v2.terapi_tindakan,''),nullif(v2.instruksi_tindak_lanjut,''),if(v2.tanggal_kontrol is null or trim(v2.tanggal_kontrol)='',null,concat('Kontrol: ',v2.tanggal_kontrol))) obat_rtl,
+ ifnull(nullif(v2.nm_dokter,''),d.nm_dokter) petugas
+from reg_periksa r
+inner join dokter d on d.kd_dokter=r.kd_dokter
+left join resume_medis_ralan_v2 v2 on v2.no_rawat=r.no_rawat
+left join (
+ select dp.no_rawat,group_concat(distinct concat(dp.kd_penyakit,' ',p.nm_penyakit) order by dp.prioritas separator '\n') diagnosa
+ from diagnosa_pasien dp inner join penyakit p on p.kd_penyakit=dp.kd_penyakit
+ inner join reg_periksa rd on rd.no_rawat=dp.no_rawat
+ where rd.no_rkm_medis=$P{norm} and dp.status='Ralan' group by dp.no_rawat
+) dx on dx.no_rawat=r.no_rawat
+left join (
+ select pr.no_rawat,group_concat(distinct concat_ws(' | ',nullif(pr.keluhan,''),nullif(pr.pemeriksaan,''),nullif(pr.penilaian,'')) order by pr.tgl_perawatan,pr.jam_rawat separator '\n') klinis
+ from pemeriksaan_ralan pr inner join reg_periksa rs on rs.no_rawat=pr.no_rawat
+ where rs.no_rkm_medis=$P{norm} group by pr.no_rawat
+) soap on soap.no_rawat=r.no_rawat
+left join (
+ select dl.no_rawat,group_concat(distinct concat(tl.Pemeriksaan,': ',dl.nilai,' ',tl.satuan) order by dl.tgl_periksa,tl.urut separator '; ') hasil
+ from detail_periksa_lab dl inner join template_laboratorium tl on tl.id_template=dl.id_template
+ inner join reg_periksa rl on rl.no_rawat=dl.no_rawat
+ where rl.no_rkm_medis=$P{norm} group by dl.no_rawat
+) lab on lab.no_rawat=r.no_rawat
+left join (
+ select hr.no_rawat,group_concat(distinct hr.hasil order by hr.tgl_periksa separator '; ') hasil
+ from hasil_radiologi hr inner join reg_periksa rr on rr.no_rawat=hr.no_rawat
+ where rr.no_rkm_medis=$P{norm} group by hr.no_rawat
+) rad on rad.no_rawat=r.no_rawat
+left join (
+ select ri.no_rkm_medis,group_concat(distinct concat(date_format(ki.tgl_masuk,'%d-%m-%Y'),' ',b.nm_bangsal) order by ki.tgl_masuk separator '; ') riwayat
+ from kamar_inap ki inner join kamar k on k.kd_kamar=ki.kd_kamar inner join bangsal b on b.kd_bangsal=k.kd_bangsal
+ inner join reg_periksa ri on ri.no_rawat=ki.no_rawat where ri.no_rkm_medis=$P{norm} group by ri.no_rkm_medis
+) inap on inap.no_rkm_medis=r.no_rkm_medis
+left join (
+ select ro.no_rkm_medis,group_concat(distinct concat(date_format(o.tgl_operasi,'%d-%m-%Y'),' ',po.nm_perawatan) order by o.tgl_operasi separator '; ') riwayat
+ from operasi o inner join paket_operasi po on po.kode_paket=o.kode_paket inner join reg_periksa ro on ro.no_rawat=o.no_rawat
+ where ro.no_rkm_medis=$P{norm} group by ro.no_rkm_medis
+) op on op.no_rkm_medis=r.no_rkm_medis
+cross join (select @urut:=0) nomor
+where r.no_rkm_medis=$P{norm} and r.status_lanjut='Ralan'
+order by r.tgl_registrasi,r.jam_reg
+    ]]></queryString>
+    <field name="no" class="java.lang.String"/>
+    <field name="tanggal" class="java.lang.String"/>
+    <field name="diagnosa" class="java.lang.String"/>
+    <field name="klinis" class="java.lang.String"/>
+    <field name="penunjang" class="java.lang.String"/>
+    <field name="riwayat_inap" class="java.lang.String"/>
+    <field name="obat_rtl" class="java.lang.String"/>
+    <field name="petugas" class="java.lang.String"/>
+    <title>
+        <band height="114">
+            <rectangle><reportElement x="0" y="0" width="802" height="70"/><graphicElement><pen lineWidth="0.8"/></graphicElement></rectangle>
+            <line><reportElement x="425" y="0" width="0" height="70"/></line>
+            <image scaleImage="RetainShape"><reportElement x="10" y="6" width="82" height="56"/><imageExpression><![CDATA[$P{logo}]]></imageExpression></image>
+            <textField isBlankWhenNull="true"><reportElement x="96" y="11" width="320" height="48"/><textElement textAlignment="Center" verticalAlignment="Middle"><font size="17" isBold="true"/></textElement><textFieldExpression><![CDATA[$P{namars}]]></textFieldExpression></textField>
+            <staticText><reportElement x="435" y="6" width="62" height="15"/><textElement><font size="10" isBold="true"/></textElement><text><![CDATA[Nama]]></text></staticText>
+            <staticText><reportElement x="435" y="24" width="62" height="15"/><textElement><font size="10" isBold="true"/></textElement><text><![CDATA[No. RM]]></text></staticText>
+            <staticText><reportElement x="435" y="42" width="62" height="15"/><textElement><font size="10" isBold="true"/></textElement><text><![CDATA[Tgl. Lahir]]></text></staticText>
+            <staticText><reportElement x="497" y="6" width="10" height="15"/><text><![CDATA[:]]></text></staticText>
+            <staticText><reportElement x="497" y="24" width="10" height="15"/><text><![CDATA[:]]></text></staticText>
+            <staticText><reportElement x="497" y="42" width="10" height="15"/><text><![CDATA[:]]></text></staticText>
+            <textField><reportElement x="507" y="6" width="285" height="15"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$P{nama}]]></textFieldExpression></textField>
+            <textField><reportElement x="507" y="24" width="285" height="15"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$P{norm}]]></textFieldExpression></textField>
+            <textField><reportElement x="507" y="42" width="130" height="15"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$P{tgllahir}]]></textFieldExpression></textField>
+            <textField><reportElement x="645" y="42" width="145" height="15"/><textElement><font size="10"/></textElement><textFieldExpression><![CDATA[$P{jk}.equals("L") ? "Laki-laki" : ($P{jk}.equals("P") ? "Perempuan" : "")]]></textFieldExpression></textField>
+            <rectangle><reportElement x="0" y="70" width="802" height="22"/><graphicElement><pen lineWidth="0.8"/></graphicElement></rectangle>
+            <staticText><reportElement x="0" y="73" width="802" height="17"/><textElement textAlignment="Center"><font size="13" isBold="true"/></textElement><text><![CDATA[PROFIL RINGKAS MEDIS RAWAT JALAN]]></text></staticText>
+            <rectangle><reportElement x="0" y="92" width="802" height="22" backcolor="#EEEEEE" mode="Opaque"/><graphicElement><pen lineWidth="0.8"/></graphicElement></rectangle>
+            <line><reportElement x="28" y="92" width="0" height="22"/></line><line><reportElement x="98" y="92" width="0" height="22"/></line><line><reportElement x="198" y="92" width="0" height="22"/></line><line><reportElement x="318" y="92" width="0" height="22"/></line><line><reportElement x="430" y="92" width="0" height="22"/></line><line><reportElement x="548" y="92" width="0" height="22"/></line><line><reportElement x="688" y="92" width="0" height="22"/></line>
+            <staticText><reportElement x="0" y="95" width="28" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[No]]></text></staticText>
+            <staticText><reportElement x="28" y="95" width="70" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[Tgl / Jam]]></text></staticText>
+            <staticText><reportElement x="98" y="95" width="100" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[Diagnosa (ICD X)]]></text></staticText>
+            <staticText><reportElement x="198" y="95" width="120" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[Uraian Klinis Penting]]></text></staticText>
+            <staticText><reportElement x="318" y="95" width="112" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[Penunjang]]></text></staticText>
+            <staticText><reportElement x="430" y="95" width="118" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[Riwayat Rawat Inap/Operasi]]></text></staticText>
+            <staticText><reportElement x="548" y="95" width="140" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[Obat/Rencana Tindak Lanjut]]></text></staticText>
+            <staticText><reportElement x="688" y="95" width="114" height="16"/><textElement textAlignment="Center"><font size="8" isBold="true"/></textElement><text><![CDATA[DPJP/Petugas]]></text></staticText>
+        </band>
+    </title>
+    <detail>
+        <band height="35" splitType="Stretch">
+            <rectangle><reportElement x="0" y="0" width="802" height="35" stretchType="RelativeToTallestObject"/><graphicElement><pen lineWidth="0.5"/></graphicElement></rectangle>
+            <line><reportElement x="28" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line><line><reportElement x="98" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line><line><reportElement x="198" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line><line><reportElement x="318" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line><line><reportElement x="430" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line><line><reportElement x="548" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line><line><reportElement x="688" y="0" width="0" height="35" stretchType="RelativeToTallestObject"/></line>
+            <textField isStretchWithOverflow="true"><reportElement x="2" y="2" width="24" height="30"/><textElement textAlignment="Center"><font size="7"/></textElement><textFieldExpression><![CDATA[$F{no}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="30" y="2" width="66" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{tanggal}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="100" y="2" width="96" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{diagnosa}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="200" y="2" width="116" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{klinis}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="320" y="2" width="108" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{penunjang}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="432" y="2" width="114" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{riwayat_inap}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="550" y="2" width="136" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{obat_rtl}]]></textFieldExpression></textField>
+            <textField isStretchWithOverflow="true"><reportElement x="690" y="2" width="110" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{petugas}]]></textFieldExpression></textField>
+        </band>
+    </detail>
+    <pageFooter><band height="18"><textField><reportElement x="0" y="3" width="120" height="12"/><textElement><font size="8"/></textElement><textFieldExpression><![CDATA["RM. 01"]]></textFieldExpression></textField><textField><reportElement x="702" y="3" width="100" height="12"/><textElement textAlignment="Right"><font size="8"/></textElement><textFieldExpression><![CDATA["Halaman " + $V{PAGE_NUMBER}]]></textFieldExpression></textField></band></pageFooter>
+</jasperReport>
