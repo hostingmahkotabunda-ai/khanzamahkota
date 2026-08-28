@@ -6503,18 +6503,43 @@ public class DlgKamarInap extends javax.swing.JDialog {
                             kdkamar.requestFocus();
                             break;
                         case "KOSONG":
-                            if(Sequel.menyimpantf("kamar_inap","'"+norawat.getText()+"','"+
-                                    kdkamar.getText()+"','"+TTarif.getText()+"','"+
-                                    diagnosaawal.getText()+"','"+
-                                    diagnosaakhir.getText()+"','"+
-                                    CmbTahun.getSelectedItem()+"-"+CmbBln.getSelectedItem()+"-"+CmbTgl.getSelectedItem()+"','"+
-                                    cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem()+"','0000-00-00','00:00:00','"+TJmlHari.getText()+"','"+
-                                    ttlbiaya.getText()+"','-'","No.Rawat")==true){
-                                Sequel.mengedit("reg_periksa","no_rawat='"+norawat.getText()+"'","status_lanjut='Ranap'");
-                                Sequel.mengedit("kamar","kd_kamar='"+kdkamar.getText()+"'","status='ISI'");                
-                                emptTeks();  
-                                tampil(); 
-                            }   
+                            String noRMMasuk=Sequel.cariIsi("select no_rkm_medis from reg_periksa where no_rawat=?",norawat.getText());
+                            if(noRMMasuk.trim().equals("")){
+                                JOptionPane.showMessageDialog(null,"Maaf, nomor rawat tidak ditemukan pada data registrasi..!!");
+                                norawat.requestFocus();
+                                break;
+                            }
+                            boolean kunciRanapTerkunci=kunciRawatInapPasien(noRMMasuk);
+                            if(!kunciRanapTerkunci){
+                                JOptionPane.showMessageDialog(null,"Maaf, data pasien sedang diproses oleh pengguna lain. Silahkan coba kembali..!!");
+                                break;
+                            }
+                            try{
+                                String rawatAktif=cariRawatInapAktifPasien(noRMMasuk);
+                                if(rawatAktif==null){
+                                    JOptionPane.showMessageDialog(null,"Maaf, status rawat inap pasien gagal diperiksa. Penyimpanan dibatalkan demi mencegah data dobel..!!");
+                                    break;
+                                }
+                                if(!rawatAktif.equals("")){
+                                    JOptionPane.showMessageDialog(null,"Pasien sudah tercatat aktif di rawat inap dengan No. Rawat "+rawatAktif+".\nData masuk kedua dibatalkan untuk mencegah pasien dobel..!!");
+                                    norawat.requestFocus();
+                                    break;
+                                }
+                                if(Sequel.menyimpantf("kamar_inap","'"+norawat.getText()+"','"+
+                                        kdkamar.getText()+"','"+TTarif.getText()+"','"+
+                                        diagnosaawal.getText()+"','"+
+                                        diagnosaakhir.getText()+"','"+
+                                        CmbTahun.getSelectedItem()+"-"+CmbBln.getSelectedItem()+"-"+CmbTgl.getSelectedItem()+"','"+
+                                        cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem()+"','0000-00-00','00:00:00','"+TJmlHari.getText()+"','"+
+                                        ttlbiaya.getText()+"','-'","No.Rawat")==true){
+                                    Sequel.mengedit("reg_periksa","no_rawat='"+norawat.getText()+"'","status_lanjut='Ranap'");
+                                    Sequel.mengedit("kamar","kd_kamar='"+kdkamar.getText()+"'","status='ISI'");
+                                    emptTeks();
+                                    tampil();
+                                }
+                            }finally{
+                                lepasKunciRawatInapPasien(noRMMasuk);
+                            }
                             break;
                     }
                     norawat.requestFocus();
@@ -7782,6 +7807,50 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             System.out.println("Notifikasi ambilKamarAktifSekarang : " + e);
         }
         return null;
+    }
+
+    /**
+     * Kunci lintas komputer berdasarkan nomor RM. Pemeriksaan dan penyimpanan
+     * pasien masuk harus berada di dalam kunci ini agar dua loket tidak dapat
+     * memasukkan pasien yang sama secara bersamaan.
+     */
+    private boolean kunciRawatInapPasien(String noRM) {
+        try (PreparedStatement pst = koneksi.prepareStatement("select get_lock(?,5)")) {
+            pst.setString(1,"kamar_inap_rm_"+noRM);
+            try (ResultSet r = pst.executeQuery()) {
+                return r.next() && r.getInt(1)==1;
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi kunciRawatInapPasien : "+e);
+            return false;
+        }
+    }
+
+    private void lepasKunciRawatInapPasien(String noRM) {
+        try (PreparedStatement pst = koneksi.prepareStatement("select release_lock(?)")) {
+            pst.setString(1,"kamar_inap_rm_"+noRM);
+            pst.executeQuery();
+        } catch (Exception e) {
+            System.out.println("Notifikasi lepasKunciRawatInapPasien : "+e);
+        }
+    }
+
+    private String cariRawatInapAktifPasien(String noRM) {
+        try (PreparedStatement pst = koneksi.prepareStatement(
+                "select kamar_inap.no_rawat from kamar_inap "
+                + "inner join reg_periksa on reg_periksa.no_rawat=kamar_inap.no_rawat "
+                + "where reg_periksa.no_rkm_medis=? and kamar_inap.stts_pulang='-' limit 1")) {
+            pst.setString(1,noRM);
+            try (ResultSet r = pst.executeQuery()) {
+                if(r.next()){
+                    return r.getString(1);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi cariRawatInapAktifPasien : "+e);
+            return null;
+        }
+        return "";
     }
 
     private void BtnSimpanpindahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanpindahActionPerformed

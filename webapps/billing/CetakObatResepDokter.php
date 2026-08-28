@@ -54,6 +54,7 @@ img.logo { width: 35px; height: 35px; }
     $passwordte = trim(isset($_GET['passwordte']))?trim($_GET['passwordte']):NULL;
     if((USERHYBRIDWEB==$usere)&&(PASHYBRIDWEB==$passwordte)){
         $no_resep = validTeks4(isset($_GET['no_resep'])?$_GET['no_resep']:NULL,14);
+        $tampilDetail = isset($_GET['detail']) && $_GET['detail']=='1';
 
         $_sql = "select resep_obat.no_resep,resep_obat.tgl_peresepan,resep_obat.jam_peresepan,".
                 "resep_obat.tgl_perawatan,resep_obat.jam,resep_obat.no_rawat,pasien.no_rkm_medis,".
@@ -94,17 +95,39 @@ img.logo { width: 35px; height: 35px; }
             echo "<div class='row s'>Jaminan : ".hResep($resep['png_jawab'])."</div>";
             echo "<div class='row s'>Tgl.Resep : ".hResep($resep['tgl_peresepan'])." ".hResep($resep['jam_peresepan'])."</div>";
 
+            $sudahValidasi = ($resep['tgl_perawatan']!='0000-00-00' && $resep['tgl_perawatan']!='' &&
+                               $resep['jam']!='00:00:00' && $resep['jam']!='');
+            if($sudahValidasi){
+                echo "<div class='row s'>Tgl.Validasi : ".hResep($resep['tgl_perawatan'])." ".hResep($resep['jam'])."</div>";
+            }
+
             echo "<div class='ln'></div>";
 
             // ===== OBAT =====
-            echo "<div class='section-header'>OBAT & DAFTAR</div>";
+            echo "<div class='section-header'>".($sudahValidasi ? "OBAT TERVALIDASI" : "OBAT DALAM PESANAN")."</div>";
 
             $i=1;
-            // group by kode_brng utk cegah baris dobel (no_resep,kode_brng) tercetak dua kali/jumlah salah
-            $obat=bukaquery("select sum(resep_dokter.jml) as jml,databarang.kode_sat,databarang.nama_brng,max(resep_dokter.aturan_pakai) as aturan_pakai ".
-                            "from resep_dokter inner join databarang on resep_dokter.kode_brng=databarang.kode_brng ".
-                            "where resep_dokter.no_resep='$no_resep' ".
-                            "group by resep_dokter.kode_brng,databarang.kode_sat,databarang.nama_brng order by databarang.nama_brng");
+            if($sudahValidasi){
+                // Nota resep yang sudah divalidasi harus membaca transaksi aktual apotek.
+                $tglValidasi=validTeks4($resep['tgl_perawatan'],10);
+                $jamValidasi=validTeks4($resep['jam'],8);
+                $noRawat=validTeks4($resep['no_rawat'],17);
+                $obat=bukaquery("select sum(detail_pemberian_obat.jml) as jml,databarang.kode_sat,databarang.nama_brng,".
+                                "ifnull(max(aturan_pakai.aturan),'') as aturan_pakai ".
+                                "from detail_pemberian_obat inner join databarang on detail_pemberian_obat.kode_brng=databarang.kode_brng ".
+                                "left join aturan_pakai on aturan_pakai.tgl_perawatan=detail_pemberian_obat.tgl_perawatan ".
+                                "and aturan_pakai.jam=detail_pemberian_obat.jam and aturan_pakai.no_rawat=detail_pemberian_obat.no_rawat ".
+                                "and aturan_pakai.kode_brng=detail_pemberian_obat.kode_brng ".
+                                "where detail_pemberian_obat.no_rawat='$noRawat' and detail_pemberian_obat.tgl_perawatan='$tglValidasi' ".
+                                "and detail_pemberian_obat.jam='$jamValidasi' ".
+                                "group by detail_pemberian_obat.kode_brng,databarang.kode_sat,databarang.nama_brng order by databarang.nama_brng");
+            }else{
+                // Sebelum validasi, cetakan tetap menunjukkan permintaan awal dokter.
+                $obat=bukaquery("select sum(resep_dokter.jml) as jml,databarang.kode_sat,databarang.nama_brng,max(resep_dokter.aturan_pakai) as aturan_pakai ".
+                                "from resep_dokter inner join databarang on resep_dokter.kode_brng=databarang.kode_brng ".
+                                "where resep_dokter.no_resep='$no_resep' ".
+                                "group by resep_dokter.kode_brng,databarang.kode_sat,databarang.nama_brng order by databarang.nama_brng");
+            }
             $adaObat = false;
             while($barisobat=mysqli_fetch_array($obat)){
                 $adaObat = true;
@@ -115,7 +138,15 @@ img.logo { width: 35px; height: 35px; }
                 $i++;
             }
 
-            // ===== RACIKAN =====
+            // Detail permintaan racikan normalnya cuma ditampilkan sebelum validasi
+            // (setelah validasi komponen racikan aktual sudah masuk detail_pemberian_obat
+            // di atas, jadi tidak boleh dicampur pesanan awal) -- KECUALI saat $tampilDetail
+            // diminta lewat tombol "Cetak Nota Detail (Racikan)", supaya petugas yang
+            // meracik tetap bisa lihat rincian bahan racikannya di nota.
+            if(!$sudahValidasi || $tampilDetail){
+            if($sudahValidasi && $tampilDetail){
+                echo "<div class='section-header'>RINCIAN RACIKAN (PESANAN AWAL)</div>";
+            }
             $racikan=bukaquery("select resep_dokter_racikan.no_racik,resep_dokter_racikan.nama_racik,".
                                "resep_dokter_racikan.jml_dr,resep_dokter_racikan.aturan_pakai,".
                                "resep_dokter_racikan.keterangan,metode_racik.nm_racik ".
@@ -143,6 +174,7 @@ img.logo { width: 35px; height: 35px; }
                     echo "</div>";
                 }
                 $i++;
+            }
             }
 
             if(!$adaObat){

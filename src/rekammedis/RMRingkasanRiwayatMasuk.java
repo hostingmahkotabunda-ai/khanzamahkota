@@ -17,23 +17,36 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.Timer;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 /**
  * Ringkasan Riwayat Masuk dan Keluar Rumah Sakit (RM 2a).
@@ -84,6 +97,12 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
     private final widget.TextBox tKelas = ro();
     private final widget.TextArea taDiagnosaMasuk = ta();
     private final widget.TextBox tKodeDiagnosa = tf();
+    private final JPopupMenu popupDiagnosa = new JPopupMenu();
+    private final DefaultListModel<String> modelSaranDiagnosa = new DefaultListModel<>();
+    private final JList<String> listSaranDiagnosa = new JList<>(modelSaranDiagnosa);
+    private final List<String[]> dataSaranDiagnosa = new ArrayList<>();
+    private final Timer timerCariDiagnosa = new Timer(300, e -> cariSaranDiagnosa());
+    private boolean sedangPilihDiagnosa = false;
     private final widget.TextBox tPerawatRuangan = tf();
     private final widget.TextBox tDokterMerawat = tf();
 
@@ -303,6 +322,121 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         bawah.add(BtnCetak);
         bawah.add(BtnSimpan);
         getContentPane().add(bawah, BorderLayout.SOUTH);
+
+        initAutocompleteDiagnosa();
+    }
+
+    /**
+     * Autocomplete ICD-10 memakai master penyakit yang sama dengan tabel
+     * Diagnosa pada DlgRawatJalan/DlgIGD.
+     */
+    private void initAutocompleteDiagnosa() {
+        timerCariDiagnosa.setRepeats(false);
+        popupDiagnosa.setFocusable(false);
+        listSaranDiagnosa.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        listSaranDiagnosa.setVisibleRowCount(8);
+        listSaranDiagnosa.setFont(new Font("Tahoma", Font.PLAIN, 12));
+        listSaranDiagnosa.setFocusable(false);
+        JScrollPane scrollSaran = new JScrollPane(listSaranDiagnosa);
+        scrollSaran.setFocusable(false);
+        scrollSaran.setPreferredSize(new Dimension(650, 190));
+        popupDiagnosa.setBorder(BorderFactory.createLineBorder(new Color(142, 205, 210)));
+        popupDiagnosa.add(scrollSaran);
+
+        tKodeDiagnosa.getDocument().addDocumentListener(new DocumentListener() {
+            private void berubah() {
+                if(sedangPilihDiagnosa || !tKodeDiagnosa.isFocusOwner()){
+                    return;
+                }
+                timerCariDiagnosa.restart();
+            }
+            @Override public void insertUpdate(DocumentEvent e) { berubah(); }
+            @Override public void removeUpdate(DocumentEvent e) { berubah(); }
+            @Override public void changedUpdate(DocumentEvent e) { berubah(); }
+        });
+
+        tKodeDiagnosa.addKeyListener(new KeyAdapter() {
+            @Override public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode()==KeyEvent.VK_DOWN && popupDiagnosa.isVisible()){
+                    int berikutnya=Math.min(listSaranDiagnosa.getSelectedIndex()+1,modelSaranDiagnosa.size()-1);
+                    listSaranDiagnosa.setSelectedIndex(Math.max(0,berikutnya));
+                    listSaranDiagnosa.ensureIndexIsVisible(listSaranDiagnosa.getSelectedIndex());
+                    e.consume();
+                }else if(e.getKeyCode()==KeyEvent.VK_UP && popupDiagnosa.isVisible()){
+                    int sebelumnya=Math.max(0,listSaranDiagnosa.getSelectedIndex()-1);
+                    listSaranDiagnosa.setSelectedIndex(sebelumnya);
+                    listSaranDiagnosa.ensureIndexIsVisible(sebelumnya);
+                    e.consume();
+                }else if(e.getKeyCode()==KeyEvent.VK_ENTER && popupDiagnosa.isVisible()){
+                    pilihSaranDiagnosa();
+                    e.consume();
+                }else if(e.getKeyCode()==KeyEvent.VK_ESCAPE){
+                    popupDiagnosa.setVisible(false);
+                }
+            }
+        });
+
+        listSaranDiagnosa.addMouseListener(new MouseAdapter() {
+            @Override public void mouseClicked(MouseEvent e) {
+                if(e.getClickCount()>=1){
+                    pilihSaranDiagnosa();
+                }
+            }
+        });
+    }
+
+    private void cariSaranDiagnosa() {
+        String keyword=tKodeDiagnosa.getText().trim();
+        modelSaranDiagnosa.clear();
+        dataSaranDiagnosa.clear();
+        if(keyword.length()<1 || !tKodeDiagnosa.isShowing()){
+            popupDiagnosa.setVisible(false);
+            return;
+        }
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select kd_penyakit,nm_penyakit from penyakit "
+                + "where kd_penyakit like ? or nm_penyakit like ? "
+                + "order by case when kd_penyakit like ? then 0 else 1 end,kd_penyakit limit 25")) {
+            ps.setString(1,"%"+keyword+"%");
+            ps.setString(2,"%"+keyword+"%");
+            ps.setString(3,keyword+"%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while(rs.next()){
+                    String kode=rs.getString("kd_penyakit");
+                    String nama=rs.getString("nm_penyakit");
+                    dataSaranDiagnosa.add(new String[]{kode,nama});
+                    modelSaranDiagnosa.addElement(kode+"  -  "+nama);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif autocomplete ICD-10 RM 2a : "+e);
+        }
+        if(modelSaranDiagnosa.isEmpty()){
+            popupDiagnosa.setVisible(false);
+        }else{
+            listSaranDiagnosa.setSelectedIndex(0);
+            popupDiagnosa.show(tKodeDiagnosa,0,tKodeDiagnosa.getHeight());
+            // JPopupMenu pada beberapa Look & Feel mengambil fokus ketika tampil.
+            // Kembalikan fokus/caret supaya petugas dapat terus mengetik keyword.
+            tKodeDiagnosa.requestFocusInWindow();
+        }
+    }
+
+    private void pilihSaranDiagnosa() {
+        int index=listSaranDiagnosa.getSelectedIndex();
+        if(index<0 || index>=dataSaranDiagnosa.size()){
+            return;
+        }
+        sedangPilihDiagnosa=true;
+        try{
+            String[] pilihan=dataSaranDiagnosa.get(index);
+            tKodeDiagnosa.setText(pilihan[0]);
+            taDiagnosaMasuk.setText(pilihan[1]);
+            popupDiagnosa.setVisible(false);
+            taDiagnosaMasuk.requestFocus();
+        }finally{
+            sedangPilihDiagnosa=false;
+        }
     }
 
     public void isCek() {

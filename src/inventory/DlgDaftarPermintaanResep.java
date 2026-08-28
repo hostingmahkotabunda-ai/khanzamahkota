@@ -63,6 +63,8 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
     private final javax.swing.JPopupMenu PopupResepRanap=new javax.swing.JPopupMenu();
     private final javax.swing.JMenuItem ppCetakObatResepRalan=new javax.swing.JMenuItem();
     private final javax.swing.JMenuItem ppCetakObatResepRanap=new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem ppCetakNotaDetailRalan=new javax.swing.JMenuItem();
+    private final javax.swing.JMenuItem ppCetakNotaDetailRanap=new javax.swing.JMenuItem();
     
     /** Creates new form 
      * @param parent
@@ -3306,6 +3308,13 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             cetakObatResepRalan();
         });
         PopupResepRalan.add(ppCetakObatResepRalan);
+        ppCetakNotaDetailRalan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png")));
+        ppCetakNotaDetailRalan.setText("Cetak Nota Detail (Racikan)");
+        ppCetakNotaDetailRalan.setName("ppCetakNotaDetailRalan");
+        ppCetakNotaDetailRalan.addActionListener((java.awt.event.ActionEvent evt) -> {
+            cetakNotaDetailResepRalan();
+        });
+        PopupResepRalan.add(ppCetakNotaDetailRalan);
         tbResepRalan.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -3329,6 +3338,13 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             cetakObatResepRanap();
         });
         PopupResepRanap.add(ppCetakObatResepRanap);
+        ppCetakNotaDetailRanap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png")));
+        ppCetakNotaDetailRanap.setText("Cetak Nota Detail (Racikan)");
+        ppCetakNotaDetailRanap.setName("ppCetakNotaDetailRanap");
+        ppCetakNotaDetailRanap.addActionListener((java.awt.event.ActionEvent evt) -> {
+            cetakNotaDetailResepRanap();
+        });
+        PopupResepRanap.add(ppCetakNotaDetailRanap);
         tbResepRanap.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -3379,6 +3395,23 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
         Valid.panggilUrl("billing/CetakObatResepDokter.php?usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB()+"&no_resep="+NoResep);
     }
 
+    /** Sama seperti cetakObatResepRalan(), tapi minta rincian bahan racikan tetap
+     * dicetak walau resep sudah divalidasi -- utk petugas yang meracik obatnya. */
+    private void cetakNotaDetailResepRalan(){
+        if(tbResepRalan.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Maaf, pilih dulu data resep rawat jalan yang mau dicetak...!!!!");
+            tbResepRalan.requestFocus();
+            return;
+        }
+        getData();
+        if(NoResep.equals("")){
+            JOptionPane.showMessageDialog(null,"Maaf, No.Resep masih kosong...!!!!");
+            tbResepRalan.requestFocus();
+            return;
+        }
+        Valid.panggilUrl("billing/CetakObatResepDokter.php?usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB()+"&no_resep="+NoResep+"&detail=1");
+    }
+
     private void cetakObatResepRanap(){
         if(tbResepRanap.getSelectedRow()==-1){
             JOptionPane.showMessageDialog(null,"Maaf, pilih dulu data resep rawat inap yang mau dicetak...!!!!");
@@ -3393,7 +3426,24 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
         }
         Valid.panggilUrl("billing/CetakObatResepDokter.php?usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB()+"&no_resep="+NoResep);
     }
-    
+
+    /** Sama seperti cetakObatResepRanap(), tapi minta rincian bahan racikan tetap
+     * dicetak walau resep sudah divalidasi -- utk petugas yang meracik obatnya. */
+    private void cetakNotaDetailResepRanap(){
+        if(tbResepRanap.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(null,"Maaf, pilih dulu data resep rawat inap yang mau dicetak...!!!!");
+            tbResepRanap.requestFocus();
+            return;
+        }
+        getData2();
+        if(NoResep.equals("")){
+            JOptionPane.showMessageDialog(null,"Maaf, No.Resep masih kosong...!!!!");
+            tbResepRanap.requestFocus();
+            return;
+        }
+        Valid.panggilUrl("billing/CetakObatResepDokter.php?usere="+koneksiDB.USERHYBRIDWEB()+"&passwordte="+koneksiDB.PASHYBRIDWEB()+"&no_resep="+NoResep+"&detail=1");
+    }
+
     public JTable getTable(){
         return tbResepRalan;
     }
