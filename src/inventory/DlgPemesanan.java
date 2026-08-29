@@ -120,8 +120,6 @@ public class DlgPemesanan extends javax.swing.JDialog {
                 column.setPreferredWidth(190);
             }else if(i==4){
                 column.setPreferredWidth(50);
-            }else if(i==5){
-                column.setPreferredWidth(22);
             }else if(i==6){
                 column.setPreferredWidth(75);
             }else if(i==7){
