@@ -5801,11 +5801,14 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
                 sukses=false;
                 Valid.textKosong(TCariPemeriksaan,"Skala 1 / Skala 2");
             }else{
-                if(Sequel.mengedittf("data_triase_igd","no_rawat=?","no_rawat=?,tgl_kunjungan=?,cara_masuk=?,alat_transportasi=?,alasan_kedatangan=?,keterangan_kedatangan=?,kode_kasus=?,tekanan_darah=?,nadi=?,pernapasan=?,suhu=?,saturasi_o2=?,nyeri=?",14,new String[]{
+                if(Sequel.mengedittf("data_triase_igd","no_rawat=?","no_rawat=?,tgl_kunjungan=?,cara_masuk=?,alat_transportasi=?,alasan_kedatangan=?,keterangan_kedatangan=?,kode_kasus=?,tekanan_darah=?,nadi=?,pernapasan=?,suhu=?,saturasi_o2=?,nyeri=?,jam_tiba_igd=?,jam_triase_selesai=?",16,new String[]{
                         TNoRw.getText(),Valid.SetTgl(TanggalKunjungan.getSelectedItem()+"")+" "+TanggalKunjungan.getSelectedItem().toString().substring(11,19),
-                        CaraMasuk.getSelectedItem().toString(),Transportasi.getSelectedItem().toString(),AlasanKedatangan.getSelectedItem().toString(), 
+                        CaraMasuk.getSelectedItem().toString(),Transportasi.getSelectedItem().toString(),AlasanKedatangan.getSelectedItem().toString(),
                         KeteranganKedatangan.getText(),KdKasus.getText(),PrimerTensi.getText(),PrimerNadi.getText(),PrimerRespirasi.getText(),PrimerSuhu.getText(),
-                        PrimerSaturasi.getText(),PrimerNyeri.getText(),tbTriase.getValueAt(tbTriase.getSelectedRow(),0).toString()
+                        PrimerSaturasi.getText(),PrimerNyeri.getText(),
+                        Valid.SetTgl(JamTibaIGD.getSelectedItem()+"")+" "+JamTibaIGD.getSelectedItem().toString().substring(11,19),
+                        Valid.SetTgl(JamTriaseSelesai.getSelectedItem()+"")+" "+JamTriaseSelesai.getSelectedItem().toString().substring(11,19),
+                        tbTriase.getValueAt(tbTriase.getSelectedRow(),0).toString()
                     })==true){
                     if(PrimerResusitasi.isSelected()==true){
                         keputusan="Ruang Resusitasi";
@@ -5897,11 +5900,14 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
                 sukses=false;
                 Valid.textKosong(TCariPemeriksaan2,"Skala 3 / Skala 4 / Skala 5");
             }else{
-                if(Sequel.mengedittf("data_triase_igd","no_rawat=?","no_rawat=?,tgl_kunjungan=?,cara_masuk=?,alat_transportasi=?,alasan_kedatangan=?,keterangan_kedatangan=?,kode_kasus=?,tekanan_darah=?,nadi=?,pernapasan=?,suhu=?,saturasi_o2=?,nyeri=?",14,new String[]{
+                if(Sequel.mengedittf("data_triase_igd","no_rawat=?","no_rawat=?,tgl_kunjungan=?,cara_masuk=?,alat_transportasi=?,alasan_kedatangan=?,keterangan_kedatangan=?,kode_kasus=?,tekanan_darah=?,nadi=?,pernapasan=?,suhu=?,saturasi_o2=?,nyeri=?,jam_tiba_igd=?,jam_triase_selesai=?",16,new String[]{
                         TNoRw.getText(),Valid.SetTgl(TanggalKunjungan.getSelectedItem()+"")+" "+TanggalKunjungan.getSelectedItem().toString().substring(11,19),
-                        CaraMasuk.getSelectedItem().toString(),Transportasi.getSelectedItem().toString(),AlasanKedatangan.getSelectedItem().toString(), 
+                        CaraMasuk.getSelectedItem().toString(),Transportasi.getSelectedItem().toString(),AlasanKedatangan.getSelectedItem().toString(),
                         KeteranganKedatangan.getText(),KdKasus.getText(),SekunderTensi.getText(),SekunderNadi.getText(),SekunderRespirasi.getText(),SekunderSuhu.getText(),
-                        SekunderSaturasi.getText(),SekunderNyeri.getText(),tbTriase.getValueAt(tbTriase.getSelectedRow(),0).toString()
+                        SekunderSaturasi.getText(),SekunderNyeri.getText(),
+                        Valid.SetTgl(JamTibaIGD.getSelectedItem()+"")+" "+JamTibaIGD.getSelectedItem().toString().substring(11,19),
+                        Valid.SetTgl(JamTriaseSelesai.getSelectedItem()+"")+" "+JamTriaseSelesai.getSelectedItem().toString().substring(11,19),
+                        tbTriase.getValueAt(tbTriase.getSelectedRow(),0).toString()
                     })==true){
                     if(SekunderZonaKuning.isSelected()==true){
                         keputusan="Zona Kuning";

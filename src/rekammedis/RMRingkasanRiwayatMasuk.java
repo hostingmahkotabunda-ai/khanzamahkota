@@ -79,7 +79,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
     private final widget.ComboBox cmbSuku = cmb("-", "Banjar", "Jawa", "Dayak", "Lainnya");
     private final widget.TextBox tSukuLainnya = tf();
     private final widget.ComboBox cmbCaraMasuk = cmb("-", "Dokter Luar", "Paramedis", "RS Pemerintah",
-            "Puskesmas", "Datang Sendiri", "RS Lain/Klinik");
+            "Puskesmas", "Datang Sendiri", "RS Lain/Klinik", "Rujukan");
     private final widget.ComboBox cmbAgama = cmb("-", "Islam", "Kristen", "Katolik", "Hindu", "Budha", "Kong Hu Cu");
     private final widget.ComboBox cmbGolDarah = cmb("-", "A", "B", "O", "AB");
     private final widget.ComboBox cmbPendidikan = cmb("-", "Belum Sekolah", "Tidak Sekolah", "SD", "SMP", "SMA",
