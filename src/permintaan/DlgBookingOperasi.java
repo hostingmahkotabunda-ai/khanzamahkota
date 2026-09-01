@@ -7,8 +7,11 @@ import fungsi.sekuel;
 import fungsi.validasi;
 import fungsi.akses;
 import inventory.DlgPeresepanDokter;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Font;
+import javax.swing.BorderFactory;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -55,8 +58,22 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
     private DlgCariDokter dokter=new DlgCariDokter(null,false);
     private DlgCariRuangOperasi ruangok=new DlgCariRuangOperasi(null,false);
     private DlgCariDaftarOperasi operasi=new DlgCariDaftarOperasi(null,false);
-    
-    
+
+    /** Tambahan: sifat operasi (Cito/Elektif) + jam keputusan & jam masuk ruang operasi -- lihat pasangFormSifatOperasi(). */
+    private javax.swing.JToggleButton BtnSifatElektif;
+    private javax.swing.JToggleButton BtnSifatCito;
+    private widget.Tanggal DTPKeputusan;
+    private widget.ComboBox JamKeputusan;
+    private widget.ComboBox MenitKeputusan;
+    private widget.Tanggal DTPMasukOK;
+    private widget.ComboBox JamMasukOK;
+    private widget.ComboBox MenitMasukOK;
+    private javax.swing.JButton BtnIsiWaktuMasukOK;
+    private widget.Label lblStatusMasukOK;
+    /** true kalau "Waktu Masuk Ruang Operasi" sudah diisi (manual atau lewat tombol) -- kalau false, disimpan sbg NULL krn memang belum terjadi. */
+    private boolean masukOkDiisi = false;
+
+
 
     /** Creates new form DlgPemberianInfus
      * @param parent
@@ -64,11 +81,12 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
     public DlgBookingOperasi(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        pasangFormSifatOperasi();
 
         tabMode=new DefaultTableModel(null,new Object[]{
                 "No.","No.Rawat","Nama Pasien","Umur","J.K.","Tanggal","Mulai",
                 "Selesai","Status","Rujukan Dari","Diagnosa","Kode Operasi","Operasi",
-                "Kode Operator","Operator","Order","Kode OK","Nama Ruang Operasi"
+                "Kode Operator","Operator","Order","Kode OK","Nama Ruang Operasi","Sifat"
             }){
               @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
         };
@@ -78,7 +96,7 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
         tbObat.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbObat.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 18; i++) {
+        for (i = 0; i < 19; i++) {
             TableColumn column = tbObat.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(28);
@@ -119,6 +137,8 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
                 column.setPreferredWidth(50);
             }else if(i==17){
                 column.setPreferredWidth(130);
+            }else if(i==18){
+                column.setPreferredWidth(60);
             }
         }
         tbObat.setDefaultRenderer(Object.class, new WarnaTable());
@@ -1199,6 +1219,394 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * Tambahan blok 2 baris baru di FormInput (di luar kode hasil GUI builder di atas):
+     * Sifat Operasi (Cito/Elektif) + Waktu Keputusan Jadwal Operasi + Waktu Masuk Ruang Operasi.
+     * Dipanggil sekali dari konstruktor, setelah initComponents().
+     */
+    private static final Color WARNA_TEAL = new Color(0,133,143);
+    private static final Color WARNA_CITO = new Color(196,58,48);
+    private static final Color WARNA_TAK_AKTIF_BG = new Color(238,238,238);
+    private static final Color WARNA_TAK_AKTIF_FG = new Color(80,80,80);
+
+    private void pasangFormSifatOperasi(){
+        widget.Label lblSifat = new widget.Label();
+        lblSifat.setText("Sifat Operasi :");
+        lblSifat.setName("lblSifat");
+        FormInput.add(lblSifat);
+        lblSifat.setBounds(0,100,90,23);
+
+        // Toggle 2-segmen Elektif/Cito (bukan combo lagi) -- gaya "segmented control".
+        BtnSifatElektif = new javax.swing.JToggleButton("Elektif");
+        BtnSifatCito = new javax.swing.JToggleButton("Cito");
+        javax.swing.ButtonGroup grupSifat = new javax.swing.ButtonGroup();
+        grupSifat.add(BtnSifatElektif);
+        grupSifat.add(BtnSifatCito);
+        for(javax.swing.JToggleButton b : new javax.swing.JToggleButton[]{BtnSifatElektif,BtnSifatCito}){
+            b.setFont(new Font("Tahoma", Font.BOLD, 11));
+            b.setFocusPainted(false);
+            b.setOpaque(true);
+            FormInput.add(b);
+        }
+        BtnSifatElektif.setBorder(BorderFactory.createLineBorder(WARNA_TEAL));
+        BtnSifatCito.setBorder(BorderFactory.createMatteBorder(1,0,1,1,WARNA_TEAL));
+        BtnSifatElektif.setBounds(93,100,80,23);
+        BtnSifatCito.setBounds(173,100,80,23);
+        java.awt.event.ItemListener onSifatBerubah = evt -> perbaruiTampilanSifatOperasi();
+        BtnSifatElektif.addItemListener(onSifatBerubah);
+        BtnSifatCito.addItemListener(onSifatBerubah);
+        BtnSifatElektif.setSelected(true);
+        perbaruiTampilanSifatOperasi();
+
+        // Kartu "Waktu Aktual" -- bungkus Waktu Keputusan + Waktu Masuk Ruang Operasi dalam 1 kotak
+        // bertitel, terpisah dari baris2 lama di atasnya (yg TIDAK ikut di-restyle).
+        widget.PanelBiasa kotakWaktuAktual = new widget.PanelBiasa();
+        kotakWaktuAktual.setLayout(null);
+        kotakWaktuAktual.setBackground(Color.WHITE);
+        kotakWaktuAktual.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(200,200,200)), "Waktu Aktual",
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                new Font("Tahoma", Font.BOLD, 11), WARNA_TEAL));
+        FormInput.add(kotakWaktuAktual);
+        kotakWaktuAktual.setBounds(0,128,843,72);
+
+        widget.Label lblKeputusan = new widget.Label();
+        lblKeputusan.setText("Wkt Keputusan :");
+        kotakWaktuAktual.add(lblKeputusan);
+        lblKeputusan.setBounds(10,20,90,23);
+
+        DTPKeputusan = new widget.Tanggal();
+        DTPKeputusan.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"28-03-2023"}));
+        DTPKeputusan.setDisplayFormat("dd-MM-yyyy");
+        DTPKeputusan.setName("DTPKeputusan");
+        DTPKeputusan.setOpaque(false);
+        kotakWaktuAktual.add(DTPKeputusan);
+        DTPKeputusan.setBounds(103,20,90,23);
+
+        JamKeputusan = new widget.ComboBox();
+        JamKeputusan.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"}));
+        JamKeputusan.setName("JamKeputusan");
+        kotakWaktuAktual.add(JamKeputusan);
+        JamKeputusan.setBounds(196,20,50,23);
+
+        widget.Label lblKeputusanTitik = new widget.Label();
+        lblKeputusanTitik.setText(":");
+        lblKeputusanTitik.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        kotakWaktuAktual.add(lblKeputusanTitik);
+        lblKeputusanTitik.setBounds(248,20,10,23);
+
+        MenitKeputusan = new widget.ComboBox();
+        MenitKeputusan.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59"}));
+        MenitKeputusan.setName("MenitKeputusan");
+        kotakWaktuAktual.add(MenitKeputusan);
+        MenitKeputusan.setBounds(260,20,50,23);
+
+        widget.Label lblMasukOK = new widget.Label();
+        lblMasukOK.setText("Wkt Masuk OK :");
+        kotakWaktuAktual.add(lblMasukOK);
+        lblMasukOK.setBounds(335,20,90,23);
+
+        DTPMasukOK = new widget.Tanggal();
+        DTPMasukOK.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"28-03-2023"}));
+        DTPMasukOK.setDisplayFormat("dd-MM-yyyy");
+        DTPMasukOK.setName("DTPMasukOK");
+        DTPMasukOK.setOpaque(false);
+        kotakWaktuAktual.add(DTPMasukOK);
+        DTPMasukOK.setBounds(428,20,90,23);
+        DTPMasukOK.addItemListener(new java.awt.event.ItemListener(){
+            public void itemStateChanged(java.awt.event.ItemEvent evt){
+                masukOkDiisi = true;
+                perbaruiStatusMasukOK();
+            }
+        });
+
+        JamMasukOK = new widget.ComboBox();
+        JamMasukOK.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"}));
+        JamMasukOK.setName("JamMasukOK");
+        kotakWaktuAktual.add(JamMasukOK);
+        JamMasukOK.setBounds(521,20,50,23);
+        JamMasukOK.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent evt){
+                masukOkDiisi = true;
+                perbaruiStatusMasukOK();
+            }
+        });
+
+        widget.Label lblMasukOKTitik = new widget.Label();
+        lblMasukOKTitik.setText(":");
+        lblMasukOKTitik.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        kotakWaktuAktual.add(lblMasukOKTitik);
+        lblMasukOKTitik.setBounds(573,20,10,23);
+
+        MenitMasukOK = new widget.ComboBox();
+        MenitMasukOK.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59"}));
+        MenitMasukOK.setName("MenitMasukOK");
+        kotakWaktuAktual.add(MenitMasukOK);
+        MenitMasukOK.setBounds(585,20,50,23);
+        MenitMasukOK.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent evt){
+                masukOkDiisi = true;
+                perbaruiStatusMasukOK();
+            }
+        });
+
+        // JButton standar dipakai agar warna solid dan teks tidak terkena efek
+        // transparan/glass dari widget.ButtonGlass.
+        BtnIsiWaktuMasukOK = new javax.swing.JButton();
+        BtnIsiWaktuMasukOK.setText("Isi Waktu Sekarang");
+        BtnIsiWaktuMasukOK.setFont(new Font("Tahoma",Font.BOLD,11));
+        BtnIsiWaktuMasukOK.setBackground(WARNA_TEAL);
+        BtnIsiWaktuMasukOK.setForeground(Color.WHITE);
+        BtnIsiWaktuMasukOK.setOpaque(true);
+        BtnIsiWaktuMasukOK.setContentAreaFilled(true);
+        BtnIsiWaktuMasukOK.setFocusPainted(false);
+        BtnIsiWaktuMasukOK.setBorder(BorderFactory.createLineBorder(new Color(0,105,112)));
+        BtnIsiWaktuMasukOK.addActionListener(new java.awt.event.ActionListener(){
+            public void actionPerformed(java.awt.event.ActionEvent evt){
+                Date sekarang = new Date();
+                DTPMasukOK.setDate(sekarang);
+                JamMasukOK.setSelectedItem(new java.text.SimpleDateFormat("HH").format(sekarang));
+                MenitMasukOK.setSelectedItem(new java.text.SimpleDateFormat("mm").format(sekarang));
+                masukOkDiisi = true;
+                perbaruiStatusMasukOK();
+            }
+        });
+        kotakWaktuAktual.add(BtnIsiWaktuMasukOK);
+        BtnIsiWaktuMasukOK.setBounds(643,20,150,23);
+
+        lblStatusMasukOK = new widget.Label();
+        lblStatusMasukOK.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 10));
+        lblStatusMasukOK.setForeground(new java.awt.Color(90,75,35));
+        lblStatusMasukOK.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        kotakWaktuAktual.add(lblStatusMasukOK);
+        lblStatusMasukOK.setBounds(10,46,820,20);
+        perbaruiStatusMasukOK();
+
+        susunUlangFormBooking(lblSifat, kotakWaktuAktual);
+        terapkanGayaTampilanBooking();
+    }
+
+    /**
+     * Mengelompokkan field lama ke dalam kartu yang mengikuti urutan kerja petugas:
+     * pasien -> jadwal -> tim/ruang -> waktu aktual. Seluruh komponen lama tetap
+     * digunakan agar action listener dan proses simpan tidak berubah.
+     */
+    private void susunUlangFormBooking(widget.Label lblSifat, widget.PanelBiasa kotakWaktuAktual){
+        widget.PanelBiasa kartuPasien = buatKartuForm("1. Data Pasien", 275, 175);
+        widget.PanelBiasa kartuJadwal = buatKartuForm("2. Jadwal Operasi", 300, 175);
+        widget.PanelBiasa kartuTim = buatKartuForm("3. Tim & Ruang Operasi", 345, 175);
+
+        widget.Label lblPasien = buatLabelForm("Nama Pasien :");
+        widget.Label lblKamar = buatLabelForm("Kamar :");
+        widget.Label lblSelesai = buatLabelForm("Selesai :");
+
+        kartuPasien.add(jLabel4);
+        jLabel4.setBounds(10,25,85,23);
+        kartuPasien.add(TNoRw);
+        TNoRw.setBounds(98,25,165,23);
+        kartuPasien.add(lblPasien);
+        lblPasien.setBounds(10,55,85,23);
+        kartuPasien.add(TPasien);
+        TPasien.setBounds(98,55,165,23);
+        kartuPasien.add(lblKamar);
+        lblKamar.setBounds(10,85,85,23);
+        kartuPasien.add(Kamar);
+        Kamar.setBounds(98,85,165,23);
+
+        kartuJadwal.add(jLabel10);
+        jLabel10.setBounds(10,25,75,23);
+        kartuJadwal.add(DTPTgl);
+        DTPTgl.setBounds(88,25,95,23);
+        kartuJadwal.add(jLabel35);
+        jLabel35.setBounds(10,55,75,23);
+        kartuJadwal.add(JamMulai);
+        JamMulai.setBounds(88,55,48,23);
+        kartuJadwal.add(MenitMulai);
+        MenitMulai.setBounds(138,55,48,23);
+        kartuJadwal.add(DetikMulai);
+        DetikMulai.setBounds(188,55,48,23);
+        kartuJadwal.add(lblSelesai);
+        lblSelesai.setBounds(10,85,75,23);
+        kartuJadwal.add(JamSelesai);
+        JamSelesai.setBounds(88,85,48,23);
+        kartuJadwal.add(MenitSelesai);
+        MenitSelesai.setBounds(138,85,48,23);
+        kartuJadwal.add(DetikSelesai);
+        DetikSelesai.setBounds(188,85,48,23);
+        kartuJadwal.add(jLabel37);
+        jLabel37.setBounds(10,115,75,23);
+        kartuJadwal.add(Status);
+        Status.setBounds(88,115,148,23);
+        kartuJadwal.add(lblSifat);
+        lblSifat.setBounds(10,145,75,23);
+        kartuJadwal.add(BtnSifatElektif);
+        BtnSifatElektif.setBounds(88,145,80,23);
+        kartuJadwal.add(BtnSifatCito);
+        BtnSifatCito.setBounds(168,145,68,23);
+
+        kartuTim.add(jLabel9);
+        jLabel9.setBounds(10,25,65,23);
+        kartuTim.add(KdDokter);
+        KdDokter.setBounds(78,25,55,23);
+        kartuTim.add(NmDokter);
+        NmDokter.setBounds(135,25,165,23);
+        kartuTim.add(BtnOperator);
+        BtnOperator.setBounds(303,25,28,23);
+
+        kartuTim.add(jLabel11);
+        jLabel11.setBounds(10,55,65,23);
+        kartuTim.add(KdOperasi);
+        KdOperasi.setBounds(78,55,55,23);
+        kartuTim.add(NmOperasi);
+        NmOperasi.setBounds(135,55,165,23);
+        kartuTim.add(BtnOperasi);
+        BtnOperasi.setBounds(303,55,28,23);
+
+        kartuTim.add(jLabel12);
+        jLabel12.setBounds(10,85,65,23);
+        kartuTim.add(KdRuangOperasi);
+        KdRuangOperasi.setBounds(78,85,55,23);
+        kartuTim.add(NmRuangOperasi);
+        NmRuangOperasi.setBounds(135,85,165,23);
+        kartuTim.add(BtnRuangOperasi);
+        BtnRuangOperasi.setBounds(303,85,28,23);
+
+        // Label pemisah lama tidak lagi diperlukan setelah waktu mulai/selesai
+        // disusun dalam dua baris yang jelas.
+        jLabel36.setVisible(false);
+
+        FormInput.removeAll();
+        // FormInput bawaan memakai absolute layout. Pertahankan pola tersebut dan
+        // hitung ulang lebar kartu saat dialog berubah ukuran. Ini lebih stabil
+        // daripada GridBagLayout pada PanelBiasa yang dibuka setelah pack().
+        FormInput.setLayout(null);
+        FormInput.add(kartuPasien);
+        FormInput.add(kartuJadwal);
+        FormInput.add(kartuTim);
+        FormInput.add(kotakWaktuAktual);
+        aturUkuranKartuForm(kartuPasien,kartuJadwal,kartuTim,kotakWaktuAktual);
+        FormInput.addComponentListener(new java.awt.event.ComponentAdapter(){
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent evt){
+                aturUkuranKartuForm(kartuPasien,kartuJadwal,kartuTim,kotakWaktuAktual);
+            }
+        });
+
+        FormInput.setPreferredSize(new Dimension(950,265));
+        PanelInput.setPreferredSize(new Dimension(WIDTH,291));
+        FormInput.revalidate();
+        FormInput.repaint();
+    }
+
+    private void aturUkuranKartuForm(widget.PanelBiasa kartuPasien,
+            widget.PanelBiasa kartuJadwal, widget.PanelBiasa kartuTim,
+            widget.PanelBiasa kotakWaktuAktual){
+        int lebarForm = FormInput.getWidth()>0 ? FormInput.getWidth() : 950;
+        int sela = 5;
+        int lebarIsi = Math.max(900,lebarForm-(sela*4));
+        int lebarPasien = (int)(lebarIsi*0.29);
+        int lebarJadwal = (int)(lebarIsi*0.32);
+        int lebarTim = lebarIsi-lebarPasien-lebarJadwal;
+
+        kartuPasien.setBounds(sela,5,lebarPasien,175);
+        kartuJadwal.setBounds((sela*2)+lebarPasien,5,lebarJadwal,175);
+        kartuTim.setBounds((sela*3)+lebarPasien+lebarJadwal,5,lebarTim,175);
+        kotakWaktuAktual.setBounds(sela,184,lebarForm-(sela*2),76);
+    }
+
+    private widget.PanelBiasa buatKartuForm(String judul, int lebar, int tinggi){
+        widget.PanelBiasa panel = new widget.PanelBiasa();
+        panel.setLayout(null);
+        panel.setBackground(Color.WHITE);
+        panel.setPreferredSize(new Dimension(lebar,tinggi));
+        panel.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(205,220,220)), judul,
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                new Font("Tahoma",Font.BOLD,11),WARNA_TEAL));
+        return panel;
+    }
+
+    private widget.Label buatLabelForm(String teks){
+        widget.Label label = new widget.Label();
+        label.setText(teks);
+        return label;
+    }
+
+    /** Sentuhan visual ringan yang aman untuk widget kustom dan GUI Builder lama. */
+    private void terapkanGayaTampilanBooking(){
+        internalFrame1.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(190,215,213)),
+                "::[ Booking Operasi - Jadwal dan Kesiapan Pasien ]::",
+                javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION,
+                javax.swing.border.TitledBorder.DEFAULT_POSITION,
+                new Font("Tahoma",Font.BOLD,12),WARNA_TEAL));
+        panelCari.setBorder(BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(210,222,222)),"Filter Jadwal"));
+        tbObat.getTableHeader().setFont(new Font("Tahoma",Font.BOLD,11));
+        tbObat.getTableHeader().setBackground(new Color(225,241,240));
+        tbObat.getTableHeader().setForeground(new Color(35,65,65));
+        tbObat.setRowHeight(24);
+        BtnSimpan.setFont(new Font("Tahoma",Font.BOLD,11));
+    }
+
+    /** Update warna toggle Sifat Operasi sesuai yg lagi aktif -- Elektif=teal, Cito=merah (penanda urgensi). */
+    private void perbaruiTampilanSifatOperasi(){
+        boolean cito = BtnSifatCito.isSelected();
+        BtnSifatElektif.setBackground(!cito ? WARNA_TEAL : WARNA_TAK_AKTIF_BG);
+        BtnSifatElektif.setForeground(!cito ? Color.WHITE : WARNA_TAK_AKTIF_FG);
+        BtnSifatCito.setBackground(cito ? WARNA_CITO : WARNA_TAK_AKTIF_BG);
+        BtnSifatCito.setForeground(cito ? Color.WHITE : WARNA_TAK_AKTIF_FG);
+    }
+
+    /** "Elektif" / "Cito" sesuai toggle yg lagi aktif -- pengganti SifatOperasi.getSelectedItem() versi combo lama. */
+    private String getSifatOperasiTerpilih(){
+        return BtnSifatCito.isSelected() ? "Cito" : "Elektif";
+    }
+
+    /** Set toggle Sifat Operasi dari nilai DB/default -- pengganti SifatOperasi.setSelectedItem() versi combo lama. */
+    private void setSifatOperasiTerpilih(String nilai){
+        boolean cito = "Cito".equalsIgnoreCase(nilai);
+        BtnSifatCito.setSelected(cito);
+        BtnSifatElektif.setSelected(!cito);
+        perbaruiTampilanSifatOperasi();
+    }
+
+    /** Update caption kecil di bawah field Waktu Masuk OK sesuai status masukOkDiisi. */
+    private void perbaruiStatusMasukOK(){
+        lblStatusMasukOK.setText(masukOkDiisi ? "" : "Belum masuk ruang operasi -- boleh diisi belakangan oleh petugas OK.");
+    }
+
+    /**
+     * Menampilkan dialog pencarian sebagai dialog modal di atas Booking Operasi.
+     * Dialog pencarian dibuat tanpa owner oleh kode lama, sehingga bila hanya
+     * setVisible(true) ia dapat berada di belakang dialog booking yang modal.
+     */
+    private void tampilkanDialogPilihan(final javax.swing.JDialog dialog,
+            final java.awt.Component fokusAwal){
+        dialog.setModalityType(java.awt.Dialog.ModalityType.APPLICATION_MODAL);
+        dialog.setAlwaysOnTop(true);
+        dialog.setLocationRelativeTo(this);
+        java.awt.EventQueue.invokeLater(new Runnable(){
+            @Override
+            public void run(){
+                dialog.toFront();
+                dialog.requestFocus();
+                if(fokusAwal!=null){
+                    fokusAwal.requestFocusInWindow();
+                }
+            }
+        });
+        try{
+            dialog.setVisible(true);
+        }finally{
+            // Hindari status always-on-top terbawa ketika instance dialog dipakai ulang.
+            dialog.setAlwaysOnTop(false);
+            DlgBookingOperasi.this.toFront();
+            DlgBookingOperasi.this.requestFocus();
+        }
+    }
+
     private void TNoRwKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TNoRwKeyPressed
         Valid.pindah(evt,Status,KdDokter);
         
@@ -1228,11 +1636,14 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
                 JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi.\nSilahkan hubungi bagian kasir/keuangan ..!!");
                 TCari.requestFocus();
             }else{
-                if(Sequel.menyimpantf("booking_operasi","?,?,?,?,?,?,?,?","data", 8,new String[]{
+                if(Sequel.menyimpantf("booking_operasi","?,?,?,?,?,?,?,?,?,?,?","data", 11,new String[]{
                     TNoRw.getText(),KdOperasi.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),
                     JamMulai.getSelectedItem()+":"+MenitMulai.getSelectedItem()+":"+DetikMulai.getSelectedItem(),
                     JamSelesai.getSelectedItem()+":"+MenitSelesai.getSelectedItem()+":"+DetikSelesai.getSelectedItem(),
-                    Status.getSelectedItem().toString(),KdDokter.getText(),KdRuangOperasi.getText()
+                    Status.getSelectedItem().toString(),KdDokter.getText(),KdRuangOperasi.getText(),
+                    getSifatOperasiTerpilih(),
+                    Valid.SetTgl(DTPKeputusan.getSelectedItem()+"")+" "+JamKeputusan.getSelectedItem()+":"+MenitKeputusan.getSelectedItem()+":00",
+                    masukOkDiisi?(Valid.SetTgl(DTPMasukOK.getSelectedItem()+"")+" "+JamMasukOK.getSelectedItem()+":"+MenitMasukOK.getSelectedItem()+":00"):null
                     })==true){
                     tampil();
                     emptTeks();
@@ -1414,10 +1825,8 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
 
 private void BtnOperatorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnOperatorActionPerformed
     dokter.isCek();
-    dokter.TCari.requestFocus();
     dokter.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-    dokter.setLocationRelativeTo(internalFrame1);
-    dokter.setVisible(true);
+    tampilkanDialogPilihan(dokter,dokter.TCari);
 }//GEN-LAST:event_BtnOperatorActionPerformed
 
 private void BtnOperatorKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnOperatorKeyPressed
@@ -1466,11 +1875,15 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         }else{
             if(tbObat.getSelectedRow()!= -1){
                 if(Sequel.mengedittf("booking_operasi","no_rawat=? and kode_paket=? and tanggal=? and jam_mulai=? and jam_selesai=? and status=? and kd_dokter=? and kd_ruang_ok=?",
-                        "no_rawat=?,kode_paket=?,tanggal=?,jam_mulai=?,jam_selesai=?,status=?,kd_dokter=?,kd_ruang_ok=?",16,new String[]{
+                        "no_rawat=?,kode_paket=?,tanggal=?,jam_mulai=?,jam_selesai=?,status=?,kd_dokter=?,kd_ruang_ok=?,sifat_operasi=?,waktu_keputusan_operasi=?,waktu_masuk_ruang_operasi=?",19,new String[]{
                         TNoRw.getText(),KdOperasi.getText(),Valid.SetTgl(DTPTgl.getSelectedItem()+""),
                         JamMulai.getSelectedItem()+":"+MenitMulai.getSelectedItem()+":"+DetikMulai.getSelectedItem(),
                         JamSelesai.getSelectedItem()+":"+MenitSelesai.getSelectedItem()+":"+DetikSelesai.getSelectedItem(),
-                        Status.getSelectedItem().toString(),KdDokter.getText(),KdRuangOperasi.getText(),tbObat.getValueAt(tbObat.getSelectedRow(),1).toString(),
+                        Status.getSelectedItem().toString(),KdDokter.getText(),KdRuangOperasi.getText(),
+                        getSifatOperasiTerpilih(),
+                        Valid.SetTgl(DTPKeputusan.getSelectedItem()+"")+" "+JamKeputusan.getSelectedItem()+":"+MenitKeputusan.getSelectedItem()+":00",
+                        masukOkDiisi?(Valid.SetTgl(DTPMasukOK.getSelectedItem()+"")+" "+JamMasukOK.getSelectedItem()+":"+MenitMasukOK.getSelectedItem()+":00"):null,
+                        tbObat.getValueAt(tbObat.getSelectedRow(),1).toString(),
                         tbObat.getValueAt(tbObat.getSelectedRow(),11).toString(),tbObat.getValueAt(tbObat.getSelectedRow(),5).toString(),
                         tbObat.getValueAt(tbObat.getSelectedRow(),6).toString(),tbObat.getValueAt(tbObat.getSelectedRow(),7).toString(),
                         tbObat.getValueAt(tbObat.getSelectedRow(),8).toString(),tbObat.getValueAt(tbObat.getSelectedRow(),13).toString(),
@@ -1518,8 +1931,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         operasi.setBayar(penjab, kelas);
         operasi.isCek();
         operasi.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-        operasi.setLocationRelativeTo(internalFrame1);
-        operasi.setVisible(true);
+        tampilkanDialogPilihan(operasi,operasi.getTable());
     }//GEN-LAST:event_BtnOperasiActionPerformed
 
     private void BtnOperasiKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnOperasiKeyPressed
@@ -1716,8 +2128,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private void BtnRuangOperasiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnRuangOperasiActionPerformed
         ruangok.isCek();
         ruangok.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-        ruangok.setLocationRelativeTo(internalFrame1);
-        ruangok.setVisible(true);
+        tampilkanDialogPilihan(ruangok,ruangok.getTable());
     }//GEN-LAST:event_BtnRuangOperasiActionPerformed
 
     private void BtnRuangOperasiKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnRuangOperasiKeyPressed
@@ -2027,7 +2438,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                     "select booking_operasi.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,booking_operasi.tanggal,"+
                     "booking_operasi.jam_mulai,booking_operasi.jam_selesai,booking_operasi.status,booking_operasi.kd_dokter,"+
                     "dokter.nm_dokter,booking_operasi.kode_paket,paket_operasi.nm_perawatan,concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur) as umur,"+
-                    "pasien.jk,poliklinik.nm_poli,booking_operasi.kd_ruang_ok,ruang_ok.nm_ruang_ok "+
+                    "pasien.jk,poliklinik.nm_poli,booking_operasi.kd_ruang_ok,ruang_ok.nm_ruang_ok,booking_operasi.sifat_operasi "+
                     "from booking_operasi inner join reg_periksa on booking_operasi.no_rawat=reg_periksa.no_rawat "+
                     "inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
                     "inner join paket_operasi on booking_operasi.kode_paket=paket_operasi.kode_paket "+
@@ -2066,7 +2477,7 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                         rs.getString("jk"),rs.getString("tanggal"),rs.getString("jam_mulai"),rs.getString("jam_selesai"),
                         rs.getString("status"),kamar,diagnosa,rs.getString("kode_paket"),rs.getString("nm_perawatan"),
                         rs.getString("kd_dokter"),rs.getString("nm_dokter"),order,rs.getString("kd_ruang_ok"),
-                        rs.getString("nm_ruang_ok")
+                        rs.getString("nm_ruang_ok"),rs.getString("sifat_operasi")
                     });
                     i++;
                 }
@@ -2101,6 +2512,16 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         MenitSelesai.setSelectedItem("00");
         DetikSelesai.setSelectedItem("00");
         DTPTgl.setDate(new Date());
+        setSifatOperasiTerpilih("Elektif");
+        Date sekarang = new Date();
+        DTPKeputusan.setDate(sekarang);
+        JamKeputusan.setSelectedItem(new java.text.SimpleDateFormat("HH").format(sekarang));
+        MenitKeputusan.setSelectedItem(new java.text.SimpleDateFormat("mm").format(sekarang));
+        DTPMasukOK.setDate(sekarang);
+        JamMasukOK.setSelectedItem("00");
+        MenitMasukOK.setSelectedItem("00");
+        masukOkDiisi = false;
+        perbaruiStatusMasukOK();
         DTPTgl.requestFocus();
     }
 
@@ -2123,9 +2544,64 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
             KdRuangOperasi.setText(tbObat.getValueAt(tbObat.getSelectedRow(),16).toString());
             NmRuangOperasi.setText(tbObat.getValueAt(tbObat.getSelectedRow(),17).toString());
             Valid.SetTgl(DTPTgl,tbObat.getValueAt(tbObat.getSelectedRow(),5).toString());
+            muatWaktuTambahan();
         }
     }
-    
+
+    /**
+     * Muat sifat_operasi + waktu_keputusan_operasi + waktu_masuk_ruang_operasi dari booking_operasi
+     * untuk baris yg baru dipilih -- dicari pakai kombinasi field yg sama dgn yg dipakai BtnEdit/BtnHapus
+     * (tabel ini tidak punya primary key sendiri, jadi dicocokkan dari kombinasi kolom yg sudah ke-load ke form).
+     */
+    private void muatWaktuTambahan(){
+        PreparedStatement psTambahan = null;
+        ResultSet rsTambahan = null;
+        try{
+            psTambahan = koneksi.prepareStatement(
+                    "select sifat_operasi,waktu_keputusan_operasi,waktu_masuk_ruang_operasi from booking_operasi "+
+                    "where no_rawat=? and kode_paket=? and tanggal=? and jam_mulai=? and jam_selesai=? and status=? and kd_dokter=? and kd_ruang_ok=?");
+            psTambahan.setString(1,TNoRw.getText());
+            psTambahan.setString(2,KdOperasi.getText());
+            psTambahan.setString(3,Valid.SetTgl(DTPTgl.getSelectedItem()+""));
+            psTambahan.setString(4,JamMulai.getSelectedItem()+":"+MenitMulai.getSelectedItem()+":"+DetikMulai.getSelectedItem());
+            psTambahan.setString(5,JamSelesai.getSelectedItem()+":"+MenitSelesai.getSelectedItem()+":"+DetikSelesai.getSelectedItem());
+            psTambahan.setString(6,Status.getSelectedItem().toString());
+            psTambahan.setString(7,KdDokter.getText());
+            psTambahan.setString(8,KdRuangOperasi.getText());
+            rsTambahan = psTambahan.executeQuery();
+            if(rsTambahan.next()){
+                String sifat = rsTambahan.getString("sifat_operasi");
+                setSifatOperasiTerpilih(sifat==null||sifat.trim().equals("")?"Elektif":sifat);
+
+                String keputusan = rsTambahan.getString("waktu_keputusan_operasi");
+                if(keputusan!=null && keputusan.length()>=16){
+                    Valid.SetTgl(DTPKeputusan,keputusan.substring(0,10));
+                    JamKeputusan.setSelectedItem(keputusan.substring(11,13));
+                    MenitKeputusan.setSelectedItem(keputusan.substring(14,16));
+                }
+
+                String masuk = rsTambahan.getString("waktu_masuk_ruang_operasi");
+                if(masuk!=null && masuk.length()>=16){
+                    Valid.SetTgl(DTPMasukOK,masuk.substring(0,10));
+                    JamMasukOK.setSelectedItem(masuk.substring(11,13));
+                    MenitMasukOK.setSelectedItem(masuk.substring(14,16));
+                    masukOkDiisi = true;
+                }else{
+                    DTPMasukOK.setDate(new Date());
+                    JamMasukOK.setSelectedItem("00");
+                    MenitMasukOK.setSelectedItem("00");
+                    masukOkDiisi = false;
+                }
+                perbaruiStatusMasukOK();
+            }
+        }catch(Exception e){
+            System.out.println("Notifikasi muat waktu tambahan booking operasi : "+e);
+        }finally{
+            try{ if(rsTambahan!=null) rsTambahan.close(); }catch(Exception e){}
+            try{ if(psTambahan!=null) psTambahan.close(); }catch(Exception e){}
+        }
+    }
+
     public void setNoRm(String norwt,String norm,String nama,String lokasi,String posisi) {
         TNoRw.setText(norwt);
         TPasien.setText(norm+" "+nama);
@@ -2139,8 +2615,8 @@ private void ChkInputActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
     private void isForm(){
         if(ChkInput.isSelected()==true){
             ChkInput.setVisible(false);
-            PanelInput.setPreferredSize(new Dimension(WIDTH,126));
-            FormInput.setVisible(true);      
+            PanelInput.setPreferredSize(new Dimension(WIDTH,291));
+            FormInput.setVisible(true);
             ChkInput.setVisible(true);
         }else if(ChkInput.isSelected()==false){           
             ChkInput.setVisible(false);            
