@@ -11129,6 +11129,82 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
             }
         });
         MnDataRM.add(mnRisikoJatuh);
+
+        // Dua menu TAMBAHAN -- pola sama persis dgn menu "Risiko Jatuh" di DlgRawatInap/DlgRawatJalan
+        // (RMAsesmenRisikoJatuhBayiAnak/RMAsesmenRisikoJatuhMorse). Ini dialog berdiri sendiri (bukan
+        // panel embeddable spt RMRisikoJatuhGetUpAndGo di atas), jadi dipasang sbg menu item spt
+        // menu2 RM lain di IGD, bukan tab -- menu "Get Up and Go Test" di atas TETAP tidak diubah.
+        javax.swing.JMenuItem mnRisikoJatuhBayiAnak = new javax.swing.JMenuItem();
+        mnRisikoJatuhBayiAnak.setBackground(new java.awt.Color(255, 255, 254));
+        mnRisikoJatuhBayiAnak.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mnRisikoJatuhBayiAnak.setForeground(new java.awt.Color(50, 50, 50));
+        mnRisikoJatuhBayiAnak.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        mnRisikoJatuhBayiAnak.setText("Risiko Jatuh Bayi & Anak (Humpty Dumpty Scale)");
+        mnRisikoJatuhBayiAnak.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mnRisikoJatuhBayiAnak.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mnRisikoJatuhBayiAnak.setPreferredSize(new java.awt.Dimension(250, 26));
+        mnRisikoJatuhBayiAnak.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bukaRisikoJatuhBayiAnakIgd();
+            }
+        });
+        MnDataRM.add(mnRisikoJatuhBayiAnak);
+
+        javax.swing.JMenuItem mnRisikoJatuhMorse = new javax.swing.JMenuItem();
+        mnRisikoJatuhMorse.setBackground(new java.awt.Color(255, 255, 254));
+        mnRisikoJatuhMorse.setFont(new java.awt.Font("Tahoma", 0, 11));
+        mnRisikoJatuhMorse.setForeground(new java.awt.Color(50, 50, 50));
+        mnRisikoJatuhMorse.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        mnRisikoJatuhMorse.setText("Risiko Jatuh Dewasa (Morse Fall Scale)");
+        mnRisikoJatuhMorse.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        mnRisikoJatuhMorse.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        mnRisikoJatuhMorse.setPreferredSize(new java.awt.Dimension(250, 26));
+        mnRisikoJatuhMorse.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                bukaRisikoJatuhMorseIgd();
+            }
+        });
+        MnDataRM.add(mnRisikoJatuhMorse);
+    }
+
+    /** Buka form Asesmen Risiko Jatuh Bayi dan Anak (Humpty Dumpty Scale) untuk pasien IGD yang aktif. */
+    private void bukaRisikoJatuhBayiAnakIgd() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMAsesmenRisikoJatuhBayiAnak f = new rekammedis.RMAsesmenRisikoJatuhBayiAnak(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Asesmen Risiko Jatuh Pasien Dewasa (Morse Fall Scale) untuk pasien IGD yang aktif. */
+    private void bukaRisikoJatuhMorseIgd() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMAsesmenRisikoJatuhMorse f = new rekammedis.RMAsesmenRisikoJatuhMorse(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
     }
 
     private void bukaRingkasanRiwayatMasukIgd() {
