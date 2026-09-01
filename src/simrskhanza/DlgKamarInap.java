@@ -6968,11 +6968,11 @@ private void MnRawatInapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                                         rawatinap.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
                                         rawatinap.setLocationRelativeTo(internalFrame1);
                                         if(R1.isSelected()==true){
-                                            rawatinap.setNoRm(rs2.getString("no_rawat2"),new Date(),new Date());
+                                            rawatinap.setNoRm(rs2.getString("no_rawat2"),new Date(),new Date(),rs2.getString("no_rkm_medis"),rs2.getString("nm_pasien"));
                                         }else if(R2.isSelected()==true){
-                                            rawatinap.setNoRm(rs2.getString("no_rawat2"),DTPCari1.getDate(),DTPCari2.getDate());
+                                            rawatinap.setNoRm(rs2.getString("no_rawat2"),DTPCari1.getDate(),DTPCari2.getDate(),rs2.getString("no_rkm_medis"),rs2.getString("nm_pasien"));
                                         }else if(R3.isSelected()==true){
-                                            rawatinap.setNoRm(rs2.getString("no_rawat2"),DTPCari3.getDate(),DTPCari4.getDate());
+                                            rawatinap.setNoRm(rs2.getString("no_rawat2"),DTPCari3.getDate(),DTPCari4.getDate(),rs2.getString("no_rkm_medis"),rs2.getString("nm_pasien"));
                                         }
                                         rawatinap.setKamar(tbKamIn.getValueAt(tbKamIn.getSelectedRow()-1,7).toString());
                                         rawatinap.setJenisBayar(tbKamIn.getValueAt(tbKamIn.getSelectedRow()-1,6).toString());
@@ -7002,11 +7002,11 @@ private void MnRawatInapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                         rawatinap.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
                         rawatinap.setLocationRelativeTo(internalFrame1);
                         if(R1.isSelected()==true){
-                            rawatinap.setNoRm(TNoRwCari.getText(),new Date(),new Date());
+                            rawatinap.setNoRm(TNoRwCari.getText(),new Date(),new Date(),TNoRMCari.getText(),TPasienCari.getText());
                         }else if(R2.isSelected()==true){
-                            rawatinap.setNoRm(TNoRwCari.getText(),DTPCari1.getDate(),DTPCari2.getDate());
+                            rawatinap.setNoRm(TNoRwCari.getText(),DTPCari1.getDate(),DTPCari2.getDate(),TNoRMCari.getText(),TPasienCari.getText());
                         }else if(R3.isSelected()==true){
-                            rawatinap.setNoRm(TNoRwCari.getText(),DTPCari3.getDate(),DTPCari4.getDate());
+                            rawatinap.setNoRm(TNoRwCari.getText(),DTPCari3.getDate(),DTPCari4.getDate(),TNoRMCari.getText(),TPasienCari.getText());
                         }
                         rawatinap.setKamar(tbKamIn.getValueAt(tbKamIn.getSelectedRow(),7).toString());
                         rawatinap.setJenisBayar(tbKamIn.getValueAt(tbKamIn.getSelectedRow(),6).toString());

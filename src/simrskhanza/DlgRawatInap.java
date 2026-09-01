@@ -242,7 +242,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {
             @Override public void stateChanged(javax.swing.event.ChangeEvent e) {
                 if (TabRawat.getSelectedComponent() == frameResep) {
-                    sinkronkanResepRanap(true);
+                    sinkronkanResepRanap(false);
                 }
             }
         });
@@ -10451,6 +10451,15 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     }    
     
     public void setNoRm(String norwt,Date awal,Date akhir) {
+        setNoRm(norwt, awal, akhir, null, null);
+    }
+
+    /** Sama seperti setNoRm(norwt,awal,akhir), tapi kalau pemanggil SUDAH tahu no_rkm_medis/nama
+     * pasiennya (mis. DlgKamarInap yg baris grid-nya sedang diklik sudah punya keduanya), oper
+     * lewat 2 parameter tambahan ini supaya isRawat()/isPsien() tidak perlu query ulang ke DB --
+     * salah satu penyebab loading lambat saat buka DlgRawatInap. Kirim null/kosong utk salah satu
+     * atau kedua nilai kalau tidak tahu -- perilakunya persis sama seperti dulu (query spt biasa). */
+    public void setNoRm(String norwt,Date awal,Date akhir,String noRmDiketahui,String namaPasienDiketahui) {
         TNoRw.setText(norwt);
         KdDok.setText(Sequel.cariIsi("select dpjp_ranap.kd_dokter from dpjp_ranap where dpjp_ranap.no_rawat=?",norwt));
         if(KdDok.getText().equals("")){
@@ -10458,10 +10467,18 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         }
         TDokter.setText(perawatan.dokter.tampil3(KdDok.getText()));
         KdDok2.setText(KdDok.getText());
-        TDokter2.setText(TDokter.getText()); 
-        
-        isRawat();
-        isPsien();
+        TDokter2.setText(TDokter.getText());
+
+        if(noRmDiketahui!=null && !noRmDiketahui.trim().equals("")){
+            TNoRM.setText(noRmDiketahui.trim());
+        }else{
+            isRawat();
+        }
+        if(namaPasienDiketahui!=null && !namaPasienDiketahui.trim().equals("")){
+            TPasien.setText(namaPasienDiketahui.trim());
+        }else{
+            isPsien();
+        }
         DTPCari1.setDate(awal);
         DTPCari2.setDate(akhir);
         TCari.setText(norwt);
@@ -10474,7 +10491,12 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             fokusTabPemeriksaanTerintegrasi();
         }
         refreshNotifValidasi();
-        sinkronkanResepRanap(true);
+        // sinkronkanResepRanap() TIDAK dipanggil di sini lagi -- dulu dipaksa (paksa=true) setiap
+        // dialog dibuka walau tab yg aktif adalah "Pemeriksaan", padahal isinya rebuild total dialog
+        // Resep (query katalog obat tanpa LIMIT + tulis/baca ulang cache JSON + isi ratusan baris
+        // tabel) sehingga jadi penyebab utama loading lambat saat buka DlgRawatInap. Sekarang cukup
+        // ditangani oleh listener perpindahan tab di aturTabRanap() -- baru jalan saat tab "Resep"
+        // benar-benar diklik, meniru pola yg sudah terbukti benar di DlgIGD (sinkronkanTabResepIgd).
     }
 
     public java.awt.Component ambilKontenPemeriksaanUntukEmbed() {

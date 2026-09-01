@@ -131,7 +131,16 @@ public final class DlgValidasiSOAP extends JDialog {
     /** Pastikan kolom validasi/validator/tgl_validasi/jam_validasi ada di tabel
      *  pemeriksaan (auto-create bila belum ada), agar fitur validasi SOAP tidak
      *  bergantung pada ALTER TABLE manual dan query tabel utama tidak error. */
+    // Tabel yg sudah dipastikan punya kolom validasi di sesi aplikasi berjalan ini --
+    // sekali sukses dicek/ditambah, skema tidak berubah lagi selama aplikasi hidup,
+    // jadi tidak perlu query information_schema+ALTER berulang tiap dialog dibuka
+    // (salah satu penyebab loading lambat saat buka DlgRawatInap/DlgRawatJalan).
+    private static final java.util.Set<String> kolomSudahDicek = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+
     public static void pastikanKolom(String tabel) {
+        if (kolomSudahDicek.contains(tabel)) {
+            return;
+        }
         try {
             sekuel Sequel = new sekuel();
             String ada = Sequel.cariIsi(
@@ -144,6 +153,7 @@ public final class DlgValidasiSOAP extends JDialog {
                         + "add column tgl_validasi date null, "
                         + "add column jam_validasi time null");
             }
+            kolomSudahDicek.add(tabel);
         } catch (Exception e) {
             System.out.println("Notif pastikanKolom validasi (" + tabel + ") : " + e);
         }
