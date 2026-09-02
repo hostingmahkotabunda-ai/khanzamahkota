@@ -4,6 +4,7 @@ import fungsi.akses;
 import fungsi.koneksiDB;
 import fungsi.sekuel;
 import fungsi.validasi;
+import permintaan.DlgBookingOperasi;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -80,11 +81,16 @@ public final class RMDokumentasiOperasi extends JDialog {
         "Askep Perioperatif",
         "Ceklis Keselamatan Pembedahan",
         "Formulir Penandaan Lokasi Operasi (Wanita)",
+        "Jadwal Operasi",
         "Laporan Operasi"
     };
-    private static final int INDEX_LAPORAN_OPERASI = 10;
+    /** Blok "Laporan Operasi" SENGAJA ditaruh paling akhir (index tertinggi) -- lihat blok "Jadwal Operasi"
+     *  di atasnya yg juga ditambahkan di akhir, bukan disisip di tengah, supaya indeks 0,3,4,7,8,9 yg sudah
+     *  dipakai utk dokumentasi_blok_operasi/TABEL_STATUS_BLOK pasien2 lama tidak ikut bergeser. */
+    private static final int INDEX_LAPORAN_OPERASI = 11;
+    private static final int INDEX_JADWAL_OPERASI = 10;
     /** Blok yg buka FORM DIGITAL (bukan upload foto) -- ditambah satu-satu begitu form-nya jadi. */
-    private static final Set<Integer> INDEX_BLOK_FORM = new HashSet<>(Arrays.asList(0, 3, 4, 7, 8, 9));
+    private static final Set<Integer> INDEX_BLOK_FORM = new HashSet<>(Arrays.asList(0, 3, 4, 7, 8, 9, INDEX_JADWAL_OPERASI));
     /** Tabel DB yg jadi acuan status "sudah diisi" per blok form -- blok 3 & 4 berbagi 1 tabel krn 1 lembar bolak-balik yg sama. */
     private static final Map<Integer, String> TABEL_STATUS_BLOK = new HashMap<>();
     static {
@@ -94,10 +100,11 @@ public final class RMDokumentasiOperasi extends JDialog {
         TABEL_STATUS_BLOK.put(7, "askep_perioperatif");
         TABEL_STATUS_BLOK.put(8, "ceklis_keselamatan_pembedahan");
         TABEL_STATUS_BLOK.put(9, "penandaan_lokasi_operasi");
+        TABEL_STATUS_BLOK.put(INDEX_JADWAL_OPERASI, "booking_operasi");
     }
     private final Map<Integer, JLabel> lencanaStatusBlok = new HashMap<>();
     private final Map<Integer, JPanel> kartuStatusBlok = new HashMap<>();
-    private final JLabel lblRingkasanStatus = new JLabel("0 dari 6 form digital sudah diisi");
+    private final JLabel lblRingkasanStatus = new JLabel("0 dari 7 form digital sudah diisi");
     /** Blok upload foto (bukan form digital) -- fotonya disimpan ke tabel dokumentasi_blok_operasi. */
     private final Map<Integer, StripThumbnail> stripUploadBlok = new HashMap<>();
     private final Map<Integer, JLabel> captionUploadBlok = new HashMap<>();
@@ -566,10 +573,39 @@ public final class RMDokumentasiOperasi extends JDialog {
                 formLokasi.setNoRm(norawat);
                 formLokasi.setVisible(true);
                 break;
+            case INDEX_JADWAL_OPERASI:
+                bukaJadwalOperasi();
+                break;
             default:
                 JOptionPane.showMessageDialog(this, "Form untuk blok ini belum dibuat.");
         }
         perbaruiStatusSemuaBlok();
+    }
+
+    /**
+     * Buka dialog Jadwal Operasi (permintaan.DlgBookingOperasi) yg SAMA dgn yg dipakai di menu
+     * "Jadwal Operasi" DlgKamarInap -- bukan duplikat form baru, supaya kalender OK/notifikasi/dll
+     * yg sudah baca tabel booking_operasi tetap satu sumber data. Pasien di-preset dari norawat.
+     */
+    private void bukaJadwalOperasi(){
+        String noRkmMedis = Sequel.cariIsi(
+                "select pasien.no_rkm_medis from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "
+                + "where reg_periksa.no_rawat=?", norawat);
+        String namaPasien = Sequel.cariIsi(
+                "select pasien.nm_pasien from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "
+                + "where reg_periksa.no_rawat=?", norawat);
+        String lokasi = Sequel.cariIsi(
+                "select bangsal.nm_bangsal from kamar_inap "
+                + "inner join kamar on kamar_inap.kd_kamar=kamar.kd_kamar "
+                + "inner join bangsal on kamar.kd_bangsal=bangsal.kd_bangsal "
+                + "where kamar_inap.no_rawat=? order by kamar_inap.tgl_masuk desc limit 1", norawat);
+        DlgBookingOperasi formJadwal = new DlgBookingOperasi(null, true);
+        formJadwal.isCek();
+        formJadwal.setSize(getWidth() - 40, getHeight() - 40);
+        formJadwal.setLocationRelativeTo(this);
+        formJadwal.setNoRm(norawat, noRkmMedis == null ? "" : noRkmMedis, namaPasien == null ? "" : namaPasien,
+                lokasi == null ? "" : lokasi, "Ranap");
+        formJadwal.setVisible(true);
     }
 
     private void pilihFoto(StripThumbnail strip, int indeksBlok) {
