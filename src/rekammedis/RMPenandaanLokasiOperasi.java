@@ -324,7 +324,10 @@ public final class RMPenandaanLokasiOperasi extends JDialog {
     }
 
     public void isCek() {
-        boolean bisa = akses.getpenilaian_awal_keperawatan_ranap();
+        // Form RM Operasi diisi dokter (bedah/anastesi) MAUPUN perawat -- boleh Simpan kalau
+        // punya salah satu izin yg relevan (dokter selama ini sudah punya booking_operasi,
+        // perawat sudah punya penilaian_awal_keperawatan_ranap; tidak perlu reset hak akses akun manapun).
+        boolean bisa = akses.getpenilaian_awal_keperawatan_ranap() || akses.getbooking_operasi();
         BtnSimpan.setEnabled(bisa);
         BtnHapus.setEnabled(bisa);
     }

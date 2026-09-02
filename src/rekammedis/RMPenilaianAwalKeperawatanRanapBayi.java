@@ -692,7 +692,9 @@ public final class RMPenilaianAwalKeperawatanRanapBayi extends JDialog {
 
     // ====================== Entry points (dipanggil dari DlgKamarInap) ======================
     public void isCek() {
-        boolean bisa = akses.getpenilaian_awal_keperawatan_ranap();
+        // Boleh Simpan kalau punya izin perawat (penilaian_awal_keperawatan_ranap) ATAU izin
+        // dokter (booking_operasi) -- dokter juga perlu bisa mengisi asesmen ini di lapangan.
+        boolean bisa = akses.getpenilaian_awal_keperawatan_ranap() || akses.getbooking_operasi();
         BtnSimpan.setEnabled(bisa);
         BtnHapus.setEnabled(bisa);
         KdPetugas.setText(akses.getkode());

@@ -5884,10 +5884,13 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
     
     
     public void isCek(){
-        BtnSimpan.setEnabled(akses.getpenilaian_awal_keperawatan_ranap());
-        BtnHapus.setEnabled(akses.getpenilaian_awal_keperawatan_ranap());
-        BtnEdit.setEnabled(akses.getpenilaian_awal_keperawatan_ranap());
-        BtnEdit.setEnabled(akses.getpenilaian_awal_keperawatan_ranap()); 
+        // Boleh Simpan kalau punya izin perawat (penilaian_awal_keperawatan_ranap) ATAU izin
+        // dokter (booking_operasi) -- dokter juga perlu bisa mengisi asesmen ini di lapangan.
+        boolean bisa = akses.getpenilaian_awal_keperawatan_ranap() || akses.getbooking_operasi();
+        BtnSimpan.setEnabled(bisa);
+        BtnHapus.setEnabled(bisa);
+        BtnEdit.setEnabled(bisa);
+        BtnEdit.setEnabled(bisa);
         BtnTambahMasalah.setEnabled(akses.getmaster_masalah_keperawatan()); 
         BtnTambahRencana.setEnabled(akses.getmaster_rencana_keperawatan()); 
         if(akses.getjml2()>=1){
