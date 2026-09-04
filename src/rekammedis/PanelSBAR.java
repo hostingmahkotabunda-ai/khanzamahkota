@@ -146,9 +146,26 @@ public final class PanelSBAR extends JPanel {
             d.setVisible(true);
         });
 
+        // Tab SBAR sekarang HANYA untuk verifikasi -- SBAR-nya sendiri sudah otomatis terisi
+        // dari SOAP (lihat DlgRawatInap/DlgRawatJalan, checkbox "SBAR Otomatis"), jadi input
+        // manual (Baru/Simpan/Hapus + pilih ulang petugas/DPJP) tidak diperlukan lagi di sini.
+        // Method baru()/simpan()/hapus() TETAP ada (dipakai internal, mis. baru() dari
+        // setKonteks()) -- yg diubah cuma UI-nya, supaya tidak mengubah alur data yg sudah ada.
+        BtnBaru.setVisible(false);
+        BtnSimpan.setVisible(false);
+        BtnHapus.setVisible(false);
+        BtnCariPemeriksa.setVisible(false);
+        BtnCariDPJP.setVisible(false);
+        Profesi.setEditable(false);
+        CmbBaca.setEnabled(false);
+        CmbKonfirmasi.setEnabled(false);
+        for (JTextArea ta : new JTextArea[]{Situation, Background, Assesmen, Recommendation}) {
+            ta.setEditable(false);
+        }
+
         // ===== Form atas =====
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBorder(BorderFactory.createTitledBorder("Input SBAR"));
+        form.setBorder(BorderFactory.createTitledBorder("Detail SBAR (Verifikasi)"));
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(2, 3, 2, 3);
         g.fill = GridBagConstraints.HORIZONTAL;
@@ -193,7 +210,7 @@ public final class PanelSBAR extends JPanel {
             c.setPreferredWidth(lebar[i]);
         }
         JScrollPane scroll = new JScrollPane(tbSBAR);
-        scroll.setBorder(BorderFactory.createTitledBorder(".: Input Data"));
+        scroll.setBorder(BorderFactory.createTitledBorder(".: Daftar SBAR"));
 
         // ===== Tombol bawah =====
         JPanel bawah = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));

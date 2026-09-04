@@ -6402,11 +6402,12 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                             TKeluhan.getText(),TPemeriksaan.getText(),TAlergi.getText(),LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),
                                             KdPeg.getText(),TPegawai.getText(),Jabatan.getText(),"Belum"
                                         });
+                                        simpanSBAROtomatisDariSOAP(Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),KdPeg.getText());
                                         TSuhu.setText("");TTensi.setText("");TNadi.setText("");TRespirasi.setText("");
                                         TTinggi.setText("");TBerat.setText("");TGCS.setText("");TKeluhan.setText("");
                                         TPemeriksaan.setText("");TAlergi.setText("");LingkarPerut.setText("");
                                         TindakLanjut.setText("");TPenilaian.setText("");TInstruksi.setText("");SpO2.setText("");
-                                        TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);
+                                        TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);ChkIsiSBAROtomatis.setSelected(false);
                                         LCount.setText(""+tabModePemeriksaan.getRowCount());
                                         notifikasiSoapTersimpan();
                                 }
@@ -6424,11 +6425,12 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                                 TKeluhan.getText(),TPemeriksaan.getText(),TAlergi.getText(),LingkarPerut.getText(),TindakLanjut.getText(),TPenilaian.getText(),TInstruksi.getText(),TEvaluasi.getText(),
                                                 KdPeg.getText(),TPegawai.getText(),Jabatan.getText(),"Belum"
                                             });
+                                            simpanSBAROtomatisDariSOAP(Valid.SetTgl(DTPTgl.getSelectedItem()+""),cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem(),KdPeg.getText());
                                             TSuhu.setText("");TTensi.setText("");TNadi.setText("");TRespirasi.setText("");
                                             TTinggi.setText("");TBerat.setText("");TGCS.setText("");TKeluhan.setText("");
                                             TPemeriksaan.setText("");TAlergi.setText("");LingkarPerut.setText("");
                                             TindakLanjut.setText("");TPenilaian.setText("");TInstruksi.setText("");SpO2.setText("");
-                                            TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);
+                                            TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);ChkIsiSBAROtomatis.setSelected(false);
                                             LCount.setText(""+tabModePemeriksaan.getRowCount());
                                             notifikasiSoapTersimpan();
                                     }
@@ -13374,6 +13376,11 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
     private boolean notifValidasiSiap = false;
     private final javax.swing.JLabel lblNotifSBAR = new javax.swing.JLabel();
     private final javax.swing.JLabel lblNotifSOAP = new javax.swing.JLabel();
+    private boolean chkSBAROtomatisSiap = false;
+    /** Kalau dicentang, saat SOAP BARU (bukan edit) disimpan, 1 baris SBAR ikut otomatis
+     *  dibuat dari isian SOAP yg sama -- lihat simpanSBAROtomatisDariSOAP(). SBAR-nya tetap
+     *  berstatus validasi 'Belum', jadi tab/halaman SBAR tetap dipakai dokter utk verifikasi. */
+    private final javax.swing.JCheckBox ChkIsiSBAROtomatis = new javax.swing.JCheckBox("SBAR Otomatis");
     private widget.editorpane LoadHTMLLaborat;
 
     /** Pasang tab "Laboratorium" (HTML hasil lab) ke TabRawat + listener refresh saat dibuka. */
@@ -13740,6 +13747,7 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         panelGlass12.setPreferredSize(new Dimension(44, 440));
 
         siapkanNotifValidasi();
+        siapkanChkSBAROtomatis();
         if (!soapListenerDipasang) {
             soapListenerDipasang = true;
             panelGlass12.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -13778,6 +13786,7 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         Btn5Soap.setBounds(x, hy, 28, fh); x += 30;
         BtnTemplatePemeriksaan.setBounds(x, hy, 28, fh); x += 30;
         BtnTemplateSoapExcel.setBounds(x, hy, 28, fh); x += 40;
+        ChkIsiSBAROtomatis.setBounds(x, hy, 122, fh); x += 126;
         jLabel15.setBounds(x, hy, 45, fh); x += 48;
         int alergiW = Math.max(150, W - M - x);
         TAlergi.setBounds(x, hy, alergiW, fh);
@@ -13847,6 +13856,64 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
 
         panelGlass12.revalidate();
         panelGlass12.repaint();
+    }
+
+    /** Sekali pasang checkbox "SBAR Otomatis" ke panel input SOAP (di luar GEN block, pola sama
+     *  siapkanNotifValidasi()). */
+    private void siapkanChkSBAROtomatis() {
+        if (chkSBAROtomatisSiap) {
+            return;
+        }
+        chkSBAROtomatisSiap = true;
+        ChkIsiSBAROtomatis.setOpaque(false);
+        ChkIsiSBAROtomatis.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 11));
+        ChkIsiSBAROtomatis.setToolTipText("<html>Kalau dicentang, saat SOAP baru ini disimpan, SBAR otomatis<br/>"
+                + "ikut terisi dari isian SOAP ini (Subjek→Situation, Objek→Background,<br/>"
+                + "Asesmen→Assesmen, Plan+Instruksi→Recommendation).<br/>"
+                + "SBAR-nya tetap harus diverifikasi dokter seperti biasa.</html>");
+        panelGlass12.add(ChkIsiSBAROtomatis);
+    }
+
+    /** Insert 1 baris SBAR ke sbar_pasien dari isi SOAP yg BARU SAJA berhasil disimpan --
+     *  HANYA dipanggil dari dalam blok "if(Sequel.menyimpantf(...)==true)", jadi SOAP-nya
+     *  sudah pasti aman tersimpan sebelum method ini jalan. Kolom sbar_pasien & urutannya
+     *  PERSIS sama dengan insert manual di PanelSBAR.simpan(). Dibungkus try/catch sendiri
+     *  supaya kalau gagal, SOAP yg sudah tersimpan TIDAK ikut terpengaruh/rollback -- cuma
+     *  SBAR otomatisnya saja yg gagal, dan tetap bisa diisi manual lewat tab SBAR biasa. */
+    private void simpanSBAROtomatisDariSOAP(String tglSoap, String jamSoap, String nip) {
+        if (!ChkIsiSBAROtomatis.isSelected()) {
+            return;
+        }
+        try {
+            String kdDpjp = Sequel.cariIsi("select reg_periksa.kd_dokter from reg_periksa where reg_periksa.no_rawat=?", TNoRw.getText());
+            String recommendation = TindakLanjut.getText().trim();
+            if (!TInstruksi.getText().trim().equals("")) {
+                recommendation = (recommendation.equals("") ? "" : recommendation + "\n") + TInstruksi.getText().trim();
+            }
+            try (PreparedStatement psSbar = koneksi.prepareStatement(
+                    "insert into sbar_pasien(no_rawat,tgl_sbar,jam_sbar,nip,profesi,kd_dokter,situation,background,"
+                    + "assesmen,recommendation,baca,konfirmasi,validasi,status) "
+                    + "values(?,?,?,?,?,?,?,?,?,?,?,?,'Belum',?)")) {
+                psSbar.setString(1, TNoRw.getText());
+                psSbar.setString(2, tglSoap);
+                psSbar.setString(3, jamSoap);
+                psSbar.setString(4, nip);
+                psSbar.setString(5, Jabatan.getText());
+                psSbar.setString(6, kdDpjp == null ? "" : kdDpjp);
+                psSbar.setString(7, TKeluhan.getText());
+                psSbar.setString(8, TPemeriksaan.getText());
+                psSbar.setString(9, TPenilaian.getText());
+                psSbar.setString(10, recommendation);
+                psSbar.setString(11, "Sudah");
+                psSbar.setString(12, "Sudah");
+                psSbar.setString(13, "ralan");
+                psSbar.executeUpdate();
+            }
+        } catch (Exception e) {
+            System.out.println("Notif simpan SBAR otomatis dari SOAP : " + e);
+            JOptionPane.showMessageDialog(null, "SOAP sudah tersimpan, tapi SBAR otomatis gagal dibuat.\n"
+                    + "Silahkan isi SBAR manual lewat tab SBAR.\n" + e.getMessage());
+        }
     }
 
     /** Sekali pasang label notif validasi (SBAR & SOAP) ke panel. */
