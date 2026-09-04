@@ -867,16 +867,16 @@ public final class RMTransferPasienInternal extends JDialog {
                 + "rr_sebelum varchar(10) null,"
                 + "suhu_sebelum varchar(10) null,"
                 + "spo2_sebelum varchar(10) null,"
-                + "pemfisik_sebelum varchar(150) null,"
-                + "catatan_sebelum varchar(150) null,"
+                + "pemfisik_sebelum text null,"
+                + "catatan_sebelum text null,"
                 + "ku_setelah varchar(30) null,"
                 + "td_setelah varchar(20) null,"
                 + "nadi_setelah varchar(10) null,"
                 + "rr_setelah varchar(10) null,"
                 + "suhu_setelah varchar(10) null,"
                 + "spo2_setelah varchar(10) null,"
-                + "pemfisik_setelah varchar(150) null,"
-                + "catatan_setelah varchar(150) null,"
+                + "pemfisik_setelah text null,"
+                + "catatan_setelah text null,"
                 + "nip_menyerahkan varchar(20) null,"
                 + "nama_menyerahkan varchar(60) null,"
                 + "nama_menerima varchar(60) null,"
@@ -885,6 +885,15 @@ public final class RMTransferPasienInternal extends JDialog {
                 + "created_at datetime null,"
                 + "updated_at datetime null"
                 + ")");
+        // Perbaikan utk tabel yg SUDAH terlanjur dibuat (create table if not exists di atas tidak
+        // mengubah tabel yg sudah ada): pemfisik_sebelum/catatan_sebelum/pemfisik_setelah/
+        // catatan_setelah awalnya varchar(150), kekecilan utk catatan pemeriksaan dokter yg
+        // ditarik otomatis dari pemeriksaan_ranap (bisa jauh lebih panjang) -> error "Data too
+        // long". Diperlebar jadi TEXT. queryu2() aman dipanggil berulang (exception ditelan,
+        // MODIFY COLUMN ke tipe yg sama juga tidak merusak data), jadi cukup jalan tiap dialog dibuka.
+        for (String kolom : new String[]{"pemfisik_sebelum", "catatan_sebelum", "pemfisik_setelah", "catatan_setelah"}) {
+            Sequel.queryu2("alter table lembar_transfer_pasien_internal modify column " + kolom + " text null");
+        }
     }
 
     private static String cocokkanOpsi(widget.ComboBox combo, String nilai) {
