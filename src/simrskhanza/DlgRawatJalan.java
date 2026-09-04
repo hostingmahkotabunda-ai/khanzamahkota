@@ -212,8 +212,6 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     private javax.swing.JPanel panelDataPasienRalan;
     private javax.swing.JPanel panelPenilaianAwalKosongRalan;
     private rekammedis.RMAsesmenRalan panelAsesmenRalan;
-    private javax.swing.JPanel panelRisikoJatuhKosong;
-    private rekammedis.RMRisikoJatuhGetUpAndGo panelRisikoJatuh;
     private rekammedis.RMRiwayatObatPasien panelRiwayatObat;
     private javax.swing.JTextField txtDPRNoRM, txtDPRNama, txtDPRNIK, txtDPRTempatLahir, txtDPRTglLahir,
             txtDPRTelepon, txtDPRPekerjaan, txtDPRNamaKeluarga, txtDPRPekerjaanPJ;
@@ -291,6 +289,10 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         final javax.swing.JPopupMenu menuPenilaianAwalRalan = new javax.swing.JPopupMenu();
         menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Ringkasan Riwayat Masuk (RM 2a)", ev -> bukaRingkasanRiwayatMasukRalan()));
         menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Lembar Transfer Pasien Internal (RM 38)", ev -> bukaPengantarPasienRanapRalan()));
+        menuPenilaianAwalRalan.addSeparator();
+        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Risiko Jatuh (Get Up and Go)", ev -> bukaRisikoJatuhGetUpAndGoRalan()));
+        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Risiko Jatuh Bayi & Anak (Humpty Dumpty Scale)", ev -> bukaRisikoJatuhBayiAnakRalan()));
+        menuPenilaianAwalRalan.add(itemMenuPenilaianAwalRalan("Risiko Jatuh Dewasa (Morse Fall Scale)", ev -> bukaRisikoJatuhMorseRalan()));
         TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -301,51 +303,36 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         });
     }
 
-    private void pasangTabRisikoJatuh() {
-        panelRisikoJatuhKosong = new javax.swing.JPanel(new java.awt.BorderLayout());
-        panelRisikoJatuhKosong.setName("panelRisikoJatuhKosong");
-        panelRisikoJatuh = new rekammedis.RMRisikoJatuhGetUpAndGo();
-        panelRisikoJatuhKosong.add(panelRisikoJatuh, java.awt.BorderLayout.CENTER);
-        TabRawat.addTab("Risiko Jatuh (Get Up and Go)", panelRisikoJatuhKosong);
-        TabRawat.addChangeListener(new javax.swing.event.ChangeListener() {
-            @Override public void stateChanged(javax.swing.event.ChangeEvent e) {
-                if (TabRawat.getSelectedComponent() == panelRisikoJatuhKosong) {
-                    panelRisikoJatuh.setKonteks(TNoRw.getText());
-                }
-            }
-        });
+    /** Dulu "Risiko Jatuh (Get Up and Go)" adalah tab tersendiri yg selalu ter-embed. Sekarang
+     *  dipindah jadi salah satu pilihan di dropdown tab "Penilaian Awal" (spt RM 2a/RM 38/Risiko
+     *  Jatuh Bayi&Anak/Morse), dibuka sbg dialog terpisah -- RMRisikoJatuhGetUpAndGo aslinya JPanel
+     *  (bukan JDialog) krn dipakai jg ter-embed langsung di DlgIGD, jadi di sini dibungkus JDialog
+     *  on-the-fly. */
+    private void bukaRisikoJatuhGetUpAndGoRalan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMRisikoJatuhGetUpAndGo panel = new rekammedis.RMRisikoJatuhGetUpAndGo();
+            panel.setKonteks(TNoRw.getText());
+            javax.swing.JDialog dlg = new javax.swing.JDialog(this, "Risiko Jatuh (Get Up and Go)", true);
+            dlg.setDefaultCloseOperation(javax.swing.JDialog.DISPOSE_ON_CLOSE);
+            dlg.getContentPane().add(panel);
+            dlg.setSize(getWidth()-40, getHeight()-40);
+            dlg.setLocationRelativeTo(this);
+            dlg.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
     }
 
     private javax.swing.JMenuItem itemMenuPenilaianAwalRalan(String teks, java.awt.event.ActionListener aksi) {
         javax.swing.JMenuItem item = new javax.swing.JMenuItem(teks);
         item.addActionListener(aksi);
         return item;
-    }
-
-    /**
-     * Tab "Risiko Jatuh" TAMBAHAN -- pola sama persis dgn tab "Risiko Jatuh" di DlgRawatInap
-     * (placeholder kosong, diklik langsung muncul JPopupMenu 2 pilihan). Tab "Risiko Jatuh (Get
-     * Up and Go)" yg sudah ada (pasangTabRisikoJatuh() di atas) TIDAK diubah/dihapus -- ini tab
-     * kedua, terpisah, supaya Ralan & Ranap punya pilihan asesmen risiko jatuh yg sama.
-     */
-    private void pasangTabRisikoJatuhLanjutan() {
-        javax.swing.JPanel placeholder = new javax.swing.JPanel();
-        placeholder.setOpaque(false);
-        TabRawat.addTab("Risiko Jatuh", placeholder);
-        final int idxRisikoJatuhLanjutan = TabRawat.indexOfComponent(placeholder);
-
-        final javax.swing.JPopupMenu menuRisikoJatuhLanjutan = new javax.swing.JPopupMenu();
-        menuRisikoJatuhLanjutan.add(itemMenuPenilaianAwalRalan("Risiko Jatuh Bayi & Anak (Humpty Dumpty Scale)", e -> bukaRisikoJatuhBayiAnakRalan()));
-        menuRisikoJatuhLanjutan.add(itemMenuPenilaianAwalRalan("Risiko Jatuh Dewasa (Morse Fall Scale)", e -> bukaRisikoJatuhMorseRalan()));
-
-        TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent evt) {
-                if (TabRawat.indexAtLocation(evt.getX(), evt.getY()) == idxRisikoJatuhLanjutan) {
-                    menuRisikoJatuhLanjutan.show(TabRawat, evt.getX(), evt.getY());
-                }
-            }
-        });
     }
 
     /** Buka form Asesmen Risiko Jatuh Bayi dan Anak (Humpty Dumpty Scale) untuk pasien ralan yang aktif. */
@@ -1038,8 +1025,6 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         initTabResepTerintegrasi();
         sesuaikanTabRalanDenganRanap();
         pasangTabPenilaianAwalKosongRalan();
-        pasangTabRisikoJatuh();
-        pasangTabRisikoJatuhLanjutan();
         pasangTabRiwayatObat();
         pasangTabDataPasienRalan();
         hiasTabRalan();
