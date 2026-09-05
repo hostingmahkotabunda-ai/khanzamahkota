@@ -1520,12 +1520,21 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         final boolean ambilSubjek = "keluhan".equals(kolomTarget);
         final boolean ambilObjek = "pemeriksaan".equals(kolomTarget);
         final String judulKolom = ambilSubjek ? "Subjek" : (ambilObjek ? "Objek" : "Plan");
+        // Kolom 0 "Pilih" (checkbox) -- boleh centang LEBIH DARI SATU baris SOAP sekaligus,
+        // beda dari sebelumnya yg cuma bisa ambil 1 baris. Kalau yg dicentang cuma 1, hasilnya
+        // PERSIS spt dulu (isi kolom itu apa adanya, tanpa tambahan apa2) -- header
+        // tanggal/jam/dokter cuma ditambahkan kalau yg dicentang lebih dari 1, supaya tetap
+        // jelas potongan mana berasal dari SOAP yang mana saat digabung.
         final DefaultTableModel modelSoap = new DefaultTableModel(null, new Object[]{
-            "Tanggal", "Jam", "Dokter", judulKolom
+            "Pilih", "Tanggal", "Jam", "Dokter", judulKolom
         }) {
             @Override
+            public Class<?> getColumnClass(int column) {
+                return column == 0 ? Boolean.class : String.class;
+            }
+            @Override
             public boolean isCellEditable(int row, int column) {
-                return false;
+                return column == 0;
             }
         };
         muatSoapDokter(modelSoap, kolomTarget);
@@ -1536,14 +1545,13 @@ public final class RMResumeMedisRanapV2 extends JDialog {
 
         final JDialog dialog = new JDialog(this, "Ambil " + judulKolom + " Dokter", true);
         final JTable tabelSoap = new JTable(modelSoap);
-        tabelSoap.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tabelSoap.setRowHeight(54);
         tabelSoap.setFont(FONT_BODY);
         tabelSoap.getTableHeader().setFont(FONT_LABEL);
         tabelSoap.getTableHeader().setBackground(WARNA_ACCENT_SOFT);
         tabelSoap.getTableHeader().setForeground(WARNA_ACCENT);
         tabelSoap.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        int[] lebarKolom = {90, 70, 180, 620};
+        int[] lebarKolom = {50, 90, 70, 180, 580};
         for (int idx = 0; idx < lebarKolom.length; idx++) {
             tabelSoap.getColumnModel().getColumn(idx).setPreferredWidth(lebarKolom[idx]);
         }
@@ -1551,7 +1559,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         JScrollPane scroll = new JScrollPane(tabelSoap);
         aturScrollPane(scroll, false);
 
-        Button btnPilih = buatButton("Pilih");
+        Button btnPilih = buatButton("Ambil Yang Dicentang");
         Button btnBatal = buatButton("Batal");
         aturTemaButton(btnPilih, new Color(22, 163, 74), Color.WHITE);
         aturTemaButton(btnBatal, new Color(100, 116, 139), Color.WHITE);
@@ -1571,14 +1579,35 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         ActionListener pilihData = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int row = tabelSoap.getSelectedRow();
-                if (row < 0) {
-                    JOptionPane.showMessageDialog(dialog, "Pilih data SOAP dokter terlebih dahulu.");
+                java.util.List<Object[]> terpilih = new java.util.ArrayList<Object[]>();
+                for (int modelRow = 0; modelRow < modelSoap.getRowCount(); modelRow++) {
+                    if (Boolean.TRUE.equals(modelSoap.getValueAt(modelRow, 0))) {
+                        terpilih.add(new Object[]{
+                            modelSoap.getValueAt(modelRow, 1), modelSoap.getValueAt(modelRow, 2),
+                            modelSoap.getValueAt(modelRow, 3), modelSoap.getValueAt(modelRow, 4)
+                        });
+                    }
+                }
+                if (terpilih.isEmpty()) {
+                    JOptionPane.showMessageDialog(dialog, "Centang minimal satu data SOAP dokter terlebih dahulu.");
                     return;
                 }
-                int modelRow = tabelSoap.convertRowIndexToModel(row);
-                Object nilaiTabel = modelSoap.getValueAt(modelRow, 3);
-                String nilai = nilaiTabel == null ? "" : nilaiTabel.toString();
+                String nilai;
+                if (terpilih.size() == 1) {
+                    Object nilaiTabel = terpilih.get(0)[3];
+                    nilai = nilaiTabel == null ? "" : nilaiTabel.toString();
+                } else {
+                    StringBuilder gabung = new StringBuilder();
+                    for (Object[] baris : terpilih) {
+                        if (gabung.length() > 0) {
+                            gabung.append("\n\n");
+                        }
+                        gabung.append("[").append(nvl((String) baris[0])).append(" ").append(nvl((String) baris[1]))
+                                .append(" - ").append(nvl((String) baris[2])).append("]\n");
+                        gabung.append(nvl((String) baris[3]));
+                    }
+                    nilai = gabung.toString();
+                }
                 if (ambilSubjek) {
                     AreaAlasanRawat.setText(nilai);
                 } else if (ambilObjek) {
@@ -1596,29 +1625,36 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 dialog.dispose();
             }
         });
+        // Double klik di baris manapun (bukan cuma di kotak centangnya persis) langsung
+        // toggle centang baris itu -- lebih gampang drpd harus klik pas di kotak kecil.
         tabelSoap.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (SwingUtilities.isLeftMouseButton(e) && e.getClickCount() == 2) {
-                    pilihData.actionPerformed(null);
+                    int row = tabelSoap.rowAtPoint(e.getPoint());
+                    if (row >= 0) {
+                        int modelRow = tabelSoap.convertRowIndexToModel(row);
+                        boolean sekarang = Boolean.TRUE.equals(modelSoap.getValueAt(modelRow, 0));
+                        modelSoap.setValueAt(!sekarang, modelRow, 0);
+                    }
                 }
             }
         });
 
         dialog.setContentPane(panel);
-        dialog.setSize(980, 460);
+        dialog.setSize(1020, 460);
         dialog.setLocationRelativeTo(this);
         dialog.setVisible(true);
     }
 
     private JLabel labelInfoSoap(String kolomTarget) {
-        String info = "Pilih SOAP dokter.";
+        String info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu).";
         if ("keluhan".equals(kolomTarget)) {
-            info = "Pilih SOAP dokter. Kolom Subjek akan dimasukkan ke Alasan / Indikasi Dirawat.";
+            info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu). Kolom Subjek akan dimasukkan ke Alasan / Indikasi Dirawat.";
         } else if ("pemeriksaan".equals(kolomTarget)) {
-            info = "Pilih SOAP dokter. Kolom Objek akan dimasukkan ke Pemeriksaan Fisik.";
+            info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu). Kolom Objek akan dimasukkan ke Pemeriksaan Fisik.";
         } else if ("rtl".equals(kolomTarget)) {
-            info = "Pilih SOAP dokter. Kolom Plan akan dimasukkan ke Terapi / Obat Yang Diberikan.";
+            info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu). Kolom Plan akan dimasukkan ke Terapi / Obat Yang Diberikan.";
         }
         JLabel label = new JLabel(info);
         label.setFont(FONT_LABEL);
@@ -1654,6 +1690,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             hasil = stmt.executeQuery();
             while (hasil.next()) {
                 modelSoap.addRow(new Object[]{
+                    Boolean.FALSE,
                     hasil.getString("tgl_perawatan"),
                     hasil.getString("jam_rawat"),
                     hasil.getString("nama"),
