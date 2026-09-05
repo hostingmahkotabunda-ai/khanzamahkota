@@ -5991,11 +5991,15 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
         "Asesmen Kebidanan",
         "Ringkasan Riwayat Masuk (RM 2a)",
         "Lembar Transfer Pasien Internal (RM 38)",
-        "Asesmen Ulang Nyeri (RM 7.1)"
+        "Asesmen Ulang Nyeri (RM 7.1)",
+        "EWS Bayi (RM 9.1)",
+        "EWS Anak (RM 9.1)",
+        "EWS Dewasa (RM 9.1)"
     };
     private static final String[] TABEL_BLOK_PENILAIAN_AWAL = {
         "asesmen_keperawatan_dewasa", "asesmen_keperawatan_anak", "asesmen_keperawatan_bayi",
-        "asesmen_kebidanan", "ringkasan_riwayat_masuk", "lembar_transfer_pasien_internal", "asesmen_ulang_nyeri"
+        "asesmen_kebidanan", "ringkasan_riwayat_masuk", "lembar_transfer_pasien_internal", "asesmen_ulang_nyeri",
+        "ews_bayi", "ews_anak", "ews_dewasa"
     };
 
     private void tampilAsesmenRanap() {
@@ -6139,6 +6143,9 @@ private void BtnPasienKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                 case 4: RMRingkasanRiwayatMasuk.cetak(noRawat); break;
                 case 5: RMTransferPasienInternal.cetak(noRawat); break;
                 case 6: RMAsesmenUlangNyeri.cetak(noRawat); break;
+                case 7: RMEWSBayi.cetak(noRawat); break;
+                case 8: RMEWSAnak.cetak(noRawat); break;
+                case 9: RMEWSDewasa.cetak(noRawat); break;
                 default: break;
             }
         } finally {

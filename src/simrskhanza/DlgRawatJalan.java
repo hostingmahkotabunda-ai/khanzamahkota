@@ -335,6 +335,90 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         return item;
     }
 
+    /**
+     * Tab "EWS" (Early Warning Scoring System) -- pola sama persis dgn tab "Penilaian Awal"
+     * (placeholder kosong, diklik langsung muncul JPopupMenu). RM 9.1 (Bayi) sudah jadi;
+     * Anak & Dewasa MENYUSUL (dokumen referensinya belum dikirim) -- tetap ditampilkan di
+     * menu supaya strukturnya sudah siap, tinggal isi bukaEWSAnakRalan()/bukaEWSDewasaRalan() nanti.
+     */
+    private void pasangTabEWSRalan() {
+        javax.swing.JPanel placeholder = new javax.swing.JPanel();
+        placeholder.setOpaque(false);
+        TabRawat.addTab("EWS", placeholder);
+        final int idxEWS = TabRawat.indexOfComponent(placeholder);
+
+        final javax.swing.JPopupMenu menuEWS = new javax.swing.JPopupMenu();
+        menuEWS.add(itemMenuPenilaianAwalRalan("EWS Bayi (RM 9.1)", e -> bukaEWSBayiRalan()));
+        menuEWS.add(itemMenuPenilaianAwalRalan("EWS Anak", e -> bukaEWSAnakRalan()));
+        menuEWS.add(itemMenuPenilaianAwalRalan("EWS Dewasa", e -> bukaEWSDewasaRalan()));
+
+        TabRawat.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                if (TabRawat.indexAtLocation(evt.getX(), evt.getY()) == idxEWS) {
+                    menuEWS.show(TabRawat, evt.getX(), evt.getY());
+                }
+            }
+        });
+    }
+
+    /** Buka form Early Warning Scoring System (Bayi), RM 9.1, untuk pasien ralan yang aktif. */
+    private void bukaEWSBayiRalan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMEWSBayi f = new rekammedis.RMEWSBayi(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Early Warning Scoring System (Anak), RM 9.1, untuk pasien ralan yang aktif. */
+    private void bukaEWSAnakRalan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMEWSAnak f = new rekammedis.RMEWSAnak(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Buka form Early Warning Scoring System (Dewasa), RM 9.1, untuk pasien ralan yang aktif. */
+    private void bukaEWSDewasaRalan() {
+        if (TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            rekammedis.RMEWSDewasa f = new rekammedis.RMEWSDewasa(null, false);
+            f.isCek();
+            f.setNoRm(TNoRw.getText());
+            f.setLocationRelativeTo(this);
+            f.setVisible(true);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Gagal membuka form.\n" + ex.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
+
     /** Buka form Asesmen Risiko Jatuh Bayi dan Anak (Humpty Dumpty Scale) untuk pasien ralan yang aktif. */
     private void bukaRisikoJatuhBayiAnakRalan() {
         if (TNoRw.getText().trim().equals("")) {
@@ -1025,6 +1109,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
         initTabResepTerintegrasi();
         sesuaikanTabRalanDenganRanap();
         pasangTabPenilaianAwalKosongRalan();
+        pasangTabEWSRalan();
         pasangTabRiwayatObat();
         pasangTabDataPasienRalan();
         hiasTabRalan();
