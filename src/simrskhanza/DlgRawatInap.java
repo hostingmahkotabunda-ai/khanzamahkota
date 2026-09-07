@@ -11441,28 +11441,20 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         });
     }
 
-    /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil disimpan. */
+    /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil disimpan -- banner ringan
+     *  yg hilang sendiri (bukan JOptionPane lagi), spy tidak menghentikan alur kerja pengguna. */
     private void notifikasiSoapTersimpan() {
         String jam = cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem();
-        JOptionPane.showMessageDialog(this,
-                "SOAP pasien " + TPasien.getText() + "\n"
-                + "Tanggal : " + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + "\n"
-                + "Jam : " + jam + "\n"
-                + "Petugas : " + TPegawai.getText() + "\n\n"
-                + "Berhasil disimpan.",
-                "Simpan Berhasil", JOptionPane.INFORMATION_MESSAGE);
+        widget.Toast.sukses(this, "SOAP tersimpan — " + TPasien.getText() + " • "
+                + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + " " + jam + " • " + TPegawai.getText());
     }
 
-    /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil diganti/diedit. */
+    /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil diganti/diedit -- banner
+     *  ringan yg hilang sendiri (bukan JOptionPane lagi). */
     private void notifikasiSoapDiedit() {
         String jam = cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem();
-        JOptionPane.showMessageDialog(this,
-                "SOAP pasien " + TPasien.getText() + "\n"
-                + "Tanggal : " + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + "\n"
-                + "Jam : " + jam + "\n"
-                + "Petugas : " + TPegawai.getText() + "\n\n"
-                + "Berhasil diedit.",
-                "Edit Berhasil", JOptionPane.INFORMATION_MESSAGE);
+        widget.Toast.sukses(this, "SOAP berhasil diedit — " + TPasien.getText() + " • "
+                + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + " " + jam + " • " + TPegawai.getText());
     }
 
     private void sinkronDraftResepSOAP(String noRawat,String tglSoap,String jamSoap,String kdDokter,String resepTeks) {
