@@ -176,6 +176,21 @@ public final class DlgValidasiSOAP extends JDialog {
         }
     }
 
+    /** Versi worker: query yang sama, tanpa memakai koneksi transaksi bersama. */
+    public static int countBelum(java.sql.Connection baca, String noRawat, String status) throws java.sql.SQLException {
+        if (noRawat == null || noRawat.trim().equals("")) return 0;
+        String tbl = "ranap".equalsIgnoreCase(status) ? "pemeriksaan_ranap" : "pemeriksaan_ralan";
+        try (java.sql.PreparedStatement p = baca.prepareStatement(
+                "select count(*) from " + tbl + " pr left join pegawai pg on pr.nip=pg.nik "
+                + "where pr.no_rawat=? and pr.validasi='Belum' and not " + kondisiPenginputDpjp(status))) {
+            p.setQueryTimeout(60);
+            p.setString(1, noRawat.trim());
+            try (java.sql.ResultSet r = p.executeQuery()) {
+                return r.next() ? r.getInt(1) : 0;
+            }
+        }
+    }
+
     private void initComponents() {
         setLayout(new BorderLayout(4, 4));
 

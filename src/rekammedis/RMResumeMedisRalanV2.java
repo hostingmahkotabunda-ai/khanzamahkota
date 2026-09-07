@@ -307,7 +307,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         int row = 0;
         row = tambahJudul(panel, row, "Resume Medis");
         row = tambahAreaDenganTombol(panel, row, "Keluhan Utama", AreaAlasanRawat, 74, BtnAmbilAlasanSoap);
-        // Diagnosa Masuk disembunyikan dari form (data tetap tersimpan apa adanya)
+        row = tambahDuaKolom(panel, row, "Diagnosa Masuk", TDiagnosaMasuk, "Kode ICD 10", TICD10Masuk);
         row = tambahDuaKolom(panel, row, "Diagnosa Keluar 1 *", TDiagnosaKeluar, "Kode ICD 10", TICD10Keluar);
         row = tambahDuaKolom(panel, row, "Diagnosa Keluar 2", TDiagnosaSekunder1, "ICD 10 Keluar 2", TICD10Sekunder1);
         row = tambahDuaKolom(panel, row, "Diagnosa Keluar 3", TDiagnosaSekunder2, "ICD 10 Keluar 3", TICD10Sekunder2);
@@ -775,6 +775,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
                 kosongkanResume();
                 isiDefaultDokterLogin();
             }
+            isiDiagnosaMasukOtomatis();
         } catch (Exception e) {
             System.out.println("Notif : " + e);
         } finally {
@@ -792,6 +793,16 @@ public final class RMResumeMedisRalanV2 extends JDialog {
             } catch (Exception e) {
                 System.out.println("Notif : " + e);
             }
+        }
+    }
+
+    private void isiDiagnosaMasukOtomatis() {
+        if (!ambil(TDiagnosaMasuk).isEmpty()) return;
+        try {
+            TDiagnosaMasuk.setText(DiagnosaMasukResume.isiJikaKosong(
+                    koneksi, TNoRw.getText(), TDiagnosaMasuk.getText()));
+        } catch (SQLException e) {
+            System.out.println("Notif pengisian diagnosis masuk resume: " + e.getSQLState());
         }
     }
 
@@ -1037,6 +1048,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         TTglKeluar.setText(tglKeluar);
         TJamKeluar.setText(jamKeluar);
         isiDefaultDokterLogin();
+        isiDiagnosaMasukOtomatis();
         TabUtama.setSelectedIndex(0);
     }
 

@@ -595,7 +595,7 @@ public class DlgBilingRanap extends javax.swing.JDialog {
             public void windowDeactivated(WindowEvent e) {}
         });
         
-        rawatinap.perawatan.addWindowListener(new WindowListener() {
+        rawatinap.addPerawatanWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent e) {}
             @Override
@@ -2863,13 +2863,13 @@ private void tbBillingMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:e
                                     JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi, data tidak boleh dihapus.\nSilahkan hubungi bagian kasir/keuangan ..!!");
                                     BtnNota.requestFocus();
                                 }else{
-                                    rawatinap.perawatan.setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
-                                    rawatinap.perawatan.setPetugas("","","","");
-                                    rawatinap.perawatan.isCek();
-                                    rawatinap.perawatan.tampil();
-                                    rawatinap.perawatan.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-                                    rawatinap.perawatan.setLocationRelativeTo(internalFrame1);
-                                    rawatinap.perawatan.setVisible(true);
+                                    rawatinap.getPerawatan().setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
+                                    rawatinap.getPerawatan().setPetugas("","","","");
+                                    rawatinap.getPerawatan().isCek();
+                                    rawatinap.getPerawatan().tampil();
+                                    rawatinap.getPerawatan().setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                                    rawatinap.getPerawatan().setLocationRelativeTo(internalFrame1);
+                                    rawatinap.getPerawatan().setVisible(true);
                                 }
                             }                        
                         }else if(tbBilling.getValueAt(tbBilling.getSelectedRow(), kolom).toString().contains("Resep Pulang")){
@@ -2920,13 +2920,13 @@ private void tbBillingMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:e
                                         JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi, data tidak boleh dihapus.\nSilahkan hubungi bagian kasir/keuangan ..!!");
                                         BtnNota.requestFocus();
                                     }else{
-                                        rawatinap.perawatan.setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
-                                        rawatinap.perawatan.setPetugas("","","","");
-                                        rawatinap.perawatan.isCek();
-                                        rawatinap.perawatan.tampil();
-                                        rawatinap.perawatan.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-                                        rawatinap.perawatan.setLocationRelativeTo(internalFrame1);
-                                        rawatinap.perawatan.setVisible(true);
+                                        rawatinap.getPerawatan().setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
+                                        rawatinap.getPerawatan().setPetugas("","","","");
+                                        rawatinap.getPerawatan().isCek();
+                                        rawatinap.getPerawatan().tampil();
+                                        rawatinap.getPerawatan().setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                                        rawatinap.getPerawatan().setLocationRelativeTo(internalFrame1);
+                                        rawatinap.getPerawatan().setVisible(true);
                                     }
                                 }                        
                             }else if(tbBilling.getValueAt(tbBilling.getSelectedRow(), kolom).toString().contains("Resep Pulang")){
@@ -3038,13 +3038,13 @@ private void tbBillingKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                                     JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi, data tidak boleh dihapus.\nSilahkan hubungi bagian kasir/keuangan ..!!");
                                     BtnNota.requestFocus();
                                 }else{
-                                    rawatinap.perawatan.setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
-                                    rawatinap.perawatan.setPetugas("","","","");
-                                    rawatinap.perawatan.isCek();
-                                    rawatinap.perawatan.tampil();
-                                    rawatinap.perawatan.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-                                    rawatinap.perawatan.setLocationRelativeTo(internalFrame1);
-                                    rawatinap.perawatan.setVisible(true);    
+                                    rawatinap.getPerawatan().setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
+                                    rawatinap.getPerawatan().setPetugas("","","","");
+                                    rawatinap.getPerawatan().isCek();
+                                    rawatinap.getPerawatan().tampil();
+                                    rawatinap.getPerawatan().setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                                    rawatinap.getPerawatan().setLocationRelativeTo(internalFrame1);
+                                    rawatinap.getPerawatan().setVisible(true);
                                 }                        
                             }                        
                         }else if(tbBilling.getValueAt(tbBilling.getSelectedRow(), kolom).toString().contains("Resep Pulang")){
@@ -3094,13 +3094,13 @@ private void tbBillingKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event
                                     JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi, data tidak boleh dihapus.\nSilahkan hubungi bagian kasir/keuangan ..!!");
                                     BtnNota.requestFocus();
                                 }else{
-                                    rawatinap.perawatan.setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
-                                    rawatinap.perawatan.setPetugas("","","","");
-                                    rawatinap.perawatan.isCek();
-                                    rawatinap.perawatan.tampil();
-                                    rawatinap.perawatan.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-                                    rawatinap.perawatan.setLocationRelativeTo(internalFrame1);
-                                    rawatinap.perawatan.setVisible(true);     
+                                    rawatinap.getPerawatan().setNoRm(TNoRw.getText(),"rawat_inap_dr",DTPTgl.getDate(),"00","00","00",true,TPasien.getText());
+                                    rawatinap.getPerawatan().setPetugas("","","","");
+                                    rawatinap.getPerawatan().isCek();
+                                    rawatinap.getPerawatan().tampil();
+                                    rawatinap.getPerawatan().setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+                                    rawatinap.getPerawatan().setLocationRelativeTo(internalFrame1);
+                                    rawatinap.getPerawatan().setVisible(true);
                                 }                       
                             }                        
                         }else if(tbBilling.getValueAt(tbBilling.getSelectedRow(), kolom).toString().contains("Resep Pulang")){

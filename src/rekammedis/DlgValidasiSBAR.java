@@ -124,6 +124,21 @@ public final class DlgValidasiSBAR extends JDialog {
         }
     }
 
+    /** Versi worker: koneksi pembacaan dimiliki dan ditutup oleh pemanggil. */
+    public static int countBelum(java.sql.Connection baca, String noRawat, String status) throws java.sql.SQLException {
+        if (noRawat == null || noRawat.trim().equals("")) return 0;
+        String st = status == null || status.trim().equals("") ? "ralan" : status.trim();
+        try (java.sql.PreparedStatement p = baca.prepareStatement(
+                "select count(*) from sbar_pasien where no_rawat=? and status=? and validasi='Belum'")) {
+            p.setQueryTimeout(60);
+            p.setString(1, noRawat.trim());
+            p.setString(2, st);
+            try (java.sql.ResultSet r = p.executeQuery()) {
+                return r.next() ? r.getInt(1) : 0;
+            }
+        }
+    }
+
     /** Cetak laporan SBAR pasien (rptSBARPerawatanPasien) untuk no_rawat & status tertentu. */
     public static void cetakSBAR(String noRawat, String status) {
         if (noRawat == null || noRawat.trim().equals("")) {

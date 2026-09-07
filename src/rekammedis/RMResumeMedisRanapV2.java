@@ -735,7 +735,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 "select reg_periksa.no_rkm_medis,pasien.nm_pasien,reg_periksa.tgl_registrasi,reg_periksa.jam_reg," +
                 "reg_periksa.kd_pj,penjab.png_jawab,if(kamar_inap.tgl_keluar='0000-00-00',current_date(),kamar_inap.tgl_keluar) as tgl_keluar," +
                 "if(kamar_inap.jam_keluar='00:00:00',current_time(),kamar_inap.jam_keluar) as jam_keluar," +
-                "kamar_inap.diagnosa_awal,kamar.kd_kamar,bangsal.nm_bangsal from reg_periksa " +
+                "kamar.kd_kamar,bangsal.nm_bangsal from reg_periksa " +
                 "inner join pasien on pasien.no_rkm_medis=reg_periksa.no_rkm_medis " +
                 "inner join penjab on penjab.kd_pj=reg_periksa.kd_pj " +
                 "inner join kamar_inap on kamar_inap.no_rawat=reg_periksa.no_rawat " +
@@ -756,9 +756,6 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 TJamMasuk.setText(nvl(rs.getString("jam_reg")));
                 TTglKeluar.setText(nvl(rs.getString("tgl_keluar")));
                 TJamKeluar.setText(nvl(rs.getString("jam_keluar")));
-                if (ambil(TDiagnosaMasuk).isEmpty()) {
-                    TDiagnosaMasuk.setText(nvl(rs.getString("diagnosa_awal")));
-                }
             }
         } catch (Exception e) {
             System.out.println("Notif : " + e);
@@ -783,6 +780,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 kosongkanResume();
                 isiDefaultDokterLogin();
             }
+            isiDiagnosaMasukOtomatis();
         } catch (Exception e) {
             System.out.println("Notif : " + e);
         } finally {
@@ -800,6 +798,16 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             } catch (Exception e) {
                 System.out.println("Notif : " + e);
             }
+        }
+    }
+
+    private void isiDiagnosaMasukOtomatis() {
+        if (!ambil(TDiagnosaMasuk).isEmpty()) return;
+        try {
+            TDiagnosaMasuk.setText(DiagnosaMasukResume.isiJikaKosong(
+                    koneksi, TNoRw.getText(), TDiagnosaMasuk.getText()));
+        } catch (SQLException e) {
+            System.out.println("Notif pengisian diagnosis masuk resume: " + e.getSQLState());
         }
     }
 
@@ -1045,6 +1053,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         TTglKeluar.setText(tglKeluar);
         TJamKeluar.setText(jamKeluar);
         isiDefaultDokterLogin();
+        isiDiagnosaMasukOtomatis();
         TabUtama.setSelectedIndex(0);
     }
 

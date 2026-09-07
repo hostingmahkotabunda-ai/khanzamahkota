@@ -23,6 +23,30 @@ public class koneksiDB {
     private static String var="";
     
     public koneksiDB(){} 
+    /** Koneksi milik pemanggil untuk pembacaan di worker; wajib ditutup setelah dipakai.
+     * condb() harus sudah diinisialisasi oleh aplikasi di thread antarmuka. */
+    public static Connection bukaKoneksiBaca() throws java.sql.SQLException {
+        if (connection == null) {
+            throw new java.sql.SQLException("Koneksi aplikasi belum diinisialisasi");
+        }
+        MysqlDataSource sumberBaca = new MysqlDataSource();
+        sumberBaca.setURL(dataSource.getURL() + "&connectTimeout=10000&socketTimeout=60000");
+        sumberBaca.setUser(dataSource.getUser());
+        try {
+            sumberBaca.setPassword(EnkripsiAES.decrypt(prop.getProperty("PAS")));
+        } catch (Exception e) {
+            throw new java.sql.SQLException("Konfigurasi koneksi pembacaan tidak dapat dimuat", e);
+        }
+        Connection baca = sumberBaca.getConnection();
+        try {
+            baca.setReadOnly(true);
+            return baca;
+        } catch (java.sql.SQLException e) {
+            baca.close();
+            throw e;
+        }
+    }
+
     public static Connection condb(){ 
         if(connection == null){
             try{
