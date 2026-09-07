@@ -905,7 +905,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             isiStatement(stmt, false);
             stmt.executeUpdate();
             tampilData();
-            JOptionPane.showMessageDialog(this, "Resume medis ranap V2 berhasil disimpan.");
+            widget.Toast.sukses(this, "Resume medis ranap V2 tersimpan.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal menyimpan data : " + e.getMessage());
         } finally {
@@ -941,7 +941,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             isiStatement(stmt, true);
             stmt.executeUpdate();
             tampilData();
-            JOptionPane.showMessageDialog(this, "Resume medis ranap V2 berhasil diperbarui.");
+            widget.Toast.sukses(this, "Resume medis ranap V2 diperbarui.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Gagal memperbarui data : " + e.getMessage());
         } finally {
@@ -1025,6 +1025,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         Sequel.meghapus("resume_medis_ranap_v2", "no_rawat", noRawat);
         tampilData();
         bersihkanForm();
+        widget.Toast.sukses(this, "Resume medis ranap V2 dihapus.");
     }
 
     private boolean dataSudahAda() {
@@ -1617,13 +1618,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                     }
                     nilai = gabung.toString();
                 }
-                if (ambilSubjek) {
-                    AreaAlasanRawat.setText(nilai);
-                } else if (ambilObjek) {
-                    AreaPemeriksaanFisik.setText(nilai);
-                } else {
-                    AreaTerapiObat.setText(nilai);
-                }
+                masukkanNilaiSoapKeForm(ambilSubjek, ambilObjek, nilai);
                 dialog.dispose();
             }
         };
@@ -1634,8 +1629,10 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 dialog.dispose();
             }
         });
-        // Double klik di baris manapun (bukan cuma di kotak centangnya persis) langsung
-        // toggle centang baris itu -- lebih gampang drpd harus klik pas di kotak kecil.
+        // Klik 2x di baris manapun langsung ambil baris ITU SAJA -- isian PURE apa adanya (kolom
+        // data SOAP-nya doang, TANPA header tanggal/jam/dokter), tidak perlu centang & klik tombol
+        // lagi. Centang + "Ambil Yang Dicentang" tetap dipakai kalau mau gabung LEBIH DARI SATU SOAP
+        // sekaligus (baru header tanggal/jam/dokter ditambahkan, supaya jelas potongan mana dari mana).
         tabelSoap.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -1643,8 +1640,9 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                     int row = tabelSoap.rowAtPoint(e.getPoint());
                     if (row >= 0) {
                         int modelRow = tabelSoap.convertRowIndexToModel(row);
-                        boolean sekarang = Boolean.TRUE.equals(modelSoap.getValueAt(modelRow, 0));
-                        modelSoap.setValueAt(!sekarang, modelRow, 0);
+                        Object nilaiTabel = modelSoap.getValueAt(modelRow, 4);
+                        masukkanNilaiSoapKeForm(ambilSubjek, ambilObjek, nilaiTabel == null ? "" : nilaiTabel.toString());
+                        dialog.dispose();
                     }
                 }
             }
@@ -1656,14 +1654,29 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         dialog.setVisible(true);
     }
 
+    /** Isi field target di form (Alasan Rawat/Pemeriksaan Fisik/Terapi Obat) dgn nilai SOAP yg
+     *  dipilih -- dipakai bareng oleh double-klik (1 baris, langsung) & tombol "Ambil Yang
+     *  Dicentang" (bisa gabungan beberapa baris). Kalau field itu SUDAH ada isinya (dari
+     *  "Ambil" sebelumnya, atau diketik manual), isian lama TIDAK ditimpa -- yang baru
+     *  ditambahkan di bawahnya, dipisah baris kosong. */
+    private void masukkanNilaiSoapKeForm(boolean ambilSubjek, boolean ambilObjek, String nilai) {
+        TextArea target = ambilSubjek ? AreaAlasanRawat : (ambilObjek ? AreaPemeriksaanFisik : AreaTerapiObat);
+        String isiSekarang = target.getText();
+        if (isiSekarang != null && !isiSekarang.trim().isEmpty()) {
+            target.setText(isiSekarang + "\n\n" + nilai);
+        } else {
+            target.setText(nilai);
+        }
+    }
+
     private JLabel labelInfoSoap(String kolomTarget) {
-        String info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu).";
+        String info = "Klik 2x pada satu baris utk langsung mengambilnya, atau centang beberapa baris lalu klik \"Ambil Yang Dicentang\" utk menggabungkan.";
         if ("keluhan".equals(kolomTarget)) {
-            info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu). Kolom Subjek akan dimasukkan ke Alasan / Indikasi Dirawat.";
+            info = "Klik 2x pada satu baris utk langsung mengambilnya (atau centang beberapa lalu \"Ambil Yang Dicentang\" utk menggabungkan). Kolom Subjek akan dimasukkan ke Alasan / Indikasi Dirawat.";
         } else if ("pemeriksaan".equals(kolomTarget)) {
-            info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu). Kolom Objek akan dimasukkan ke Pemeriksaan Fisik.";
+            info = "Klik 2x pada satu baris utk langsung mengambilnya (atau centang beberapa lalu \"Ambil Yang Dicentang\" utk menggabungkan). Kolom Objek akan dimasukkan ke Pemeriksaan Fisik.";
         } else if ("rtl".equals(kolomTarget)) {
-            info = "Centang SOAP dokter yang mau diambil (boleh lebih dari satu). Kolom Plan akan dimasukkan ke Terapi / Obat Yang Diberikan.";
+            info = "Klik 2x pada satu baris utk langsung mengambilnya (atau centang beberapa lalu \"Ambil Yang Dicentang\" utk menggabungkan). Kolom Plan akan dimasukkan ke Terapi / Obat Yang Diberikan.";
         }
         JLabel label = new JLabel(info);
         label.setFont(FONT_LABEL);
