@@ -1969,7 +1969,13 @@ public final class RMSkriningNutrisiAnak extends javax.swing.JDialog {
         SG4.setSelectedIndex(0);
         Nilai4.setText("0");
         TotalHasil.setText("0");
-        LabelSkrining.setText("Status Gizi Normal");
+        // "Status Gizi Normal" BUKAN salah satu nilai enum kolom skor_nutrisi
+        // ('Risikio Berat','Risiko Sedang','Risiko Rendah') -- kalau user tidak menyentuh salah
+        // satu dropdown SG1-SG4 sama sekali (mis. semua jawabannya memang "Tidak", jadi tidak ada
+        // yg perlu diubah), label ini TIDAK PERNAH diperbarui oleh isTotal() shg Simpan gagal
+        // (data truncated) krn mencoba insert nilai yg tidak valid utk kolom enum tsb. Total skor 0
+        // = kategori "Risiko Rendah" (cocok dgn perhitungan isTotal() sendiri).
+        LabelSkrining.setText("Risiko Rendah");
         BB.requestFocus();
     } 
 
