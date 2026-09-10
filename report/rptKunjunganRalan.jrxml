@@ -1,669 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="null" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20">
-	<property name="ireport.zoom" value="2.0"/>
-	<property name="ireport.x" value="80"/>
-	<property name="ireport.y" value="0"/>
-	<parameter name="tanggal" class="java.util.Date"/>
-	<parameter name="namars" class="java.lang.String"/>
-	<parameter name="alamatrs" class="java.lang.String"/>
-	<parameter name="kotars" class="java.lang.String"/>
-	<parameter name="propinsirs" class="java.lang.String"/>
-	<parameter name="kontakrs" class="java.lang.String"/>
-	<parameter name="emailrs" class="java.lang.String"/>
-	<parameter name="periode" class="java.lang.String"/>
-	<parameter name="lama" class="java.lang.Integer"/>
-	<parameter name="baru" class="java.lang.Integer"/>
-	<parameter name="laki" class="java.lang.Integer"/>
-	<parameter name="perempuan" class="java.lang.Integer"/>
-	<parameter name="total" class="java.lang.Integer"/>
-	<queryString>
-		<![CDATA[select * from temporary order by no asc]]>
-	</queryString>
-	<field name="no" class="java.lang.Integer">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp1" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp2" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp3" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp4" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp5" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp6" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp7" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp8" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp9" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp10" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp11" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp12" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp13" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp14" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp15" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp16" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp17" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp18" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp19" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp20" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp21" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp22" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp23" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp24" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp25" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp26" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<field name="temp27" class="java.lang.String">
-		<fieldDescription><![CDATA[]]></fieldDescription>
-	</field>
-	<background>
-		<band splitType="Stretch"/>
-	</background>
-	<title>
-		<band height="61" splitType="Stretch">
-			<staticText>
-				<reportElement x="6" y="1" width="796" height="16"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="13" isBold="false"/>
-				</textElement>
-				<text><![CDATA[LAPORAN KUNJUNGAN RAWAT JALAN]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="3" y="25" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Kabupaten]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="3" y="35" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Rumah Sakit]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="325" y="25" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Kunjungan Lama]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="325" y="35" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Kunjungan Baru]]></text>
-			</staticText>
-			<textField pattern="yyyy" isBlankWhenNull="true">
-				<reportElement key="textField" x="393" y="34" width="138" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{baru}]]></textFieldExpression>
-			</textField>
-			<textField pattern="MM" isBlankWhenNull="true">
-				<reportElement key="textField" x="393" y="25" width="138" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{lama}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="71" y="25" width="208" height="11"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{kotars}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement x="71" y="35" width="208" height="11"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{namars}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement mode="Transparent" x="3" y="45" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Tanggal]]></text>
-			</staticText>
-			<textField>
-				<reportElement x="71" y="45" width="208" height="11"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{periode}]]></textFieldExpression>
-			</textField>
-			<textField pattern="yyyy" isBlankWhenNull="true">
-				<reportElement key="textField" x="393" y="45" width="138" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{total}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement mode="Transparent" x="325" y="45" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Total Kunjungan]]></text>
-			</staticText>
-			<textField pattern="yyyy" isBlankWhenNull="true">
-				<reportElement key="textField" x="667" y="35" width="95" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{perempuan}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement mode="Transparent" x="599" y="35" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Perempuan]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="599" y="25" width="67" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Laki-Laki]]></text>
-			</staticText>
-			<textField pattern="MM" isBlankWhenNull="true">
-				<reportElement key="textField" x="667" y="25" width="95" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[": "+$P{laki}]]></textFieldExpression>
-			</textField>
-		</band>
-	</title>
-	<pageHeader>
-		<band splitType="Stretch"/>
-	</pageHeader>
-	<columnHeader>
-		<band height="27" splitType="Stretch">
-			<line>
-				<reportElement x="1" y="0" width="800" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<staticText>
-				<reportElement mode="Transparent" x="1" y="2" width="23" height="23" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[No]]></text>
-			</staticText>
-			<line>
-				<reportElement x="0" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<staticText>
-				<reportElement mode="Transparent" x="26" y="2" width="92" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[No.RM]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="26" y="14" width="45" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Lama]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="73" y="14" width="45" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Baru]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="272" y="14" width="25" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[L]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="299" y="14" width="25" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[P]]></text>
-			</staticText>
-			<line>
-				<reportElement x="1" y="26" width="800" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="24" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="118" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="25" y="13" width="93" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="71" y="14" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="297" y="14" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<staticText>
-				<reportElement mode="Transparent" x="272" y="2" width="52" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Umur]]></text>
-			</staticText>
-			<line>
-				<reportElement x="270" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="324" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="489" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="664" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="801" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="271" y="13" width="53" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<staticText>
-				<reportElement mode="Transparent" x="522" y="2" width="142" height="23" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Diagnosa]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="120" y="2" width="150" height="23" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Nama Pasien]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="325" y="2" width="164" height="23" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Alamat]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="666" y="2" width="133" height="23" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Dokter Jaga]]></text>
-			</staticText>
-			<line>
-				<reportElement x="520" y="1" width="1" height="25"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<staticText>
-				<reportElement mode="Transparent" x="491" y="2" width="29" height="23" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" verticalAlignment="Middle" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Kode]]></text>
-			</staticText>
-		</band>
-	</columnHeader>
-	<detail>
-		<band height="12" splitType="Stretch">
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="1" y="1" width="23" height="10"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp1}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="27" y="1" width="43" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp2}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="121" y="1" width="149" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp4}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="273" y="1" width="24" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp5}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="300" y="1" width="24" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp6}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="326" y="1" width="162" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp7}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="524" y="1" width="140" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp9}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="668" y="1" width="132" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp10}]]></textFieldExpression>
-			</textField>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="74" y="1" width="43" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp3}]]></textFieldExpression>
-			</textField>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="0" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="24" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="118" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="71" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="270" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="324" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="297" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="489" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="664" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="801" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement positionType="FixRelativeToBottom" stretchType="RelativeToTallestObject" x="1" y="11" width="800" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.25"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement stretchType="RelativeToBandHeight" x="520" y="0" width="1" height="12"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<textField isBlankWhenNull="true">
-				<reportElement positionType="Float" stretchType="RelativeToBandHeight" x="491" y="1" width="29" height="10"/>
-				<textElement textAlignment="Left" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$F{temp8}]]></textFieldExpression>
-			</textField>
-		</band>
-	</detail>
-	<columnFooter>
-		<band splitType="Stretch"/>
-	</columnFooter>
-	<summary>
-		<band height="70">
-			<staticText>
-				<reportElement mode="Transparent" x="567" y="12" width="226" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Pelapor]]></text>
-			</staticText>
-			<textField pattern="dd/MM/yyyy" isBlankWhenNull="false">
-				<reportElement key="textField" x="677" y="2" width="116" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.util.Date"><![CDATA[$P{tanggal}]]></textFieldExpression>
-			</textField>
-			<staticText>
-				<reportElement mode="Transparent" x="567" y="56" width="226" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[NIP.                                                                     ]]></text>
-			</staticText>
-			<line>
-				<reportElement positionType="FixRelativeToBottom" stretchType="RelativeToTallestObject" x="1" y="0" width="800" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<line>
-				<reportElement x="588" y="55" width="183" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<staticText>
-				<reportElement mode="Transparent" x="2" y="12" width="226" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[An. Direktur RS ..................................................]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="2" y="56" width="226" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[NIP.                                                                     ]]></text>
-			</staticText>
-			<staticText>
-				<reportElement mode="Transparent" x="2" y="2" width="226" height="11" forecolor="#000000" backcolor="#FFFFFF"/>
-				<textElement textAlignment="Center" lineSpacing="Single">
-					<font fontName="Tahoma" size="8" isBold="false"/>
-				</textElement>
-				<text><![CDATA[Mengetahui,]]></text>
-			</staticText>
-			<line>
-				<reportElement x="23" y="55" width="183" height="1"/>
-				<graphicElement>
-					<pen lineWidth="0.5"/>
-				</graphicElement>
-			</line>
-			<textField>
-				<reportElement x="567" y="2" width="110" height="11"/>
-				<textElement textAlignment="Right" lineSpacing="Single">
-					<font fontName="Tahoma" size="8"/>
-				</textElement>
-				<textFieldExpression class="java.lang.String"><![CDATA[$P{kotars}+", "]]></textFieldExpression>
-			</textField>
-		</band>
-	</summary>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="rptKunjunganRalan" pageWidth="842" pageHeight="595" orientation="Landscape" columnWidth="802" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="00000001-0000-4000-8000-000000000001">
+<parameter name="namars" class="java.lang.String"/>
+<parameter name="alamatrs" class="java.lang.String"/>
+<parameter name="kotars" class="java.lang.String"/>
+<parameter name="propinsirs" class="java.lang.String"/>
+<parameter name="kontakrs" class="java.lang.String"/>
+<parameter name="emailrs" class="java.lang.String"/>
+<parameter name="periode" class="java.lang.String"/>
+<parameter name="lama" class="java.lang.Integer"/>
+<parameter name="baru" class="java.lang.Integer"/>
+<parameter name="laki" class="java.lang.Integer"/>
+<parameter name="perempuan" class="java.lang.Integer"/>
+<parameter name="total" class="java.lang.Integer"/>
+<parameter name="tanggal" class="java.util.Date"/>
+<queryString><![CDATA[select * from temporary order by no asc]]></queryString>
+<field name="no" class="java.lang.Integer"/>
+<field name="temp1" class="java.lang.String"/>
+<field name="temp2" class="java.lang.String"/>
+<field name="temp3" class="java.lang.String"/>
+<field name="temp4" class="java.lang.String"/>
+<field name="temp5" class="java.lang.String"/>
+<field name="temp6" class="java.lang.String"/>
+<field name="temp7" class="java.lang.String"/>
+<field name="temp8" class="java.lang.String"/>
+<field name="temp9" class="java.lang.String"/>
+<field name="temp10" class="java.lang.String"/>
+<field name="temp11" class="java.lang.String"/>
+<field name="temp12" class="java.lang.String"/>
+<field name="temp13" class="java.lang.String"/>
+<field name="temp14" class="java.lang.String"/>
+<field name="temp15" class="java.lang.String"/>
+<field name="temp16" class="java.lang.String"/>
+<field name="temp17" class="java.lang.String"/>
+<field name="temp18" class="java.lang.String"/>
+<field name="temp19" class="java.lang.String"/>
+<field name="temp20" class="java.lang.String"/>
+<field name="temp21" class="java.lang.String"/>
+<field name="temp22" class="java.lang.String"/>
+<field name="temp23" class="java.lang.String"/>
+<field name="temp24" class="java.lang.String"/>
+<field name="temp25" class="java.lang.String"/>
+<field name="temp26" class="java.lang.String"/>
+<field name="temp27" class="java.lang.String"/>
+<background><band splitType="Stretch"/></background>
+<title><band height="94" splitType="Stretch">
+<textField isBlankWhenNull="true"><reportElement x="0" y="2" width="802" height="16" uuid="00000002-0000-4000-8000-000000000002"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="12" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$P{namars}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="18" width="802" height="11" uuid="00000003-0000-4000-8000-000000000003"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$P{alamatrs}+", "+$P{kotars}+", "+$P{propinsirs}]]></textFieldExpression></textField>
+<textField isBlankWhenNull="true"><reportElement x="0" y="29" width="802" height="11" uuid="00000004-0000-4000-8000-000000000004"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$P{kontakrs}+"  "+$P{emailrs}]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="0" y="44" width="802" height="14" uuid="00000005-0000-4000-8000-000000000005"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="10" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[LAPORAN KUNJUNGAN RAWAT JALAN]]></text></staticText>
+<staticText><reportElement mode="Transparent" x="0" y="62" width="60" height="10" uuid="00000006-0000-4000-8000-000000000006"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Periode]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="62" y="62" width="300" height="10" uuid="00000007-0000-4000-8000-000000000007"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[": "+$P{periode}]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="470" y="62" width="86" height="10" uuid="00000008-0000-4000-8000-000000000008"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Kunjungan Lama]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="556" y="62" width="60" height="10" uuid="00000009-0000-4000-8000-000000000009"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[": "+$P{lama}]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="628" y="62" width="66" height="10" uuid="0000000a-0000-4000-8000-00000000000a"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Laki-Laki]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="694" y="62" width="50" height="10" uuid="0000000b-0000-4000-8000-00000000000b"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[": "+$P{laki}]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="470" y="72" width="86" height="10" uuid="0000000c-0000-4000-8000-00000000000c"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Kunjungan Baru]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="556" y="72" width="60" height="10" uuid="0000000d-0000-4000-8000-00000000000d"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[": "+$P{baru}]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="628" y="72" width="66" height="10" uuid="0000000e-0000-4000-8000-00000000000e"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Perempuan]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="694" y="72" width="50" height="10" uuid="0000000f-0000-4000-8000-00000000000f"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[": "+$P{perempuan}]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="470" y="82" width="86" height="10" uuid="00000010-0000-4000-8000-000000000010"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Total Kunjungan]]></text></staticText>
+<textField isBlankWhenNull="true"><reportElement x="556" y="82" width="60" height="10" uuid="00000011-0000-4000-8000-000000000011"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[": "+$P{total}]]></textFieldExpression></textField>
+</band></title>
+<columnHeader><band height="24" splitType="Stretch">
+<line><reportElement x="1" y="0" width="800" height="1" uuid="00000012-0000-4000-8000-000000000012"/><graphicElement><pen lineWidth="0.75"/></graphicElement></line>
+<line><reportElement x="1" y="23" width="800" height="1" uuid="00000013-0000-4000-8000-000000000013"/><graphicElement><pen lineWidth="0.75"/></graphicElement></line>
+<line><reportElement x="1" y="0" width="1" height="23" uuid="00000014-0000-4000-8000-000000000014"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="1" y="1" width="22" height="22" uuid="00000015-0000-4000-8000-000000000015"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[No.]]></text></staticText>
+<line><reportElement x="23" y="0" width="1" height="23" uuid="00000016-0000-4000-8000-000000000016"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="23" y="1" width="50" height="22" uuid="00000017-0000-4000-8000-000000000017"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Tanggal]]></text></staticText>
+<line><reportElement x="73" y="0" width="1" height="23" uuid="00000018-0000-4000-8000-000000000018"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="73" y="1" width="96" height="22" uuid="00000019-0000-4000-8000-000000000019"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Nama Pasien]]></text></staticText>
+<line><reportElement x="169" y="0" width="1" height="23" uuid="0000001a-0000-4000-8000-00000000001a"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="169" y="1" width="36" height="22" uuid="0000001b-0000-4000-8000-00000000001b"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Umur]]></text></staticText>
+<line><reportElement x="205" y="0" width="1" height="23" uuid="0000001c-0000-4000-8000-00000000001c"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="205" y="1" width="24" height="22" uuid="0000001d-0000-4000-8000-00000000001d"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[BB]]></text></staticText>
+<line><reportElement x="229" y="0" width="1" height="23" uuid="0000001e-0000-4000-8000-00000000001e"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="229" y="1" width="50" height="22" uuid="0000001f-0000-4000-8000-00000000001f"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Jenis Kelamin]]></text></staticText>
+<line><reportElement x="279" y="0" width="1" height="23" uuid="00000020-0000-4000-8000-000000000020"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="279" y="1" width="26" height="22" uuid="00000021-0000-4000-8000-000000000021"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Rajal]]></text></staticText>
+<line><reportElement x="305" y="0" width="1" height="23" uuid="00000022-0000-4000-8000-000000000022"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="305" y="1" width="26" height="22" uuid="00000023-0000-4000-8000-000000000023"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Ranap]]></text></staticText>
+<line><reportElement x="331" y="0" width="1" height="23" uuid="00000024-0000-4000-8000-000000000024"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="331" y="1" width="36" height="22" uuid="00000025-0000-4000-8000-000000000025"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Triase]]></text></staticText>
+<line><reportElement x="367" y="0" width="1" height="23" uuid="00000026-0000-4000-8000-000000000026"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="367" y="1" width="96" height="22" uuid="00000027-0000-4000-8000-000000000027"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Diagnosa]]></text></staticText>
+<line><reportElement x="463" y="0" width="1" height="23" uuid="00000028-0000-4000-8000-000000000028"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="463" y="1" width="92" height="22" uuid="00000029-0000-4000-8000-000000000029"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Dokter]]></text></staticText>
+<line><reportElement x="555" y="0" width="1" height="23" uuid="0000002a-0000-4000-8000-00000000002a"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="555" y="1" width="58" height="22" uuid="0000002b-0000-4000-8000-00000000002b"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Metode Bayar]]></text></staticText>
+<line><reportElement x="613" y="0" width="1" height="23" uuid="0000002c-0000-4000-8000-00000000002c"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="613" y="1" width="78" height="22" uuid="0000002d-0000-4000-8000-00000000002d"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Poli]]></text></staticText>
+<line><reportElement x="691" y="0" width="1" height="23" uuid="0000002e-0000-4000-8000-00000000002e"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="691" y="1" width="110" height="22" uuid="0000002f-0000-4000-8000-00000000002f"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica-Bold" pdfEncoding="Cp1252" isBold="true"/></textElement><text><![CDATA[Perawat/Petugas]]></text></staticText>
+<line><reportElement x="801" y="0" width="1" height="23" uuid="00000030-0000-4000-8000-000000000030"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+</band></columnHeader>
+<detail><band height="12" splitType="Stretch">
+<line><reportElement stretchType="RelativeToBandHeight" x="1" y="0" width="1" height="12" uuid="00000031-0000-4000-8000-000000000031"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="2" y="1" width="20" height="10" uuid="00000032-0000-4000-8000-000000000032"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp1}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="23" y="0" width="1" height="12" uuid="00000033-0000-4000-8000-000000000033"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="24" y="1" width="48" height="10" uuid="00000034-0000-4000-8000-000000000034"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp2}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="73" y="0" width="1" height="12" uuid="00000035-0000-4000-8000-000000000035"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="74" y="1" width="94" height="10" uuid="00000036-0000-4000-8000-000000000036"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp3}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="169" y="0" width="1" height="12" uuid="00000037-0000-4000-8000-000000000037"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="170" y="1" width="34" height="10" uuid="00000038-0000-4000-8000-000000000038"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp4}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="205" y="0" width="1" height="12" uuid="00000039-0000-4000-8000-000000000039"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="206" y="1" width="22" height="10" uuid="0000003a-0000-4000-8000-00000000003a"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp5}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="229" y="0" width="1" height="12" uuid="0000003b-0000-4000-8000-00000000003b"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="230" y="1" width="48" height="10" uuid="0000003c-0000-4000-8000-00000000003c"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp6}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="279" y="0" width="1" height="12" uuid="0000003d-0000-4000-8000-00000000003d"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="280" y="1" width="24" height="10" uuid="0000003e-0000-4000-8000-00000000003e"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp7}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="305" y="0" width="1" height="12" uuid="0000003f-0000-4000-8000-00000000003f"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="306" y="1" width="24" height="10" uuid="00000040-0000-4000-8000-000000000040"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp8}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="331" y="0" width="1" height="12" uuid="00000041-0000-4000-8000-000000000041"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="332" y="1" width="34" height="10" uuid="00000042-0000-4000-8000-000000000042"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp9}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="367" y="0" width="1" height="12" uuid="00000043-0000-4000-8000-000000000043"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="368" y="1" width="94" height="10" uuid="00000044-0000-4000-8000-000000000044"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp10}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="463" y="0" width="1" height="12" uuid="00000045-0000-4000-8000-000000000045"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="464" y="1" width="90" height="10" uuid="00000046-0000-4000-8000-000000000046"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp11}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="555" y="0" width="1" height="12" uuid="00000047-0000-4000-8000-000000000047"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="556" y="1" width="56" height="10" uuid="00000048-0000-4000-8000-000000000048"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp12}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="613" y="0" width="1" height="12" uuid="00000049-0000-4000-8000-000000000049"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="614" y="1" width="76" height="10" uuid="0000004a-0000-4000-8000-00000000004a"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp13}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="691" y="0" width="1" height="12" uuid="0000004b-0000-4000-8000-00000000004b"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement positionType="Float" stretchType="RelativeToBandHeight" x="692" y="1" width="108" height="10" uuid="0000004c-0000-4000-8000-00000000004c"/><textElement textAlignment="Left" verticalAlignment="Middle"><font fontName="Tahoma" size="6" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$F{temp14}]]></textFieldExpression></textField>
+<line><reportElement stretchType="RelativeToBandHeight" x="801" y="0" width="1" height="12" uuid="0000004d-0000-4000-8000-00000000004d"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<line><reportElement positionType="FixRelativeToBottom" stretchType="RelativeToTallestObject" x="1" y="11" width="800" height="1" uuid="0000004e-0000-4000-8000-00000000004e"/><graphicElement><pen lineWidth="0.25" lineColor="#AAAAAA"/></graphicElement></line>
+</band></detail>
+<columnFooter><band splitType="Stretch"/></columnFooter>
+<summary><band height="70">
+<line><reportElement x="1" y="0" width="800" height="1" uuid="0000004f-0000-4000-8000-00000000004f"/><graphicElement><pen lineWidth="0.75"/></graphicElement></line>
+<textField isBlankWhenNull="true"><reportElement x="560" y="4" width="232" height="11" uuid="00000050-0000-4000-8000-000000000050"/><textElement textAlignment="Right" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><textFieldExpression class="java.lang.String"><![CDATA[$P{kotars}+", "]]></textFieldExpression></textField>
+<staticText><reportElement mode="Transparent" x="560" y="15" width="232" height="11" uuid="00000051-0000-4000-8000-000000000051"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Mengetahui,]]></text></staticText>
+<staticText><reportElement mode="Transparent" x="560" y="17" width="232" height="11" uuid="00000052-0000-4000-8000-000000000052"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[Kepala Rekam Medis]]></text></staticText>
+<line><reportElement x="600" y="55" width="150" height="1" uuid="00000053-0000-4000-8000-000000000053"/><graphicElement><pen lineWidth="0.5"/></graphicElement></line>
+<staticText><reportElement mode="Transparent" x="560" y="56" width="232" height="11" uuid="00000054-0000-4000-8000-000000000054"/><textElement textAlignment="Center" verticalAlignment="Middle"><font fontName="Tahoma" size="7" pdfFontName="Helvetica" pdfEncoding="Cp1252"/></textElement><text><![CDATA[NIP.]]></text></staticText>
+</band></summary>
 </jasperReport>
