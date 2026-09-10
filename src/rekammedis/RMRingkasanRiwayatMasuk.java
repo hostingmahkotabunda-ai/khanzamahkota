@@ -118,6 +118,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         ensureTable();
         ensureKolomNip();
+        ensureKolomKodeDiagnosa();
         initComponents();
         setSize(1180, 780);
         setMinimumSize(new Dimension(1000, 680));
@@ -541,16 +542,27 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
             System.out.println("Notif tarik kamar ringkasan riwayat masuk : " + e);
         }
 
+        // Diagnosa Masuk + Kode ICD-10 -- ditarik otomatis dari halaman Diagnosa (tabel diagnosa_pasien),
+        // yang memang selalu diisi petugas sebelum mengisi RM 2a. Halaman Diagnosa dipakai baik dari
+        // rawat inap (status 'Ranap') maupun rawat jalan/IGD (status 'Ralan') -- ambil semua diagnosa
+        // pasien utk no_rawat ini, dahulukan 'Ranap' lalu urut prioritas, dedup per kode.
         try (PreparedStatement ps = koneksi.prepareStatement(
-                "select penyakit.nm_penyakit,penyakit.kd_penyakit from diagnosa_pasien "
+                "select penyakit.kd_penyakit,penyakit.nm_penyakit from diagnosa_pasien "
                 + "inner join penyakit on diagnosa_pasien.kd_penyakit=penyakit.kd_penyakit "
-                + "where diagnosa_pasien.no_rawat=? and diagnosa_pasien.status='Ranap' "
-                + "order by diagnosa_pasien.prioritas limit 1")) {
+                + "where diagnosa_pasien.no_rawat=? "
+                + "order by field(diagnosa_pasien.status,'Ranap','Ralan'),diagnosa_pasien.prioritas")) {
             ps.setString(1, norawat);
             try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    taDiagnosaMasuk.setText(rs.getString("nm_penyakit"));
-                    tKodeDiagnosa.setText(rs.getString("kd_penyakit"));
+                java.util.LinkedHashMap<String, String> diagnosa = new java.util.LinkedHashMap<>();
+                while (rs.next()) {
+                    String kode = nvl(rs.getString("kd_penyakit")).trim();
+                    if (!kode.equals("") && !diagnosa.containsKey(kode)) {
+                        diagnosa.put(kode, nvl(rs.getString("nm_penyakit")).trim());
+                    }
+                }
+                if (!diagnosa.isEmpty()) {
+                    tKodeDiagnosa.setText(String.join(", ", diagnosa.keySet()));
+                    taDiagnosaMasuk.setText(String.join(", ", diagnosa.values()));
                 }
             }
         } catch (Exception e) {
@@ -773,7 +785,7 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
                 + "ruangan_unit varchar(60) null,"
                 + "kelas varchar(20) null,"
                 + "diagnosa_masuk text null,"
-                + "kode_diagnosa varchar(20) null,"
+                + "kode_diagnosa varchar(100) null,"
                 + "perawat_ruangan varchar(60) null,"
                 + "dokter_merawat varchar(60) null,"
                 + "created_by varchar(50) null,"
@@ -792,6 +804,20 @@ public final class RMRingkasanRiwayatMasuk extends JDialog {
             }
         } catch (Exception e) {
             System.out.println("Notif kolom nip ringkasan riwayat masuk : " + e);
+        }
+    }
+
+    /** kode_diagnosa semula varchar(20) -- diperlebar krn kini bisa memuat beberapa kode ICD sekaligus
+     *  (hasil tarik otomatis dari halaman Diagnosa). MODIFY idempoten, aman dijalankan berulang. */
+    private void ensureKolomKodeDiagnosa() {
+        try {
+            if (Sequel.cariInteger("select count(*) from information_schema.columns where table_schema=database() "
+                    + "and table_name='ringkasan_riwayat_masuk' and column_name='kode_diagnosa' "
+                    + "and character_maximum_length<100") > 0) {
+                Sequel.queryu2("alter table ringkasan_riwayat_masuk modify column kode_diagnosa varchar(100) null");
+            }
+        } catch (Exception e) {
+            System.out.println("Notif kolom kode_diagnosa ringkasan riwayat masuk : " + e);
         }
     }
 
