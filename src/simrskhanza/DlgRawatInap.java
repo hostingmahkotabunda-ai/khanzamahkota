@@ -172,6 +172,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
      * @param modal */
     private rekammedis.PanelSBAR panelSBAR;
     private rekammedis.RMSuratKeteranganLahir panelSuratKeteranganLahir;
+    private laporan.PanelDiagnosa panelDiagnosa1;
 
     // Pemanggil (Billing/Kamar Inap) boleh memasang listener tanpa membuat dialog.
     private final java.util.List<WindowListener> listenerPasienTertunda = new java.util.ArrayList<>();
@@ -264,6 +265,12 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         try { TabRawat.remove(internalFrame7); } catch (Exception e) {} // Pemeriksaan Ginekologi
         try { TabRawat.setSelectedComponent(internalFrame5); } catch (Exception e) {}
 
+        // Diagnosa dipasang DULUAN (sebelum tab lain ditambahkan) -- pasangTabPenilaianAwal()/
+        // pasangTabEWS() menyimpan indeks tab placeholder-nya sekali di awal (utk deteksi klik via
+        // TabRawat.indexAtLocation(...)), jadi kalau Diagnosa disisipkan BELAKANGAN pakai insertTab()
+        // semua indeks yg sudah kesimpan itu bakal geser +1 dan dropdown-nya jadi salah sasaran.
+        pasangTabDiagnosa();
+
         PanelResepRanap = new widget.PanelBiasa();
         PanelResepRanap.setLayout(new java.awt.BorderLayout(1, 1));
         TabRawat.addTab("Resep", PanelResepRanap);
@@ -278,6 +285,85 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         pasangTabPenilaianAwal();
         pasangTabEWS();
         pasangTabSuratKeteranganLahir();
+    }
+
+    /** Tab "Diagnosa" -- embed laporan.PanelDiagnosa (komponen yg sama dipakai popup
+     *  DlgDiagnosaPenyakit & tab Diagnosa di DlgRawatJalan), supaya petugas cukup klik
+     *  tab ini utk isi diagnosa ICD-10 pasien ranap, tanpa buka dialog terpisah lagi.
+     *  Lazy-load spt tab SBAR/Resep: konten & data baru dibangun/disegarkan begitu tab dipilih. */
+    private void pasangTabDiagnosa(){
+        final javax.swing.JPanel wadahDiagnosa = new javax.swing.JPanel(new java.awt.BorderLayout());
+        int idxSisipDiagnosa = TabRawat.indexOfComponent(internalFrame5) + 1; // tepat sesudah tab "Pemeriksaan"
+        TabRawat.insertTab("Diagnosa", null, wadahDiagnosa, null, idxSisipDiagnosa);
+        TabRawat.addChangeListener(new javax.swing.event.ChangeListener(){
+            @Override public void stateChanged(javax.swing.event.ChangeEvent e){
+                if(TabRawat.getSelectedComponent()==wadahDiagnosa){
+                    if (panelDiagnosa1 == null) {
+                        panelDiagnosa1 = new laporan.PanelDiagnosa();
+                        panelDiagnosa1.setBorder(null);
+                        panelDiagnosa1.btnTambahPenyakit.setEnabled(akses.getpenyakit());
+                        panelDiagnosa1.btnTambahProsedur.setEnabled(akses.geticd9());
+                        wadahDiagnosa.add(toolbarDiagnosaRanap(), java.awt.BorderLayout.NORTH);
+                        wadahDiagnosa.add(panelDiagnosa1, java.awt.BorderLayout.CENTER);
+                        wadahDiagnosa.revalidate();
+                        wadahDiagnosa.repaint();
+                    }
+                    muatDiagnosaRanap();
+                }
+            }
+        });
+    }
+
+    /** Tarik ulang diagnosa+prosedur pasien (status 'Ranap') ke panelDiagnosa1 sesuai pasien yg sedang dibuka.
+     *  Rentang tanggal SENGAJA dibuat lebar (bukan pakai DTPCari1/DTPCari2 yg dipakai tab lain --
+     *  itu bisa "hari ini saja") supaya tab ini selalu menampilkan SEMUA diagnosa pasien ybs,
+     *  berapa pun lama dia sudah dirawat / kapan pun diagnosa itu diinput. */
+    private void muatDiagnosaRanap() {
+        if (panelDiagnosa1 == null || TNoRw.getText().trim().equals("")) { return; }
+        panelDiagnosa1.setRM(TNoRw.getText(), TNoRM.getText(), "2000-01-01", "2099-12-31", "Ranap", "");
+        // pilihTab() cuma refresh sub-tab dalam yg SEDANG aktif -- panggil tampil()/tampil2() langsung
+        // juga supaya grid "Data Diagnosa"/"Data Prosedur" selalu terisi walau sub-tab itu blm diklik.
+        panelDiagnosa1.pilihTab();
+        panelDiagnosa1.tampil();
+        panelDiagnosa1.tampil2();
+    }
+
+    /** Toolbar Simpan/Baru/Hapus/Cetak khusus tab Diagnosa -- pola sama persis dgn
+     *  BtnSimpan/BtnBatal/BtnHapus/BtnPrint di DlgDiagnosaPenyakit (dialog popup lama). */
+    private javax.swing.JPanel toolbarDiagnosaRanap() {
+        javax.swing.JPanel toolbar = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 9));
+
+        widget.Button btnSimpan = tombolDiagnosaRanap("Simpan", "/picture/save-16x16.png");
+        btnSimpan.addActionListener(e -> { muatDiagnosaRanap(); panelDiagnosa1.simpan(); });
+
+        widget.Button btnBaru = tombolDiagnosaRanap("Baru", "/picture/Cancel-2-16x16.png");
+        btnBaru.addActionListener(e -> panelDiagnosa1.batal());
+
+        widget.Button btnHapus = tombolDiagnosaRanap("Hapus", "/picture/stop_f2.png");
+        btnHapus.addActionListener(e -> { muatDiagnosaRanap(); panelDiagnosa1.hapus(); });
+
+        widget.Button btnCetak = tombolDiagnosaRanap("Cetak", "/picture/b_print.png");
+        btnCetak.addActionListener(e -> panelDiagnosa1.cetak());
+
+        boolean bisa = akses.getdiagnosa_pasien();
+        btnSimpan.setEnabled(bisa);
+        btnHapus.setEnabled(bisa);
+        btnCetak.setEnabled(bisa);
+
+        toolbar.add(btnSimpan);
+        toolbar.add(btnBaru);
+        toolbar.add(btnHapus);
+        toolbar.add(btnCetak);
+        return toolbar;
+    }
+
+    private widget.Button tombolDiagnosaRanap(String teks, String pathIkon) {
+        widget.Button b = new widget.Button();
+        b.setText(teks);
+        b.setFont(new java.awt.Font("Tahoma", 0, 11));
+        b.setPreferredSize(new java.awt.Dimension(100, 30));
+        try { b.setIcon(new javax.swing.ImageIcon(getClass().getResource(pathIkon))); } catch (Exception ex) {}
+        return b;
     }
 
     /** Indeks ASLI tab yang sedang terpilih (sebelum ada tab yang dihapus),
