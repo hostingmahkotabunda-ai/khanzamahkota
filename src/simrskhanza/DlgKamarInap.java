@@ -263,9 +263,9 @@ public class DlgKamarInap extends javax.swing.JDialog {
             }else if(i==3){
                 column.setPreferredWidth(150);
             }else if(i==4){
-                column.setPreferredWidth(120);
+                column.setPreferredWidth(150);
             }else if(i==5){
-                column.setPreferredWidth(80);
+                column.setPreferredWidth(100);
             }else if(i==6){
                 column.setPreferredWidth(80);
             }else if(i==7){
@@ -273,17 +273,17 @@ public class DlgKamarInap extends javax.swing.JDialog {
             }else if(i==8){
                 sembunyikanKolomRawatInap(column);
             }else if(i==9){
-                column.setPreferredWidth(90);
+                column.setPreferredWidth(105);
             }else if(i==10){
-                column.setPreferredWidth(90);
+                column.setPreferredWidth(105);
             }else if(i==11){
                 column.setPreferredWidth(70);
             }else if(i==12){
-                column.setPreferredWidth(60);
+                column.setPreferredWidth(72);
             }else if(i==13){
                 column.setPreferredWidth(70);
             }else if(i==14){
-                column.setPreferredWidth(60);
+                column.setPreferredWidth(72);
             }else if(i==15){
                 sembunyikanKolomRawatInap(column);
             }else if(i==16){
@@ -295,6 +295,9 @@ public class DlgKamarInap extends javax.swing.JDialog {
             }else if(i==19){
                 column.setMinWidth(0);
                 column.setMaxWidth(0);
+            }else if(i==20){
+                column.setPreferredWidth(120);
+                column.setMinWidth(120);
             }else if(i==21){
                 sembunyikanKolomRawatInap(column);
             }
@@ -931,6 +934,20 @@ public class DlgKamarInap extends javax.swing.JDialog {
         PanelCariUtama.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 7, 10));
         internalFrame1.add(PanelCariUtama, java.awt.BorderLayout.SOUTH);
 
+        tampilkanIndikatorKelengkapanRanap();
+
+        // Kolom AUTO_RESIZE_OFF supaya tiap kolom tetap dapat lebar bacaannya sendiri (18 kolom
+        // aktif, ttp discroll horizontal) -- tapi kalau layar lebih lebar dari total kolom, sisa
+        // ruang jangan dibiarkan kosong abu-abu: dorong ke kolom Status Bayar (paling kanan yg terlihat).
+        java.awt.event.ComponentAdapter isiSisaLebar = new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent e) {
+                lebarkanStatusBayarKeSisaRuang();
+            }
+        };
+        Scroll.getViewport().addComponentListener(isiSisaLebar);
+        javax.swing.SwingUtilities.invokeLater(this::lebarkanStatusBayarKeSisaRuang);
+
         tabMode.addTableModelListener(new javax.swing.event.TableModelListener() {
             @Override
             public void tableChanged(javax.swing.event.TableModelEvent e) {
@@ -960,6 +977,20 @@ public class DlgKamarInap extends javax.swing.JDialog {
         return panel;
     }
 
+    /** Dorong sisa lebar viewport (kalau ada) ke kolom Status Bayar -- kolom paling kanan yg
+     *  benar2 terlihat (kolom sesudahnya, Agama, sengaja disembunyikan lebar 0) -- supaya tak
+     *  ada area abu-abu kosong di kanan tabel ketika jendela lebih lebar dari total kolom. */
+    private void lebarkanStatusBayarKeSisaRuang() {
+        if (tbKamIn.getColumnCount() <= 20) { return; }
+        int totalLainnya = 0;
+        for (int c = 0; c < tbKamIn.getColumnCount(); c++) {
+            if (c == 20) { continue; }
+            totalLainnya += tbKamIn.getColumnModel().getColumn(c).getWidth();
+        }
+        int sisa = Scroll.getViewport().getWidth() - totalLainnya;
+        tbKamIn.getColumnModel().getColumn(20).setPreferredWidth(Math.max(120, sisa));
+    }
+
     private void rapikanPanelModern(javax.swing.JComponent panel, java.awt.Color garis) {
         panel.setOpaque(true);
         panel.setBackground(java.awt.Color.WHITE);
@@ -968,8 +999,29 @@ public class DlgKamarInap extends javax.swing.JDialog {
 
     private void gayaTombolAksi(javax.swing.AbstractButton tombol, java.awt.Color warna) {
         tombol.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 11));
-        tombol.setForeground(warna);
+        tombol.setForeground(java.awt.Color.WHITE);
+        tombol.setBackground(warna);
+        tombol.setOpaque(true);
+        tombol.setContentAreaFilled(true);
+        tombol.setBorderPainted(false);
         tombol.setFocusPainted(false);
+        if (tombol instanceof usu.widget.ButtonGlass) {
+            ((usu.widget.ButtonGlass) tombol).setGlassColor(new java.awt.Color(255, 255, 255, 60));
+        }
+    }
+
+    /** Checkbox status kelengkapan (Visite/Obat/Diagnosa/Resume Medis) di panelGlass9 --
+     *  indikator baca-saja utk pasien yg SEDANG DIPILIH (diisi oleh cekStatusCheckbox()
+     *  tiap baris tabel diklik), BUKAN filter tabel -- makanya di-nonaktifkan agar tak
+     *  disangka bisa dicentang manual. */
+    private void tampilkanIndikatorKelengkapanRanap() {
+        for (javax.swing.JCheckBox cb : new javax.swing.JCheckBox[]{chkVisite, chkObat, chkDiagnosa, chkResumeMedis}) {
+            cb.setVisible(true);
+            cb.setEnabled(false);
+            cb.setOpaque(false);
+            cb.setFocusable(false);
+            cb.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 11));
+        }
     }
 
     private void perbaruiRingkasanRawatInap() {
