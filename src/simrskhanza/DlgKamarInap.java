@@ -947,6 +947,14 @@ public class DlgKamarInap extends javax.swing.JDialog {
         };
         Scroll.getViewport().addComponentListener(isiSisaLebar);
         javax.swing.SwingUtilities.invokeLater(this::lebarkanStatusBayarKeSisaRuang);
+        // Begitu user selesai geser batas kolom manapun (lepas mouse), hitung ulang sekali lagi --
+        // lihat penjelasan di lebarkanStatusBayarKeSisaRuang() knp perlu di-skip SELAMA geser berlangsung.
+        tbKamIn.getTableHeader().addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                lebarkanStatusBayarKeSisaRuang();
+            }
+        });
 
         tabMode.addTableModelListener(new javax.swing.event.TableModelListener() {
             @Override
@@ -979,9 +987,13 @@ public class DlgKamarInap extends javax.swing.JDialog {
 
     /** Dorong sisa lebar viewport (kalau ada) ke kolom Status Bayar -- kolom paling kanan yg
      *  benar2 terlihat (kolom sesudahnya, Agama, sengaja disembunyikan lebar 0) -- supaya tak
-     *  ada area abu-abu kosong di kanan tabel ketika jendela lebih lebar dari total kolom. */
+     *  ada area abu-abu kosong di kanan tabel ketika jendela lebih lebar dari total kolom.
+     *  SKIP selagi user sedang menggeser batas kolom manapun secara manual -- kalau tetap dipaksa
+     *  jalan di sini, auto-fill ini "bertarung" dgn geseran mouse (tiap perubahan lebar kecil saat
+     *  drag ikut memicu perhitungan ulang) dan bikin geseran kolom terasa macet/nge-lag/tersendat. */
     private void lebarkanStatusBayarKeSisaRuang() {
         if (tbKamIn.getColumnCount() <= 20) { return; }
+        if (tbKamIn.getTableHeader().getResizingColumn() != null) { return; }
         int totalLainnya = 0;
         for (int c = 0; c < tbKamIn.getColumnCount(); c++) {
             if (c == 20) { continue; }
