@@ -1148,15 +1148,266 @@ public class frmUtama extends javax.swing.JFrame {
             });
         } 
         
-        try{    
+        try{
             if(prop.getProperty("MENUTRANSPARAN").equals("yes")){
                 DlgHome.setOpacity(0.7f);
                 DlgLogin.setOpacity(0.74f);
-            }     
-        }catch(Exception e){            
-        } 
+            }
+        }catch(Exception e){
+        }
+        terapkanTampilanModernFrmUtama();
     }
-    
+
+    /** Menyegarkan visual header (menu bar + toolbar) & footer (status bar + branding) tanpa
+     *  mengganti komponen/wiring lama -- pola sama dgn terapkanTampilanModernRawatInap() di
+     *  DlgKamarInap. Isi menu ("Tampilkan Menu" + grid PanelUtama) SENGAJA tidak disentuh. */
+    private void terapkanTampilanModernFrmUtama() {
+        final java.awt.Color putih = java.awt.Color.WHITE;
+        final java.awt.Color tealMuda = new java.awt.Color(236, 249, 246); // latar toolbar/footer, disinkron ke wallpaper teal RS
+        final java.awt.Color tealAktif = new java.awt.Color(18, 150, 130);
+        final java.awt.Color tealTeks = new java.awt.Color(13, 105, 92);
+        final java.awt.Color garisTeal = new java.awt.Color(178, 222, 213);
+        final java.awt.Color teksAbu = new java.awt.Color(70, 90, 92);
+        final java.awt.Color teksAbuMuda = new java.awt.Color(120, 145, 142);
+
+        // Palet ikon disederhanakan jadi 4 keluarga warna senada wallpaper RS (teal/pink/navy/merah),
+        // bukan warna acak macam-macam -- supaya toolbar terasa "satu identitas" dgn wallpaper.
+        final java.awt.Color teal = new java.awt.Color(20, 150, 130);
+        final java.awt.Color pink = new java.awt.Color(224, 88, 138);
+        final java.awt.Color navy = new java.awt.Color(42, 96, 148);
+        final java.awt.Color merah = new java.awt.Color(210, 78, 72);
+
+        // ---- Menu bar atas (Program / Presensi Pegawai / Informasi / Anjungan & Antrian / Tentang Program) ----
+        MenuBar.setOpaque(true);
+        MenuBar.setBackground(putih);
+        MenuBar.setBorder(javax.swing.BorderFactory.createMatteBorder(0, 0, 1, 0, garisTeal));
+        for (javax.swing.JMenu m : new javax.swing.JMenu[]{jMenu1, jMenu5, jMenu6, jMenu7, jMenu4}) {
+            m.setIcon(null);
+            m.setForeground(teksAbu);
+            m.setFont(new java.awt.Font("Times New Roman", java.awt.Font.PLAIN, 12));
+        }
+
+        // ---- Toolbar (Menu/Registrasi/IGD-UGD/Laborat/Radiologi/Farmasi/Rawat Inap/Rawat Jalan/Log In/Keluar) ----
+        internalFrame1.setWarnaAtas(putih);
+        internalFrame1.setWarnaBawah(tealMuda);
+        internalFrame1.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 0, 2, 0, tealAktif),
+                javax.swing.BorderFactory.createEmptyBorder(1, 4, 1, 4)));
+        internalFrame1.setPreferredSize(new java.awt.Dimension(100, 58));
+        if (internalFrame1.getLayout() instanceof java.awt.FlowLayout) {
+            ((java.awt.FlowLayout) internalFrame1.getLayout()).setHgap(10);
+            ((java.awt.FlowLayout) internalFrame1.getLayout()).setVgap(2);
+        }
+
+        gayaTombolNavAktif(BtnMenu, new IkonNavModern("home", putih, 20, false), tealAktif);
+        gayaTombolNavBiasa(btnToolIGD, new IkonNavModern("igd", merah, 21, false), teksAbu);
+        gayaTombolNavBiasa(BtnToolReg, new IkonNavModern("registrasi", teal, 21, false), teksAbu);
+        gayaTombolNavBiasa(btnToolLab, new IkonNavModern("laborat", navy, 21, false), teksAbu);
+        gayaTombolNavBiasa(btnToolRad, new IkonNavModern("radiologi", teal, 21, false), teksAbu);
+        gayaTombolNavBiasa(BtnToolJualObat, new IkonNavModern("farmasi", pink, 21, false), teksAbu);
+        gayaTombolNavBiasa(BtnToolKamnap, new IkonNavModern("ranap", navy, 21, false), teksAbu);
+        gayaTombolNavBiasa(BtnToolKasir, new IkonNavModern("ralan", pink, 21, false), teksAbu);
+        gayaTombolNavBiasa(BtnLog, new IkonNavModern("login", teal, 19, false), teksAbu);
+        gayaTombolNavBiasa(BtnClose, new IkonNavModern("keluar", merah, 19, false), teksAbu);
+
+        for (javax.swing.JSeparator pemisah : new javax.swing.JSeparator[]{jSeparator4, jSeparator5, jSeparator9, jSeparator7}) {
+            pemisah.setBorder(javax.swing.BorderFactory.createLineBorder(garisTeal));
+            pemisah.setBackground(garisTeal);
+            pemisah.setForeground(garisTeal);
+        }
+
+        // ---- Latar area tengah SEBELUM login (wallpaper.jpg generik lama dilepas dulu) --
+        //      begitu login sukses, kode lain (di luar method ini) memuat ulang wallpaper resmi
+        //      RS dari pengaturan -- itu SENGAJA dibiarkan apa adanya, tak disentuh di sini. ----
+        try { PanelWall.setBackgroundImage(null); } catch (Exception e) { /* abaikan */ }
+        PanelWall.setBackground(tealMuda);
+        PanelWall.setWarna(putih);
+        PanelWall.setAlpha(0f);
+
+        // ---- Blok branding "Khanza HMS+" + tagline (di atas status bar) ----
+        panelJudul.setBackground(putih);
+        panelJudul.setWarna(putih);
+        panelJudul.setAlpha(0f);
+        jLabel8.setText("<html>Khanza HMS+<br><font size='-1' color='#5a6670'>Hospital Management System</font></html>");
+        jLabel8.setFont(new java.awt.Font("Times New Roman", java.awt.Font.BOLD, 20));
+        jLabel8.setForeground(tealTeks);
+        jLabel8.setBounds(40, 15, 680, 60);
+        jLabel11.setText("Sehat Bersama, Lebih Baik");
+        jLabel11.setFont(new java.awt.Font("Times New Roman", java.awt.Font.ITALIC, 13));
+        jLabel11.setForeground(teksAbuMuda);
+        jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        jLabel11.setBounds(500, 40, 500, 24);
+
+        // ---- Status bar bawah (Status Admin / Tanggal / Alamat IP / kredit) ----
+        internalFrame4.setWarnaAtas(tealMuda);
+        internalFrame4.setWarnaBawah(putih);
+        internalFrame4.setBorder(javax.swing.BorderFactory.createMatteBorder(2, 0, 0, 0, tealAktif));
+        for (javax.swing.JLabel lbl : new javax.swing.JLabel[]{lblStts, lblUser, lblTgl, LblIP, jLabel7}) {
+            lbl.setForeground(teksAbu);
+            lbl.setFont(new java.awt.Font("Times New Roman", java.awt.Font.PLAIN, 11));
+        }
+        for (javax.swing.JSeparator pemisah : new javax.swing.JSeparator[]{jSeparator1, jSeparator2, jSeparator3, jSeparator6}) {
+            pemisah.setBorder(javax.swing.BorderFactory.createLineBorder(garisTeal));
+            pemisah.setBackground(garisTeal);
+            pemisah.setForeground(garisTeal);
+        }
+    }
+
+    private void gayaTombolNavAktif(javax.swing.AbstractButton tombol, javax.swing.Icon ikon, java.awt.Color warnaLatar) {
+        tombol.setIcon(ikon);
+        tombol.setFont(new java.awt.Font("Times New Roman", java.awt.Font.BOLD, 14));
+        tombol.setForeground(java.awt.Color.WHITE);
+        tombol.setOpaque(true);
+        tombol.setContentAreaFilled(true);
+        tombol.setBorderPainted(false);
+        tombol.setFocusPainted(false);
+        // Pil latar tombol aktif ("Menu") -- pantau properti "enabled" spy jelas beda mati/hidup:
+        // abu-abu pudar sblm login, kembali warna solid begitu login berhasil.
+        final java.awt.Color abuMatiLatar = new java.awt.Color(200, 205, 209);
+        Runnable segarkan = () -> tombol.setBackground(tombol.isEnabled() ? warnaLatar : abuMatiLatar);
+        tombol.addPropertyChangeListener("enabled", e -> segarkan.run());
+        segarkan.run();
+    }
+
+    private void gayaTombolNavBiasa(javax.swing.AbstractButton tombol, javax.swing.Icon ikon, java.awt.Color warnaTeks) {
+        tombol.setIcon(ikon);
+        tombol.setFont(new java.awt.Font("Times New Roman", java.awt.Font.PLAIN, 13));
+        tombol.setOpaque(false);
+        tombol.setContentAreaFilled(false);
+        tombol.setBorderPainted(false);
+        tombol.setFocusPainted(false);
+        // Ikon IkonNavModern sendiri sudah baca isEnabled() tiap dilukis, tapi teks & tombol custom
+        // (usu.widget.ButtonBig) tak otomatis ikut meredup/repaint pas enabled brubah -- dorong manual,
+        // spy kontras "mati" (blm login) vs "hidup" (sdh login) jelas kelihatan di teks jg, bkn cuma ikon.
+        final java.awt.Color abuMatiTeks = new java.awt.Color(175, 181, 186);
+        Runnable segarkan = () -> {
+            tombol.setForeground(tombol.isEnabled() ? warnaTeks : abuMatiTeks);
+            tombol.repaint();
+        };
+        tombol.addPropertyChangeListener("enabled", e -> segarkan.run());
+        segarkan.run();
+    }
+
+    /** Ikon toolbar gambar-tangan (Graphics2D) supaya seragam & berwarna -- ikon lama proyek ini
+     *  campur-campur gaya (skeuomorphic kecil, tak seragam), jadi dibuat baru drpd dipaksakan.
+     *  chip=true -> glyph putih tebal di atas keping bulat-persegi berwarna (gaya "app icon" modern);
+     *  chip=false -> glyph polos berwarna warna (dipakai utk tombol Menu yg sudah punya latar pil sendiri). */
+    private static final class IkonNavModern implements javax.swing.Icon {
+        private static final java.awt.Color ABU_MATI = new java.awt.Color(195, 201, 206);
+        private final String jenis;
+        private final java.awt.Color warna;
+        private final int ukuran;
+        private final boolean chip;
+
+        IkonNavModern(String jenis, java.awt.Color warna, int ukuran, boolean chip) {
+            this.jenis = jenis;
+            this.warna = warna;
+            this.ukuran = ukuran;
+            this.chip = chip;
+        }
+
+        @Override public int getIconWidth() { return ukuran; }
+        @Override public int getIconHeight() { return ukuran; }
+
+        @Override
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+            java.awt.Graphics2D g2 = (java.awt.Graphics2D) g.create();
+            g2.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.translate(x, y);
+            int s = ukuran;
+            boolean mati = c != null && !c.isEnabled();
+            // "home" (tombol Menu) selalu di atas pil berwarna sendiri (yg pil-nya sendiri sudah
+            // berubah abu2 kalau nonaktif) -- ikonnya tetap putih polos spy tetap kontras di kedua kondisi.
+            java.awt.Color warnaAktual = (mati && !"home".equals(jenis)) ? ABU_MATI : warna;
+
+            if (chip) {
+                // keping latar bulat-persegi, warna solid + sedikit gradasi biar tak flat mati
+                java.awt.geom.RoundRectangle2D keping = new java.awt.geom.RoundRectangle2D.Float(0, 0, s, s, s * 0.32f, s * 0.32f);
+                g2.setPaint(new java.awt.GradientPaint(0, 0, warnaAktual.brighter(), 0, s, warnaAktual));
+                g2.fill(keping);
+                // glyph putih di atas keping, sedikit dipadatkan ke tengah
+                g2.setColor(java.awt.Color.WHITE);
+                g2.translate(s * 0.18, s * 0.18);
+                s = (int) (s * 0.64);
+            } else {
+                g2.setColor(warnaAktual);
+            }
+            g2.setStroke(new java.awt.BasicStroke(Math.max(1.8f, s / 9f), java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+
+            switch (jenis) {
+                case "home": {
+                    int[] xsAtap = {s / 2, 1, s - 1};
+                    int[] ysAtap = {0, s * 2 / 5, s * 2 / 5};
+                    g2.fillPolygon(xsAtap, ysAtap, 3);
+                    g2.fill(new java.awt.geom.RoundRectangle2D.Float(s * 0.16f, s * 0.4f, s * 0.68f, s * 0.58f, 2, 2));
+                    if (chip) { g2.setColor(warna); g2.fillRect((int) (s * 0.42f), (int) (s * 0.62f), (int) (s * 0.18f), (int) (s * 0.36f)); }
+                    break;
+                }
+                case "registrasi":
+                    g2.fillOval(s / 2 - 3, 2, 6, 6);
+                    g2.fill(new java.awt.geom.Arc2D.Float(2, s / 2 + 1, s - 4, s - 3, 0, 180, java.awt.geom.Arc2D.CHORD));
+                    g2.setStroke(new java.awt.BasicStroke(1.3f));
+                    g2.drawLine(s - 4, s / 2 - 3, s - 4, s / 2 + 3);
+                    g2.drawLine(s - 7, s / 2, s - 1, s / 2);
+                    break;
+                case "igd":
+                    g2.drawOval(1, 1, s - 2, s - 2);
+                    g2.setStroke(new java.awt.BasicStroke(2.1f, java.awt.BasicStroke.CAP_ROUND, java.awt.BasicStroke.JOIN_ROUND));
+                    g2.drawLine(s / 2, s / 2 - 4, s / 2, s / 2 + 4);
+                    g2.drawLine(s / 2 - 4, s / 2, s / 2 + 4, s / 2);
+                    break;
+                case "laborat":
+                    g2.drawLine(s / 2 - 3, 2, s / 2 + 3, 2);
+                    g2.drawLine(s / 2 - 2, 2, s / 2 - 2, s / 2 - 1);
+                    g2.drawLine(s / 2 + 2, 2, s / 2 + 2, s / 2 - 1);
+                    g2.drawLine(s / 2 - 2, s / 2 - 1, 3, s - 3);
+                    g2.drawLine(s / 2 + 2, s / 2 - 1, s - 3, s - 3);
+                    g2.drawLine(3, s - 3, s - 3, s - 3);
+                    break;
+                case "radiologi":
+                    g2.fillOval(s / 2 - 2, s / 2 - 2, 4, 4);
+                    for (int deg = 0; deg < 360; deg += 45) {
+                        double rad = Math.toRadians(deg);
+                        int x1 = (int) (s / 2 + 4 * Math.cos(rad)), y1 = (int) (s / 2 + 4 * Math.sin(rad));
+                        int x2 = (int) (s / 2 + (s / 2f - 1) * Math.cos(rad)), y2 = (int) (s / 2 + (s / 2f - 1) * Math.sin(rad));
+                        g2.drawLine(x1, y1, x2, y2);
+                    }
+                    break;
+                case "farmasi":
+                    g2.rotate(Math.toRadians(-40), s / 2.0, s / 2.0);
+                    g2.draw(new java.awt.geom.RoundRectangle2D.Float(3, s / 2f - 3, s - 6, 6, 6, 6));
+                    g2.drawLine(s / 2, s / 2 - 3, s / 2, s / 2 + 3);
+                    break;
+                case "ranap":
+                    g2.drawLine(2, s - 4, 2, 5);
+                    g2.drawLine(2, s - 4, s - 2, s - 4);
+                    g2.drawLine(s - 2, s - 4, s - 2, s - 2);
+                    g2.drawRect(2, s / 2 - 2, s / 2, 4);
+                    break;
+                case "ralan":
+                    g2.drawArc(3, 2, 7, 7, 90, 180);
+                    g2.drawLine(3, 5, 3, s / 2);
+                    g2.drawLine(10, 5, 10, s / 2);
+                    g2.drawArc(3, s / 2 - 4, s - 6, 9, 180, 180);
+                    g2.fillOval(s - 6, s - 7, 4, 4);
+                    break;
+                case "login":
+                    g2.drawOval(s / 2 - 3, 2, 6, 6);
+                    g2.drawArc(2, s / 2 + 1, s - 4, s - 3, 0, 180);
+                    break;
+                case "keluar":
+                    g2.drawRect(3, 2, 6, s - 4);
+                    g2.drawLine(s / 2, s / 2, s - 2, s / 2);
+                    g2.drawLine(s - 6, s / 2 - 4, s - 2, s / 2);
+                    g2.drawLine(s - 6, s / 2 + 4, s - 2, s / 2);
+                    break;
+                default:
+                    break;
+            }
+            g2.dispose();
+        }
+    }
+
     public static frmUtama getInstance() {
         if (myInstance == null)
             myInstance = new frmUtama();
