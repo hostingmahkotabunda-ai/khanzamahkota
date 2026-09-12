@@ -198,6 +198,9 @@ public final class DlgIGD extends javax.swing.JDialog {
     private String konteksRisikoJatuhTerintegrasiIgd="";
     private final Set<String> noRawatRanapIgd = new HashSet<>();
     private final Set<String> noRawatBelumSoapIgd = new HashSet<>();
+    private final javax.swing.JLabel ringkasanTotalPasienIgd = new javax.swing.JLabel("0");
+    private final javax.swing.JLabel ringkasanSudahRanapIgd = new javax.swing.JLabel("0");
+    private final javax.swing.JLabel ringkasanBelumSoapIgd = new javax.swing.JLabel("0");
     private final javax.swing.JComboBox<String> CmbFilterRanapIgd = new javax.swing.JComboBox<String>(
         new String[]{"Semua Pasien","Sudah Masuk Ranap","Belum Masuk Ranap"}
     );
@@ -302,6 +305,14 @@ public final class DlgIGD extends javax.swing.JDialog {
 
         tbPetugas.setPreferredScrollableViewportSize(new Dimension(800,800));
         tbPetugas.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        // Daftar pasien adalah area kerja utama: sedikit perbesar tulisan dan
+        // batasi pilihan ke satu baris agar petugas tidak keliru menentukan pasien.
+        tbPetugas.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 12));
+        tbPetugas.getTableHeader().setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+        tbPetugas.setRowHeight(Math.max(tbPetugas.getRowHeight(), 29));
+        tbPetugas.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tbPetugas.setRowSelectionAllowed(true);
+        tbPetugas.setColumnSelectionAllowed(false);
 
         for (i = 0; i < 21; i++) {
             TableColumn column = tbPetugas.getColumnModel().getColumn(i);
@@ -662,9 +673,145 @@ public final class DlgIGD extends javax.swing.JDialog {
             IPPRINTERTRACER="";
             URUTNOREG="";
         }
+        terapkanTampilanModernIgd();
     }
-    
-    
+
+    /** Menyegarkan visual halaman tanpa mengganti komponen maupun event lama. */
+    private void terapkanTampilanModernIgd() {
+        final java.awt.Color navy = new java.awt.Color(18, 48, 82);
+        final java.awt.Color latar = new java.awt.Color(243, 247, 251);
+        final java.awt.Color garis = new java.awt.Color(211, 221, 231);
+
+        internalFrame1.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        internalFrame1.setBackground(latar);
+        internalFrame1.setOpaque(true);
+
+        internalFrame1.remove(PanelInput);
+
+        javax.swing.JPanel header = new javax.swing.JPanel(new java.awt.BorderLayout(18, 0));
+        header.setBackground(navy);
+        header.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 18, 7, 18));
+        header.setPreferredSize(new java.awt.Dimension(100, 72));
+
+        javax.swing.JPanel blokJudul = new javax.swing.JPanel();
+        blokJudul.setOpaque(false);
+        blokJudul.setLayout(new javax.swing.BoxLayout(blokJudul, javax.swing.BoxLayout.Y_AXIS));
+        javax.swing.JLabel judul = new javax.swing.JLabel("REGISTRASI & DAFTAR PASIEN IGD");
+        judul.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 18));
+        judul.setForeground(java.awt.Color.WHITE);
+        javax.swing.JLabel subJudul = new javax.swing.JLabel("Kelola registrasi, triase, dan pemeriksaan pasien Instalasi Gawat Darurat");
+        subJudul.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 10));
+        subJudul.setForeground(new java.awt.Color(205, 221, 238));
+        blokJudul.add(javax.swing.Box.createVerticalGlue());
+        blokJudul.add(judul);
+        blokJudul.add(javax.swing.Box.createVerticalStrut(2));
+        blokJudul.add(subJudul);
+        blokJudul.add(javax.swing.Box.createVerticalGlue());
+        header.add(blokJudul, java.awt.BorderLayout.CENTER);
+
+        javax.swing.JPanel kartu = new javax.swing.JPanel(new java.awt.GridLayout(1, 3, 9, 0));
+        kartu.setOpaque(false);
+        kartu.add(buatKartuRingkasanIgd("TOTAL PASIEN", ringkasanTotalPasienIgd, new java.awt.Color(48, 126, 199)));
+        kartu.add(buatKartuRingkasanIgd("SUDAH RANAP", ringkasanSudahRanapIgd, new java.awt.Color(30, 126, 86)));
+        kartu.add(buatKartuRingkasanIgd("BELUM SOAP", ringkasanBelumSoapIgd, new java.awt.Color(194, 70, 65)));
+        kartu.setPreferredSize(new java.awt.Dimension(420, 54));
+        header.add(kartu, java.awt.BorderLayout.EAST);
+
+        // PanelInput bisa dilipat/dibuka lewat ChkInput (lihat isForm()) -- jangan diganti isi/wiring-nya,
+        // cukup dipindah jadi anak dari pembungkus baru ini supaya banner tetap di paling atas.
+        javax.swing.JPanel bungkusAtas = new javax.swing.JPanel(new java.awt.BorderLayout());
+        bungkusAtas.setBackground(latar);
+        bungkusAtas.add(header, java.awt.BorderLayout.NORTH);
+        bungkusAtas.add(PanelInput, java.awt.BorderLayout.CENTER);
+        internalFrame1.add(bungkusAtas, java.awt.BorderLayout.PAGE_START);
+
+        Scroll.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createEmptyBorder(7, 10, 7, 10),
+                javax.swing.BorderFactory.createLineBorder(garis)));
+        Scroll.getViewport().setBackground(java.awt.Color.WHITE);
+        tbPetugas.setGridColor(new java.awt.Color(225, 232, 239));
+        tbPetugas.setShowHorizontalLines(true);
+        tbPetugas.setShowVerticalLines(false);
+        tbPetugas.getTableHeader().setBackground(navy);
+        tbPetugas.getTableHeader().setForeground(java.awt.Color.WHITE);
+        tbPetugas.getTableHeader().setOpaque(true);
+        tbPetugas.getTableHeader().setBorder(javax.swing.BorderFactory.createMatteBorder(
+                0, 0, 2, 0, new java.awt.Color(40, 149, 198)));
+        tbPetugas.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 30));
+
+        PanelWorkspace.setOpaque(true);
+        PanelWorkspace.setBackground(latar);
+        PanelWorkspace.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 10, 0, 10));
+
+        rapikanPanelModernIgd(panelGlass7, garis);
+        rapikanPanelModernIgd(panelGlass6, garis);
+
+        gayaTombolAksiIgd(BtnSimpan, new java.awt.Color(30, 126, 86));
+        gayaTombolAksiIgd(BtnBatal, new java.awt.Color(42, 111, 174));
+        gayaTombolAksiIgd(BtnHapus, new java.awt.Color(194, 70, 65));
+        gayaTombolAksiIgd(BtnEdit, new java.awt.Color(184, 134, 11));
+        gayaTombolAksiIgd(BtnPrint, new java.awt.Color(92, 103, 116));
+        gayaTombolAksiIgd(BtnAll, new java.awt.Color(92, 103, 116));
+        gayaTombolAksiIgd(BtnKeluar, new java.awt.Color(92, 103, 116));
+        gayaTombolAksiIgd(BtnCari, new java.awt.Color(42, 111, 174));
+
+        jPanel2.setOpaque(true);
+        jPanel2.setBackground(latar);
+        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 10, 7, 10));
+
+        tabMode.addTableModelListener(new javax.swing.event.TableModelListener() {
+            @Override
+            public void tableChanged(javax.swing.event.TableModelEvent e) {
+                perbaruiRingkasanIgd();
+            }
+        });
+        perbaruiRingkasanIgd();
+
+        internalFrame1.revalidate();
+        internalFrame1.repaint();
+    }
+
+    private javax.swing.JPanel buatKartuRingkasanIgd(String teks, javax.swing.JLabel nilai, java.awt.Color aksen) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout(9, 0));
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 5, 0, 0, aksen),
+                javax.swing.BorderFactory.createEmptyBorder(5, 9, 5, 9)));
+        javax.swing.JLabel label = new javax.swing.JLabel(teks);
+        label.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 9));
+        label.setForeground(new java.awt.Color(91, 105, 120));
+        nilai.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 20));
+        nilai.setForeground(new java.awt.Color(31, 52, 73));
+        nilai.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        panel.add(label, java.awt.BorderLayout.CENTER);
+        panel.add(nilai, java.awt.BorderLayout.EAST);
+        return panel;
+    }
+
+    private void rapikanPanelModernIgd(javax.swing.JComponent panel, java.awt.Color garis) {
+        panel.setOpaque(true);
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createLineBorder(garis));
+    }
+
+    private void gayaTombolAksiIgd(javax.swing.AbstractButton tombol, java.awt.Color warna) {
+        tombol.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 11));
+        tombol.setForeground(java.awt.Color.WHITE);
+        tombol.setBackground(warna);
+        tombol.setOpaque(true);
+        tombol.setContentAreaFilled(true);
+        tombol.setBorderPainted(false);
+        tombol.setFocusPainted(false);
+        if (tombol instanceof usu.widget.ButtonGlass) {
+            ((usu.widget.ButtonGlass) tombol).setGlassColor(new java.awt.Color(255, 255, 255, 60));
+        }
+    }
+
+    private void perbaruiRingkasanIgd() {
+        ringkasanTotalPasienIgd.setText(String.valueOf(tabMode.getRowCount()));
+        ringkasanSudahRanapIgd.setText(String.valueOf(noRawatRanapIgd.size()));
+        ringkasanBelumSoapIgd.setText(String.valueOf(noRawatBelumSoapIgd.size()));
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -11787,9 +11934,31 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
     }
 
     private class WarnaTableIGD extends WarnaTable {
+        private final javax.swing.border.Border borderTerpilih =
+                javax.swing.BorderFactory.createMatteBorder(2, 0, 2, 0, new java.awt.Color(255, 193, 7));
+        private final javax.swing.border.Border borderNormal =
+                javax.swing.BorderFactory.createEmptyBorder(3, 2, 3, 2);
+
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column){
             Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            // Baris yg SEDANG DIPILIH ditonjolkan spt DlgKamarInap (navy solid + teks putih tebal) --
+            // supaya tak tenggelam sama warna status ranap/soap di bawah ini, warna status dilewati
+            // selama baris itu masih terpilih.
+            if (isSelected) {
+                component.setBackground(new java.awt.Color(0, 82, 155));
+                component.setForeground(java.awt.Color.WHITE);
+                component.setFont(table.getFont().deriveFont(java.awt.Font.BOLD));
+                if (component instanceof javax.swing.JComponent) {
+                    ((javax.swing.JComponent) component).setBorder(borderTerpilih);
+                }
+                return component;
+            }
+            component.setForeground(new java.awt.Color(34, 52, 69));
+            component.setFont(table.getFont().deriveFont(java.awt.Font.PLAIN));
+            if (component instanceof javax.swing.JComponent) {
+                ((javax.swing.JComponent) component).setBorder(borderNormal);
+            }
             int modelRow = table.convertRowIndexToModel(row);
             if(modelRow >= 0 && modelRow < table.getModel().getRowCount()){
                 Object noRawat = table.getModel().getValueAt(modelRow,2);
