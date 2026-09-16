@@ -227,6 +227,9 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
     private boolean sukses=false;
     private Jurnal jur=new Jurnal();
     private double ttljmdokter=0,ttljmperawat=0,ttlkso=0,ttljasasarana=0,ttlbhp=0,ttlmenejemen=0,ttlpendapatan=0;
+    private final javax.swing.JLabel ringkasanTotalPasienRalan = new javax.swing.JLabel("0");
+    private final javax.swing.JLabel ringkasanSudahBayarRalan = new javax.swing.JLabel("0");
+    private final javax.swing.JLabel ringkasanBelumBayarRalan = new javax.swing.JLabel("0");
 
     /** Creates new form DlgReg
      * @param parent
@@ -606,8 +609,155 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
         } catch (Exception e) {
             System.out.println(e);
         }
+        terapkanTampilanModernKasirRalan();
     }
-    
+
+    /** Menyegarkan visual halaman tanpa mengganti komponen maupun event lama -- mengikuti
+     *  gaya yg sama dgn DlgKamarInap/DlgIGD (banner navy + kartu ringkasan + tombol warna solid).
+     *  Font/tinggi baris/gaya baris terpilih tabel SUDAH ditangani lebih dulu oleh
+     *  aturTampilanDaftarPasien() di bawah -- di sini cuma menambah header tabel (JTableHeader)
+     *  navy + banner + kartu, TANPA menyentuh renderer status (WarnaTableKasirRalan/WarnaTable). */
+    private void terapkanTampilanModernKasirRalan() {
+        final java.awt.Color navy = new java.awt.Color(18, 48, 82);
+        final java.awt.Color latar = new java.awt.Color(243, 247, 251);
+        final java.awt.Color garis = new java.awt.Color(211, 221, 231);
+
+        internalFrame1.setBorder(javax.swing.BorderFactory.createEmptyBorder());
+        internalFrame1.setBackground(latar);
+        internalFrame1.setOpaque(true);
+
+        internalFrame1.remove(panelGlass9);
+
+        javax.swing.JPanel header = new javax.swing.JPanel(new java.awt.BorderLayout(18, 0));
+        header.setBackground(navy);
+        header.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 18, 7, 18));
+        header.setPreferredSize(new java.awt.Dimension(100, 72));
+
+        javax.swing.JPanel blokJudul = new javax.swing.JPanel();
+        blokJudul.setOpaque(false);
+        blokJudul.setLayout(new javax.swing.BoxLayout(blokJudul, javax.swing.BoxLayout.Y_AXIS));
+        javax.swing.JLabel judul = new javax.swing.JLabel("DAFTAR PASIEN RAWAT JALAN");
+        judul.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 18));
+        judul.setForeground(java.awt.Color.WHITE);
+        javax.swing.JLabel subJudul = new javax.swing.JLabel("Kelola registrasi, kasir, dan rujukan internal poli rawat jalan");
+        subJudul.setFont(new java.awt.Font("Tahoma", java.awt.Font.PLAIN, 10));
+        subJudul.setForeground(new java.awt.Color(205, 221, 238));
+        blokJudul.add(javax.swing.Box.createVerticalGlue());
+        blokJudul.add(judul);
+        blokJudul.add(javax.swing.Box.createVerticalStrut(2));
+        blokJudul.add(subJudul);
+        blokJudul.add(javax.swing.Box.createVerticalGlue());
+        header.add(blokJudul, java.awt.BorderLayout.CENTER);
+
+        javax.swing.JPanel kartu = new javax.swing.JPanel(new java.awt.GridLayout(1, 3, 9, 0));
+        kartu.setOpaque(false);
+        kartu.add(buatKartuRingkasanKasirRalan("TOTAL PASIEN", ringkasanTotalPasienRalan, new java.awt.Color(48, 126, 199)));
+        kartu.add(buatKartuRingkasanKasirRalan("SUDAH BAYAR", ringkasanSudahBayarRalan, new java.awt.Color(30, 126, 86)));
+        kartu.add(buatKartuRingkasanKasirRalan("BELUM BAYAR", ringkasanBelumBayarRalan, new java.awt.Color(194, 70, 65)));
+        kartu.setPreferredSize(new java.awt.Dimension(540, 54));
+        header.add(kartu, java.awt.BorderLayout.EAST);
+
+        rapikanPanelModernKasirRalan(panelGlass9, garis);
+        javax.swing.JPanel bungkusAtas = new javax.swing.JPanel(new java.awt.BorderLayout());
+        bungkusAtas.setBackground(latar);
+        bungkusAtas.add(header, java.awt.BorderLayout.NORTH);
+        javax.swing.JPanel pembungkusCari = new javax.swing.JPanel(new java.awt.BorderLayout());
+        pembungkusCari.setBackground(latar);
+        pembungkusCari.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 10, 0, 10));
+        pembungkusCari.add(panelGlass9, java.awt.BorderLayout.CENTER);
+        bungkusAtas.add(pembungkusCari, java.awt.BorderLayout.CENTER);
+        internalFrame1.add(bungkusAtas, java.awt.BorderLayout.PAGE_START);
+
+        for (widget.Table tabel : new widget.Table[]{tbKasirRalan, tbKasirRalan2}) {
+            tabel.getTableHeader().setBackground(navy);
+            tabel.getTableHeader().setForeground(java.awt.Color.WHITE);
+            tabel.getTableHeader().setOpaque(true);
+            tabel.getTableHeader().setBorder(javax.swing.BorderFactory.createMatteBorder(
+                    0, 0, 2, 0, new java.awt.Color(40, 149, 198)));
+            tabel.getTableHeader().setPreferredSize(new java.awt.Dimension(0, 30));
+            tabel.setGridColor(new java.awt.Color(225, 232, 239));
+            tabel.setShowHorizontalLines(true);
+            tabel.setShowVerticalLines(false);
+        }
+        Scroll1.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 10, 0, 10));
+        Scroll2.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 10, 0, 10));
+        Scroll1.getViewport().setBackground(java.awt.Color.WHITE);
+        Scroll2.getViewport().setBackground(java.awt.Color.WHITE);
+        TabRawat.setBackground(latar);
+        TabRawat.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 12));
+
+        rapikanPanelModernKasirRalan(panelGlass8, garis);
+        rapikanPanelModernKasirRalan(panelGlass7, garis);
+        rapikanPanelModernKasirRalan(panelGlass6, garis);
+        gayaTombolAksiKasirRalan(BtnCari, new java.awt.Color(42, 111, 174));
+        gayaTombolAksiKasirRalan(BtnAll, new java.awt.Color(92, 103, 116));
+        gayaTombolAksiKasirRalan(BtnPrint, new java.awt.Color(92, 103, 116));
+        gayaTombolAksiKasirRalan(BtnKeluar, new java.awt.Color(92, 103, 116));
+        jPanel2.setOpaque(true);
+        jPanel2.setBackground(latar);
+        jPanel2.setBorder(javax.swing.BorderFactory.createEmptyBorder(7, 10, 7, 10));
+
+        tabModekasir.addTableModelListener(new javax.swing.event.TableModelListener() {
+            @Override
+            public void tableChanged(javax.swing.event.TableModelEvent e) {
+                perbaruiRingkasanKasirRalan();
+            }
+        });
+        perbaruiRingkasanKasirRalan();
+
+        internalFrame1.revalidate();
+        internalFrame1.repaint();
+    }
+
+    private javax.swing.JPanel buatKartuRingkasanKasirRalan(String teks, javax.swing.JLabel nilai, java.awt.Color aksen) {
+        javax.swing.JPanel panel = new javax.swing.JPanel(new java.awt.BorderLayout(9, 0));
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createCompoundBorder(
+                javax.swing.BorderFactory.createMatteBorder(0, 5, 0, 0, aksen),
+                javax.swing.BorderFactory.createEmptyBorder(5, 9, 5, 9)));
+        javax.swing.JLabel label = new javax.swing.JLabel(teks);
+        label.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 9));
+        label.setForeground(new java.awt.Color(91, 105, 120));
+        nilai.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 17));
+        nilai.setForeground(new java.awt.Color(31, 52, 73));
+        nilai.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        panel.add(label, java.awt.BorderLayout.CENTER);
+        panel.add(nilai, java.awt.BorderLayout.EAST);
+        return panel;
+    }
+
+    private void rapikanPanelModernKasirRalan(javax.swing.JComponent panel, java.awt.Color garis) {
+        panel.setOpaque(true);
+        panel.setBackground(java.awt.Color.WHITE);
+        panel.setBorder(javax.swing.BorderFactory.createLineBorder(garis));
+    }
+
+    private void gayaTombolAksiKasirRalan(javax.swing.AbstractButton tombol, java.awt.Color warna) {
+        tombol.setForeground(java.awt.Color.WHITE);
+        tombol.setBackground(warna);
+        tombol.setOpaque(true);
+        tombol.setContentAreaFilled(true);
+        tombol.setBorderPainted(false);
+        tombol.setFocusPainted(false);
+        if (tombol instanceof usu.widget.ButtonGlass) {
+            ((usu.widget.ButtonGlass) tombol).setGlassColor(new java.awt.Color(255, 255, 255, 60));
+        }
+    }
+
+    /** Ringkasan mengikuti tab "Registrasi Awal" (tabModekasir) -- kolom 15 = Status Bayar,
+     *  persis nilai yg dipakai WarnaTableKasirRalan utk sorot baris "Sudah Bayar". */
+    private void perbaruiRingkasanKasirRalan() {
+        int sudahBayar = 0;
+        for (int baris = 0; baris < tabModekasir.getRowCount(); baris++) {
+            Object statusBayar = tabModekasir.getValueAt(baris, 15);
+            if (statusBayar != null && statusBayar.toString().equals("Sudah Bayar")) {
+                sudahBayar++;
+            }
+        }
+        ringkasanTotalPasienRalan.setText(String.valueOf(tabModekasir.getRowCount()));
+        ringkasanSudahBayarRalan.setText(String.valueOf(sudahBayar));
+        ringkasanBelumBayarRalan.setText(String.valueOf(tabModekasir.getRowCount() - sudahBayar));
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
