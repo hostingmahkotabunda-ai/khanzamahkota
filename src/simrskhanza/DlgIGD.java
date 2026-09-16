@@ -12395,10 +12395,14 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
         MnSkorStewardPascaAnestesi.setEnabled(akses.getskor_steward_pasca_anestesi());
         MnSkorBromagePascaAnestesi.setEnabled(akses.getskor_bromage_pasca_anestesi());
         MnPenilaianPreInduksi.setEnabled(akses.getpenilaian_pre_induksi());
-        MnGabungNoRawat.setEnabled(akses.getgabung_norawat()); 
+        MnGabungNoRawat.setEnabled(akses.getgabung_norawat());
         MnHasilPemeriksaanEKG.setEnabled(akses.gethasil_pemeriksaan_ekg());
+        // frmUtama menyimpan 1 instance DlgIGD yg dipakai ulang (bukan dibuat baru tiap klik
+        // menu IGD) -- tampil() di sini memastikan daftar pasien tetap segar setiap kali
+        // halaman ini dibuka lagi, sama seperti pola isCek() di DlgKamarInap.
+        tampil();
     }
-    
+
     private void isNumber(){
         switch (URUTNOREG) {
             case "poli":
