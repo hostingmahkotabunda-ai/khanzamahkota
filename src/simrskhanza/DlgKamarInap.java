@@ -17425,7 +17425,42 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     // End of variables declaration//GEN-END:variables
     private javax.swing.JMenuItem MnSkorBromagePascaAnestesi1,MnPenilaianPreInduksi,MnHasilPemeriksaanUSGUrologi,MnHasilPemeriksaanUSGGynecologi,MnHasilPemeriksaanEKG,MnBelumTerbitSEP,MnSudahTerbitSEP,MnHasilPemeriksaanUSGNeonatus,MnHasilEndoskopiFaringLaring;
     private javax.swing.JMenu MnHasilUSG;
-    
+
+    /** Penampung 1 kelompok baris (1 No.Rawat, atau 1 no_rawat2 bayi) selagi tampil()
+     *  menggabung beberapa segmen kamar jadi 1 baris. Lihat komentar di tampil(). */
+    private static final class SegmenRanapAkumulasi {
+        String[] terbaru;
+        String kunciWaktuTerbaru = "";
+        String tglMasukPalingAwal = "";
+        String jamMasukPalingAwal = "";
+        String kunciWaktuPalingAwal = "";
+        double totalBiaya = 0;
+    }
+
+    /** Tambahkan 1 segmen kamar ke akumulasi milik kunci (No.Rawat / no_rawat2 bayi):
+     *  simpan snapshot kolom "apa adanya" dari segmen PALING BARU, catat tgl+jam masuk
+     *  PALING AWAL secara terpisah, dan jumlahkan biaya. snapshotSegmen TIDAK boleh berisi
+     *  tgl_masuk/jam_masuk/ttl_biaya -- tiga itu ditangani khusus di sini. */
+    private void akumulasiSegmenRanap(java.util.Map<String, SegmenRanapAkumulasi> peta, String kunci,
+            String[] snapshotSegmen, String tglMasuk, String jamMasuk, double biaya) {
+        SegmenRanapAkumulasi a = peta.get(kunci);
+        if (a == null) {
+            a = new SegmenRanapAkumulasi();
+            peta.put(kunci, a);
+        }
+        String waktuMasuk = tglMasuk + " " + jamMasuk;
+        if (a.terbaru == null || waktuMasuk.compareTo(a.kunciWaktuTerbaru) >= 0) {
+            a.terbaru = snapshotSegmen;
+            a.kunciWaktuTerbaru = waktuMasuk;
+        }
+        if (a.kunciWaktuPalingAwal.isEmpty() || waktuMasuk.compareTo(a.kunciWaktuPalingAwal) < 0) {
+            a.tglMasukPalingAwal = tglMasuk;
+            a.jamMasukPalingAwal = jamMasuk;
+            a.kunciWaktuPalingAwal = waktuMasuk;
+        }
+        a.totalBiaya += biaya;
+    }
+
     private void tampil() {
         final String sqlDokterPJ = ekspresiDokterPenanggungJawabRanap();
         final String sqlFilterLantai = kondisiFilterLantaiRanap();
@@ -17469,6 +17504,16 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         }
         
         Valid.tabelKosong(tabMode);
+        // Pasien yg pindah kamar (mis. OK1 -> OK2) punya lebih dari 1 baris kamar_inap utk
+        // No.Rawat yg SAMA (satu baris per segmen kamar, ini benar & perlu utk billing per kamar).
+        // Supaya gampang dicek ulang, ditampilkan sbg 1 baris per No.Rawat: kamar/diagnosa/status
+        // dari segmen PALING BARU (jadi tombol Pindah/Pulang tetap kena kamar yg aktif sekarang),
+        // Tgl.Masuk dari segmen PALING AWAL (tanggal pertama masuk rawat inap), dan Ttl.Biaya
+        // dijumlah dari semua segmennya. Baris bayi (ranap_gabung) ikut digabung dgn cara yg sama,
+        // dikunci pakai no_rawat2 miliknya sendiri supaya tidak ketimpa bayi pasien lain.
+        java.util.LinkedHashMap<String, SegmenRanapAkumulasi> akumulasiUtama = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<String, SegmenRanapAkumulasi> akumulasiBayi = new java.util.LinkedHashMap<>();
+        java.util.LinkedHashMap<String, String> bayiUntukNoRawat = new java.util.LinkedHashMap<>();
         try{
             ps=koneksi.prepareStatement(
                "select kamar_inap.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,concat(pasien.alamat,', ',kelurahan.nm_kel,', ',kecamatan.nm_kec,', ',kabupaten.nm_kab) as alamat,reg_periksa.p_jawab,reg_periksa.hubunganpj,"+
@@ -17483,31 +17528,36 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             try {
                 rs=ps.executeQuery();
                 while(rs.next()){
-                    tabMode.addRow(new String[]{
-                        rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien")+" ("+rs.getString("umur")+")",
+                    String noRawatBaris=rs.getString("no_rawat");
+                    String tglMasukBaris=rs.getString("tgl_masuk");
+                    String jamMasukBaris=rs.getString("jam_masuk");
+                    akumulasiSegmenRanap(akumulasiUtama, noRawatBaris, new String[]{
+                        noRawatBaris,rs.getString("no_rkm_medis"),rs.getString("nm_pasien")+" ("+rs.getString("umur")+")",
                         rs.getString("alamat"),rs.getString("p_jawab"),rs.getString("hubunganpj"),rs.getString("png_jawab"),
                         rs.getString("kamar"),Valid.SetAngka(rs.getDouble("trf_kamar")),rs.getString("diagnosa_awal"),
-                        rs.getString("diagnosa_akhir"),rs.getString("tgl_masuk"),rs.getString("jam_masuk"),rs.getString("tgl_keluar"),
-                        rs.getString("jam_keluar"),Valid.SetAngka(rs.getDouble("ttl_biaya")),rs.getString("stts_pulang"),
-                        rs.getString("lama"),rs.getString("dokter_pj_tampil"),rs.getString("kd_kamar"),rs.getString("status_bayar"),rs.getString("agama")
-                    });
+                        rs.getString("diagnosa_akhir"),rs.getString("tgl_keluar"),rs.getString("jam_keluar"),
+                        rs.getString("stts_pulang"),rs.getString("lama"),rs.getString("dokter_pj_tampil"),
+                        rs.getString("kd_kamar"),rs.getString("status_bayar"),rs.getString("agama")
+                    }, tglMasukBaris, jamMasukBaris, rs.getDouble("ttl_biaya"));
                     psanak=koneksi.prepareStatement(
                         "select pasien.no_rkm_medis,pasien.nm_pasien,ranap_gabung.no_rawat2,concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur)as umur,pasien.no_peserta, "+
                         "concat(pasien.alamatpj,', ',pasien.kelurahanpj,', ',pasien.kecamatanpj,', ',pasien.kabupatenpj) as alamat "+
                         "from reg_periksa inner join pasien on pasien.no_rkm_medis=reg_periksa.no_rkm_medis "+
-                        "inner join ranap_gabung on ranap_gabung.no_rawat2=reg_periksa.no_rawat where ranap_gabung.no_rawat=?");            
+                        "inner join ranap_gabung on ranap_gabung.no_rawat2=reg_periksa.no_rawat where ranap_gabung.no_rawat=?");
                     try {
                         psanak.setString(1,rs.getString(1));
                         rs2=psanak.executeQuery();
                         if(rs2.next()){
-                            tabMode.addRow(new String[]{
+                            String noRawat2Bayi=rs2.getString("no_rawat2");
+                            bayiUntukNoRawat.put(noRawatBaris, noRawat2Bayi);
+                            akumulasiSegmenRanap(akumulasiBayi, noRawat2Bayi, new String[]{
                                 "",rs2.getString("no_rkm_medis"),rs2.getString("nm_pasien")+" ("+rs2.getString("umur")+")",
                                 rs.getString("alamat"),rs.getString("p_jawab"),rs.getString("hubunganpj"),rs.getString("png_jawab"),
                                 rs.getString("kamar"),Valid.SetAngka(rs.getDouble("trf_kamar")*(persenbayi/100)),"",
-                                "",rs.getString("tgl_masuk"),rs.getString("jam_masuk"),rs.getString("tgl_keluar"),
-                                rs.getString("jam_keluar"),Valid.SetAngka(rs.getDouble("ttl_biaya")*(persenbayi/100)),rs.getString("stts_pulang"),
-                                rs.getString("lama"),rs.getString("dokter_pj_tampil"),rs.getString("kd_kamar"),rs.getString("status_bayar")
-                            });
+                                "",rs.getString("tgl_keluar"),rs.getString("jam_keluar"),
+                                rs.getString("stts_pulang"),rs.getString("lama"),rs.getString("dokter_pj_tampil"),
+                                rs.getString("kd_kamar"),rs.getString("status_bayar")
+                            }, tglMasukBaris, jamMasukBaris, rs.getDouble("ttl_biaya")*(persenbayi/100));
                         }
                     }catch(Exception ex){
                         System.out.println("Notifikasi : "+ex);
@@ -17532,6 +17582,27 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             }
         }catch(Exception e){
             System.out.println("Notifikasi : "+e);
+        }
+        for (java.util.Map.Entry<String, SegmenRanapAkumulasi> masuk : akumulasiUtama.entrySet()) {
+            SegmenRanapAkumulasi a = masuk.getValue();
+            String[] t = a.terbaru;
+            tabMode.addRow(new String[]{
+                t[0],t[1],t[2],t[3],t[4],t[5],t[6],t[7],t[8],t[9],
+                t[10],a.tglMasukPalingAwal,a.jamMasukPalingAwal,t[11],t[12],
+                Valid.SetAngka(a.totalBiaya),t[13],t[14],t[15],t[16],t[17],t[18]
+            });
+            String noRawat2Bayi = bayiUntukNoRawat.get(masuk.getKey());
+            if (noRawat2Bayi != null) {
+                SegmenRanapAkumulasi b = akumulasiBayi.get(noRawat2Bayi);
+                if (b != null) {
+                    String[] tb = b.terbaru;
+                    tabMode.addRow(new String[]{
+                        tb[0],tb[1],tb[2],tb[3],tb[4],tb[5],tb[6],tb[7],tb[8],tb[9],
+                        tb[10],b.tglMasukPalingAwal,b.jamMasukPalingAwal,tb[11],tb[12],
+                        Valid.SetAngka(b.totalBiaya),tb[13],tb[14],tb[15],tb[16],tb[17]
+                    });
+                }
+            }
         }
         LCount.setText(""+tabMode.getRowCount());
         perbaruiRingkasanHarianRawatInap();
