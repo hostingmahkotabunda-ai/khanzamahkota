@@ -329,6 +329,14 @@ public class DlgKamarInap extends javax.swing.JDialog {
                     if (component instanceof javax.swing.JComponent) {
                         ((javax.swing.JComponent) component).setBorder(borderNormal);
                     }
+                    if (column == 6) {
+                        java.awt.Color[] pasangan = pasanganWarnaJenisBayar(value);
+                        if (pasangan != null) {
+                            component.setBackground(pasangan[0]);
+                            component.setForeground(pasangan[1]);
+                            component.setFont(table.getFont().deriveFont(java.awt.Font.BOLD));
+                        }
+                    }
                 }
                 return component;
             }
@@ -1019,6 +1027,26 @@ public class DlgKamarInap extends javax.swing.JDialog {
         tombol.setFocusPainted(false);
         if (tombol instanceof usu.widget.ButtonGlass) {
             ((usu.widget.ButtonGlass) tombol).setGlassColor(new java.awt.Color(255, 255, 255, 60));
+        }
+    }
+
+    /** Pasangan warna latar+teks utk kolom "Jenis Bayar" (kolom 6) -- cuma BPJS & UMUM (dua jenis
+     *  terbanyak) yg dapat warna sendiri; sisanya (asuransi/perusahaan, dari 25 jenis di master
+     *  penjab) disamakan 1 warna netral spy tabel tidak penuh warna berbeda-beda. Teks dibikin
+     *  senada tapi lebih gelap drpd latarnya spy tetap kontras & tidak bentrok; kembalikan null
+     *  utk nilai kosong/"-" spy baris itu tetap pakai warna baris biasa (tidak usah diwarnai). */
+    private java.awt.Color[] pasanganWarnaJenisBayar(Object nilaiJenisBayar) {
+        String jenis = nilaiJenisBayar == null ? "" : nilaiJenisBayar.toString().trim().toUpperCase();
+        switch (jenis) {
+            case "BPJS":
+                return new java.awt.Color[]{new java.awt.Color(200, 230, 201), new java.awt.Color(0, 90, 50)};
+            case "UMUM":
+                return new java.awt.Color[]{new java.awt.Color(224, 242, 254), new java.awt.Color(0, 64, 128)};
+            case "":
+            case "-":
+                return null;
+            default:
+                return new java.awt.Color[]{new java.awt.Color(233, 225, 246), new java.awt.Color(81, 45, 168)};
         }
     }
 

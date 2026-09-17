@@ -11974,7 +11974,34 @@ private void MnLaporanRekapKunjunganBulananPoliActionPerformed(java.awt.event.Ac
                     }
                 }
             }
+            // Kolom "Jenis Bayar" (17) dikasih badge warna sendiri, menimpa warna status
+            // ranap/soap di atas KHUSUS utk kolom ini -- kolom lain tetap ikut warna status.
+            if (column == 17) {
+                java.awt.Color[] pasangan = pasanganWarnaJenisBayarIgd(value);
+                if (pasangan != null) {
+                    component.setBackground(pasangan[0]);
+                    component.setForeground(pasangan[1]);
+                    component.setFont(table.getFont().deriveFont(java.awt.Font.BOLD));
+                }
+            }
             return component;
+        }
+    }
+
+    /** Pasangan warna latar+teks utk kolom "Jenis Bayar" -- sama persis pola & warnanya dgn
+     *  DlgKamarInap/DlgKasirRalan spy konsisten di seluruh aplikasi. null = pakai warna baris biasa. */
+    private java.awt.Color[] pasanganWarnaJenisBayarIgd(Object nilaiJenisBayar) {
+        String jenis = nilaiJenisBayar == null ? "" : nilaiJenisBayar.toString().trim().toUpperCase();
+        switch (jenis) {
+            case "BPJS":
+                return new java.awt.Color[]{new java.awt.Color(200, 230, 201), new java.awt.Color(0, 90, 50)};
+            case "UMUM":
+                return new java.awt.Color[]{new java.awt.Color(224, 242, 254), new java.awt.Color(0, 64, 128)};
+            case "":
+            case "-":
+                return null;
+            default:
+                return new java.awt.Color[]{new java.awt.Color(233, 225, 246), new java.awt.Color(81, 45, 168)};
         }
     }
     

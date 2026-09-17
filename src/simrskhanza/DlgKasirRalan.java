@@ -313,7 +313,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
         } catch (Exception e) {
             tbKasirRalan.setDefaultRenderer(Object.class, new WarnaTable());
         }
-		aturTampilanDaftarPasien(tbKasirRalan);
+		aturTampilanDaftarPasien(tbKasirRalan, 9);
         
         tabModekasir2=new DefaultTableModel(null,new String[]{
             "Kd.Dokter","Dokter Rujukan","Nomer RM","Pasien",
@@ -365,7 +365,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
             }
         }
         tbKasirRalan2.setDefaultRenderer(Object.class, new WarnaTable());
-		aturTampilanDaftarPasien(tbKasirRalan2);
+		aturTampilanDaftarPasien(tbKasirRalan2, 8);
         
         TCari.setDocument(new batasInput((byte)100).getKata(TCari));
         CrPoli.setDocument(new batasInput((byte)100).getKata(CrPoli));
@@ -768,7 +768,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
      * Membuat pilihan pasien terlihat tegas tanpa menghilangkan warna status
      * yang diberikan renderer asli saat baris tidak dipilih.
      */
-    private void aturTampilanDaftarPasien(final JTable table) {
+    private void aturTampilanDaftarPasien(final JTable table, final int kolomJenisBayar) {
         final javax.swing.table.TableCellRenderer rendererStatus =
                 table.getDefaultRenderer(Object.class);
         final javax.swing.border.Border borderTerpilih =
@@ -800,10 +800,38 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
                     if (component instanceof javax.swing.JComponent) {
                         ((javax.swing.JComponent) component).setBorder(borderNormal);
                     }
+                    // Kolom "Jenis Bayar" dikasih badge warna sendiri (pola sama persis dgn
+                    // DlgKamarInap/DlgIGD spy konsisten), menimpa warna status di atas KHUSUS
+                    // utk kolom ini -- kolom lain tetap ikut warna status/baris biasa.
+                    if (column == kolomJenisBayar) {
+                        java.awt.Color[] pasangan = pasanganWarnaJenisBayarRalan(value);
+                        if (pasangan != null) {
+                            component.setBackground(pasangan[0]);
+                            component.setForeground(pasangan[1]);
+                            component.setFont(tabel.getFont().deriveFont(java.awt.Font.BOLD));
+                        }
+                    }
                 }
                 return component;
             }
         });
+    }
+
+    /** Pasangan warna latar+teks utk kolom "Jenis Bayar" -- sama persis pola & warnanya dgn
+     *  DlgKamarInap/DlgIGD spy konsisten di seluruh aplikasi. null = pakai warna baris biasa. */
+    private java.awt.Color[] pasanganWarnaJenisBayarRalan(Object nilaiJenisBayar) {
+        String jenis = nilaiJenisBayar == null ? "" : nilaiJenisBayar.toString().trim().toUpperCase();
+        switch (jenis) {
+            case "BPJS":
+                return new java.awt.Color[]{new java.awt.Color(200, 230, 201), new java.awt.Color(0, 90, 50)};
+            case "UMUM":
+                return new java.awt.Color[]{new java.awt.Color(224, 242, 254), new java.awt.Color(0, 64, 128)};
+            case "":
+            case "-":
+                return null;
+            default:
+                return new java.awt.Color[]{new java.awt.Color(233, 225, 246), new java.awt.Color(81, 45, 168)};
+        }
     }
 
     @SuppressWarnings("unchecked")
