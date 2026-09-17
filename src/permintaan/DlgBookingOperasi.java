@@ -72,6 +72,8 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
     private widget.Label lblStatusMasukOK;
     /** true kalau "Waktu Masuk Ruang Operasi" sudah diisi (manual atau lewat tombol) -- kalau false, disimpan sbg NULL krn memang belum terjadi. */
     private boolean masukOkDiisi = false;
+    /** true setelah semua field "Waktu Aktual" (Keputusan/Masuk OK) selesai dibuat -- lihat sinkronkanWaktuAktualOperasi(). */
+    private boolean formSifatOperasiSiap = false;
 
 
 
@@ -1252,7 +1254,7 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
         BtnSifatCito.setBorder(BorderFactory.createMatteBorder(1,0,1,1,WARNA_TEAL));
         BtnSifatElektif.setBounds(93,100,80,23);
         BtnSifatCito.setBounds(173,100,80,23);
-        java.awt.event.ItemListener onSifatBerubah = evt -> perbaruiTampilanSifatOperasi();
+        java.awt.event.ItemListener onSifatBerubah = evt -> { perbaruiTampilanSifatOperasi(); sinkronkanWaktuAktualOperasi(); };
         BtnSifatElektif.addItemListener(onSifatBerubah);
         BtnSifatCito.addItemListener(onSifatBerubah);
         BtnSifatElektif.setSelected(true);
@@ -1382,8 +1384,44 @@ public class DlgBookingOperasi extends javax.swing.JDialog {
         lblStatusMasukOK.setBounds(10,46,820,20);
         perbaruiStatusMasukOK();
 
+        // Field jadwal (dipakai kalau Elektif) & keputusan (dipakai kalau Cito) yg jadi acuan
+        // "Waktu Aktual" (Wkt Masuk OK) -- disinkronkan otomatis tiap salah satu sumbernya
+        // berubah, lihat sinkronkanWaktuAktualOperasi(). Wkt Masuk OK sendiri tetap bisa diedit
+        // manual sesudahnya (mis. lewat tombol "Isi Waktu Sekarang") kalau kenyataan di lapangan
+        // beda dari rencana (keterlambatan, dll).
+        java.awt.event.ItemListener onSumberWaktuAktualBerubah = evt -> sinkronkanWaktuAktualOperasi();
+        java.awt.event.ActionListener onSumberWaktuAktualBerubahAction = evt -> sinkronkanWaktuAktualOperasi();
+        DTPTgl.addItemListener(onSumberWaktuAktualBerubah);
+        JamMulai.addActionListener(onSumberWaktuAktualBerubahAction);
+        MenitMulai.addActionListener(onSumberWaktuAktualBerubahAction);
+        DTPKeputusan.addItemListener(onSumberWaktuAktualBerubah);
+        JamKeputusan.addActionListener(onSumberWaktuAktualBerubahAction);
+        MenitKeputusan.addActionListener(onSumberWaktuAktualBerubahAction);
+
+        formSifatOperasiSiap = true;
+        sinkronkanWaktuAktualOperasi();
+
         susunUlangFormBooking(lblSifat, kotakWaktuAktual);
         terapkanGayaTampilanBooking();
+    }
+
+    /** Elektif: "Wkt Masuk OK" (=Waktu Aktual Operasi) disamakan dgn jadwal (Tgl+Jam Mulai).
+     *  Cito: disamakan dgn Wkt Keputusan. Otomatis mengikuti tiap kali salah satu sumbernya
+     *  berubah -- field Wkt Masuk OK sendiri TETAP bisa diedit manual sesudahnya (mis. lewat
+     *  tombol "Isi Waktu Sekarang") kalau kenyataan sebenarnya beda dari rencana. */
+    private void sinkronkanWaktuAktualOperasi(){
+        if(!formSifatOperasiSiap){ return; }
+        if(BtnSifatCito.isSelected()){
+            DTPMasukOK.setSelectedItem(DTPKeputusan.getSelectedItem());
+            JamMasukOK.setSelectedItem(JamKeputusan.getSelectedItem());
+            MenitMasukOK.setSelectedItem(MenitKeputusan.getSelectedItem());
+        }else{
+            DTPMasukOK.setSelectedItem(DTPTgl.getSelectedItem());
+            JamMasukOK.setSelectedItem(JamMulai.getSelectedItem());
+            MenitMasukOK.setSelectedItem(MenitMulai.getSelectedItem());
+        }
+        masukOkDiisi = true;
+        perbaruiStatusMasukOK();
     }
 
     /**
