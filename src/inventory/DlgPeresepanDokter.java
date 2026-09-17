@@ -1265,8 +1265,11 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             Valid.textKosong(KdDokter,"Dokter");
         }else if(NoResep.getText().trim().equals("")){
             Valid.textKosong(NoResep,"No.Resep");
-        }else if(ttl<=0){
-            JOptionPane.showMessageDialog(null,"Maaf, silahkan masukkan terlebih dahulu obat yang mau diberikan...!!!");
+        }else if(ttl<=0 && catatanResepDokter.trim().equals("")){
+            // Boleh lanjut simpan tanpa obat SELAMA catatan resep sudah diisi -- farmasi tetap
+            // menerima resep ini (resep_obat tidak butuh baris resep_dokter utk tampil di daftar
+            // mereka) & bisa lihat catatannya, lalu input obatnya sendiri belakangan.
+            JOptionPane.showMessageDialog(null,"Maaf, silahkan masukkan obat yang mau diberikan, atau isi dulu catatan resep-nya...!!!");
             TCari.requestFocus();
         }else{
             int reply = JOptionPane.showConfirmDialog(rootPane,"Eeiiiiiits, udah bener belum data yang mau disimpan..??","Konfirmasi",JOptionPane.YES_NO_OPTION);
@@ -5932,6 +5935,14 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
               .append(" - ").append(rsHdr.getString("nm_pasien")).append("\n");
             sb.append("Dokter    : ").append(rsHdr.getString("nm_dokter")).append("\n");
             sb.append("Status    : ").append(rsHdr.getString("status")).append("\n\n");
+        }
+
+        // --- CATATAN DOKTER (kalau ada) -- terutama relevan kalau resep disimpan tanpa obat,
+        // supaya keliatan jelas di banner ini bahwa itu memang catatan buat farmasi, bukan
+        // resep yg gagal/kosong tanpa keterangan. ---
+        String catatanDokterTersimpan = Sequel.cariIsi("select catatan from catatan_resep_dokter where no_resep=?", noResep);
+        if (catatanDokterTersimpan != null && !catatanDokterTersimpan.trim().isEmpty()) {
+            sb.append("Catatan Dokter :\n").append(catatanDokterTersimpan.trim()).append("\n\n");
         }
 
         // --- OBAT NON RACIKAN ---
