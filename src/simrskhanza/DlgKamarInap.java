@@ -6642,6 +6642,19 @@ public class DlgKamarInap extends javax.swing.JDialog {
                 }else if(diagnosaakhir.getText().equals("")){
                     Valid.textKosong(diagnosaakhir,"Diagnosa Akhir");
                 }else{
+                    // Pasien pindah kamar ditampilkan gabungan 1 baris (Tgl.Masuk dari segmen
+                    // PALING AWAL, Kamar dari segmen PALING BARU) -- jadi TIn/JamMasuk hasil
+                    // getData() dari grid bisa TIDAK cocok dgn kd_kamar aktif sekarang. Ambil
+                    // ulang identity segmen yg benar2 aktif (stts_pulang='-') langsung dari DB
+                    // sebelum dipakai sbg WHERE, spy tidak 0 baris ter-update.
+                    String[] kamarAktifSekarangPulang=ambilKamarAktifSekarang(norawat.getText());
+                    if(kamarAktifSekarangPulang==null){
+                        JOptionPane.showMessageDialog(null,"Maaf, tidak ditemukan kamar yang sedang aktif untuk pasien ini di database (mungkin data sudah berubah).\nSilahkan tutup halaman ini, buka ulang, lalu coba lagi..!!");
+                        return;
+                    }
+                    kdkamar.setText(kamarAktifSekarangPulang[0]);
+                    TIn.setText(kamarAktifSekarangPulang[1]);
+                    JamMasuk.setText(kamarAktifSekarangPulang[2]);
                     Sequel.mengedittf("kamar_inap","no_rawat='"+norawat.getText()+"' and kd_kamar='"+kdkamar.getText()+"' and tgl_masuk='"+TIn.getText()+"' and jam_masuk='"+JamMasuk.getText()+"'",
                             "tgl_keluar='"+CmbTahun.getSelectedItem()+"-"+CmbBln.getSelectedItem()+"-"+CmbTgl.getSelectedItem()+
                             "',trf_kamar='"+TTarif.getText()+"',jam_keluar='"+cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem()+
@@ -7902,6 +7915,28 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     /**
+     * Return {kd_kamar,tgl_masuk,jam_masuk} segmen kamar PALING BARU utk no_rawat ini,
+     * apapun stts_pulang-nya. Dipakai utk Batalkan Status Pulang -- di situ segmen yg mau
+     * dibatalkan justru yg SUDAH berstatus pulang (bukan yg stts_pulang='-'), jadi tidak
+     * bisa pakai ambilKamarAktifSekarang().
+     */
+    private String[] ambilKamarSegmenTerbaru(String norawatParam) {
+        try (PreparedStatement pst = koneksi.prepareStatement(
+                "select kd_kamar,tgl_masuk,jam_masuk from kamar_inap where no_rawat=? "
+                + "order by tgl_masuk desc, jam_masuk desc limit 1")) {
+            pst.setString(1, norawatParam);
+            try (ResultSet r = pst.executeQuery()) {
+                if (r.next()) {
+                    return new String[]{r.getString("kd_kamar"), r.getString("tgl_masuk"), r.getString("jam_masuk")};
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi ambilKamarSegmenTerbaru : " + e);
+        }
+        return null;
+    }
+
+    /**
      * Kunci lintas komputer berdasarkan nomor RM. Pemeriksaan dan penyimpanan
      * pasien masuk harus berada di dalam kunci ini agar dua loket tidak dapat
      * memasukkan pasien yang sama secara bersamaan.
@@ -8963,6 +8998,18 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     JOptionPane.showMessageDialog(rootPane,"Data billing sudah terverifikasi.\nSilahkan hubungi bagian kasir/keuangan ..!!");
                     TCari.requestFocus();
                 }else{
+                    // Sama spt di BtnSimpan (Pulang): grid gabungan bisa nampilin TIn/JamMasuk
+                    // dari segmen paling awal, padahal kd_kamar yg dipilih adl segmen paling
+                    // baru. Ambil ulang identity segmen paling baru (yg mau dibatalkan
+                    // pulangnya) langsung dari DB dulu spy WHERE-nya kena baris yg benar.
+                    String[] kamarSegmenTerbaru=ambilKamarSegmenTerbaru(norawat.getText());
+                    if(kamarSegmenTerbaru==null){
+                        JOptionPane.showMessageDialog(null,"Maaf, tidak ditemukan data kamar untuk pasien ini di database (mungkin data sudah berubah).\nSilahkan tutup halaman ini, buka ulang, lalu coba lagi..!!");
+                        return;
+                    }
+                    kdkamar.setText(kamarSegmenTerbaru[0]);
+                    TIn.setText(kamarSegmenTerbaru[1]);
+                    JamMasuk.setText(kamarSegmenTerbaru[2]);
                     Sequel.mengedit("kamar_inap","no_rawat='"+norawat.getText()+"' and kd_kamar='"+kdkamar.getText()+"' and tgl_masuk='"+TIn.getText()+"' and jam_masuk='"+JamMasuk.getText()+"'","stts_pulang='-',tgl_keluar='0000-00-00',jam_keluar='00:00:00'");
                     if(!verifikasiStatusPulangTersimpan("-")){
                         JOptionPane.showMessageDialog(null,"Maaf, gagal membatalkan status pulang. Data kamar tidak ditemukan/sudah berubah.\nSilahkan tutup halaman ini, buka ulang, lalu coba lagi..!!");
