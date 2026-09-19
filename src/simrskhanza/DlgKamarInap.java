@@ -6399,9 +6399,9 @@ public class DlgKamarInap extends javax.swing.JDialog {
                         kmr=" kamar_inap.tgl_masuk between '"+Valid.SetTgl(DTPCari1.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari2.getSelectedItem()+"")+"' and bangsal.nm_bangsal='"+BangsalCari.getText()+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
                     }
                 }else if(R3.isSelected()==true){
-                    kmr=" kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";           
+                    kmr=kondisiPasienPulangRanap()+" and kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
                     if(!BangsalCari.getText().equals("")){
-                        kmr=" kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and bangsal.nm_bangsal='"+BangsalCari.getText()+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
+                        kmr=kondisiPasienPulangRanap()+" and kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and bangsal.nm_bangsal='"+BangsalCari.getText()+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
                     }
                 }
 
@@ -7983,172 +7983,128 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private void BtnSimpanpindahActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnSimpanpindahActionPerformed
         if(TPasienpindah.getText().trim().equals("")){
             Valid.textKosong(norawatpindah,"pasien");
-        }else if(TKdBngsalpindah.getText().trim().equals("")){
+            return;
+        }
+        if(TKdBngsalpindah.getText().trim().equals("")){
             Valid.textKosong(kdkamarpindah,"kamar");
-        }else{
-            switch (TSttsKamarpindah.getText().trim()) {
-                case "ISI":
-                    JOptionPane.showMessageDialog(null,"Maaf, Status kamar sudah terisi silahkan pilih kamar kosong..!!!!");
-                    kdkamar.requestFocus();
-                    break;
-                case "KOSONG":
-                    String[] kamarAktifSekarang = ambilKamarAktifSekarang(tbKamIn.getValueAt(tbKamIn.getSelectedRow(),0).toString());
-                    if (kamarAktifSekarang == null) {
-                        JOptionPane.showMessageDialog(rootPane,"Maaf, tidak ditemukan kamar yang sedang aktif untuk pasien ini di database (mungkin data sudah berubah).\nSilahkan tutup jendela ini dan muat ulang data pasien.");
-                        break;
+            return;
+        }
+        final String noRawatPindah = norawatpindah.getText().trim();
+        final String kamarTujuan = kdkamarpindah.getText().trim();
+        final int modePindah = Rganti1.isSelected() ? 1 : Rganti2.isSelected() ? 2 : Rganti3.isSelected() ? 3 : 4;
+        final String tanggalPindah = CmbTahunpindah.getSelectedItem()+"-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem();
+        final String jamPindah = cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem();
+        String[] kamarAktifSekarang = ambilKamarAktifSekarang(noRawatPindah);
+        if(kamarAktifSekarang == null){
+            JOptionPane.showMessageDialog(WindowPindahKamar,"Maaf, kamar aktif pasien tidak ditemukan. Muat ulang data pasien sebelum memindahkan kamar.");
+            return;
+        }
+        String kamarAktifKdKamar = kamarAktifSekarang[0];
+        String kamarAktifTglMasuk = kamarAktifSekarang[1];
+        String kamarAktifJamMasuk = kamarAktifSekarang[2];
+        if(modePindah >= 3){
+            i=1;
+            kdkamar.setText(kamarAktifKdKamar);
+            isKmr();
+            if(hariawal.equals("Yes")){
+                Sequel.cariIsi("select (if(to_days('"+CmbTahunpindah.getSelectedItem()+
+                    "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
+                    " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
+                    ":"+cmbDtkpindah.getSelectedItem()+"')-to_days('"+kamarAktifTglMasuk.toString()+
+                    " "+kamarAktifJamMasuk.toString()+
+                    "')=0,if(time_to_sec('"+CmbTahunpindah.getSelectedItem()+
+                    "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
+                    " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
+                    ":"+cmbDtkpindah.getSelectedItem()+"')-time_to_sec('"+kamarAktifTglMasuk.toString()+
+                    " "+kamarAktifJamMasuk.toString()+"')>(3600*"+
+                    lama+"),1,0),to_days('"+CmbTahunpindah.getSelectedItem()+
+                    "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
+                    " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
+                    "')-to_days('"+kamarAktifTglMasuk.toString()+
+                    " "+kamarAktifJamMasuk.toString()+"'))+1) as lama",TJmlHari);
+            }else{
+                Sequel.cariIsi("select if(to_days('"+CmbTahunpindah.getSelectedItem()+
+                    "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
+                    " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
+                    ":"+cmbDtkpindah.getSelectedItem()+"')-to_days('"+kamarAktifTglMasuk.toString()+
+                    " "+kamarAktifJamMasuk.toString()+
+                    "')=0,if(time_to_sec('"+CmbTahunpindah.getSelectedItem()+
+                    "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
+                    " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
+                    ":"+cmbDtkpindah.getSelectedItem()+"')-time_to_sec('"+kamarAktifTglMasuk.toString()+
+                    " "+kamarAktifJamMasuk.toString()+"')>(3600*"+
+                    lama+"),1,0),to_days('"+CmbTahunpindah.getSelectedItem()+
+                    "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
+                    " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
+                    "')-to_days('"+kamarAktifTglMasuk.toString()+
+                    " "+kamarAktifJamMasuk.toString()+"')) as lama",TJmlHari);
+            }
+            if(modePindah == 3){
+                isjml();
+            }else{
+                // Pertahankan perhitungan biaya pilihan 4 dari form pindah kamar.
+                DecimalFormat dfPindah = new DecimalFormat("####");
+                if(!TJmlHari.getText().equals("") && !TTarif.getText().equals("")){
+                    double x=Double.parseDouble(TJmlHari.getText().trim());
+                    double y=0;
+                    if(Double.parseDouble(TTarif.getText().trim())>Double.parseDouble(TTarifpindah.getText().trim())){
+                        y=Double.parseDouble(TTarif.getText().trim());
+                    }else if(Double.parseDouble(TTarif.getText().trim())<Double.parseDouble(TTarifpindah.getText().trim())){
+                        y=Double.parseDouble(TTarifpindah.getText().trim());
                     }
-                    String kamarAktifKdKamar = kamarAktifSekarang[0];
-                    String kamarAktifTglMasuk = kamarAktifSekarang[1];
-                    String kamarAktifJamMasuk = kamarAktifSekarang[2];
-                    if(Rganti1.isSelected()==true){
-                        Sequel.menyimpan("kamar_inap","'"+norawatpindah.getText()+"','"+
-                                kdkamarpindah.getText()+"','"+TTarifpindah.getText()+"','"+
-                                diagnosaawal.getText()+"','"+
-                                diagnosaakhir.getText()+"','"+
-                                CmbTahunpindah.getSelectedItem()+"-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+"','"+
-                                cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+"','0000-00-00','00:00:00','"+
-                                TJmlHaripindah.getText()+"','"+ttlbiayapindah.getText()+"','-'","No.Rawat");
-                        Sequel.mengedit("kamar","kd_kamar='"+kdkamarpindah.getText()+"'","status='ISI'");  
-                        Sequel.queryu("delete from kamar_inap where no_rawat='"+tbKamIn.getValueAt(tbKamIn.getSelectedRow(),0).toString()+
-                                "' and kd_kamar='"+kamarAktifKdKamar.toString()+
-                                "' and tgl_masuk='"+kamarAktifTglMasuk.toString()+
-                                "' and jam_masuk='"+kamarAktifJamMasuk.toString()+"'");
-                        Sequel.mengedit("kamar","kd_kamar='"+kamarAktifKdKamar.toString()+"'","status='KOSONG'");  
-                    }else if(Rganti2.isSelected()==true){
-                        Sequel.queryu("update kamar_inap set kd_kamar='"+kdkamarpindah.getText()+"',trf_kamar='"+TTarifpindah.getText()+"',"+
-                                "lama='"+TJmlHaripindah.getText()+"',ttl_biaya='"+ttlbiayapindah.getText()+
-                                "' where no_rawat='"+tbKamIn.getValueAt(tbKamIn.getSelectedRow(),0).toString()+
-                                "' and kd_kamar='"+kamarAktifKdKamar.toString()+
-                                "' and tgl_masuk='"+kamarAktifTglMasuk.toString()+
-                                "' and jam_masuk='"+kamarAktifJamMasuk.toString()+"'");                        
-                        Sequel.mengedit("kamar","kd_kamar='"+kdkamarpindah.getText()+"'","status='ISI'"); 
-                        Sequel.mengedit("kamar","kd_kamar='"+kamarAktifKdKamar.toString()+"'","status='KOSONG'");  
-                    }else if(Rganti3.isSelected()==true){
-                        i=1;
-                        kdkamar.setText(kamarAktifKdKamar.toString());
-                        isKmr();
-                        if(hariawal.equals("Yes")){
-                            Sequel.cariIsi("select (if(to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+
-                                "')=0,if(time_to_sec('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-time_to_sec('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"')>(3600*"+
-                                lama+"),1,0),to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
-                                "')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"'))+1) as lama",TJmlHari);             
-                        }else{
-                            Sequel.cariIsi("select if(to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+
-                                "')=0,if(time_to_sec('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-time_to_sec('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"')>(3600*"+
-                                lama+"),1,0),to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
-                                "')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"')) as lama",TJmlHari);             
-                        }
-                        
-                        isjml();
-                        Sequel.mengedit("kamar_inap","no_rawat='"+tbKamIn.getValueAt(tbKamIn.getSelectedRow(),0).toString()+
-                                "' and kd_kamar='"+kamarAktifKdKamar.toString()+
-                                "' and tgl_masuk='"+kamarAktifTglMasuk.toString()+
-                                "' and jam_masuk='"+kamarAktifJamMasuk.toString()+"'",
-                                "trf_kamar='"+TTarif.getText()+"',tgl_keluar='"+CmbTahunpindah.getSelectedItem()+"-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                "',jam_keluar='"+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
-                                "',lama='"+TJmlHari.getText()+"',ttl_biaya='"+ttlbiaya.getText()+"',stts_pulang='Pindah Kamar'");                        
-                        Sequel.mengedit("kamar","kd_kamar='"+kamarAktifKdKamar.toString()+"'","status='KOSONG'");
-                        Sequel.menyimpan("kamar_inap","'"+norawatpindah.getText()+"','"+
-                                kdkamarpindah.getText()+"','"+TTarifpindah.getText()+"','"+
-                                diagnosaawal.getText()+"','"+diagnosaakhir.getText()+"','"+
-                                CmbTahunpindah.getSelectedItem()+"-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+"','"+
-                                cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+"','0000-00-00','00:00:00','"+
-                                TJmlHaripindah.getText()+"','"+ttlbiayapindah.getText()+"','-'","No.Rawat");
-                        Sequel.mengedit("kamar","kd_kamar='"+kdkamarpindah.getText()+"'","status='ISI'");                         
-                    }else if(Rganti4.isSelected()==true){
-                        i=1;
-                        kdkamar.setText(kamarAktifKdKamar.toString());
-                        isKmr();
-                        if(hariawal.equals("Yes")){
-                            Sequel.cariIsi("select (if(to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+
-                                "')=0,if(time_to_sec('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-time_to_sec('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"')>(3600*"+
-                                lama+"),1,0),to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
-                                "')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"'))+1) as lama",TJmlHari);  
-                        }else{
-                            Sequel.cariIsi("select if(to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+
-                                "')=0,if(time_to_sec('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+
-                                ":"+cmbDtkpindah.getSelectedItem()+"')-time_to_sec('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"')>(3600*"+
-                                lama+"),1,0),to_days('"+CmbTahunpindah.getSelectedItem()+
-                                "-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                " "+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
-                                "')-to_days('"+kamarAktifTglMasuk.toString()+
-                                " "+kamarAktifJamMasuk.toString()+"')) as lama",TJmlHari);  
-                        }
-                                   
-                        DecimalFormat df2 = new DecimalFormat("####");
-                        if((! TJmlHari.getText().equals(""))&&(! TTarif.getText().equals(""))){                    
-                            double x=Double.parseDouble(TJmlHari.getText().trim());
-                            double y=0;
-                            if(Double.parseDouble(TTarif.getText().trim())>Double.parseDouble(TTarifpindah.getText().trim())){
-                                y=Double.parseDouble(TTarif.getText().trim());
-                            }else if(Double.parseDouble(TTarif.getText().trim())<Double.parseDouble(TTarifpindah.getText().trim())){
-                                y=Double.parseDouble(TTarifpindah.getText().trim());
-                            }
-                            ttlbiaya.setText(df2.format(x*y));
-                        }
-                        Sequel.mengedit("kamar_inap","no_rawat='"+tbKamIn.getValueAt(tbKamIn.getSelectedRow(),0).toString()+
-                                "' and kd_kamar='"+kamarAktifKdKamar.toString()+
-                                "' and tgl_masuk='"+kamarAktifTglMasuk.toString()+
-                                "' and jam_masuk='"+kamarAktifJamMasuk.toString()+"'",
-                                "trf_kamar='"+TTarifpindah.getText()+"',tgl_keluar='"+CmbTahunpindah.getSelectedItem()+"-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+
-                                "',jam_keluar='"+cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+
-                                "',ttl_biaya='"+ttlbiaya.getText()+"',lama='"+TJmlHari.getText()+"',stts_pulang='Pindah Kamar'");
-                        Sequel.mengedit("kamar","kd_kamar='"+kamarAktifKdKamar.toString()+"'","status='KOSONG'");
-                        Sequel.menyimpan("kamar_inap","'"+norawatpindah.getText()+"','"+
-                                kdkamarpindah.getText()+"','"+TTarifpindah.getText()+"','"+
-                                diagnosaawal.getText()+"','"+
-                                diagnosaakhir.getText()+"','"+
-                                CmbTahunpindah.getSelectedItem()+"-"+CmbBlnpindah.getSelectedItem()+"-"+CmbTglpindah.getSelectedItem()+"','"+
-                                cmbJampindah.getSelectedItem()+":"+cmbMntpindah.getSelectedItem()+":"+cmbDtkpindah.getSelectedItem()+"','0000-00-00','00:00:00','"+TJmlHaripindah.getText()+"','"+
-                                ttlbiayapindah.getText()+"','-'","No.Rawat");
-                        Sequel.mengedit("kamar","kd_kamar='"+kdkamarpindah.getText()+"'","status='ISI'");                         
-                    }   
-                    tampil();
-                    WindowPindahKamar.dispose();
-                    break;
-            }            
+                    ttlbiaya.setText(dfPindah.format(x*y));
+                }
+            }
+        }
+        boolean tersimpan = false;
+        BtnSimpanpindah.setEnabled(false);
+        try (Connection transaksi = koneksiDB.bukaKoneksiTransaksi()) {
+            // Semua perubahan memakai satu nomor rawat dan satu transaksi milik operasi ini.
+            fungsi.PindahKamarInap.simpan(transaksi, modePindah, noRawatPindah, kamarAktifSekarang,
+                    kamarTujuan, TTarifpindah.getText(), diagnosaawal.getText(), diagnosaakhir.getText(),
+                    tanggalPindah, jamPindah, TJmlHaripindah.getText(), ttlbiayapindah.getText(),
+                    modePindah == 4 ? TTarifpindah.getText() : TTarif.getText(), TJmlHari.getText(), ttlbiaya.getText());
+            tersimpan = true;
+            catatTrackPindahKamar(transaksi, noRawatPindah, kamarAktifSekarang, kamarTujuan,
+                    tanggalPindah, jamPindah, modePindah);
+        } catch (java.sql.SQLException e) {
+            System.out.println("Notifikasi pindah kamar : " + e);
+            if(tersimpan || "01000".equals(e.getSQLState())){
+                tersimpan = true;
+                JOptionPane.showMessageDialog(WindowPindahKamar,"Pemindahan kamar sudah tersimpan. Koneksi bermasalah setelah penyimpanan; periksa kembali daftar pasien.");
+            }else{
+                String pesan = "Pemindahan kamar gagal. Periksa koneksi dan data kamar, lalu coba kembali.";
+                if("45000".equals(e.getSQLState())){
+                    pesan = e.getMessage();
+                }else if(e.getErrorCode() == 1062){
+                    pesan = "Tanggal dan jam pindah sudah digunakan pada riwayat kamar pasien. Pilih waktu pindah yang berbeda.";
+                }
+                JOptionPane.showMessageDialog(WindowPindahKamar,pesan);
+            }
+        } finally {
+            BtnSimpanpindah.setEnabled(akses.getkamar_inap());
+        }
+        if(tersimpan){
+            tampil();
+            WindowPindahKamar.dispose();
         }
     }//GEN-LAST:event_BtnSimpanpindahActionPerformed
+
+    /** Pindah kamar dicatat pada tracker umum, bukan log pemulangan pasien. */
+    private void catatTrackPindahKamar(Connection transaksi, String noRawat, String[] asal,
+            String tujuan, String tanggal, String jam, int mode) {
+        if(!"yes".equals(koneksiDB.AKTIFKANTRACKSQL())){
+            return;
+        }
+        try (PreparedStatement pst = transaksi.prepareStatement("insert into trackersql values(now(),?,?)")) {
+            pst.setString(1,"Pindah kamar: no_rawat="+noRawat+", asal="+asal[0]+" ("+asal[1]+" "+asal[2]
+                    +"), tujuan="+tujuan+", waktu="+tanggal+" "+jam+", pilihan="+mode);
+            pst.setString(2,akses.getkode());
+            pst.executeUpdate();
+        } catch (java.sql.SQLException e) {
+            System.out.println("Notifikasi tracker pindah kamar : "+e);
+        }
+    }
 
     private void BtnSimpanpindahKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnSimpanpindahKeyPressed
         // TODO add your handling code here:
@@ -17536,6 +17492,13 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         a.totalBiaya += biaya;
     }
 
+    /** Segmen yang ditutup untuk pindah kamar bukan pemulangan pasien. */
+    private static String kondisiPasienPulangRanap() {
+        return " kamar_inap.stts_pulang not in ('-','Pindah Kamar') "
+                + "and not exists (select 1 from kamar_inap kamar_aktif "
+                + "where kamar_aktif.no_rawat=kamar_inap.no_rawat and kamar_aktif.stts_pulang='-') ";
+    }
+
     private void tampil() {
         final String sqlDokterPJ = ekspresiDokterPenanggungJawabRanap();
         final String sqlFilterLantai = kondisiFilterLantaiRanap();
@@ -17554,9 +17517,9 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                 kmr=kmr+sqlFilterLantai;
             }
         }else if(R3.isSelected()==true){
-            kmr=" kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";           
+            kmr=kondisiPasienPulangRanap()+" and kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
             if(!BangsalCari.getText().equals("")){
-                kmr=" kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and bangsal.nm_bangsal='"+BangsalCari.getText()+"' "+sqlFilterLantai+" and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
+                kmr=kondisiPasienPulangRanap()+" and kamar_inap.tgl_keluar between '"+Valid.SetTgl(DTPCari3.getSelectedItem()+"")+"' and '"+Valid.SetTgl(DTPCari4.getSelectedItem()+"")+"' and bangsal.nm_bangsal='"+BangsalCari.getText()+"' "+sqlFilterLantai+" and reg_periksa.status_bayar like '%"+cmbStatusBayar.getSelectedItem().toString().replaceAll("Semua","")+"%' ";
             }else{
                 kmr=kmr+sqlFilterLantai;
             }

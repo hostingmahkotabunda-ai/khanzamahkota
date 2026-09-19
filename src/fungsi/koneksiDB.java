@@ -26,6 +26,22 @@ public class koneksiDB {
     /** Koneksi milik pemanggil untuk pembacaan di worker; wajib ditutup setelah dipakai.
      * condb() harus sudah diinisialisasi oleh aplikasi di thread antarmuka. */
     public static Connection bukaKoneksiBaca() throws java.sql.SQLException {
+        Connection baca = bukaKoneksiMandiri();
+        try {
+            baca.setReadOnly(true);
+            return baca;
+        } catch (java.sql.SQLException e) {
+            baca.close();
+            throw e;
+        }
+    }
+
+    /** Koneksi tulis khusus satu transaksi; pemanggil wajib menutupnya. */
+    public static Connection bukaKoneksiTransaksi() throws java.sql.SQLException {
+        return bukaKoneksiMandiri();
+    }
+
+    private static Connection bukaKoneksiMandiri() throws java.sql.SQLException {
         if (connection == null) {
             throw new java.sql.SQLException("Koneksi aplikasi belum diinisialisasi");
         }
@@ -35,16 +51,9 @@ public class koneksiDB {
         try {
             sumberBaca.setPassword(EnkripsiAES.decrypt(prop.getProperty("PAS")));
         } catch (Exception e) {
-            throw new java.sql.SQLException("Konfigurasi koneksi pembacaan tidak dapat dimuat", e);
+            throw new java.sql.SQLException("Konfigurasi koneksi tidak dapat dimuat", e);
         }
-        Connection baca = sumberBaca.getConnection();
-        try {
-            baca.setReadOnly(true);
-            return baca;
-        } catch (java.sql.SQLException e) {
-            baca.close();
-            throw e;
-        }
+        return sumberBaca.getConnection();
     }
 
     public static Connection condb(){ 
