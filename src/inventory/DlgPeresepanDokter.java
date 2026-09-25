@@ -1272,7 +1272,10 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             JOptionPane.showMessageDialog(null,"Maaf, silahkan masukkan obat yang mau diberikan, atau isi dulu catatan resep-nya...!!!");
             TCari.requestFocus();
         }else{
-            int reply = JOptionPane.showConfirmDialog(rootPane,"Eeiiiiiits, udah bener belum data yang mau disimpan..??","Konfirmasi",JOptionPane.YES_NO_OPTION);
+            // Di tab Resep DlgRawatJalan (embedded) tidak ada dialog konfirmasi -- langsung simpan,
+            // hasilnya diinfokan lewat banner melayang (lihat notifikasiResepTersimpan()).
+            int reply = modeEmbedded ? JOptionPane.YES_OPTION
+                    : JOptionPane.showConfirmDialog(rootPane,"Eeiiiiiits, udah bener belum data yang mau disimpan..??","Konfirmasi",JOptionPane.YES_NO_OPTION);
             if (reply == JOptionPane.YES_OPTION) {
                 pastikanTabelCatatanResepDokter();
                 ChkJln.setSelected(false);
@@ -1414,7 +1417,11 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     Sequel.Commit();
                     resepBerhasilDisimpan=true;
                     noResepTersimpan=NoResep.getText();
-                    tampilDetailResep(NoResep.getText());
+                    if(modeEmbedded){
+                        notifikasiResepTersimpan(NoResep.getText());
+                    }else{
+                        tampilDetailResep(NoResep.getText());
+                    }
                     for(i=0;i<tbResep.getRowCount();i++){
                         tbResep.setValueAt("",i,1);
                         tbResep.setValueAt("",i,2);
@@ -2289,6 +2296,16 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         internalFrame1.setBorder(null);
         sembunyikanKolomKapasitas();
         sembunyikanTabRacikanLama();
+        // Tambah Obat (barang baru ke master), Konversi, dan Tarif/Jeniskelas cuma dipakai
+        // farmasi/inventory -- bukan alur dokter isi resep di tab Ralan ini, sembunyikan spy
+        // tampilan lebih ringkas. Tombol Simpan diperjelas krn banyak tombol Simpan lain di
+        // DlgRawatJalan (SOAP, Diagnosa, dst) yg bisa bikin bingung tombol mana punya tab Resep.
+        label12.setVisible(false);
+        Jeniskelas.setVisible(false);
+        BtnTambah.setVisible(false);
+        BtnSeek5.setVisible(false);
+        BtnSimpan.setText("Simpan Resep");
+        BtnSimpan.setPreferredSize(new java.awt.Dimension(124, 23));
         TabRawatMouseClicked(null);
     }
 
@@ -5908,6 +5925,27 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             }
         }               
     }
+    /** Pengganti dialog preview "Detail Resep" di mode embedded: 1 banner melayang yg hilang sendiri
+     *  (widget.Toast, sama spt notifikasi SOAP di DlgRawatJalan) berisi ringkasan resep yg baru
+     *  disimpan -- no.resep, pasien, dokter, jumlah obat, dan catatan dokter (dipotong kalau panjang;
+     *  isi lengkapnya tetap bisa dilihat lewat tombol "Detail Res..." atau tab Riwayat Obat). */
+    private void notifikasiResepTersimpan(String noResep) {
+        int jmlObat=Sequel.cariInteger("select count(*) from resep_dokter where no_resep=?",noResep)
+                +Sequel.cariInteger("select count(*) from resep_dokter_racikan where no_resep=?",noResep);
+        StringBuilder pesan=new StringBuilder("Resep tersimpan — ")
+                .append(TPasien.getText()).append(" • No. ").append(noResep).append(" • ")
+                .append(jmlObat>0 ? jmlObat+" obat/racikan" : "tanpa obat").append(" • ").append(NmDokter.getText());
+        String catatan=Sequel.cariIsi("select catatan from catatan_resep_dokter where no_resep=?",noResep);
+        if(catatan!=null && !catatan.trim().isEmpty()){
+            String ringkas=catatan.trim().replaceAll("\\s+"," ");
+            if(ringkas.length()>90){
+                ringkas=ringkas.substring(0,90)+"...";
+            }
+            pesan.append("\nCatatan: ").append(ringkas);
+        }
+        widget.Toast.sukses(internalFrame1,pesan.toString());
+    }
+
     private void tampilDetailResep(String noResep) {
     StringBuilder sb = new StringBuilder();
     PreparedStatement psHdr = null, psNon = null, psRacik = null, psRacikDet = null;
