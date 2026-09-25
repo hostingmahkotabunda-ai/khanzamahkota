@@ -7881,9 +7881,12 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
                         MnDataRalanActionPerformed(null);
                     }
                 }else if(i==1){
-                    if(akses.getberi_obat()==true){
-                        MnPemberianObatActionPerformed(null);
-                    }                    
+                    // Kolom "Dokter Dituju" jg jadi jalan pintas ke DlgRawatJalan, sama spt kolom
+                    // "Kode Dokter" -- dulu klik 2x di sini malah buka Pemberian Obat (masih bisa
+                    // lewat menu klik-kanan MnPemberianObat spt biasa).
+                    if(akses.gettindakan_ralan()==true){
+                        MnDataRalanActionPerformed(null);
+                    }
                 }else if(i==2){
                     //if(var.getbilling_ralan()==true){
                         MnBillingActionPerformed(null);
@@ -7913,9 +7916,9 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
                         MnDataRalanActionPerformed(null);
                     }
                 }else if(i==1){
-                    if(akses.getberi_obat()==true){
-                        MnPemberianObatActionPerformed(null);
-                    }                    
+                    if(akses.gettindakan_ralan()==true){
+                        MnDataRalanActionPerformed(null);
+                    }
                 }else if(i==2){
                     MnBillingActionPerformed(null);
                 }else if(i==3){
