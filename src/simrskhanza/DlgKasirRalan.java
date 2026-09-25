@@ -14803,7 +14803,7 @@ private void MnDataPemberianObatActionPerformed(java.awt.event.ActionEvent evt) 
                 "reg_periksa.kd_dokter,dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,poliklinik.nm_poli,"+
                 "reg_periksa.p_jawab,reg_periksa.almt_pj,reg_periksa.hubunganpj,reg_periksa.biaya_reg,reg_periksa.stts,penjab.png_jawab,concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur)as umur, "+
                 "reg_periksa.status_bayar,reg_periksa.status_poli,reg_periksa.kd_pj,reg_periksa.kd_poli,pasien.no_tlp, "+
-                "coalesce((select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat),(select ws.waktu_sudah from waktu_sudah_periksa_ralan ws where ws.no_rawat=reg_periksa.no_rawat)) as waktu_selesai "+
+                ""+WaktuPeriksaRalan.sqlWaktuSelesai("reg_periksa")+" as waktu_selesai "+
                 "from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
                 "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join penjab on reg_periksa.kd_pj=penjab.kd_pj where  "+
                 "reg_periksa.tgl_registrasi between ? and ? and reg_periksa.status_lanjut='Ralan' "+tampildiagnosa+
@@ -15711,12 +15711,7 @@ private void MnDataPemberianObatActionPerformed(java.awt.event.ActionEvent evt) 
     }
 
     private String lamaTungguNoRawat(String noRawat) {
-        String selesai=Sequel.cariIsi(
-                "select min(timestamp(tgl_perawatan,jam_rawat)) from pemeriksaan_ralan where no_rawat=?",noRawat);
-        if(selesai==null || selesai.trim().equals("")){
-            selesai=Sequel.cariIsi(
-                    "select waktu_sudah from waktu_sudah_periksa_ralan where no_rawat=?",noRawat);
-        }
+        String selesai=WaktuPeriksaRalan.waktuSelesai(noRawat);
         String mulai=Sequel.cariIsi(
                 "select timestamp(tgl_registrasi,jam_reg) from reg_periksa where no_rawat=?",noRawat);
         return formatLamaTunggu(mulai,selesai);

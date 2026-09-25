@@ -1197,7 +1197,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             ps=koneksi.prepareStatement(
                 "select reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.jam_reg,dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.tgl_lahir,pasien.jk,pasien.alamat,pasien.no_tlp,reg_periksa.p_jawab,poliklinik.nm_poli,reg_periksa.status_lanjut, "+
                 "(select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat) as waktu_soap, "+
-                "ws.waktu_sudah,coalesce((select min(timestamp(pr.tgl_perawatan,pr.jam_rawat)) from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat),ws.waktu_sudah) as waktu_selesai "+
+                "ws.waktu_sudah,ws.sumber as sumber_waktu,"+WaktuPeriksaRalan.sqlWaktuSelesai("reg_periksa")+" as waktu_selesai "+
                 "from reg_periksa inner join dokter on reg_periksa.kd_dokter=dokter.kd_dokter inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
                 "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join penjab on reg_periksa.kd_pj=penjab.kd_pj "+
                 "left join waktu_sudah_periksa_ralan ws on ws.no_rawat=reg_periksa.no_rawat where  "+
@@ -1235,7 +1235,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                     baris[waktu]=rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg");
                     baris[waktu+1]=rs.getString("waktu_selesai")==null?"-":rs.getString("waktu_selesai");
                     baris[waktu+2]=formatLamaTunggu(rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("waktu_selesai"));
-                    baris[waktu+3]=rs.getString("waktu_soap")!=null?"SOAP Pertama":(rs.getString("waktu_sudah")!=null?"Klik Status Sudah":"Tidak Tersedia");
+                    baris[waktu+3]=rs.getString("waktu_selesai")==null?"Tidak Tersedia":(WaktuPeriksaRalan.SUMBER_TOMBOL.equals(rs.getString("sumber_waktu"))?"Tombol Waktu Tunggu":(rs.getString("waktu_soap")!=null?"SOAP Pertama":"Klik Status Sudah"));
                     tabMode.addRow(baris);
                 }
             } catch (Exception e) {

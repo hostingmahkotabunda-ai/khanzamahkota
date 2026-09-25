@@ -11101,6 +11101,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         if(TabRawat.getSelectedComponent()==panelDataPasienRalan){
             tampilDataPasienRalan();
         }
+        perbaruiBtnWaktuTunggu();
         refreshNotifValidasi();
     }
 
@@ -12035,6 +12036,7 @@ private String nvl(String value) {
         if(TabRawat.getSelectedComponent()==panelDataPasienRalan){
             tampilDataPasienRalan();
         }
+        perbaruiBtnWaktuTunggu();
         if(modeEmbeddedPemeriksaan){
             fokusTabPemeriksaanTerintegrasi();
         }
@@ -13066,10 +13068,94 @@ private String nvl(String value) {
 
     /** SOAP pertama yg diisi petugas langsung menandai kunjungan sudah diperiksa -- gantikan dialog
      *  konfirmasi "Mau sekalian update status..." yg dulu muncul saat klik Keluar. Aman dipanggil
-     *  berkali-kali (mengedit stts idempotent, WaktuPeriksaRalan.catat cuma simpan yg pertama). */
+     *  berkali-kali (mengedit stts idempotent). Waktu tunggu TIDAK dicatat di sini lagi -- itu
+     *  diisi lewat tombol BtnWaktuTunggu (lihat isiWaktuTunggu()). */
     private void tandaiSudahPeriksa(String noRawat) {
         Sequel.mengedit("reg_periksa","no_rawat=?","stts=?",2,new String[]{"Sudah",noRawat});
-        WaktuPeriksaRalan.catat(noRawat,"DlgRawatJalan");
+    }
+
+    // ===== Tombol Waktu Tunggu (baris TTV form SOAP, di sebelah kanan Kesadaran) =====
+    private final widget.Button BtnWaktuTunggu = new widget.Button();
+    private boolean btnWaktuTungguSiap = false;
+
+    private void siapkanBtnWaktuTunggu() {
+        if (btnWaktuTungguSiap) {
+            return;
+        }
+        btnWaktuTungguSiap = true;
+        BtnWaktuTunggu.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/clock.png")));
+        BtnWaktuTunggu.setFont(new java.awt.Font("Tahoma", java.awt.Font.BOLD, 10));
+        BtnWaktuTunggu.setName("BtnWaktuTunggu");
+        BtnWaktuTunggu.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                isiWaktuTunggu();
+            }
+        });
+        panelGlass12.add(BtnWaktuTunggu);
+        perbaruiBtnWaktuTunggu();
+    }
+
+    /** Sinkronkan teks/aktif tombol dgn data: belum diisi -> tombol aktif; sudah -> nonaktif +
+     *  tampilkan jam terisi & lama tunggunya. */
+    private void perbaruiBtnWaktuTunggu() {
+        siapkanBtnWaktuTunggu();
+        String noRawat=TNoRw.getText().trim();
+        if(noRawat.equals("")){
+            BtnWaktuTunggu.setText("Isi Waktu Tunggu");
+            BtnWaktuTunggu.setEnabled(false);
+            BtnWaktuTunggu.setToolTipText("Pilih pasien dulu");
+            return;
+        }
+        String waktu=WaktuPeriksaRalan.waktuTombol(noRawat);
+        if(waktu.equals("")){
+            BtnWaktuTunggu.setText("Isi Waktu Tunggu");
+            BtnWaktuTunggu.setEnabled(true);
+            BtnWaktuTunggu.setToolTipText("<html>Klik saat pasien mulai diperiksa -- waktu SAAT INI dicatat sbg akhir waktu tunggu<br/>"
+                    + "(dihitung dari jam daftar). Hanya klik pertama yg berlaku.</html>");
+        }else{
+            String mulai=Sequel.cariIsi("select timestamp(tgl_registrasi,jam_reg) from reg_periksa where reg_periksa.no_rawat=?",noRawat);
+            String jam=waktu.length()>=16 ? waktu.substring(11,16) : waktu;
+            BtnWaktuTunggu.setText("Terisi "+jam+" • "+hitungLamaTunggu(mulai,waktu));
+            // Tetap enabled (bukan disabled) supaya tulisannya tetap terbaca jelas; klik ulang cuma info.
+            BtnWaktuTunggu.setEnabled(true);
+            BtnWaktuTunggu.setToolTipText("Waktu tunggu sudah dicatat pada "+waktu+" dan tidak bisa diubah.");
+        }
+    }
+
+    private void isiWaktuTunggu() {
+        String noRawat=TNoRw.getText().trim();
+        if(noRawat.equals("")){
+            JOptionPane.showMessageDialog(null,"Pilih pasien terlebih dahulu.");
+            return;
+        }
+        String sudahTercatat=WaktuPeriksaRalan.waktuTombol(noRawat);
+        if(!sudahTercatat.equals("")){
+            widget.Toast.tampilkan(this,"Waktu tunggu sudah dicatat pada "+sudahTercatat.substring(0,Math.min(19,sudahTercatat.length()))+" dan tidak bisa diubah.",
+                    new java.awt.Color(0x1F,0x6F,0xB5),new java.awt.Color(0x17,0x5A,0x94),java.awt.Color.WHITE);
+            return;
+        }
+        boolean baru=WaktuPeriksaRalan.catatDariTombol(noRawat);
+        perbaruiBtnWaktuTunggu();
+        if(baru){
+            widget.Toast.sukses(this,"Waktu tunggu terisi — "+TPasien.getText()+" • "+BtnWaktuTunggu.getText().replace("Terisi ",""));
+        }else if(WaktuPeriksaRalan.waktuTombol(noRawat).equals("")){
+            JOptionPane.showMessageDialog(null,"Waktu tunggu gagal dicatat. Silahkan coba lagi.");
+        }
+    }
+
+    private static String hitungLamaTunggu(String mulai,String selesai) {
+        try{
+            long menit=java.time.Duration.between(
+                    java.sql.Timestamp.valueOf(mulai).toLocalDateTime(),
+                    java.sql.Timestamp.valueOf(selesai).toLocalDateTime()).toMinutes();
+            if(menit<0){
+                return "waktu tidak valid";
+            }
+            return (menit/60>0?(menit/60)+" jam ":"")+(menit%60)+" menit";
+        }catch(Exception e){
+            return "-";
+        }
     }
 
     /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil diganti/diedit -- banner
@@ -13885,6 +13971,7 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
 
         siapkanNotifValidasi();
         siapkanChkSBAROtomatis();
+        siapkanBtnWaktuTunggu();
         if (!soapListenerDipasang) {
             soapListenerDipasang = true;
             panelGlass12.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -13971,6 +14058,9 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jLabel16.setBounds(lc, t1, lw, fh); TBerat.setBounds(fc, t1, 55, fh);
         jLabel54.setBounds(ld, t1, lw, fh); SpO2.setBounds(fd, t1, 45, fh);
         jLabel29.setBounds(le, t1, 75, fh); cmbKesadaran.setBounds(fe, t1, 126, fh);
+        // Tombol Waktu Tunggu: tepat di sebelah kanan Kesadaran (baris TTV atas), ukuran ringkas.
+        int btnWtX = fe + 126 + 10, btnWtW = 215;
+        BtnWaktuTunggu.setBounds(btnWtX, t1, btnWtW, fh);
 
         jLabel17.setBounds(la, t2, lw, fh); TTinggi.setBounds(fa, t2, 55, fh);
         jLabel20.setBounds(lb, t2, lw, fh); TRespirasi.setBounds(fb, t2, 58, fh);
@@ -13986,7 +14076,7 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jLabel2.setVisible(false);
 
         // ---- Notif validasi (ruang kosong kanan-bawah, sejajar TTV) ----
-        int notifX = M + 970;
+        int notifX = btnWtX + btnWtW + 12;
         int notifW = Math.max(220, W - M - notifX);
         lblNotifSBAR.setBounds(notifX, t1, notifW, 26);
         lblNotifSOAP.setBounds(notifX, t2, notifW, 26);
