@@ -1579,13 +1579,20 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
      *  kunjungan tsb (pemeriksaan_ralan.berat); warna_triase diturunkan dari data_triase_igdprimer
      *  (ada baris = Merah, jalur Primer memang khusus kasus paling gawat) atau data_triase_igdsekunder
      *  (Zona Kuning/Zona Hijau -> Kuning/Hijau); kalau pasien tsb tidak pernah lewat IGD, keduanya
-     *  kosong -> warna_triase ikut kosong ('-'). */
+     *  kosong -> warna_triase ikut kosong ('-'). Kolom Dokter sudah ada sendiri (reg_periksa.kd_dokter),
+     *  jadi petugas_soap khusus SOAP pertama yg diisi BUKAN dokter (perawat/bidan/petugas lain) --
+     *  deteksi dokter pakai pola yg sama dgn SuratKontrolV2.ambilPlan() (jbtn like '%Dokter%' atau nama
+     *  berawalan dr./drg, krn jbtn pegawai kadang tidak diisi konsisten). Kalau SOAP kunjungan itu cuma
+     *  pernah diisi dokter, petugas_soap kosong -> tampil '-' (memang tidak ada perawat/petugas lain). */
     private static final String SELECT_DASAR =
         "select reg_periksa.no_rawat,reg_periksa.tgl_registrasi,reg_periksa.stts_daftar,reg_periksa.status_lanjut," +
         "dokter.nm_dokter,reg_periksa.no_rkm_medis,pasien.nm_pasien,poliklinik.nm_poli,pasien.jk,penjab.png_jawab," +
         "concat(reg_periksa.umurdaftar,' ',reg_periksa.sttsumur) as umur," +
         "(select pr.berat from pemeriksaan_ralan pr where pr.no_rawat=reg_periksa.no_rawat order by pr.tgl_perawatan,pr.jam_rawat limit 1) as bb," +
-        "(select coalesce(pg.nama,pt.nama) from pemeriksaan_ralan pr left join pegawai pg on pr.nip=pg.nik left join petugas pt on pr.nip=pt.nip where pr.no_rawat=reg_periksa.no_rawat order by pr.tgl_perawatan,pr.jam_rawat limit 1) as petugas_soap," +
+        "(select coalesce(pg.nama,pt.nama) from pemeriksaan_ralan pr left join pegawai pg on pr.nip=pg.nik left join petugas pt on pr.nip=pt.nip " +
+        "where pr.no_rawat=reg_periksa.no_rawat and not (coalesce(pg.jbtn,'') like '%Dokter%' or coalesce(pg.nama,pt.nama,'') like 'dr.%' " +
+        "or coalesce(pg.nama,pt.nama,'') like 'dr %' or coalesce(pg.nama,pt.nama,'') like 'drg%') " +
+        "order by pr.tgl_perawatan,pr.jam_rawat limit 1) as petugas_soap," +
         "case when data_triase_igdprimer.no_rawat is not null then 'Merah' " +
              "when data_triase_igdsekunder.plan='Zona Kuning' then 'Kuning' " +
              "when data_triase_igdsekunder.plan='Zona Hijau' then 'Hijau' " +
