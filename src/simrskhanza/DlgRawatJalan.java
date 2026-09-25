@@ -809,6 +809,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                 .append("<div class='soaplab'>Objektif (O)</div><div class='soapval'>").append(html(nilai(valRiwayat(row,9)))).append("</div>")
                 .append("<div class='soaplab'>Asesmen (A)</div><div class='soapval'>").append(html(nilai(valRiwayat(row,10)))).append("</div>")
                 .append("<div class='soaplab'>Plan (P)</div><div class='soapval'>").append(html(nilai(valRiwayat(row,11)))).append("</div>")
+                .append(blokResepRiwayat(nilai(valRiwayat(row,0))))
                 .append("</body></html>");
         htmlDetailRiwayatRalan.setText(h.toString());
         htmlDetailRiwayatRalan.setCaretPosition(0);
@@ -817,6 +818,60 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
     private String valRiwayat(int row,int col) {
         Object o=tabModeRiwayatPasienRalan.getValueAt(row,col);
         return o==null?"":o.toString();
+    }
+
+    /** Resep obat + catatan resep dokter utk kunjungan (no_rawat) yg dipilih di Riwayat Kunjungan --
+     *  1 kunjungan bisa punya >1 resep (no_resep beda2); resep tanpa obat (fitur catatan-saja) tetap
+     *  ditampilkan dgn keterangan "(Tanpa obat)" spy catatannya kelihatan. */
+    private String blokResepRiwayat(String noRawat) {
+        if(noRawat.trim().equals("")){ return ""; }
+        Map<String,String[]> resep=new java.util.LinkedHashMap<>(); // no_resep -> {waktu,catatan}
+        Map<String,java.util.List<String>> obatResep=new java.util.LinkedHashMap<>();
+        try (PreparedStatement ps=koneksi.prepareStatement(
+                "select ro.no_resep,concat(date_format(ro.tgl_peresepan,'%d-%m-%Y'),' ',left(ro.jam_peresepan,5)) as waktu,"+
+                "ifnull(crd.catatan,'') as catatan,databarang.nama_brng,rd.jml,rd.aturan_pakai "+
+                "from resep_obat ro left join catatan_resep_dokter crd on crd.no_resep=ro.no_resep "+
+                "left join resep_dokter rd on rd.no_resep=ro.no_resep "+
+                "left join databarang on databarang.kode_brng=rd.kode_brng "+
+                "where ro.no_rawat=? order by ro.tgl_peresepan,ro.jam_peresepan,ro.no_resep,databarang.nama_brng")) {
+            ps.setString(1,noRawat);
+            try (ResultSet rs=ps.executeQuery()) {
+                while(rs.next()){
+                    String noResep=rs.getString("no_resep");
+                    resep.putIfAbsent(noResep,new String[]{rs.getString("waktu"),rs.getString("catatan")});
+                    String namaObat=rs.getString("nama_brng");
+                    if(namaObat!=null && !namaObat.trim().isEmpty()){
+                        String jml=rs.getString("jml");
+                        String aturan=nilai(rs.getString("aturan_pakai"));
+                        obatResep.computeIfAbsent(noResep,k->new java.util.ArrayList<>()).add(
+                                namaObat+(jml==null?"":" ("+jml+")")+(aturan.isEmpty()?"":" - "+aturan));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Detail Resep Riwayat : "+e);
+        }
+        if(resep.isEmpty()){ return ""; }
+        StringBuilder sb=new StringBuilder();
+        sb.append("<hr><div class='soaplab'>Resep Obat</div>");
+        for (Map.Entry<String,String[]> e : resep.entrySet()) {
+            String waktu=e.getValue()[0];
+            String catatan=e.getValue()[1];
+            java.util.List<String> obat=obatResep.get(e.getKey());
+            sb.append("<div class='soapval'><b>").append(html(waktu)).append("</b>");
+            if(obat!=null && !obat.isEmpty()){
+                sb.append("<ul style='margin:2px 0 2px 18px;padding:0;'>");
+                for(String o : obat){ sb.append("<li>").append(html(o)).append("</li>"); }
+                sb.append("</ul>");
+            }else{
+                sb.append("<div style='color:#888;margin-left:4px;'>(Tanpa obat)</div>");
+            }
+            if(!catatan.trim().isEmpty()){
+                sb.append("<div style='margin-left:4px;'><i>Catatan: </i>").append(html(catatan.trim())).append("</div>");
+            }
+            sb.append("</div>");
+        }
+        return sb.toString();
     }
 
     private void tampilDataPasienRalan() {
