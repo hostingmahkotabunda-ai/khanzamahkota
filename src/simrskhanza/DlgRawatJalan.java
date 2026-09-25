@@ -6495,6 +6495,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                         TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);ChkIsiSBAROtomatis.setSelected(false);
                                         LCount.setText(""+tabModePemeriksaan.getRowCount());
                                         notifikasiSoapTersimpan();
+                                        tandaiSudahPeriksa(TNoRw.getText());
                                 }
                             }else{
                                 if(akses.getkode().equals(KdPeg.getText())){
@@ -6518,6 +6519,7 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                                             TEvaluasi.setText("");cmbKesadaran.setSelectedIndex(0);ChkIsiSBAROtomatis.setSelected(false);
                                             LCount.setText(""+tabModePemeriksaan.getRowCount());
                                             notifikasiSoapTersimpan();
+                                            tandaiSudahPeriksa(TNoRw.getText());
                                     }
                                 }else{
                                     JOptionPane.showMessageDialog(null,"Hanya bisa disimpan oleh dokter/petugas yang bersangkutan..!!");
@@ -7308,17 +7310,12 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
 }//GEN-LAST:event_BtnPrintKeyPressed
 
     private void BtnKeluarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnKeluarActionPerformed
+        // Dulu nanya "Mau sekalian update status sudah diperiksa?" di sini -- sekarang status
+        // otomatis "Sudah" begitu SOAP pertama disimpan (lihat tandaiSudahPeriksa()), jadi tidak
+        // perlu ditanya ulang saat Keluar.
         petugas.dispose();
         dokter.dispose();
         pasien.dispose();
-        try {
-            i=JOptionPane.showConfirmDialog(null, "Mau skalian update status pasien sudah diperiksa ????","Konfirmasi",JOptionPane.YES_NO_OPTION);
-            if(i==JOptionPane.YES_OPTION){
-                Sequel.mengedit("reg_periksa","no_rawat=?","stts=?",2,new String[]{"Sudah",TNoRw.getText()});
-                WaktuPeriksaRalan.catat(TNoRw.getText(),"DlgRawatJalan");
-            }
-        } catch (Exception e) {
-        }
         dispose();
 }//GEN-LAST:event_BtnKeluarActionPerformed
 
@@ -13010,6 +13007,14 @@ private String nvl(String value) {
         String jam = cmbJam.getSelectedItem()+":"+cmbMnt.getSelectedItem()+":"+cmbDtk.getSelectedItem();
         widget.Toast.sukses(this, "SOAP tersimpan — " + TPasien.getText() + " • "
                 + Valid.SetTgl(DTPTgl.getSelectedItem()+"") + " " + jam + " • " + TPegawai.getText());
+    }
+
+    /** SOAP pertama yg diisi petugas langsung menandai kunjungan sudah diperiksa -- gantikan dialog
+     *  konfirmasi "Mau sekalian update status..." yg dulu muncul saat klik Keluar. Aman dipanggil
+     *  berkali-kali (mengedit stts idempotent, WaktuPeriksaRalan.catat cuma simpan yg pertama). */
+    private void tandaiSudahPeriksa(String noRawat) {
+        Sequel.mengedit("reg_periksa","no_rawat=?","stts=?",2,new String[]{"Sudah",noRawat});
+        WaktuPeriksaRalan.catat(noRawat,"DlgRawatJalan");
     }
 
     /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil diganti/diedit -- banner
