@@ -36,12 +36,24 @@ public final class RMRiwayatObatPasien extends JPanel {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
     private final DefaultTableModel tabModeObat = new DefaultTableModel(null,
-            new Object[]{"No. Resep", "Jam", "Nama Obat/Racikan", "Jumlah", "Satuan", "Aturan Pakai"}) {
+            new Object[]{"No. Resep", "Jam", "Nama Obat/Racikan", "Jumlah", "Satuan", "Aturan Pakai", "Catatan Resep"}) {
         @Override public boolean isCellEditable(int row, int column) { return false; }
     };
 
     private final widget.Table tbKunjungan = new widget.Table();
-    private final widget.Table tbObat = new widget.Table();
+    private final widget.Table tbObat = new widget.Table() {
+        /** Catatan resep bisa panjang -- tooltip nampilin isi lengkapnya. */
+        @Override public String getToolTipText(MouseEvent e) {
+            int r = rowAtPoint(e.getPoint());
+            int c = columnAtPoint(e.getPoint());
+            if (r < 0 || c != 6) { return super.getToolTipText(e); }
+            Object v = getValueAt(r, c);
+            String t = v == null ? "" : v.toString().trim();
+            if (t.isEmpty()) { return null; }
+            return "<html><body style='width:360px'>" + t.replace("&", "&amp;").replace("<", "&lt;")
+                    .replace(">", "&gt;") + "</body></html>";
+        }
+    };
 
     public RMRiwayatObatPasien() {
         setLayout(new BorderLayout());
@@ -57,6 +69,10 @@ public final class RMRiwayatObatPasien extends JPanel {
 
         tbObat.setModel(tabModeObat);
         tbObat.setRowHeight(22);
+        int[] lebar = {110, 70, 240, 60, 70, 110, 320};
+        for (int k = 0; k < lebar.length; k++) {
+            tbObat.getColumnModel().getColumn(k).setPreferredWidth(lebar[k]);
+        }
         JScrollPane scrollObat = new JScrollPane(tbObat);
         scrollObat.setBorder(javax.swing.BorderFactory.createTitledBorder("Obat / Racikan pada Kunjungan Terpilih"));
 
@@ -113,13 +129,43 @@ public final class RMRiwayatObatPasien extends JPanel {
                 while (rs.next()) {
                     String noResep = rs.getString("no_resep");
                     String jam = nvl(rs.getString("jam_peresepan"));
+                    int barisAwal = tabModeObat.getRowCount();
                     muatObatNonRacikan(noResep, jam);
                     muatObatRacikan(noResep, jam);
+                    tempelCatatanResep(noResep, jam, barisAwal);
                 }
             }
         } catch (Exception e) {
             System.out.println("Notif muat detail obat kunjungan : " + e);
         }
+    }
+
+    /** Catatan resep (catatan_resep_dokter, per no_resep) ditaruh di baris PERTAMA resep itu, biar
+     *  tidak berulang di tiap baris obat. Resep yg disimpan tanpa obat (catatan saja) tetap dapat
+     *  1 baris "(Tanpa obat)" supaya catatannya tidak hilang dari riwayat. */
+    private void tempelCatatanResep(String noResep, String jam, int barisAwal) {
+        String catatan = ambilCatatanResep(noResep);
+        if (catatan.isEmpty()) { return; }
+        if (tabModeObat.getRowCount() > barisAwal) {
+            tabModeObat.setValueAt(catatan, barisAwal, 6);
+        } else {
+            tabModeObat.addRow(new Object[]{noResep, jam, "(Tanpa obat)", "", "", "", catatan});
+        }
+    }
+
+    private String ambilCatatanResep(String noResep) {
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select catatan from catatan_resep_dokter where no_resep=?")) {
+            ps.setString(1, noResep);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return nvl(rs.getString("catatan")).trim().replaceAll("\\s*\\r?\\n\\s*", " | ");
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif muat catatan resep riwayat obat : " + e);
+        }
+        return "";
     }
 
     private void muatObatNonRacikan(String noResep, String jam) {
@@ -132,7 +178,7 @@ public final class RMRiwayatObatPasien extends JPanel {
                 while (rs.next()) {
                     tabModeObat.addRow(new Object[]{
                         noResep, jam, rs.getString("nama_brng"), rs.getString("jml"),
-                        rs.getString("kode_sat"), nvl(rs.getString("aturan_pakai"))
+                        rs.getString("kode_sat"), nvl(rs.getString("aturan_pakai")), ""
                     });
                 }
             }
@@ -153,7 +199,7 @@ public final class RMRiwayatObatPasien extends JPanel {
                     String noRacik = rs.getString("no_racik");
                     tabModeObat.addRow(new Object[]{
                         noResep, jam, rs.getString("nama_racik"), rs.getString("jml_dr"),
-                        nvl(rs.getString("metode")), nvl(rs.getString("aturan_pakai"))
+                        nvl(rs.getString("metode")), nvl(rs.getString("aturan_pakai")), ""
                     });
                     muatIsiRacikan(noResep, noRacik);
                 }
@@ -173,7 +219,7 @@ public final class RMRiwayatObatPasien extends JPanel {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     tabModeObat.addRow(new Object[]{
-                        "", "", "    " + rs.getString("nama_brng"), rs.getString("jml"), rs.getString("kode_sat"), ""
+                        "", "", "    " + rs.getString("nama_brng"), rs.getString("jml"), rs.getString("kode_sat"), "", ""
                     });
                 }
             }
