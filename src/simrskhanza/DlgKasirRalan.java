@@ -313,7 +313,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
         } catch (Exception e) {
             tbKasirRalan.setDefaultRenderer(Object.class, new WarnaTable());
         }
-		aturTampilanDaftarPasien(tbKasirRalan, 9);
+		aturTampilanDaftarPasien(tbKasirRalan, 9, 20);
         
         tabModekasir2=new DefaultTableModel(null,new String[]{
             "Kd.Dokter","Dokter Rujukan","Nomer RM","Pasien",
@@ -365,7 +365,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
             }
         }
         tbKasirRalan2.setDefaultRenderer(Object.class, new WarnaTable());
-		aturTampilanDaftarPasien(tbKasirRalan2, 8);
+		aturTampilanDaftarPasien(tbKasirRalan2, 8, -1);
         
         TCari.setDocument(new batasInput((byte)100).getKata(TCari));
         CrPoli.setDocument(new batasInput((byte)100).getKata(CrPoli));
@@ -768,7 +768,7 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
      * Membuat pilihan pasien terlihat tegas tanpa menghilangkan warna status
      * yang diberikan renderer asli saat baris tidak dipilih.
      */
-    private void aturTampilanDaftarPasien(final JTable table, final int kolomJenisBayar) {
+    private void aturTampilanDaftarPasien(final JTable table, final int kolomJenisBayar, final int kolomLamaTunggu) {
         final javax.swing.table.TableCellRenderer rendererStatus =
                 table.getDefaultRenderer(Object.class);
         final javax.swing.border.Border borderTerpilih =
@@ -800,6 +800,20 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
                     if (component instanceof javax.swing.JComponent) {
                         ((javax.swing.JComponent) component).setBorder(borderNormal);
                     }
+                    // Pembeda "sudah masuk" (waktu tunggu sudah diisi lewat tombol di DlgRawatJalan) vs
+                    // "belum masuk" (masih "-"): tint lembut satu baris penuh, menimpa zebra/warna status
+                    // "Sudah" (status itu otomatis terisi begitu SOAP disimpan, jadi tidak lagi mewakili
+                    // "sudah masuk"). Status akhir (Batal/Dirujuk/Meninggal/Pulang Paksa/Dirawat) dan
+                    // Sudah Bayar tetap pakai warna aslinya.
+                    if (kolomLamaTunggu >= 0 && !barisStatusAkhirKasirRalan(tabel, row)) {
+                        boolean terisi = waktuTungguTerisiKasirRalan(tabel.getValueAt(row, kolomLamaTunggu));
+                        component.setBackground(terisi ? WARNA_LATAR_SUDAH_MASUK : WARNA_LATAR_BELUM_MASUK);
+                        component.setForeground(new java.awt.Color(50, 50, 50));
+                        if (column == kolomLamaTunggu) {
+                            component.setForeground(terisi ? new java.awt.Color(27, 94, 32) : new java.awt.Color(176, 84, 0));
+                            component.setFont(tabel.getFont().deriveFont(java.awt.Font.BOLD));
+                        }
+                    }
                     // Kolom "Jenis Bayar" dikasih badge warna sendiri (pola sama persis dgn
                     // DlgKamarInap/DlgIGD spy konsisten), menimpa warna status di atas KHUSUS
                     // utk kolom ini -- kolom lain tetap ikut warna status/baris biasa.
@@ -815,6 +829,26 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
                 return component;
             }
         });
+    }
+
+    private static final java.awt.Color WARNA_LATAR_SUDAH_MASUK = new java.awt.Color(226, 243, 236);  // hijau-teal lembut
+    private static final java.awt.Color WARNA_LATAR_BELUM_MASUK = new java.awt.Color(255, 240, 214);  // krem-amber lembut
+
+    /** Waktu tunggu dianggap terisi kalau kolom Lama Tunggu bukan "-"/kosong (termasuk "Waktu tidak valid"
+     *  -- itu tetap berarti sudah dicatat, cuma jamnya janggal). */
+    private static boolean waktuTungguTerisiKasirRalan(Object nilai) {
+        String t = nilai == null ? "" : nilai.toString().trim();
+        return !t.isEmpty() && !t.equals("-");
+    }
+
+    /** Baris yg warnanya tidak boleh ditimpa pembeda waktu tunggu: status akhir (kolom 10) & Sudah Bayar (kolom 15). */
+    private static boolean barisStatusAkhirKasirRalan(JTable tabel, int row) {
+        String status = String.valueOf(tabel.getValueAt(row, 10));
+        if (status.equals("Batal") || status.equals("Dirujuk") || status.equals("Meninggal")
+                || status.equals("Pulang Paksa") || status.equals("Dirawat")) {
+            return true;
+        }
+        return "Sudah Bayar".equals(String.valueOf(tabel.getValueAt(row, 15)));
     }
 
     /** Pasangan warna latar+teks utk kolom "Jenis Bayar" -- sama persis pola & warnanya dgn
