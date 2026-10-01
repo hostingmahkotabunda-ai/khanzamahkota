@@ -1119,20 +1119,10 @@ public final class DlgRawatJalan extends javax.swing.JDialog {
                     JOptionPane.showMessageDialog(DlgRawatJalan.this, "Pilih pasien terlebih dahulu.");
                     return;
                 }
-                final String noRMProfil = TNoRM.getText().trim();
-                final java.awt.Component sumberKlik = (java.awt.Component) evt.getSource();
-                sumberKlik.setEnabled(false);
-                DlgRawatJalan.this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                new javax.swing.SwingWorker<Void,Void>() {
-                    @Override protected Void doInBackground() {
-                        rekammedis.CetakProfilRingkasMedisRalan.cetak(noRMProfil);
-                        return null;
-                    }
-                    @Override protected void done() {
-                        sumberKlik.setEnabled(true);
-                        DlgRawatJalan.this.setCursor(Cursor.getDefaultCursor());
-                    }
-                }.execute();
+                rekammedis.RMProfilRingkasMedisRalan d = new rekammedis.RMProfilRingkasMedisRalan(null, true);
+                d.setLocationRelativeTo(DlgRawatJalan.this);
+                d.setNoRM(TNoRM.getText().trim(), TPasien.getText(), TNoRw.getText().trim());
+                d.setVisible(true);
             }
         });
     }

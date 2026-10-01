@@ -6,53 +6,22 @@
     <parameter name="norm" class="java.lang.String"/>
     <parameter name="tgllahir" class="java.lang.String"/>
     <parameter name="jk" class="java.lang.String"/>
+    <parameter name="url_penggajian" class="java.lang.String"/>
     <queryString><![CDATA[
 select cast(@urut:=@urut+1 as char) no,
- concat(date_format(r.tgl_registrasi,'%d-%m-%Y'),' ',left(r.jam_reg,5)) tanggal,
- ifnull(dx.diagnosa,'') diagnosa,
- ifnull(soap.klinis,'') klinis,
- concat_ws('\n',nullif(lab.hasil,''),nullif(rad.hasil,''),nullif(v2.penunjang_lain,'')) penunjang,
- concat_ws('\n',nullif(inap.riwayat,''),nullif(op.riwayat,'')) riwayat_inap,
- concat_ws('\n',nullif(v2.terapi_obat,''),nullif(v2.terapi_tindakan,''),nullif(v2.instruksi_tindak_lanjut,''),if(v2.tanggal_kontrol is null or trim(v2.tanggal_kontrol)='',null,concat('Kontrol: ',v2.tanggal_kontrol))) obat_rtl,
- ifnull(nullif(v2.nm_dokter,''),d.nm_dokter) petugas
-from reg_periksa r
-inner join dokter d on d.kd_dokter=r.kd_dokter
-left join resume_medis_ralan_v2 v2 on v2.no_rawat=r.no_rawat
-left join (
- select dp.no_rawat,group_concat(distinct concat(dp.kd_penyakit,' ',p.nm_penyakit) order by dp.prioritas separator '\n') diagnosa
- from diagnosa_pasien dp inner join penyakit p on p.kd_penyakit=dp.kd_penyakit
- inner join reg_periksa rd on rd.no_rawat=dp.no_rawat
- where rd.no_rkm_medis=$P{norm} and dp.status='Ralan' group by dp.no_rawat
-) dx on dx.no_rawat=r.no_rawat
-left join (
- select pr.no_rawat,group_concat(distinct concat_ws(' | ',nullif(pr.keluhan,''),nullif(pr.pemeriksaan,''),nullif(pr.penilaian,'')) order by pr.tgl_perawatan,pr.jam_rawat separator '\n') klinis
- from pemeriksaan_ralan pr inner join reg_periksa rs on rs.no_rawat=pr.no_rawat
- where rs.no_rkm_medis=$P{norm} group by pr.no_rawat
-) soap on soap.no_rawat=r.no_rawat
-left join (
- select dl.no_rawat,group_concat(distinct concat(tl.Pemeriksaan,': ',dl.nilai,' ',tl.satuan) order by dl.tgl_periksa,tl.urut separator '; ') hasil
- from detail_periksa_lab dl inner join template_laboratorium tl on tl.id_template=dl.id_template
- inner join reg_periksa rl on rl.no_rawat=dl.no_rawat
- where rl.no_rkm_medis=$P{norm} group by dl.no_rawat
-) lab on lab.no_rawat=r.no_rawat
-left join (
- select hr.no_rawat,group_concat(distinct hr.hasil order by hr.tgl_periksa separator '; ') hasil
- from hasil_radiologi hr inner join reg_periksa rr on rr.no_rawat=hr.no_rawat
- where rr.no_rkm_medis=$P{norm} group by hr.no_rawat
-) rad on rad.no_rawat=r.no_rawat
-left join (
- select ri.no_rkm_medis,group_concat(distinct concat(date_format(ki.tgl_masuk,'%d-%m-%Y'),' ',b.nm_bangsal) order by ki.tgl_masuk separator '; ') riwayat
- from kamar_inap ki inner join kamar k on k.kd_kamar=ki.kd_kamar inner join bangsal b on b.kd_bangsal=k.kd_bangsal
- inner join reg_periksa ri on ri.no_rawat=ki.no_rawat where ri.no_rkm_medis=$P{norm} group by ri.no_rkm_medis
-) inap on inap.no_rkm_medis=r.no_rkm_medis
-left join (
- select ro.no_rkm_medis,group_concat(distinct concat(date_format(o.tgl_operasi,'%d-%m-%Y'),' ',po.nm_perawatan) order by o.tgl_operasi separator '; ') riwayat
- from operasi o inner join paket_operasi po on po.kode_paket=o.kode_paket inner join reg_periksa ro on ro.no_rawat=o.no_rawat
- where ro.no_rkm_medis=$P{norm} group by ro.no_rkm_medis
-) op on op.no_rkm_medis=r.no_rkm_medis
+ concat(date_format(t.tanggal,'%d-%m-%Y'),' ',left(t.jam,5)) tanggal,
+ ifnull(t.diagnosa,'') diagnosa,
+ ifnull(t.uraian_klinis,'') klinis,
+ ifnull(t.penunjang,'') penunjang,
+ ifnull(t.riwayat_inap_operasi,'') riwayat_inap,
+ ifnull(t.obat_rtl,'') obat_rtl,
+ ifnull(t.nama_petugas,'') petugas,
+ ifnull(pg.photo,'') paraf_foto
+from profil_ringkas_medis_ralan t
+left join pegawai pg on pg.nik=t.kd_petugas
 cross join (select @urut:=0) nomor
-where r.no_rkm_medis=$P{norm} and r.status_lanjut='Ralan'
-order by r.tgl_registrasi,r.jam_reg
+where t.no_rkm_medis=$P{norm}
+order by t.tanggal,t.jam
     ]]></queryString>
     <field name="no" class="java.lang.String"/>
     <field name="tanggal" class="java.lang.String"/>
@@ -62,6 +31,7 @@ order by r.tgl_registrasi,r.jam_reg
     <field name="riwayat_inap" class="java.lang.String"/>
     <field name="obat_rtl" class="java.lang.String"/>
     <field name="petugas" class="java.lang.String"/>
+    <field name="paraf_foto" class="java.lang.String"/>
     <title>
         <band height="114">
             <rectangle><reportElement x="0" y="0" width="802" height="70"/><graphicElement><pen lineWidth="0.8"/></graphicElement></rectangle>
@@ -103,7 +73,13 @@ order by r.tgl_registrasi,r.jam_reg
             <textField isStretchWithOverflow="true"><reportElement x="320" y="2" width="108" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{penunjang}]]></textFieldExpression></textField>
             <textField isStretchWithOverflow="true"><reportElement x="432" y="2" width="114" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{riwayat_inap}]]></textFieldExpression></textField>
             <textField isStretchWithOverflow="true"><reportElement x="550" y="2" width="136" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{obat_rtl}]]></textFieldExpression></textField>
-            <textField isStretchWithOverflow="true"><reportElement x="690" y="2" width="110" height="30"/><textElement><font size="7"/></textElement><textFieldExpression><![CDATA[$F{petugas}]]></textFieldExpression></textField>
+            <image scaleImage="RetainShape">
+                <reportElement x="690" y="2" width="36" height="30" positionType="Float">
+                    <printWhenExpression><![CDATA[$F{paraf_foto}!=null && !$F{paraf_foto}.trim().equals("")]]></printWhenExpression>
+                </reportElement>
+                <imageExpression class="java.awt.Image"><![CDATA[($F{paraf_foto}!=null && !$F{paraf_foto}.trim().equals("")) ? rekammedis.CetakCPPT.ambilGambarServer($P{url_penggajian} + $F{paraf_foto}.replace("\\", "/")) : null]]></imageExpression>
+            </image>
+            <textField isStretchWithOverflow="true"><reportElement x="728" y="2" width="72" height="30"/><textElement><font size="6"/></textElement><textFieldExpression><![CDATA[$F{petugas}]]></textFieldExpression></textField>
         </band>
     </detail>
     <pageFooter><band height="18"><textField><reportElement x="0" y="3" width="120" height="12"/><textElement><font size="8"/></textElement><textFieldExpression><![CDATA["RM. 01"]]></textFieldExpression></textField><textField><reportElement x="702" y="3" width="100" height="12"/><textElement textAlignment="Right"><font size="8"/></textElement><textFieldExpression><![CDATA["Halaman " + $V{PAGE_NUMBER}]]></textFieldExpression></textField></band></pageFooter>
