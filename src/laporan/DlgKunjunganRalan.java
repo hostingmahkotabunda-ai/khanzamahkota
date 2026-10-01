@@ -75,19 +75,23 @@ public final class DlgKunjunganRalan extends javax.swing.JDialog {
     public DlgKunjunganRalan(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        pastikanTabelDisembunyikan();
+        pasangTombolHapusTampilan();
         this.setLocation(8,1);
         setSize(885,674);
 
-        tabMode=new DefaultTableModel(null,new Object[]{"No.","Tanggal","Nama Pasien","Umur","BB","Jenis Kelamin","Rajal","Ranap","Warna Triase","Diagnosa","Dokter","Metode Bayar","Poli","Perawat/Petugas"}){
-              @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
-              @Override public Class<?> getColumnClass(int colIndex){return (colIndex==6||colIndex==7) ? Boolean.class : Object.class;}
+        tabMode=new DefaultTableModel(null,new Object[]{"No.","Tanggal","Nama Pasien","Umur","BB","Jenis Kelamin","Rajal","Ranap","Warna Triase","Diagnosa","Dokter","Metode Bayar","Poli","Perawat/Petugas","Pilih","NoRawat"}){
+              // Kolom 14 "Pilih" (checkbox hapus-dari-tampilan) SATU-SATUNYA yg boleh diedit user;
+              // kolom 15 "NoRawat" cuma data tersembunyi (lebar 0) utk keperluan hapus, bukan utk diisi user.
+              @Override public boolean isCellEditable(int rowIndex, int colIndex){return colIndex==14;}
+              @Override public Class<?> getColumnClass(int colIndex){return (colIndex==6||colIndex==7||colIndex==14) ? Boolean.class : Object.class;}
         };
         table1.setModel(tabMode);
         //tbBangsal.setDefaultRenderer(Object.class, new WarnaTable(jPanel2.getBackground(),tbBangsal.getBackground()));
         table1.setPreferredScrollableViewportSize(new Dimension(500,500));
         table1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 14; i++) {
+        for (i = 0; i < 16; i++) {
             TableColumn column = table1.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(35);
@@ -117,20 +121,29 @@ public final class DlgKunjunganRalan extends javax.swing.JDialog {
                 column.setPreferredWidth(150);
             }else if(i==13){
                 column.setPreferredWidth(160);
+            }else if(i==14){
+                column.setPreferredWidth(40);
+                column.setMaxWidth(40);
+            }else if(i==15){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+                column.setPreferredWidth(0);
             }
         }
+        table1.getColumnModel().getColumn(14).setHeaderValue("Pilih");
+        table1.getColumnModel().moveColumn(14,0);
         table1.setDefaultRenderer(Object.class, new WarnaTable());
 
-        tabMode2=new DefaultTableModel(null,new Object[]{"No.","Tanggal","Nama Pasien","Umur","BB","Jenis Kelamin","Rajal","Ranap","Warna Triase","Diagnosa","Dokter","Metode Bayar","Poli","Perawat/Petugas"}){
-              @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
-              @Override public Class<?> getColumnClass(int colIndex){return (colIndex==6||colIndex==7) ? Boolean.class : Object.class;}
+        tabMode2=new DefaultTableModel(null,new Object[]{"No.","Tanggal","Nama Pasien","Umur","BB","Jenis Kelamin","Rajal","Ranap","Warna Triase","Diagnosa","Dokter","Metode Bayar","Poli","Perawat/Petugas","Pilih","NoRawat"}){
+              @Override public boolean isCellEditable(int rowIndex, int colIndex){return colIndex==14;}
+              @Override public Class<?> getColumnClass(int colIndex){return (colIndex==6||colIndex==7||colIndex==14) ? Boolean.class : Object.class;}
         };
         table2.setModel(tabMode2);
         //tbBangsal.setDefaultRenderer(Object.class, new WarnaTable(jPanel2.getBackground(),tbBangsal.getBackground()));
         table2.setPreferredScrollableViewportSize(new Dimension(500,500));
         table2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 14; i++) {
+        for (i = 0; i < 16; i++) {
             TableColumn column = table2.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(35);
@@ -160,8 +173,17 @@ public final class DlgKunjunganRalan extends javax.swing.JDialog {
                 column.setPreferredWidth(150);
             }else if(i==13){
                 column.setPreferredWidth(160);
+            }else if(i==14){
+                column.setPreferredWidth(40);
+                column.setMaxWidth(40);
+            }else if(i==15){
+                column.setMinWidth(0);
+                column.setMaxWidth(0);
+                column.setPreferredWidth(0);
             }
         }
+        table2.getColumnModel().getColumn(14).setHeaderValue("Pilih");
+        table2.getColumnModel().moveColumn(14,0);
         table2.setDefaultRenderer(Object.class, new WarnaTable());
 
         TCari.setDocument(new batasInput((int)90).getKata(TCari));
@@ -1531,6 +1553,17 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             @Override public void changedUpdate(DocumentEvent e) { terapkan(); }
         });
 
+        javax.swing.JCheckBox chkSemua = new javax.swing.JCheckBox("Centang Semua");
+        chkSemua.setOpaque(false);
+        chkSemua.addActionListener(e -> {
+            // Hormati kotak Cari -- cuma baris yg sedang TAMPIL (hasil saring) yg ikut dicentang/
+            // dilepas, baris yg lagi disembunyikan krn filter tidak ikut berubah.
+            boolean centang = chkSemua.isSelected();
+            for (int rViewIdx = 0; rViewIdx < tabelPilih.getRowCount(); rViewIdx++) {
+                model.setValueAt(centang, tabelPilih.convertRowIndexToModel(rViewIdx), 0);
+            }
+        });
+
         widget.Button btnPilih = new widget.Button();
         btnPilih.setText("Pilih");
         widget.Button btnBatal = new widget.Button();
@@ -1551,6 +1584,7 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         javax.swing.JPanel panelCari = new javax.swing.JPanel(new java.awt.BorderLayout(6,0));
         panelCari.add(new javax.swing.JLabel("Cari :"), java.awt.BorderLayout.WEST);
         panelCari.add(cari, java.awt.BorderLayout.CENTER);
+        panelCari.add(chkSemua, java.awt.BorderLayout.EAST);
 
         javax.swing.JPanel panelTombol = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT, 6, 6));
         panelTombol.add(btnPilih);
@@ -1573,6 +1607,92 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
      *  skrng SELALU ambil status_lanjut Ralan+Ranap sekaligus (bukan cuma saat filter poli IGD lagi)
      *  krn kolom Rajal/Ranap di grid butuh tahu status akhir SEMUA pasien, bukan cuma yg poli IGD. */
     private static final String KLAUSA_STATUS_LANJUT = "reg_periksa.status_lanjut in ('Ralan','Ranap')";
+
+    /** Kunjungan yg "dihapus" (disembunyikan) lewat tombol Hapus di halaman ini -- cuma dikecualikan
+     *  dari tampilan & Cetak/Export halaman ini, data aslinya di reg_periksa dkk SAMA SEKALI tidak
+     *  disentuh. Disimpan di tabel terpisah spy tetap tersembunyi walau halaman dibuka ulang. */
+    private static final String KLAUSA_TIDAK_DISEMBUNYIKAN =
+        "not exists (select 1 from kunjungan_ralan_disembunyikan krd where krd.no_rawat=reg_periksa.no_rawat)";
+
+    private boolean tabelDisembunyikanSiap = false;
+
+    private void pastikanTabelDisembunyikan() {
+        if (tabelDisembunyikanSiap) { return; }
+        try (java.sql.Statement st = koneksi.createStatement()) {
+            st.executeUpdate(
+                "create table if not exists kunjungan_ralan_disembunyikan ("
+                + "no_rawat varchar(17) not null,"
+                + "disembunyikan_oleh varchar(20) not null default '',"
+                + "disembunyikan_pada datetime not null,"
+                + "primary key (no_rawat)"
+                + ") engine=InnoDB default charset=latin1");
+            tabelDisembunyikanSiap = true;
+        } catch (Exception e) {
+            System.out.println("Notif pastikan tabel kunjungan_ralan_disembunyikan : " + e);
+        }
+    }
+
+    /** Tombol "Hapus Dari Tampilan" di bawah tiap tabel (dua tab punya tombolnya sendiri2, tapi
+     *  logikanya sama lewat hapusTerpilih(), tombol tunggal yg kerja ke tab yg sedang aktif).
+     *  panelGlass5 (baris Tanggal/Cetak/Keluar) pakai FlowLayout polos -- aman disisipi tombol baru
+     *  lewat kode (bukan GEN block initComponents()) tanpa mengganggu layout yg sudah ada. */
+    private void pasangTombolHapusTampilan() {
+        widget.Button btnHapus = new widget.Button();
+        btnHapus.setText("Hapus");
+        btnHapus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/stop_f2.png")));
+        btnHapus.setPreferredSize(new java.awt.Dimension(100, 30));
+        btnHapus.setToolTipText("<html>Sembunyikan pasien yg dicentang dari halaman ini (termasuk dari<br/>"
+                + "Cetak &amp; Export). Data pasien di database TIDAK dihapus/berubah.</html>");
+        btnHapus.addActionListener(e -> {
+            if (TabRawat.getSelectedComponent() == internalFrame3) {
+                hapusTerpilih(table2, tabMode2);
+            } else {
+                hapusTerpilih(table1, tabMode);
+            }
+        });
+        int posisiKeluar = panelGlass5.getComponentZOrder(BtnKeluar);
+        panelGlass5.add(btnHapus, posisiKeluar < 0 ? panelGlass5.getComponentCount() : posisiKeluar);
+        panelGlass5.revalidate();
+        panelGlass5.repaint();
+    }
+
+    /** Centang di kolom "Pilih" (kolom model 14) -> disembunyikan permanen dari halaman ini (lewat
+     *  kunjungan_ralan_disembunyikan), baris langsung dibuang dari tabel yg sedang tampil. no_rawat
+     *  diambil dari kolom tersembunyi 15. Data asli pasien SAMA SEKALI tidak disentuh. */
+    private void hapusTerpilih(JTable table, DefaultTableModel model) {
+        java.util.List<Integer> baris = new java.util.ArrayList<>();
+        java.util.List<String> noRawatTerpilih = new java.util.ArrayList<>();
+        for (int r = 0; r < model.getRowCount(); r++) {
+            if (Boolean.TRUE.equals(model.getValueAt(r, 14))) {
+                baris.add(r);
+                noRawatTerpilih.add(model.getValueAt(r, 15).toString());
+            }
+        }
+        if (baris.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Centang dulu pasien yang mau disembunyikan dari daftar ini.");
+            return;
+        }
+        int jawab = JOptionPane.showConfirmDialog(this,
+                "Sembunyikan " + baris.size() + " pasien terpilih dari halaman Kunjungan Ralan ini?\n"
+                + "Data pasien di database TIDAK dihapus/berubah -- cuma tidak ikut tampil, Cetak, dan Export\n"
+                + "di halaman ini (akan tetap tersembunyi walau halaman dibuka ulang).",
+                "Konfirmasi", JOptionPane.YES_NO_OPTION);
+        if (jawab != JOptionPane.YES_OPTION) { return; }
+        pastikanTabelDisembunyikan();
+        for (String nr : noRawatTerpilih) {
+            try (PreparedStatement ps = koneksi.prepareStatement(
+                    "insert ignore into kunjungan_ralan_disembunyikan(no_rawat,disembunyikan_oleh,disembunyikan_pada) values(?,?,now())")) {
+                ps.setString(1, nr);
+                ps.setString(2, akses.getkode());
+                ps.executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Notif sembunyikan kunjungan ralan : " + e);
+            }
+        }
+        for (int i = baris.size() - 1; i >= 0; i--) {
+            model.removeRow(baris.get(i));
+        }
+    }
 
     /** SELECT+FROM dasar yg dipakai tampil()/tampil2() -- termasuk kolom baru (status_lanjut, bb,
      *  warna_triase) yg dibutuhkan grid revisi. bb diambil dari catatan SOAP pertama pasien itu di
@@ -1636,7 +1756,8 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             java.util.List<String> bind = new java.util.ArrayList<>();
             StringBuilder sql = new StringBuilder(SELECT_DASAR);
             sql.append("where reg_periksa.stts_daftar like '").append(status).append("%' and ")
-               .append(KLAUSA_STATUS_LANJUT).append(" and reg_periksa.tgl_registrasi between ? and ?");
+               .append(KLAUSA_STATUS_LANJUT).append(" and ").append(KLAUSA_TIDAK_DISEMBUNYIKAN)
+               .append(" and reg_periksa.tgl_registrasi between ? and ?");
             bind.add(Valid.SetTgl(Tgl1.getSelectedItem()+""));
             bind.add(Valid.SetTgl(Tgl2.getSelectedItem()+""));
             if(!nmpoli.getText().trim().equals("")){ sql.append(" and ").append(klausaMultiLike("poliklinik.nm_poli", nmpoli.getText(), bind)); }
@@ -1698,7 +1819,8 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                         i,rs.getString("tgl_registrasi"),rs.getString("nm_pasien"),rs.getString("umur"),
                         nvl(rs.getString("bb")),jkTeks,rajal,ranap,warnaTriase.isEmpty()?"-":warnaTriase,
                         diagnosa,rs.getString("nm_dokter"),nvl(rs.getString("png_jawab")),rs.getString("nm_poli"),
-                        nvl(rs.getString("petugas_soap")).isEmpty()?"-":nvl(rs.getString("petugas_soap"))
+                        nvl(rs.getString("petugas_soap")).isEmpty()?"-":nvl(rs.getString("petugas_soap")),
+                        Boolean.FALSE,rs.getString("no_rawat")
                     });
                     i++;
                 }
@@ -1725,7 +1847,8 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             java.util.List<String> bind = new java.util.ArrayList<>();
             StringBuilder sql = new StringBuilder(SELECT_DASAR);
             sql.append("where reg_periksa.stts_daftar like '").append(status).append("%' and ")
-               .append(KLAUSA_STATUS_LANJUT).append(" and reg_periksa.stts<>'Batal' and reg_periksa.tgl_registrasi between ? and ?");
+               .append(KLAUSA_STATUS_LANJUT).append(" and ").append(KLAUSA_TIDAK_DISEMBUNYIKAN)
+               .append(" and reg_periksa.stts<>'Batal' and reg_periksa.tgl_registrasi between ? and ?");
             bind.add(Valid.SetTgl(Tgl1.getSelectedItem()+""));
             bind.add(Valid.SetTgl(Tgl2.getSelectedItem()+""));
             if(!nmpoli.getText().trim().equals("")){ sql.append(" and ").append(klausaMultiLike("poliklinik.nm_poli", nmpoli.getText(), bind)); }
@@ -1787,7 +1910,8 @@ private void BtnCariKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                         i,rs.getString("tgl_registrasi"),rs.getString("nm_pasien"),rs.getString("umur"),
                         nvl(rs.getString("bb")),jkTeks,rajal,ranap,warnaTriase.isEmpty()?"-":warnaTriase,
                         diagnosa,rs.getString("nm_dokter"),nvl(rs.getString("png_jawab")),rs.getString("nm_poli"),
-                        nvl(rs.getString("petugas_soap")).isEmpty()?"-":nvl(rs.getString("petugas_soap"))
+                        nvl(rs.getString("petugas_soap")).isEmpty()?"-":nvl(rs.getString("petugas_soap")),
+                        Boolean.FALSE,rs.getString("no_rawat")
                     });
                     i++;
                 }
