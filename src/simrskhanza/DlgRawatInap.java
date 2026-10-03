@@ -3064,7 +3064,8 @@ public final class DlgRawatInap extends javax.swing.JDialog {
 
         BtnTemplateSoapExcel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/190.png"))); // NOI18N
         BtnTemplateSoapExcel.setMnemonic('5');
-        BtnTemplateSoapExcel.setToolTipText("Template SOAP CSV");
+        BtnTemplateSoapExcel.setToolTipText("<html>Template SOAP (CSV lokal, per komputer) -- lihat/kelola template lama,<br/>"
+                + "dan kirim template yang dipilih ke server (SQL) lewat tombol di dalamnya.</html>");
         BtnTemplateSoapExcel.setName("BtnTemplateSoapExcel"); // NOI18N
         BtnTemplateSoapExcel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -12114,6 +12115,11 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
      *  dibuat dari isian SOAP yg sama -- lihat simpanSBAROtomatisDariSOAP(). SBAR-nya tetap
      *  berstatus validasi 'Belum', jadi tab/halaman SBAR tetap dipakai dokter utk verifikasi. */
     private final javax.swing.JCheckBox ChkIsiSBAROtomatis = new javax.swing.JCheckBox("Masukkan ke data SBAR");
+    /** Tombol Template SOAP versi server (SQL) -- dipisah dari BtnTemplateSoapExcel (versi CSV lokal,
+     *  di baris atas) supaya jelas beda fungsi: ini utk MENERAPKAN template dari server ke SOAP,
+     *  yg CSV di atas utk LIHAT/MIGRASI template lokal ke server. */
+    private final widget.Button BtnTemplateSoapSql = new widget.Button();
+    private boolean btnTemplateSoapSqlSiap = false;
     private inventory.DlgPeresepanDokter resepTerintegrasiRanap;
     private widget.PanelBiasa PanelResepRanap;
     private String konteksResepRanap = "";
@@ -12149,6 +12155,7 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
 
         siapkanNotifValidasi();
         siapkanChkSBAROtomatis();
+        siapkanBtnTemplateSoapSql();
         // Layout berjalan ketika hierarki divalidasi sebelum paint, bukan menyusul
         // melalui componentResized/invokeLater setelah jendela sudah terlihat.
         panelGlass12.setLayout(new java.awt.LayoutManager() {
@@ -12242,6 +12249,10 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jLabel22.setBounds(ld, t2, lw, fh); TGCS.setBounds(fd, t2, 45, fh);
         // Checkbox "SBAR Otomatis" ditaruh persis di bawah field Kesadaran (kolom itu kosong di baris ke-2 TTV) supaya jelas terlihat.
         ChkIsiSBAROtomatis.setBounds(le, t2, 204, fh);
+        // Tombol Template SOAP (server/SQL) ditaruh tepat di sampingnya -- ini yg dipakai sehari-hari
+        // utk menerapkan template ke SOAP. Tombol Template SOAP CSV lokal (migrasi) tetap di baris atas.
+        int templateBtnW = 150, templateBtnGap = 10;
+        BtnTemplateSoapSql.setBounds(le + 204 + templateBtnGap, t2, templateBtnW, fh);
 
         // Tabel duplikat tbSoapDokter/tbSoapPerawat tidak dipakai (data SOAP
         // sudah ada di tabel utama halaman pemeriksaan) -> tetap disembunyikan.
@@ -12249,7 +12260,8 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jScrollPane2.setVisible(false);
 
         // ---- Notif validasi (ruang kosong kanan-bawah, sejajar TTV) ----
-        int notifX = M + 970;
+        // Digeser ke kanan sejumlah lebar tombol Template SOAP yg baru dipasang di baris bawahnya, biar gak numpuk.
+        int notifX = le + 204 + templateBtnGap + templateBtnW + 16;
         int notifW = Math.max(220, W - M - notifX);
         lblNotifSBAR.setBounds(notifX, t1, notifW, 26);
         lblNotifSOAP.setBounds(notifX, t2, notifW, 26);
@@ -12271,6 +12283,46 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
                 + "Asesmen→Assesmen, Plan+Instruksi→Recommendation).<br/>"
                 + "SBAR-nya tetap harus diverifikasi dokter seperti biasa.</html>");
         panelGlass12.add(ChkIsiSBAROtomatis);
+    }
+
+    /** Pasang tombol Template SOAP (server/SQL) sekali saja, pola sama spt siapkanChkSBAROtomatis(). */
+    private void siapkanBtnTemplateSoapSql() {
+        if (btnTemplateSoapSqlSiap) {
+            return;
+        }
+        btnTemplateSoapSqlSiap = true;
+        BtnTemplateSoapSql.setText("Template SOAP");
+        BtnTemplateSoapSql.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/190.png")));
+        BtnTemplateSoapSql.setToolTipText("<html>Template SOAP dari server (SQL) -- sama untuk semua komputer.<br/>"
+                + "Kalau template yg dicari belum ada di sini, minta petugas lain kirim dari<br/>"
+                + "Template SOAP CSV lokal (tombol di baris atas, dekat Jabatan).</html>");
+        BtnTemplateSoapSql.addActionListener(evt -> BtnTemplateSoapSqlActionPerformed(evt));
+        panelGlass12.add(BtnTemplateSoapSql);
+    }
+
+    private void BtnTemplateSoapSqlActionPerformed(java.awt.event.ActionEvent evt) {
+        if (TPasien.getText().trim().equals("") || TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(null, "Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
+            TCari.requestFocus();
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        rekammedis.DlgTemplateSOAPSQL dialog = new rekammedis.DlgTemplateSOAPSQL(null, true);
+        dialog.setSize(internalFrame1.getWidth() - 20, internalFrame1.getHeight() - 20);
+        dialog.setLocationRelativeTo(internalFrame1);
+        this.setCursor(Cursor.getDefaultCursor());
+        dialog.setVisible(true);
+
+        DlgTemplateSOAPExcel.SoapTemplateExcel template = dialog.getTemplateTerpilih();
+        if (template != null) {
+            TKeluhan.setText(template.getSubject());
+            TPenilaian.setText(template.getAssessment());
+            TindakLanjut.setText(template.getPlan());
+            TInstruksi.setText(template.getImplementation());
+            TEvaluasi.setText(template.getAppliedEvaluation());
+            terapkanObjectTemplateKeSoap(template.getObjectText());
+            TKeluhan.requestFocus();
+        }
     }
 
     /** Insert 1 baris SBAR ke sbar_pasien dari isi SOAP yg BARU SAJA berhasil disimpan --

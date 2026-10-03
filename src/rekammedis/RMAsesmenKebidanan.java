@@ -234,6 +234,8 @@ public final class RMAsesmenKebidanan extends JDialog {
     private final widget.Button BtnHapus = new widget.Button();
     private final widget.Button BtnCetak = new widget.Button();
     private final widget.Button BtnKeluar = new widget.Button();
+    private final widget.Button BtnTemplate = new widget.Button();
+    private final MasterCariTemplateAsesmenKebidanan templatePicker = new MasterCariTemplateAsesmenKebidanan(null, false);
 
     public RMAsesmenKebidanan(Frame parent, boolean modal) {
         super(parent, modal);
@@ -404,10 +406,42 @@ public final class RMAsesmenKebidanan extends JDialog {
         });
         BtnSimpan.setText("Simpan Data");
         BtnHapus.setText("Hapus Data");
+        BtnTemplate.setText("Template");
+        BtnTemplate.setToolTipText("<html>Ambil template isian untuk semua field narasi/teks di form ini<br/>"
+                + "(Keluhan, Alergi, Nyeri, Riwayat, KB, Pola Makan/Eliminasi, Pemeriksaan Fisik,<br/>"
+                + "Obstetri/Nifas, Diagnosa & Rencana). Field angka/TTV & checkbox tetap diisi manual.</html>");
+        try {
+            BtnTemplate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png")));
+        } catch (Exception e) {
+            System.out.println("Notifikasi : " + e);
+        }
+        BtnTemplate.addActionListener(e -> tampilkanTemplate());
+        templatePicker.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override public void windowClosed(java.awt.event.WindowEvent e) {
+                javax.swing.JTable t = templatePicker.getTable();
+                if (t.getSelectedRow() != -1) {
+                    int r = t.getSelectedRow();
+                    // Urutan HARUS sama dgn MasterCariTemplateAsesmenKebidanan.FIELDS (kolom 0=Kode, 1=Nama, 2..=field).
+                    javax.swing.text.JTextComponent[] target = {
+                        taKeluhan, tAlergiMakananObat, tAlergiReaksi, tNyeriLokasi, tNyeriOnset, tNyeriVariasi,
+                        tNyeriObat, tAgama, taRiwayatOperasi, tKbMetode, tKbLama, tPolaMakan, tPolaMinum,
+                        tPolaKonsumsi, tBakWarna, tBabKarakteristik, tNilaiKeyakinan, tPenerimaanKehamilan,
+                        tObsLetakPunggung, tObsPresentasi, tObsBagianTerendah, tGynVagina, tGynPortio, tGynVt,
+                        tGynKesanPanggul, tGynImbang, tNifasLochea, tNifasLuka, taDiagnosa, taRencana
+                    };
+                    for (int i = 0; i < target.length; i++) {
+                        Object v = t.getValueAt(r, 2 + i);
+                        target[i].setText(v == null ? "" : v.toString());
+                    }
+                    taKeluhan.requestFocus();
+                }
+            }
+        });
         JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 7, 8));
         bawah.setBackground(Color.WHITE);
         bawah.setBorder(BorderFactory.createMatteBorder(
                 1, 0, 0, 0, new Color(214, 224, 230)));
+        bawah.add(BtnTemplate);
         bawah.add(BtnHapus);
         bawah.add(BtnBaru);
         bawah.add(BtnCetak);
@@ -774,6 +808,14 @@ public final class RMAsesmenKebidanan extends JDialog {
         BtnHapus.setEnabled(bisa);
         KdPetugas.setText(akses.getkode());
         NmPetugas.setText(Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode()));
+    }
+
+    private void tampilkanTemplate() {
+        templatePicker.emptTeks();
+        templatePicker.isCek();
+        templatePicker.setSize(getWidth() - 20, getHeight() - 20);
+        templatePicker.setLocationRelativeTo(this);
+        templatePicker.setVisible(true);
     }
 
     public void emptTeks() {

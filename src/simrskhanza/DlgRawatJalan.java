@@ -13148,6 +13148,51 @@ private String nvl(String value) {
         }
     }
 
+    // ===== Tombol Template SOAP dari server (SQL) -- dipisah dari BtnTemplateSoapExcel (versi CSV
+    // lokal, di baris atas dekat Jabatan) supaya jelas beda fungsi: ini utk MENERAPKAN template
+    // dari server ke SOAP, yg CSV di atas utk LIHAT/MIGRASI template lokal ke server. =====
+    private final widget.Button BtnTemplateSoapSql = new widget.Button();
+    private boolean btnTemplateSoapSqlSiap = false;
+
+    private void siapkanBtnTemplateSoapSql() {
+        if (btnTemplateSoapSqlSiap) {
+            return;
+        }
+        btnTemplateSoapSqlSiap = true;
+        BtnTemplateSoapSql.setText("Template SOAP");
+        BtnTemplateSoapSql.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/190.png")));
+        BtnTemplateSoapSql.setToolTipText("<html>Template SOAP dari server (SQL) -- sama untuk semua komputer.<br/>"
+                + "Kalau template yg dicari belum ada di sini, minta petugas lain kirim dari<br/>"
+                + "Template SOAP CSV lokal (tombol di baris atas, dekat Jabatan).</html>");
+        BtnTemplateSoapSql.addActionListener(evt -> BtnTemplateSoapSqlActionPerformed(evt));
+        panelGlass12.add(BtnTemplateSoapSql);
+    }
+
+    private void BtnTemplateSoapSqlActionPerformed(java.awt.event.ActionEvent evt) {
+        if (TPasien.getText().trim().equals("") || TNoRw.getText().trim().equals("")) {
+            JOptionPane.showMessageDialog(null, "Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
+            TCari.requestFocus();
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        rekammedis.DlgTemplateSOAPSQL dialog = new rekammedis.DlgTemplateSOAPSQL(null, true);
+        dialog.setSize(internalFrame1.getWidth() - 20, internalFrame1.getHeight() - 20);
+        dialog.setLocationRelativeTo(internalFrame1);
+        this.setCursor(Cursor.getDefaultCursor());
+        dialog.setVisible(true);
+
+        DlgTemplateSOAPExcel.SoapTemplateExcel template = dialog.getTemplateTerpilih();
+        if (template != null) {
+            TKeluhan.setText(template.getSubject());
+            TPenilaian.setText(template.getAssessment());
+            TindakLanjut.setText(template.getPlan());
+            TInstruksi.setText(template.getImplementation());
+            TEvaluasi.setText(template.getAppliedEvaluation());
+            terapkanObjectTemplateKeSoap(template.getObjectText());
+            TKeluhan.requestFocus();
+        }
+    }
+
     /** Notifikasi konfirmasi setelah SOAP di tab Pemeriksaan berhasil diganti/diedit -- banner
      *  ringan yg hilang sendiri (bukan JOptionPane lagi). */
     private void notifikasiSoapDiedit() {
@@ -13962,6 +14007,7 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         siapkanNotifValidasi();
         siapkanChkSBAROtomatis();
         siapkanBtnWaktuTunggu();
+        siapkanBtnTemplateSoapSql();
         if (!soapListenerDipasang) {
             soapListenerDipasang = true;
             panelGlass12.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -14048,8 +14094,8 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jLabel16.setBounds(lc, t1, lw, fh); TBerat.setBounds(fc, t1, 55, fh);
         jLabel54.setBounds(ld, t1, lw, fh); SpO2.setBounds(fd, t1, 45, fh);
         jLabel29.setBounds(le, t1, 75, fh); cmbKesadaran.setBounds(fe, t1, 126, fh);
-        // Tombol Waktu Tunggu: tepat di sebelah kanan Kesadaran (baris TTV atas), ukuran ringkas.
-        int btnWtX = fe + 126 + 10, btnWtW = 215;
+        // Tombol Waktu Tunggu rata kanan di bawah Evaluasi, memakai ruang TTV yang ada.
+        int btnWtW = 215, btnWtX = c3 + colW - btnWtW;
         BtnWaktuTunggu.setBounds(btnWtX, t1, btnWtW, fh);
 
         jLabel17.setBounds(la, t2, lw, fh); TTinggi.setBounds(fa, t2, 55, fh);
@@ -14057,6 +14103,9 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jLabel18.setBounds(lc, t2, lw, fh); TNadi.setBounds(fc, t2, 55, fh);
         jLabel22.setBounds(ld, t2, lw, fh); TGCS.setBounds(fd, t2, 45, fh);
         jLabel25.setBounds(le, t2, 75, fh); LingkarPerut.setBounds(fe, t2, 55, fh);
+        // Tombol Template SOAP (server/SQL): persis di sebelah kanan Lingkar Perut (baris TTV bawah) --
+        // ini yg dipakai sehari-hari utk menerapkan template ke SOAP.
+        BtnTemplateSoapSql.setBounds(fe + 55 + 10, t2, 150, fh);
 
         // Tabel duplikat tbSoapDokter/tbSoapPerawat tidak dipakai (data SOAP
         // sudah ada di tabel utama halaman pemeriksaan) -> tetap disembunyikan.
@@ -14066,8 +14115,8 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
         jLabel2.setVisible(false);
 
         // ---- Notif validasi (ruang kosong kanan-bawah, sejajar TTV) ----
-        int notifX = btnWtX + btnWtW + 12;
-        int notifW = Math.max(220, W - M - notifX);
+        int notifX = fe + 55 + 10 + 150 + 12;
+        int notifW = Math.max(0, btnWtX - 12 - notifX);
         lblNotifSBAR.setBounds(notifX, t1, notifW, 26);
         lblNotifSOAP.setBounds(notifX, t2, notifW, 26);
 

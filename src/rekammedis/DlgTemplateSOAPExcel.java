@@ -100,6 +100,13 @@ public class DlgTemplateSOAPExcel extends JDialog {
         panelCari.add(btnUbah);
         panelCari.add(btnHapus);
 
+        JButton btnKirimKeSql = new JButton("Kirim ke Server (SQL)");
+        btnKirimKeSql.setToolTipText("<html>Migrasikan template yang SEDANG DIPILIH di tabel ini ke server (MySQL) --<br/>"
+                + "bisa pilih beberapa sekaligus dgn Ctrl+klik / Shift+klik, dan dipakai berkali-kali<br/>"
+                + "kapan saja (template yg sudah pernah dikirim otomatis dilewati, tidak dobel).</html>");
+        btnKirimKeSql.addActionListener(evt -> kirimKeSql());
+        panelCari.add(btnKirimKeSql);
+
         panelAtas.add(panelCari, BorderLayout.NORTH);
 
         lblPath.setText(csvPath);
@@ -108,7 +115,7 @@ public class DlgTemplateSOAPExcel extends JDialog {
         add(panelAtas, BorderLayout.NORTH);
 
         tbTemplate.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        tbTemplate.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        tbTemplate.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         tbTemplate.setRowHeight(24);
         tbTemplate.setDefaultRenderer(Object.class, new WarnaTable());
         tbTemplate.setRowSorter(sorter);
@@ -555,6 +562,105 @@ public class DlgTemplateSOAPExcel extends JDialog {
 
     public SoapTemplateExcel getTemplateTerpilih() {
         return templateTerpilih;
+    }
+
+    /** Migrasi template CSV lokal yg sedang dipilih (boleh lebih dari satu, Ctrl/Shift+klik) ke tabel
+     *  template_soap di server (MySQL). Dicek dulu per template apakah isinya sudah ada di server,
+     *  supaya aman diklik berkali-kali / dipakai migrasi bertahap tanpa membuat duplikat. */
+    private void kirimKeSql() {
+        int[] viewRows = tbTemplate.getSelectedRows();
+        if (viewRows.length == 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Silahkan pilih template yang akan dikirim ke server terlebih dahulu.\n"
+                    + "(Bisa pilih beberapa sekaligus dgn Ctrl+klik atau Shift+klik)",
+                    "Kirim ke Server", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        List<SoapTemplateExcel> dipilih = new ArrayList<SoapTemplateExcel>();
+        for (int viewRow : viewRows) {
+            int modelRow = tbTemplate.convertRowIndexToModel(viewRow);
+            if (modelRow >= 0 && modelRow < templates.size()) {
+                dipilih.add(templates.get(modelRow));
+            }
+        }
+        if (dipilih.isEmpty()) {
+            return;
+        }
+
+        int konfirmasi = JOptionPane.showConfirmDialog(this,
+                "Kirim " + dipilih.size() + " template yang dipilih ke server (MySQL) ?\n"
+                + "Template yang isinya sudah ada di server akan dilewati (tidak dobel).",
+                "Kirim ke Server", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        if (konfirmasi != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        this.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.WAIT_CURSOR));
+        int dikirim = 0, dilewati = 0, gagal = 0;
+        // PENTING: koneksiDB.condb() adalah koneksi tunggal milik seluruh aplikasi (singleton) --
+        // JANGAN dibungkus try-with-resources / ditutup di sini, nanti koneksi aplikasi ikut tertutup.
+        try {
+            java.sql.Connection koneksi = fungsi.koneksiDB.condb();
+            DlgTemplateSOAPSQL.pastikanTabel(koneksi);
+            for (SoapTemplateExcel t : dipilih) {
+                try {
+                    if (sudahAdaDiServer(koneksi, t)) {
+                        dilewati++;
+                        continue;
+                    }
+                    java.sql.PreparedStatement ps = koneksi.prepareStatement(
+                        "insert into template_soap(judul,subjek,objek,asesmen,plan,instruksi,evaluasi,dibuat_oleh,created_at) "
+                        + "values(?,?,?,?,?,?,?,?,now())");
+                    ps.setString(1, t.getTitle());
+                    ps.setString(2, t.getSubject());
+                    ps.setString(3, t.getObjectText());
+                    ps.setString(4, t.getAssessment());
+                    ps.setString(5, t.getPlan());
+                    ps.setString(6, t.getImplementation());
+                    ps.setString(7, t.getAppliedEvaluation());
+                    ps.setString(8, fungsi.akses.getnamauser());
+                    ps.executeUpdate();
+                    ps.close();
+                    dikirim++;
+                } catch (Exception e) {
+                    gagal++;
+                    System.out.println("Notifikasi : " + e);
+                }
+            }
+        } catch (Exception e) {
+            this.setCursor(java.awt.Cursor.getDefaultCursor());
+            JOptionPane.showMessageDialog(this,
+                    "Gagal terhubung ke server.\n" + e.getMessage(),
+                    "Kirim ke Server", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        this.setCursor(java.awt.Cursor.getDefaultCursor());
+
+        JOptionPane.showMessageDialog(this,
+                dikirim + " template terkirim ke server.\n"
+                + dilewati + " dilewati (isinya sudah ada di server).\n"
+                + (gagal > 0 ? gagal + " gagal dikirim.\n" : "")
+                + "\nTutup jendela ini lalu buka ulang tombol Template SOAP untuk mulai memakai template dari server.",
+                "Kirim ke Server", JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    private boolean sudahAdaDiServer(java.sql.Connection koneksi, SoapTemplateExcel t) throws Exception {
+        java.sql.PreparedStatement ps = koneksi.prepareStatement(
+            "select count(*) from template_soap where judul=? and ifnull(subjek,'')=? and ifnull(objek,'')=? "
+            + "and ifnull(asesmen,'')=? and ifnull(plan,'')=? and ifnull(instruksi,'')=? and ifnull(evaluasi,'')=?");
+        ps.setString(1, t.getTitle());
+        ps.setString(2, t.getSubject());
+        ps.setString(3, t.getObjectText());
+        ps.setString(4, t.getAssessment());
+        ps.setString(5, t.getPlan());
+        ps.setString(6, t.getImplementation());
+        ps.setString(7, t.getAppliedEvaluation());
+        java.sql.ResultSet rs = ps.executeQuery();
+        boolean ada = rs.next() && rs.getInt(1) > 0;
+        rs.close();
+        ps.close();
+        return ada;
     }
 
     public static class SoapTemplateExcel {
