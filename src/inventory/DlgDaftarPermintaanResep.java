@@ -158,7 +158,7 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
         
         tabMode3=new DefaultTableModel(null,new Object[]{
                 "No.Resep","Tgl.Peresepan","Jam Peresepan","No.Rawat","No.RM","Pasien","Dokter Peresep",
-                "Status","Kode Dokter","Ruang/Kamar","Kode Bangsal","Jenis Bayar","Tgl.Validasi","Jam Validasi"
+                "Status","Kode Dokter","Ruang/Kamar","Kode Bangsal","Jenis Bayar","Tgl.Validasi","Jam Validasi","Petugas Penginput"
             }){
               @Override public boolean isCellEditable(int rowIndex, int colIndex){return false;}
         };
@@ -168,7 +168,7 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
         tbResepRanap.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbResepRanap.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (int i = 0; i <14; i++) {
+        for (int i = 0; i <15; i++) {
             TableColumn column = tbResepRanap.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(75);
@@ -202,6 +202,7 @@ public class DlgDaftarPermintaanResep extends javax.swing.JDialog {
                 column.setPreferredWidth(70);
             }
         }
+        tbResepRanap.getColumnModel().getColumn(14).setPreferredWidth(220);
         tbResepRanap.setDefaultRenderer(Object.class, new WarnaTable());
         initPopupResepRanap();
         
@@ -4114,7 +4115,15 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
             }  
         }catch(SQLException e){
             System.out.println("Notifikasi : "+e);
-        }        
+        }
+        java.util.Map<String,String> penginput = new java.util.HashMap<>();
+        for (int baris = 0; baris < tabMode3.getRowCount(); baris++) {
+            String noResep = tabMode3.getValueAt(baris, 0).toString();
+            if (!penginput.containsKey(noResep)) {
+                penginput.put(noResep, fungsi.ResepPenginput.namaTersimpan(koneksi, noResep));
+            }
+            tabMode3.setValueAt(penginput.get(noResep), baris, 14);
+        }
     }
     
     public void tampil4() {

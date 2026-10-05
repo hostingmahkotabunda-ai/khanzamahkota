@@ -92,6 +92,7 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
     private boolean resepBerhasilDisimpan=false;
     private boolean sedangSinkronCatatanDokter=false;
     private String noResepTersimpan="";
+    private final widget.Label labelPenginputResep = new widget.Label();
     private javax.swing.JPanel panelUmumResep;
     private javax.swing.JPanel panelRacikanResep;
     private javax.swing.JPanel panelDraftSOAP;
@@ -157,6 +158,10 @@ public final class DlgPeresepanDokter extends javax.swing.JDialog {
         super(parent);
         setModalityType(modal ? java.awt.Dialog.ModalityType.APPLICATION_MODAL : java.awt.Dialog.ModalityType.MODELESS);
         initComponents();
+        FormInput.setPreferredSize(new Dimension(440, 137));
+        labelPenginputResep.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        labelPenginputResep.setBounds(18, 102, 780, 23);
+        FormInput.add(labelPenginputResep);
         inisialisasiPanelTindakanPasien();
         inisialisasiPanelDraftSOAP();
         pasangTombolPaketResep();
@@ -1277,6 +1282,9 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             int reply = modeEmbedded ? JOptionPane.YES_OPTION
                     : JOptionPane.showConfirmDialog(rootPane,"Eeiiiiiits, udah bener belum data yang mau disimpan..??","Konfirmasi",JOptionPane.YES_NO_OPTION);
             if (reply == JOptionPane.YES_OPTION) {
+                final boolean resepBaru = !ubah;
+                final String idPenginput = akses.getkode();
+                final String namaPenginput = fungsi.ResepPenginput.nama(koneksi, idPenginput);
                 pastikanTabelCatatanResepDokter();
                 ChkJln.setSelected(false);
                 if(ubah==false){
@@ -1415,6 +1423,14 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     }
                     
                     Sequel.Commit();
+                    Sequel.AutoComitTrue();
+                    if (resepBaru && !fungsi.ResepPenginput.simpan(koneksi, NoResep.getText(), idPenginput, namaPenginput)) {
+                        JOptionPane.showMessageDialog(internalFrame1,
+                            "Resep " + NoResep.getText() + " sudah tersimpan, tetapi petugas penginput gagal dicatat.\n"
+                            + "Hubungi admin untuk memeriksa tabel resep_penginput. Jangan simpan ulang resep ini.",
+                            "Pencatatan Penginput Resep", JOptionPane.WARNING_MESSAGE);
+                    }
+                    tampilkanPenginputResep(NoResep.getText());
                     resepBerhasilDisimpan=true;
                     noResepTersimpan=NoResep.getText();
                     if(modeEmbedded){
@@ -1792,12 +1808,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }//GEN-LAST:event_DTPBeriItemStateChanged
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-       if (tbResep.getSelectedRow() != -1) {
-        String noResep = tbResep.getValueAt(tbResep.getSelectedRow(), 0).toString();
-        tampilDetailResep(noResep);
-    } else {
-        JOptionPane.showMessageDialog(null, "Silakan pilih resep dulu...");
-    }
+        tampilDaftarResepPasien();
     }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
@@ -2323,6 +2334,11 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     }
     
     public void isCek(){   
+        if (ubah) {
+            tampilkanPenginputResep(NoResep.getText());
+        } else {
+            tampilkanCalonPenginputResep();
+        }
         BtnTambah.setEnabled(akses.getresep_dokter());
         TCari.requestFocus();
         tentukanBangsalResep();
@@ -2385,6 +2401,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         resepBerhasilDisimpan=false;
         noResepTersimpan="";
         kosongkanCatatanDokter();
+        tampilkanCalonPenginputResep();
     }
     
     public void setNoRm(String norwt,String KodeDokter,String NamaDokter,String Pasien,String kodepj,String status) {        
@@ -2405,6 +2422,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         resepBerhasilDisimpan=false;
         noResepTersimpan="";
         kosongkanCatatanDokter();
+        tampilkanCalonPenginputResep();
     }
     
     public void setNoRm(String norwt,Date tanggal,String status) {        
@@ -2432,6 +2450,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         resepBerhasilDisimpan=false;
         noResepTersimpan="";
         kosongkanCatatanDokter();
+        tampilkanCalonPenginputResep();
     }
 
     public void setDraftTerapiSOAP(String draftTerapiSOAP) {
@@ -3893,6 +3912,7 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
     public void tampilobat(String no_resep) {
         NoResep.setText(no_resep);
         ubah=true;
+        tampilkanPenginputResep(no_resep);
         muatCatatanResepDokter(no_resep);
         try {
             Valid.tabelKosong(tabModeResep);
@@ -5946,6 +5966,67 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
         widget.Toast.sukses(internalFrame1,pesan.toString());
     }
 
+    private void tampilkanCalonPenginputResep() {
+        String id = akses.getkode();
+        String teks = "Penginput resep baru : " + fungsi.ResepPenginput.nama(koneksi, id);
+        labelPenginputResep.setText(teks);
+        labelPenginputResep.setToolTipText(teks);
+    }
+
+    private void tampilkanPenginputResep(String noResep) {
+        String teks = "Diinput oleh : " + fungsi.ResepPenginput.informasi(koneksi, noResep);
+        labelPenginputResep.setText(teks);
+        labelPenginputResep.setToolTipText(teks);
+    }
+
+    private void tampilDaftarResepPasien() {
+        if (TNoRw.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(internalFrame1, "Pilih pasien terlebih dahulu.");
+            return;
+        }
+        DefaultTableModel model = new DefaultTableModel(new Object[]{
+            "No. Resep", "Tanggal", "Jam", "Dokter Peresep", "Penginput / Waktu Input"
+        }, 0) {
+            @Override public boolean isCellEditable(int row, int column) { return false; }
+        };
+        // Query resep tetap dapat berjalan bila tabel penginput belum tersedia.
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select r.no_resep,r.tgl_peresepan,r.jam_peresepan,d.nm_dokter "
+                + "from resep_obat r left join dokter d on d.kd_dokter=r.kd_dokter "
+                + "where r.no_rawat=? order by r.tgl_peresepan desc,r.jam_peresepan desc,r.no_resep desc")) {
+            ps.setString(1, TNoRw.getText());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String nomor = rs.getString("no_resep");
+                    model.addRow(new Object[]{nomor, rs.getString("tgl_peresepan"), rs.getString("jam_peresepan"),
+                        rs.getString("nm_dokter"), fungsi.ResepPenginput.informasi(koneksi, nomor)});
+                }
+            }
+        } catch (java.sql.SQLException e) {
+            JOptionPane.showMessageDialog(internalFrame1, "Daftar resep belum dapat dibaca. Silakan coba kembali.");
+            return;
+        }
+        if (model.getRowCount() == 0) {
+            JOptionPane.showMessageDialog(internalFrame1, "Belum ada resep tersimpan untuk nomor rawat ini.");
+            return;
+        }
+        JTable tabel = new widget.Table();
+        tabel.setModel(model);
+        tabel.setAutoCreateRowSorter(true);
+        tabel.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        tabel.getColumnModel().getColumn(3).setPreferredWidth(200);
+        tabel.getColumnModel().getColumn(4).setPreferredWidth(350);
+        tabel.setRowSelectionInterval(0, 0);
+        JScrollPane scroll = new JScrollPane(tabel);
+        scroll.setPreferredSize(new Dimension(950, 300));
+        int pilihan = JOptionPane.showOptionDialog(internalFrame1, scroll, "Resep Pasien - " + TNoRw.getText(),
+                JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null,
+                new String[]{"Lihat Detail", "Tutup"}, "Lihat Detail");
+        if (pilihan == 0 && tabel.getSelectedRow() >= 0) {
+            tampilDetailResep(tabel.getValueAt(tabel.getSelectedRow(), 0).toString());
+        }
+    }
+
     private void tampilDetailResep(String noResep) {
     StringBuilder sb = new StringBuilder();
     PreparedStatement psHdr = null, psNon = null, psRacik = null, psRacikDet = null;
@@ -5974,6 +6055,8 @@ private void ppBersihkanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
             sb.append("Dokter    : ").append(rsHdr.getString("nm_dokter")).append("\n");
             sb.append("Status    : ").append(rsHdr.getString("status")).append("\n\n");
         }
+
+        sb.append("Diinput oleh : ").append(fungsi.ResepPenginput.informasi(koneksi, noResep)).append("\n\n");
 
         // --- CATATAN DOKTER (kalau ada) -- terutama relevan kalau resep disimpan tanpa obat,
         // supaya keliatan jelas di banner ini bahwa itu memang catatan buat farmasi, bukan

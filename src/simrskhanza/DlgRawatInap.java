@@ -282,6 +282,14 @@ public final class DlgRawatInap extends javax.swing.JDialog {
                 }
             }
         });
+        PanelPenggunaanObatRanap = new widget.PanelBiasa();
+        PanelPenggunaanObatRanap.setLayout(new java.awt.BorderLayout());
+        TabRawat.addTab("Penggunaan Obat", PanelPenggunaanObatRanap);
+        TabRawat.addChangeListener(e -> {
+            if (TabRawat.getSelectedComponent() == PanelPenggunaanObatRanap) {
+                sinkronkanPenggunaanObatRanap();
+            }
+        });
         pasangTabPenilaianAwal();
         pasangTabEWS();
         pasangTabSuratKeteranganLahir();
@@ -730,6 +738,26 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         resepTerintegrasiRanap.emptTeksobat();
     }
 
+    private void sinkronkanPenggunaanObatRanap() {
+        if (TNoRw.getText().trim().isEmpty() || TPasien.getText().trim().isEmpty()) {
+            if (penggunaanObatTerintegrasiRanap != null) {
+                penggunaanObatTerintegrasiRanap.setRM("", "", "", "", "ranap");
+                penggunaanObatTerintegrasiRanap.tampil();
+            }
+            return;
+        }
+        if (penggunaanObatTerintegrasiRanap == null) {
+            penggunaanObatTerintegrasiRanap = new DlgCopyResep(null, false);
+            PanelPenggunaanObatRanap.add(penggunaanObatTerintegrasiRanap.ambilKontenUntukEmbed(), java.awt.BorderLayout.CENTER);
+            PanelPenggunaanObatRanap.revalidate();
+            PanelPenggunaanObatRanap.repaint();
+        }
+        penggunaanObatTerintegrasiRanap.setRM(TNoRw.getText(), TNoRM.getText(), KdDok.getText(),
+                Sequel.cariIsi("select kd_pj from reg_periksa where no_rawat=?", TNoRw.getText()), "ranap");
+        penggunaanObatTerintegrasiRanap.isCek();
+        penggunaanObatTerintegrasiRanap.tampil();
+    }
+
     public DlgRawatInap(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
@@ -737,6 +765,7 @@ public final class DlgRawatInap extends javax.swing.JDialog {
         rekammedis.DlgValidasiSOAP.pastikanKolom("pemeriksaan_ralan");
         pasangTabSBAR();
         aturTabRanap();
+        TabRawat.setUI(new widget.TabRoundedRawatInapUI());
         initRawatInap();
         initTableSOAP();
         rapikanPanelInputSOAP();
@@ -7849,13 +7878,11 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             TCari.requestFocus();
         }else{
             this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-            DlgCopyResep daftar=new DlgCopyResep(null,false);
-            daftar.isCek();
-            daftar.setRM(TNoRw.getText(),TNoRM.getText(),KdDok.getText(),Sequel.cariIsi("select reg_periksa.kd_pj from reg_periksa where reg_periksa.no_rawat=?",TNoRw.getText()),"ranap");
-            daftar.tampil();
-            daftar.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
-            daftar.setLocationRelativeTo(internalFrame1);
-            daftar.setVisible(true);
+            if (TabRawat.getSelectedComponent() == PanelPenggunaanObatRanap) {
+                sinkronkanPenggunaanObatRanap();
+            } else {
+                TabRawat.setSelectedComponent(PanelPenggunaanObatRanap);
+            }
             this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_BtnCopyResepActionPerformed
@@ -10044,15 +10071,9 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     }
 
     private void tampilLaboratPasien() {
-        String noRM = TNoRM.getText().trim();
-        if(noRM.equals("")){
-            noRM = TCariPasien.getText().trim();
-        }
-        if(noRM.equals("") && !TNoRw.getText().trim().equals("")){
-            noRM = Sequel.cariIsi("select reg_periksa.no_rkm_medis from reg_periksa where reg_periksa.no_rawat=?", TNoRw.getText().trim());
-        }
-        if(noRM.equals("")){
-            tampilLaboratKosong("Pilih pasien dulu untuk menampilkan hasil laboratorium.");
+        String noRawat = TNoRw.getText().trim();
+        if(noRawat.equals("")){
+            tampilLaboratKosong("Pilih nomor rawat dulu untuk menampilkan hasil laboratorium.");
             return;
         }
 
@@ -10069,29 +10090,29 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
                 .append(".high{color:#FF0000;}")
                 .append("img{max-width:450px;max-height:450px;border:1px solid #ddd;}")
                 .append("</style></head><body>")
-                .append("<div class='muted'>No.RM: ").append(html(noRM)).append("</div>");
+                .append("<div class='muted'>No.Rawat: ").append(html(noRawat)).append("</div>");
 
         int total = 0;
-        total += appendLaboratPkMb(htmlContent, noRM);
-        total += appendLaboratPa(htmlContent, noRM);
+        total += appendLaboratPkMb(htmlContent, noRawat);
+        total += appendLaboratPa(htmlContent, noRawat);
 
         if(total == 0){
-            htmlContent.append("<div class='judul'>Data laboratorium tidak ditemukan untuk pasien ini.</div>");
+            htmlContent.append("<div class='judul'>Data laboratorium tidak ditemukan untuk nomor rawat ini.</div>");
         }
         htmlContent.append("</body></html>");
         LoadHTMLLaborat.setText(htmlContent.toString());
         LoadHTMLLaborat.setCaretPosition(0);
     }
 
-    private int appendLaboratPkMb(StringBuilder htmlContent, String noRM) {
+    private int appendLaboratPkMb(StringBuilder htmlContent, String noRawat) {
         int nomor = 0;
         try (PreparedStatement psGrup = koneksi.prepareStatement(
                 "select periksa_lab.no_rawat,periksa_lab.tgl_periksa,periksa_lab.jam "+
-                "from periksa_lab inner join reg_periksa on periksa_lab.no_rawat=reg_periksa.no_rawat "+
-                "where periksa_lab.kategori<>'PA' and reg_periksa.no_rkm_medis=? "+
+                "from periksa_lab "+
+                "where periksa_lab.kategori<>'PA' and periksa_lab.no_rawat=? "+
                 "group by periksa_lab.no_rawat,periksa_lab.tgl_periksa,periksa_lab.jam "+
                 "order by periksa_lab.tgl_periksa,periksa_lab.jam")) {
-            psGrup.setString(1, noRM);
+            psGrup.setString(1, noRawat);
             try (ResultSet rsGrup = psGrup.executeQuery()) {
                 while(rsGrup.next()){
                     if(nomor == 0){
@@ -10252,17 +10273,17 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         }
     }
 
-    private int appendLaboratPa(StringBuilder htmlContent, String noRM) {
+    private int appendLaboratPa(StringBuilder htmlContent, String noRawat) {
         int nomor = 0;
         try (PreparedStatement psPa = koneksi.prepareStatement(
                 "select periksa_lab.no_rawat,periksa_lab.tgl_periksa,periksa_lab.jam,periksa_lab.kd_jenis_prw,"+
                 "jns_perawatan_lab.nm_perawatan,petugas.nama,periksa_lab.biaya,dokter.nm_dokter "+
-                "from periksa_lab inner join reg_periksa on periksa_lab.no_rawat=reg_periksa.no_rawat "+
+                "from periksa_lab "+
                 "inner join jns_perawatan_lab on periksa_lab.kd_jenis_prw=jns_perawatan_lab.kd_jenis_prw "+
                 "inner join petugas on periksa_lab.nip=petugas.nip inner join dokter on periksa_lab.kd_dokter=dokter.kd_dokter "+
-                "where periksa_lab.kategori='PA' and reg_periksa.no_rkm_medis=? "+
+                "where periksa_lab.kategori='PA' and periksa_lab.no_rawat=? "+
                 "order by periksa_lab.tgl_periksa,periksa_lab.jam")) {
-            psPa.setString(1, noRM);
+            psPa.setString(1, noRawat);
             try (ResultSet rsPa = psPa.executeQuery()) {
                 while(rsPa.next()){
                     if(nomor == 0){
@@ -12123,6 +12144,8 @@ for (int i = 0; i < tbSoapPerawat.getColumnCount(); i++) {
     private inventory.DlgPeresepanDokter resepTerintegrasiRanap;
     private widget.PanelBiasa PanelResepRanap;
     private String konteksResepRanap = "";
+    private widget.PanelBiasa PanelPenggunaanObatRanap;
+    private DlgCopyResep penggunaanObatTerintegrasiRanap;
 
     private void rapikanPanelInputSOAP() {
         Font fontInputBesar=new Font("Tahoma", Font.BOLD, 13);

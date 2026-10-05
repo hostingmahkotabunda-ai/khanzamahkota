@@ -47,6 +47,7 @@ public class DlgCopyResep extends javax.swing.JDialog {
     private final Properties prop = new Properties();
     private int jmlparsial=0;
     private final DefaultListModel<ResepRingkas> modelDaftarResep = new DefaultListModel<>();
+    private final java.util.Map<String,String> penginputPerResep = new java.util.HashMap<>();
     private final JList<ResepRingkas> daftarResep = new JList<>(modelDaftarResep);
     private final DefaultTableModel modelDetail = new DefaultTableModel(
             new Object[]{"Nama Obat / Racikan","Kode","Jumlah","Satuan","Aturan Pakai"},0){
@@ -58,8 +59,67 @@ public class DlgCopyResep extends javax.swing.JDialog {
             new String[]{"Semua Sumber","IGD","Rawat Jalan","Rawat Inap"});
     private final JLabel lblJudulDetail = new JLabel("Pilih resep untuk melihat detail");
     private final JLabel lblMetaDetail = new JLabel(" ");
+    private final JLabel lblPenginputDetail = new JLabel(" ");
     private final JLabel lblCatatanDetail = new JLabel("Tidak ada catatan tambahan.");
     private final JLabel lblPasienModern = new JLabel(" ");
+    private javax.swing.JPanel kontenEmbedded;
+    private final java.awt.CardLayout layoutEmbedded = new java.awt.CardLayout();
+    private DlgPeresepanDokter editorEmbedded;
+    private javax.swing.JPanel panelEditorEmbedded;
+
+    public java.awt.Component ambilKontenUntukEmbed() {
+        if (kontenEmbedded == null) {
+            kontenEmbedded = new javax.swing.JPanel(layoutEmbedded);
+            java.awt.Container parent = internalFrame1.getParent();
+            if (parent != null) parent.remove(internalFrame1);
+            internalFrame1.setBorder(null);
+            BtnKeluar.setVisible(false);
+            kontenEmbedded.add(internalFrame1, "daftar");
+        }
+        return kontenEmbedded;
+    }
+
+    private void kembaliKeDaftarEmbedded() {
+        if (kontenEmbedded == null) return;
+        layoutEmbedded.show(kontenEmbedded, "daftar");
+        if (panelEditorEmbedded != null) {
+            kontenEmbedded.remove(panelEditorEmbedded);
+            panelEditorEmbedded = null;
+        }
+        if (editorEmbedded != null) {
+            editorEmbedded.dispose();
+            editorEmbedded = null;
+        }
+    }
+
+    private void tampilkanEditorResep(DlgPeresepanDokter resep) {
+        if (kontenEmbedded == null) {
+            resep.setVisible(true);
+            return;
+        }
+        kembaliKeDaftarEmbedded();
+        editorEmbedded = resep;
+        panelEditorEmbedded = new javax.swing.JPanel(new java.awt.BorderLayout());
+        javax.swing.JPanel toolbar = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        javax.swing.JButton kembali = new javax.swing.JButton("Kembali ke Penggunaan Obat");
+        kembali.addActionListener(e -> {
+            if (!resep.isResepBerhasilDisimpan()) {
+                int pilihan = JOptionPane.showConfirmDialog(kontenEmbedded,
+                        "Kembali ke daftar? Perubahan resep yang belum disimpan akan ditutup.",
+                        "Penggunaan Obat", JOptionPane.YES_NO_OPTION);
+                if (pilihan != JOptionPane.YES_OPTION) return;
+            }
+            kembaliKeDaftarEmbedded();
+            tampil();
+        });
+        toolbar.add(kembali);
+        panelEditorEmbedded.add(toolbar, java.awt.BorderLayout.NORTH);
+        panelEditorEmbedded.add(resep.ambilKontenUntukEmbed(), java.awt.BorderLayout.CENTER);
+        kontenEmbedded.add(panelEditorEmbedded, "editor");
+        layoutEmbedded.show(kontenEmbedded, "editor");
+        kontenEmbedded.revalidate();
+        kontenEmbedded.repaint();
+    }
     
     /** Creates new form 
      * @param parent
@@ -175,7 +235,7 @@ public class DlgCopyResep extends javax.swing.JDialog {
 
         daftarResep.setCellRenderer(new RendererResep());
         daftarResep.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        daftarResep.setFixedCellHeight(112);
+        daftarResep.setFixedCellHeight(132);
         daftarResep.setBackground(latar);
         daftarResep.addListSelectionListener(e -> {
             if(!e.getValueIsAdjusting()){
@@ -196,14 +256,17 @@ public class DlgCopyResep extends javax.swing.JDialog {
         JPanel kanan=new JPanel(new BorderLayout(0,8));
         kanan.setBackground(Color.WHITE);
         kanan.setBorder(new EmptyBorder(8,10,8,10));
-        JPanel kepalaDetail=new JPanel(new GridLayout(2,1,0,3));
+        JPanel kepalaDetail=new JPanel(new GridLayout(3,1,0,3));
         kepalaDetail.setOpaque(false);
         lblJudulDetail.setFont(new Font("Tahoma",Font.BOLD,14));
         lblJudulDetail.setForeground(new Color(31,47,62));
         lblMetaDetail.setFont(new Font("Tahoma",Font.PLAIN,11));
         lblMetaDetail.setForeground(new Color(72,88,99));
+        lblPenginputDetail.setFont(new Font("Tahoma",Font.PLAIN,11));
+        lblPenginputDetail.setForeground(new Color(72,88,99));
         kepalaDetail.add(lblJudulDetail);
         kepalaDetail.add(lblMetaDetail);
+        kepalaDetail.add(lblPenginputDetail);
         kanan.add(kepalaDetail,BorderLayout.NORTH);
         tabelDetail.setRowHeight(27);
         tabelDetail.setFillsViewportHeight(true);
@@ -275,9 +338,12 @@ public class DlgCopyResep extends javax.swing.JDialog {
                     obat.append(' ').append(nilaiTabel(j,5));
                 }
             }
+            if(!penginputPerResep.containsKey(no)){
+                penginputPerResep.put(no,fungsi.ResepPenginput.informasi(koneksi,no));
+            }
             ResepRingkas r=new ResepRingkas(i,no,nilaiTabel(i,1),nilaiTabel(i,2),
                     nilaiTabel(i,3),nilaiTabel(i,4),nilaiTabel(i,5),nilaiTabel(i,6),
-                    nilaiTabel(i,8),sumber,item,catatan);
+                    nilaiTabel(i,8),sumber,item,catatan,penginputPerResep.get(no));
             String gabung=(r.noResep+" "+r.dokter+" "+r.pasien+" "+obat).toLowerCase();
             if((filter.equals("Semua Sumber") || filter.equals(r.sumber)) &&
                     (cari.equals("") || gabung.contains(cari))){
@@ -316,6 +382,9 @@ public class DlgCopyResep extends javax.swing.JDialog {
         lblJudulDetail.setText("Detail Resep "+resep.noResep+"  •  "+resep.sumber+"  •  "+resep.statusLayanan);
         lblMetaDetail.setText("Dokter Peresep: "+resep.dokter+"   |   Tanggal: "+
                 resep.tanggal+" "+resep.jam+"   |   No. Rawat: "+resep.noRawat);
+        String penginput="Penginput / Waktu Input: "+resep.penginput;
+        lblPenginputDetail.setText(penginput);
+        lblPenginputDetail.setToolTipText(penginput);
         lblCatatanDetail.setText(catatan.trim().equals("") ? "Tidak ada catatan tambahan." : catatan);
     }
 
@@ -323,6 +392,8 @@ public class DlgCopyResep extends javax.swing.JDialog {
         modelDetail.setRowCount(0);
         lblJudulDetail.setText("Pilih resep untuk melihat detail");
         lblMetaDetail.setText(" ");
+        lblPenginputDetail.setText(" ");
+        lblPenginputDetail.setToolTipText(null);
         lblCatatanDetail.setText("Tidak ada catatan tambahan.");
     }
 
@@ -348,10 +419,10 @@ public class DlgCopyResep extends javax.swing.JDialog {
 
     private static final class ResepRingkas{
         final int barisAsli,item;
-        final String noResep,tanggal,jam,noRawat,noRm,pasien,dokter,statusLayanan,sumber,catatan;
+        final String noResep,tanggal,jam,noRawat,noRm,pasien,dokter,statusLayanan,sumber,catatan,penginput;
         ResepRingkas(int barisAsli,String noResep,String tanggal,String jam,String noRawat,
                 String noRm,String pasien,String dokter,String statusLayanan,String sumber,
-                int item,String catatan){
+                int item,String catatan,String penginput){
             this.barisAsli=barisAsli;
             this.noResep=noResep;
             this.tanggal=tanggal;
@@ -364,6 +435,7 @@ public class DlgCopyResep extends javax.swing.JDialog {
             this.sumber=sumber;
             this.item=item;
             this.catatan=catatan;
+            this.penginput=penginput;
         }
     }
 
@@ -371,6 +443,7 @@ public class DlgCopyResep extends javax.swing.JDialog {
         private final JLabel badge=new JLabel();
         private final JLabel utama=new JLabel();
         private final JLabel dokter=new JLabel();
+        private final JLabel penginput=new JLabel();
         private final JLabel meta=new JLabel();
         RendererResep(){
             setLayout(new BorderLayout(8,3));
@@ -379,13 +452,15 @@ public class DlgCopyResep extends javax.swing.JDialog {
             badge.setHorizontalAlignment(SwingConstants.CENTER);
             badge.setPreferredSize(new Dimension(82,78));
             badge.setFont(new Font("Tahoma",Font.BOLD,10));
-            JPanel teks=new JPanel(new GridLayout(3,1));
+            JPanel teks=new JPanel(new GridLayout(4,1));
             teks.setOpaque(false);
             utama.setFont(new Font("Tahoma",Font.BOLD,12));
             dokter.setFont(new Font("Tahoma",Font.BOLD,11));
+            penginput.setFont(new Font("Tahoma",Font.PLAIN,11));
             meta.setFont(new Font("Tahoma",Font.PLAIN,10));
             teks.add(utama);
             teks.add(dokter);
+            teks.add(penginput);
             teks.add(meta);
             add(badge,BorderLayout.WEST);
             add(teks,BorderLayout.CENTER);
@@ -405,6 +480,8 @@ public class DlgCopyResep extends javax.swing.JDialog {
             badge.setForeground(Color.WHITE);
             utama.setText("Resep "+value.noResep+"  •  "+value.item+" item");
             dokter.setText(value.dokter);
+            penginput.setText("Penginput: "+value.penginput);
+            setToolTipText("Penginput / Waktu Input: "+value.penginput);
             meta.setText(value.tanggal+" "+value.jam+"  •  "+value.statusLayanan);
             setBackground(isSelected ? campurPutih(aksen) : Color.WHITE);
             setBorder(BorderFactory.createCompoundBorder(
@@ -793,6 +870,7 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     // End of variables declaration//GEN-END:variables
 
     public void tampil() {
+        penginputPerResep.clear();
         Valid.tabelKosong(tabMode);
         try{  
             if(ChkTanggal.isSelected()==true){
@@ -921,6 +999,11 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     }
     
     public void setRM(String norawat,String norm,String kodedokter,String kodepj,String status){
+        if (kontenEmbedded != null && !this.norawat.equals(norawat)) {
+            kembaliKeDaftarEmbedded();
+            txtCariModern.setText("");
+            cmbSumberModern.setSelectedItem("Semua Sumber");
+        }
         this.norm=norm;
         this.status=status;
         this.norawat=norawat;
@@ -929,7 +1012,8 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
     }
 
     private void panggilform() {
-        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
+        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(kontenEmbedded == null ? this : kontenEmbedded);
+        if (kontenEmbedded != null) resep.aktifkanModeEmbedded();
         resep.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
         resep.setLocationRelativeTo(internalFrame1);
         resep.setNoRm(norawat,tbPemisahan.getValueAt(tbPemisahan.getSelectedRow(),7).toString(),
@@ -939,11 +1023,13 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                 kode_pj,status);
         resep.isCek();
         resep.tampilobat2(tbPemisahan.getValueAt(tbPemisahan.getSelectedRow(),0).toString());
-        resep.setVisible(true);
+        if (kontenEmbedded != null) resep.emptTeksobat();
+        tampilkanEditorResep(resep);
     }
     
     private void panggilform2() {
-        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(this);
+        DlgPeresepanDokter resep=DlgPeresepanDokter.buatDari(kontenEmbedded == null ? this : kontenEmbedded);
+        if (kontenEmbedded != null) resep.aktifkanModeEmbedded();
         resep.setSize(internalFrame1.getWidth(),internalFrame1.getHeight());
         resep.setLocationRelativeTo(internalFrame1);
         resep.MatikanJam();
@@ -956,6 +1042,6 @@ private void KdKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_TKdKey
                 tbPemisahan.getValueAt(tbPemisahan.getSelectedRow(),6).toString(),status);
         resep.isCek();
         resep.tampilobat(tbPemisahan.getValueAt(tbPemisahan.getSelectedRow(),0).toString());
-        resep.setVisible(true);   
+        tampilkanEditorResep(resep);
     }
 }
