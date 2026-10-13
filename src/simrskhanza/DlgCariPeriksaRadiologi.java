@@ -518,6 +518,7 @@ public class DlgCariPeriksaRadiologi extends javax.swing.JDialog {
         btnAmbilPhoto1 = new widget.Button();
         BtnSimpan = new widget.Button();
         BtnPrint1 = new widget.Button();
+        BtnPrintFoto = new widget.Button();
         FormOrthan = new widget.PanelBiasa();
         Scroll5 = new widget.ScrollPane();
         tbListDicom = new widget.Table();
@@ -1224,6 +1225,18 @@ public class DlgCariPeriksaRadiologi extends javax.swing.JDialog {
         });
         panelGlass6.add(BtnPrint1);
 
+        BtnPrintFoto.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/b_print.png"))); // NOI18N
+        BtnPrintFoto.setText("Cetak Hasil+Foto (PDF)");
+        BtnPrintFoto.setToolTipText("Cetak Hasil Bacaan Radiologi + Foto Radiologi jadi satu file PDF");
+        BtnPrintFoto.setName("BtnPrintFoto"); // NOI18N
+        BtnPrintFoto.setPreferredSize(new java.awt.Dimension(195, 30));
+        BtnPrintFoto.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnPrintFotoActionPerformed(evt);
+            }
+        });
+        panelGlass6.add(BtnPrintFoto);
+
         FormHasilRadiologi.add(panelGlass6, java.awt.BorderLayout.PAGE_END);
 
         TabData.addTab("Hasil Bacaan Radiologi", FormHasilRadiologi);
@@ -1828,6 +1841,161 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
             this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_BtnPrint1ActionPerformed
+
+    /** Kompilasi .jrxml -> .jasper pakai JRJavacCompiler LANGSUNG (bukan JasperCompileManager biasa) --
+     *  jar eclipse-compiler (ecj) di lib/ proyek ini tidak kompatibel dgn JasperReports 6.8 (NoSuchMethodError
+     *  pada JRJdtCompiler kalau lewat compiler default/JDT). JRJavacCompiler memakai javac JDK, bukan ecj. */
+    private void kompilasiJasper(String jrxmlPath, String jasperPath) throws Exception {
+        net.sf.jasperreports.engine.design.JasperDesign design = net.sf.jasperreports.engine.xml.JRXmlLoader.load(jrxmlPath);
+        net.sf.jasperreports.engine.design.JRJavacCompiler compiler = new net.sf.jasperreports.engine.design.JRJavacCompiler(
+                net.sf.jasperreports.engine.DefaultJasperReportsContext.getInstance());
+        net.sf.jasperreports.engine.JasperReport report = compiler.compileReport(design);
+        net.sf.jasperreports.engine.util.JRSaver.saveObject(report, jasperPath);
+    }
+
+    /** Cetak Hasil Bacaan Radiologi + Foto Radiologi (gambar_radiologi, exam yg sama persis --
+     *  no_rawat+tgl_periksa+jam) jadi SATU file PDF. Header/identitas sama dgn BtnPrint1 (Model 1),
+     *  detail band-nya ditambah subreport foto (lihat rptPeriksaRadiologiFoto.jrxml). */
+    private void BtnPrintFotoActionPerformed(java.awt.event.ActionEvent evt) {
+        if (Kd2.getText().equals("")) {
+            JOptionPane.showMessageDialog(null, "Maaf, silahkan pilih data terlebih dahulu...!!!!");
+            return;
+        }
+        this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        String noRawatTerpilih = Kd2.getText();
+        String tglPeriksaTerpilih = tbDokter.getValueAt(tbDokter.getSelectedRow(), 3).toString();
+        String jamPeriksaTerpilih = tbDokter.getValueAt(tbDokter.getSelectedRow(), 4).toString();
+        pemeriksaan = "";
+        try {
+            ps2 = koneksi.prepareStatement(
+                        "select jns_perawatan_radiologi.kd_jenis_prw,jns_perawatan_radiologi.nm_perawatan,periksa_radiologi.biaya,"+
+                        "periksa_radiologi.kd_dokter,periksa_radiologi.nip,periksa_radiologi.proyeksi,periksa_radiologi.kV,periksa_radiologi.mAS,periksa_radiologi.FFD,"+
+                        "periksa_radiologi.BSF,periksa_radiologi.inak,periksa_radiologi.jml_penyinaran,periksa_radiologi.dosis from periksa_radiologi inner join jns_perawatan_radiologi "+
+                        "on periksa_radiologi.kd_jenis_prw=jns_perawatan_radiologi.kd_jenis_prw where periksa_radiologi.no_rawat=? and periksa_radiologi.tgl_periksa=? "+
+                        "and periksa_radiologi.jam=?");
+            try {
+                ps2.setString(1, noRawatTerpilih);
+                ps2.setString(2, tglPeriksaTerpilih);
+                ps2.setString(3, jamPeriksaTerpilih);
+                rs2 = ps2.executeQuery();
+                while (rs2.next()) {
+                    pemeriksaan = rs2.getString("nm_perawatan") + ", " + pemeriksaan;
+                    kdpenjab = rs2.getString("kd_dokter");
+                    kdpetugas = rs2.getString("nip");
+                }
+            } catch (Exception e) {
+                System.out.println("simrskhanza.DlgCariPeriksaRadiologi.BtnPrintFotoActionPerformed() ps2 : " + e);
+            } finally {
+                if (rs2 != null) { rs2.close(); }
+                if (ps2 != null) { ps2.close(); }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi Pemeriksaan : " + e);
+        }
+        Sequel.cariIsi("select reg_periksa.no_rkm_medis from reg_periksa where reg_periksa.no_rawat=? ", NoRM, noRawatTerpilih);
+        Sequel.cariIsi("select pasien.jk from pasien where pasien.no_rkm_medis=? ", Jk, NoRM.getText());
+        Sequel.cariIsi("select umur from pasien where no_rkm_medis=?", Umur, NoRM.getText());
+        Sequel.cariIsi("select concat(pasien.alamat,', ',kelurahan.nm_kel,', ',kecamatan.nm_kec,', ',kabupaten.nm_kab) as alamat from pasien inner join kelurahan inner join kecamatan inner join kabupaten on pasien.kd_kel=kelurahan.kd_kel and pasien.kd_kec=kecamatan.kd_kec and pasien.kd_kab=kabupaten.kd_kab where no_rkm_medis=? ", Alamat, NoRM.getText());
+
+        kamar = Sequel.cariIsi("select ifnull(kd_kamar,'') from kamar_inap where no_rawat='" + noRawatTerpilih + "' order by tgl_masuk desc limit 1");
+        if (!kamar.equals("")) {
+            namakamar = kamar + ", " + Sequel.cariIsi("select bangsal.nm_bangsal from bangsal inner join kamar on bangsal.kd_bangsal=kamar.kd_bangsal "+
+                        " where kamar.kd_kamar='" + kamar + "' ");
+            kamar = "Kamar";
+        } else {
+            kamar = "Poli";
+            namakamar = Sequel.cariIsi("select poliklinik.nm_poli from poliklinik inner join reg_periksa on poliklinik.kd_poli=reg_periksa.kd_poli "+
+                        "where reg_periksa.no_rawat='" + noRawatTerpilih + "'");
+        }
+
+        try {
+            // Hasil bacaan -- sama persis dgn exam yg sedang dipilih (fallback gabungan semua riwayat
+            // kalau yg exam ini sendiri belum ada hasilnya, pola sama spt panggilPhoto()).
+            String hasilBacaan = "";
+            ps5 = koneksi.prepareStatement("select hasil_radiologi.hasil from hasil_radiologi where hasil_radiologi.no_rawat=? and hasil_radiologi.tgl_periksa=? and hasil_radiologi.jam=?");
+            ps5.setString(1, noRawatTerpilih);
+            ps5.setString(2, tglPeriksaTerpilih);
+            ps5.setString(3, jamPeriksaTerpilih);
+            rs5 = ps5.executeQuery();
+            if (rs5.next()) {
+                hasilBacaan = rs5.getString("hasil");
+            }
+            rs5.close();
+            ps5.close();
+
+            // Foto radiologi -- HANYA utk exam yg sama persis (no_rawat+tgl_periksa+jam), supaya tidak
+            // ketempelan foto pemeriksaan lain milik pasien yg sama.
+            java.util.List<Map<String, ?>> fotoRows = new java.util.ArrayList<Map<String, ?>>();
+            PreparedStatement psFoto = koneksi.prepareStatement(
+                    "select lokasi_gambar from gambar_radiologi where no_rawat=? and tgl_periksa=? and jam=?");
+            psFoto.setString(1, noRawatTerpilih);
+            psFoto.setString(2, tglPeriksaTerpilih);
+            psFoto.setString(3, jamPeriksaTerpilih);
+            ResultSet rsFoto = psFoto.executeQuery();
+            while (rsFoto.next()) {
+                String urlGambar = "http://" + koneksiDB.HOSTHYBRIDWEB() + ":" + koneksiDB.PORTWEB() + "/" + koneksiDB.HYBRIDWEB() + "/radiologi/" + rsFoto.getString("lokasi_gambar");
+                Map<String, Object> baris = new java.util.HashMap<>();
+                baris.put("url", urlGambar);
+                fotoRows.add(baris);
+            }
+            rsFoto.close();
+            psFoto.close();
+
+            if (fotoRows.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Maaf, belum ada foto radiologi untuk pemeriksaan ini. Cetak dibatalkan.");
+                this.setCursor(Cursor.getDefaultCursor());
+                return;
+            }
+
+            File jrxmlUtama = new File("./report/rptPeriksaRadiologiFoto.jrxml");
+            File jasperUtama = new File("./report/rptPeriksaRadiologiFoto.jasper");
+            if (!jasperUtama.exists() || jrxmlUtama.lastModified() > jasperUtama.lastModified()) {
+                kompilasiJasper(jrxmlUtama.getPath(), jasperUtama.getPath());
+            }
+            File jrxmlSub = new File("./report/rptPeriksaRadiologiFotoSub.jrxml");
+            File jasperSub = new File("./report/rptPeriksaRadiologiFotoSub.jasper");
+            if (!jasperSub.exists() || jrxmlSub.lastModified() > jasperSub.lastModified()) {
+                kompilasiJasper(jrxmlSub.getPath(), jasperSub.getPath());
+            }
+
+            Map<String, Object> param = new HashMap<>();
+            param.put("noperiksa", noRawatTerpilih);
+            param.put("norm", NoRM.getText());
+            param.put("namapasien", Sequel.cariIsi("select pasien.nm_pasien from pasien where pasien.no_rkm_medis=? ", NoRM.getText()));
+            param.put("jkel", Jk.getText());
+            param.put("umur", Umur.getText());
+            param.put("lahir", Sequel.cariIsi("select DATE_FORMAT(pasien.tgl_lahir,'%d-%m-%Y') from pasien where pasien.no_rkm_medis=? ", NoRM.getText()));
+            param.put("pengirim", tbDokter.getValueAt(tbDokter.getSelectedRow(), 5).toString());
+            param.put("tanggal", Valid.SetTgl3(tglPeriksaTerpilih));
+            param.put("penjab", tbDokter.getValueAt(tbDokter.getSelectedRow(), 6).toString());
+            param.put("petugas", tbDokter.getValueAt(tbDokter.getSelectedRow(), 2).toString());
+            param.put("alamat", Alamat.getText());
+            param.put("kamar", kamar);
+            param.put("namakamar", namakamar);
+            param.put("pemeriksaan", pemeriksaan);
+            param.put("jam", jamPeriksaTerpilih);
+            param.put("namars", akses.getnamars());
+            param.put("alamatrs", akses.getalamatrs());
+            param.put("kotars", akses.getkabupatenrs());
+            param.put("propinsirs", akses.getpropinsirs());
+            param.put("kontakrs", akses.getkontakrs());
+            param.put("emailrs", akses.getemailrs());
+            param.put("hasil", hasilBacaan);
+            param.put("logo", Sequel.cariGambar("select setting.logo from setting"));
+            finger = Sequel.cariIsi("select sha1(sidikjari.sidikjari) from sidikjari inner join pegawai on pegawai.id=sidikjari.id where pegawai.nik=?", kdpenjab);
+            param.put("finger", "Dikeluarkan di " + akses.getnamars() + ", Kabupaten/Kota " + akses.getkabupatenrs() + "\nDitandatangani secara elektronik oleh " + tbDokter.getValueAt(tbDokter.getSelectedRow(), 6).toString() + "\nID " + (finger.equals("") ? kdpenjab : finger) + "\n" + Valid.SetTgl3(tglPeriksaTerpilih));
+            finger = Sequel.cariIsi("select sha1(sidikjari.sidikjari) from sidikjari inner join pegawai on pegawai.id=sidikjari.id where pegawai.nik=?", kdpetugas);
+            param.put("finger2", "Dikeluarkan di " + akses.getnamars() + ", Kabupaten/Kota " + akses.getkabupatenrs() + "\nDitandatangani secara elektronik oleh " + tbDokter.getValueAt(tbDokter.getSelectedRow(), 2).toString() + "\nID " + (finger.equals("") ? kdpetugas : finger) + "\n" + Valid.SetTgl3(tglPeriksaTerpilih));
+            param.put("fotoData", new net.sf.jasperreports.engine.data.JRMapCollectionDataSource(fotoRows));
+            param.put("fotoSubPath", jasperSub.getPath());
+
+            Valid.MyReportPDF("rptPeriksaRadiologiFoto.jasper", "report", "::[ Hasil + Foto Radiologi ]::", param);
+        } catch (Exception e) {
+            System.out.println("Notif BtnPrintFotoActionPerformed : " + e);
+            JOptionPane.showMessageDialog(null, "Gagal mencetak.\n" + e.getMessage());
+        }
+        this.setCursor(Cursor.getDefaultCursor());
+    }
 
     private void BtnPrint1KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnPrint1KeyPressed
         if(evt.getKeyCode()==KeyEvent.VK_SPACE){
@@ -2473,6 +2641,7 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private widget.Button BtnKeluar;
     private widget.Button BtnPrint;
     private widget.Button BtnPrint1;
+    private widget.Button BtnPrintFoto;
     private widget.Button BtnRefreshPhoto;
     private widget.Button BtnSimpan;
     private widget.Button BtnSimpan4;

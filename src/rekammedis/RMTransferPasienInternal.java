@@ -118,8 +118,9 @@ public final class RMTransferPasienInternal extends JDialog {
     private final widget.TextBox tCatatanSetelah = tf();
     private final widget.TextBox tNamaMenyerahkan = ro();
     private final JLabel lblFotoMenyerahkan = new JLabel();
-    private final widget.TextBox tNamaMenerima = tf();
+    private final widget.TextBox tNamaMenerima = ro();
     private String nipMenyerahkan = "";
+    private String nipMenerima = "";
 
     private final widget.Button BtnBaru = new widget.Button();
     private final widget.Button BtnSimpan = new widget.Button();
@@ -476,6 +477,7 @@ public final class RMTransferPasienInternal extends JDialog {
         dtpMasukRs.setDate(new Date());
         lblFotoMenyerahkan.setIcon(null);
         nipMenyerahkan = "";
+        nipMenerima = "";
     }
 
     /** Dipanggil dari menu "Penilaian Awal". Tarik data yang sudah ada lalu timpa dengan data tersimpan bila ada. */
@@ -555,9 +557,14 @@ public final class RMTransferPasienInternal extends JDialog {
 
         dtpDihubungi.setDate(new Date());
         dtpTransfer.setDate(new Date());
+        // "Menyerahkan" & "Menerima" default ke petugas yg SEDANG login. Kalau record sudah ada
+        // nip_menyerahkan/nip_menerima tersimpan (sudah pernah diisi petugas lain), muatDataJikaAda()
+        // di bawah akan menimpa default ini dgn data tersimpan -- jadi nilai lama tidak pernah tertukar.
         nipMenyerahkan = akses.getkode();
         tNamaMenyerahkan.setText(Sequel.cariIsi("select nama from petugas where nip=?", nipMenyerahkan));
         lblFotoMenyerahkan.setIcon(ambilFotoTtd(nipMenyerahkan));
+        nipMenerima = akses.getkode();
+        tNamaMenerima.setText(Sequel.cariIsi("select nama from petugas where nip=?", nipMenerima));
     }
 
     private void muatDataJikaAda(String norawat) {
@@ -622,7 +629,13 @@ public final class RMTransferPasienInternal extends JDialog {
                         tNamaMenyerahkan.setText(nvl(rs.getString("nama_menyerahkan")));
                         lblFotoMenyerahkan.setIcon(ambilFotoTtd(nipMenyerahkan));
                     }
-                    tNamaMenerima.setText(nvl(rs.getString("nama_menerima")));
+                    // Kalau "Menerima" sudah pernah diisi (ada nip tersimpan), kunci ke data lama itu.
+                    // Kalau belum, BIARKAN default dari tarikDataPasien() (petugas yg sedang login) --
+                    // itulah mekanisme auto-isi "Menerima" oleh petugas yg sekarang membuka form ini.
+                    if (!nvl(rs.getString("nip_menerima")).equals("")) {
+                        nipMenerima = rs.getString("nip_menerima");
+                        tNamaMenerima.setText(nvl(rs.getString("nama_menerima")));
+                    }
                 }
             }
         } catch (Exception e) {
@@ -652,9 +665,9 @@ public final class RMTransferPasienInternal extends JDialog {
                 + "hasil_lab,hasil_usg,hasil_rontgen,barang_dompet,barang_hp,barang_lainnya,barang_lainnya_ket,"
                 + "ku_sebelum,td_sebelum,nadi_sebelum,rr_sebelum,suhu_sebelum,spo2_sebelum,pemfisik_sebelum,catatan_sebelum,"
                 + "ku_setelah,td_setelah,nadi_setelah,rr_setelah,suhu_setelah,spo2_setelah,pemfisik_setelah,catatan_setelah,"
-                + "nip_menyerahkan,nama_menyerahkan,nama_menerima,updated_by,updated_at,created_by,created_at) "
+                + "nip_menyerahkan,nama_menyerahkan,nip_menerima,nama_menerima,updated_by,updated_at,created_by,created_at) "
                 + "values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,"
-                + "?,?,?,?,?,?,?,?,?,?,?,?,now(),?,now()) "
+                + "?,?,?,?,?,?,?,?,?,?,?,?,?,now(),?,now()) "
                 + "on duplicate key update ruangan_asal=values(ruangan_asal),ruangan_tujuan=values(ruangan_tujuan),"
                 + "petugas_tujuan_dihubungi=values(petugas_tujuan_dihubungi),tanggal_dihubungi=values(tanggal_dihubungi),"
                 + "jam_dihubungi=values(jam_dihubungi),tanggal_transfer=values(tanggal_transfer),jam_transfer=values(jam_transfer),"
@@ -674,7 +687,8 @@ public final class RMTransferPasienInternal extends JDialog {
                 + "nadi_setelah=values(nadi_setelah),rr_setelah=values(rr_setelah),suhu_setelah=values(suhu_setelah),"
                 + "spo2_setelah=values(spo2_setelah),pemfisik_setelah=values(pemfisik_setelah),"
                 + "catatan_setelah=values(catatan_setelah),nip_menyerahkan=values(nip_menyerahkan),"
-                + "nama_menyerahkan=values(nama_menyerahkan),nama_menerima=values(nama_menerima),"
+                + "nama_menyerahkan=values(nama_menyerahkan),nip_menerima=values(nip_menerima),"
+                + "nama_menerima=values(nama_menerima),"
                 + "updated_by=values(updated_by),updated_at=now()")) {
             int i = 1;
             ps.setString(i++, ambil(TNoRw));
@@ -723,6 +737,7 @@ public final class RMTransferPasienInternal extends JDialog {
             ps.setString(i++, ambil(tCatatanSetelah));
             ps.setString(i++, nipMenyerahkan);
             ps.setString(i++, ambil(tNamaMenyerahkan));
+            ps.setString(i++, nipMenerima);
             ps.setString(i++, ambil(tNamaMenerima));
             ps.setString(i++, akses.getkode());
             ps.setString(i++, akses.getkode());
@@ -879,6 +894,7 @@ public final class RMTransferPasienInternal extends JDialog {
                 + "catatan_setelah text null,"
                 + "nip_menyerahkan varchar(20) null,"
                 + "nama_menyerahkan varchar(60) null,"
+                + "nip_menerima varchar(20) null,"
                 + "nama_menerima varchar(60) null,"
                 + "created_by varchar(50) null,"
                 + "updated_by varchar(50) null,"
@@ -894,6 +910,10 @@ public final class RMTransferPasienInternal extends JDialog {
         for (String kolom : new String[]{"pemfisik_sebelum", "catatan_sebelum", "pemfisik_setelah", "catatan_setelah"}) {
             Sequel.queryu2("alter table lembar_transfer_pasien_internal modify column " + kolom + " text null");
         }
+        // Kolom nip_menerima baru ditambahkan belakangan -- tabel yg sudah terlanjur dibuat sebelum ini
+        // belum punya kolomnya. ADD COLUMN akan gagal (duplicate) kalau sudah ada, tapi queryu2()
+        // menelan exception itu, jadi aman dipanggil berulang tiap dialog dibuka.
+        Sequel.queryu2("alter table lembar_transfer_pasien_internal add column nip_menerima varchar(20) null");
     }
 
     private static String cocokkanOpsi(widget.ComboBox combo, String nilai) {
