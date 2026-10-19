@@ -2208,6 +2208,7 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
             }
             Sequel.AutoComitTrue();
             if(sukses==true){
+                widget.Toast.sukses(this,"Data triase tersimpan — "+TPasien.getText()+" • "+TNoRw.getText());
                 emptTeks();
             }
         }
@@ -2291,8 +2292,36 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
 }//GEN-LAST:event_BtnEditKeyPressed
 
     private void BtnKeluarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnKeluarActionPerformed
+        if(adaIsianBelumTersimpan()){
+            int jawab=JOptionPane.showConfirmDialog(this,
+                    "Data yang sedang diisi belum disimpan.\nTetap mau keluar?",
+                    "Konfirmasi Keluar",JOptionPane.YES_NO_OPTION,JOptionPane.WARNING_MESSAGE);
+            if(jawab!=JOptionPane.YES_OPTION){
+                return;
+            }
+        }
         dispose();
 }//GEN-LAST:event_BtnKeluarActionPerformed
+
+    /** Dipakai BtnKeluar utk peringatkan petugas sebelum keluar kalau ada isian yg belum
+     *  diklik Simpan -- kasus nyata: petugas mengira data sudah tersimpan padahal belum.
+     *  Cek field2 yg SAMA dgn yg divalidasi BtnSimpan (Primer & Sekunder digabung, krn
+     *  petugas bisa pindah tab tanpa sadar ada isian tertinggal di tab lain). Field header
+     *  (TNoRw/TPasien) sengaja TIDAK dicek -- itu terisi otomatis dari pasien yg dibuka,
+     *  bukan isian manual petugas, jadi bukan indikasi "ada yg belum disimpan". */
+    private boolean adaIsianBelumTersimpan(){
+        javax.swing.text.JTextComponent[] kolomTeks={
+            KeteranganKedatangan,
+            PrimerKeluhanUtama,PrimerSuhu,PrimerNyeri,PrimerTensi,PrimerNadi,PrimerSaturasi,PrimerRespirasi,PrimerCatatan,
+            SekunderAnamnesa,SekunderSuhu,SekunderNyeri,SekunderTensi,SekunderNadi,SekunderSaturasi,SekunderRespirasi,SekunderCatatan
+        };
+        for(javax.swing.text.JTextComponent t:kolomTeks){
+            if(!t.getText().trim().equals("")){
+                return true;
+            }
+        }
+        return !KdKasus.getText().trim().equals("");
+    }
 
     private void BtnKeluarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_BtnKeluarKeyPressed
         if(evt.getKeyCode()==KeyEvent.VK_SPACE){
@@ -5972,6 +6001,7 @@ public final class RMTriaseIGD extends javax.swing.JDialog {
         }
         Sequel.AutoComitTrue();
         if(sukses==true){
+            widget.Toast.sukses(this,"Data triase tersimpan — "+TPasien.getText()+" • "+TNoRw.getText());
             emptTeks();
             runBackground(() ->tampil());
             TabPilihan.setSelectedIndex(1);

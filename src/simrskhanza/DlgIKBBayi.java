@@ -3897,15 +3897,16 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                             tbAPGAR.getValueAt(3,6).toString()+"','"+tbAPGAR.getValueAt(4,6).toString()+"','"+N10.getText()+"','"+Resusitas.getText()+"','"+ObatDiberikan.getText()+"','"+
                             Mikasi.getText()+"','"+Mikonium.getText()+"'","No.RM/No.SKL")==true){
                                 Sequel.queryu2("delete from set_no_rkm_medis");
-                                Sequel.queryu2("insert into set_no_rkm_medis values(?)",1,new String[]{NoRm.getText()}); 
+                                Sequel.queryu2("insert into set_no_rkm_medis values(?)",1,new String[]{NoRm.getText()});
+                                widget.Toast.sukses(this,"Data kelahiran bayi tersimpan — "+NmBayi.getText()+" • "+NoRm.getText());
                                 emptTeks();
                         }else{
                             Sequel.meghapus("pasien","no_rkm_medis",NoRm.getText());
-                        }  
+                        }
                     } catch (Exception e) {
                         Sequel.meghapus("pasien","no_rkm_medis",NoRm.getText());
                         JOptionPane.showMessageDialog(null,"Gagal menyimpan kelahiran bayi, silahkan periksa data yang mau disimpan..!!");
-                    }    
+                    }
                 }else{
                     autoNomor();
                     autoSKL();
@@ -3929,15 +3930,16 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                                     Valid.SetInteger(tbAPGAR.getValueAt(3,6).toString())+"','"+Valid.SetInteger(tbAPGAR.getValueAt(4,6).toString())+"','"+N10.getText()+"','"+Resusitas.getText()+"','"+ObatDiberikan.getText()+"','"+
                                     Mikasi.getText()+"','"+Mikonium.getText()+"'","No.RM/No.SKL")==true){
                                         Sequel.queryu2("delete from set_no_rkm_medis");
-                                        Sequel.queryu2("insert into set_no_rkm_medis values(?)",1,new String[]{NoRm.getText()}); 
+                                        Sequel.queryu2("insert into set_no_rkm_medis values(?)",1,new String[]{NoRm.getText()});
+                                        widget.Toast.sukses(this,"Data kelahiran bayi tersimpan — "+NmBayi.getText()+" • "+NoRm.getText());
                                         emptTeks();
                                 }else{
                                     Sequel.meghapus("pasien","no_rkm_medis",NoRm.getText());
-                                }  
+                                }
                             } catch (Exception e) {
                                 Sequel.meghapus("pasien","no_rkm_medis",NoRm.getText());
                                 JOptionPane.showMessageDialog(null,"Gagal menyimpan kelahiran bayi, silahkan periksa data yang mau disimpan..!!");
-                            }  
+                            }
                     }else{
                         autoNomor();
                         autoSKL();
@@ -3961,11 +3963,12 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                                         Valid.SetInteger(tbAPGAR.getValueAt(3,6).toString())+"','"+Valid.SetInteger(tbAPGAR.getValueAt(4,6).toString())+"','"+N10.getText()+"','"+Resusitas.getText()+"','"+ObatDiberikan.getText()+"','"+
                                         Mikasi.getText()+"','"+Mikonium.getText()+"'","No.RM/No.SKL")==true){
                                             Sequel.queryu2("delete from set_no_rkm_medis");
-                                            Sequel.queryu2("insert into set_no_rkm_medis values(?)",1,new String[]{NoRm.getText()}); 
+                                            Sequel.queryu2("insert into set_no_rkm_medis values(?)",1,new String[]{NoRm.getText()});
+                                            widget.Toast.sukses(this,"Data kelahiran bayi tersimpan — "+NmBayi.getText()+" • "+NoRm.getText());
                                             emptTeks();
                                     }else{
                                         Sequel.meghapus("pasien","no_rkm_medis",NoRm.getText());
-                                    }  
+                                    }
                                 } catch (Exception e) {
                                     Sequel.meghapus("pasien","no_rkm_medis",NoRm.getText());
                                     JOptionPane.showMessageDialog(null,"Gagal menyimpan kelahiran bayi, silahkan periksa data yang mau disimpan..!!");
@@ -3986,11 +3989,12 @@ private void BtnSimpanActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                             Valid.SetInteger(tbAPGAR.getValueAt(0,6).toString())+"','"+Valid.SetInteger(tbAPGAR.getValueAt(1,6).toString())+"','"+Valid.SetInteger(tbAPGAR.getValueAt(2,6).toString())+"','"+
                             Valid.SetInteger(tbAPGAR.getValueAt(3,6).toString())+"','"+Valid.SetInteger(tbAPGAR.getValueAt(4,6).toString())+"','"+N10.getText()+"','"+Resusitas.getText()+"','"+ObatDiberikan.getText()+"','"+
                             Mikasi.getText()+"','"+Mikonium.getText()+"'","No.RM/No.SKL")==true){
+                            widget.Toast.sukses(this,"Data kelahiran bayi tersimpan — "+NmBayi.getText()+" • "+NoRm.getText());
                             emptTeks();
                     }
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(null,"Gagal menyimpan kelahiran bayi, silahkan periksa data yang mau disimpan..!!");
-                }            
+                }
             }
         }
 }//GEN-LAST:event_BtnSimpanActionPerformed
