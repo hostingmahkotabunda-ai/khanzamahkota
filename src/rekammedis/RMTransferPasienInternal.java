@@ -118,7 +118,7 @@ public final class RMTransferPasienInternal extends JDialog {
     private final widget.TextBox tCatatanSetelah = tf();
     private final widget.TextBox tNamaMenyerahkan = ro();
     private final JLabel lblFotoMenyerahkan = new JLabel();
-    private final widget.TextBox tNamaMenerima = ro();
+    private final widget.TextBox tNamaMenerima = tf();
     private String nipMenyerahkan = "";
     private String nipMenerima = "";
 
@@ -557,9 +557,10 @@ public final class RMTransferPasienInternal extends JDialog {
 
         dtpDihubungi.setDate(new Date());
         dtpTransfer.setDate(new Date());
-        // "Menyerahkan" & "Menerima" default ke petugas yg SEDANG login. Kalau record sudah ada
-        // nip_menyerahkan/nip_menerima tersimpan (sudah pernah diisi petugas lain), muatDataJikaAda()
-        // di bawah akan menimpa default ini dgn data tersimpan -- jadi nilai lama tidak pernah tertukar.
+        // "Menyerahkan" & "Menerima" default ke petugas yg SEDANG login. "Menyerahkan" tetap dikunci
+        // (read-only) spt sebelumnya -- kalau record sudah ada nip_menyerahkan tersimpan, muatDataJikaAda()
+        // di bawah menimpa default ini dgn data lama shg tidak tertukar. "Menerima" HANYA default awal --
+        // field-nya bisa diedit manual kapan saja, jadi nilai di sini cuma saran, bukan kunci.
         nipMenyerahkan = akses.getkode();
         tNamaMenyerahkan.setText(Sequel.cariIsi("select nama from petugas where nip=?", nipMenyerahkan));
         lblFotoMenyerahkan.setIcon(ambilFotoTtd(nipMenyerahkan));
@@ -629,13 +630,11 @@ public final class RMTransferPasienInternal extends JDialog {
                         tNamaMenyerahkan.setText(nvl(rs.getString("nama_menyerahkan")));
                         lblFotoMenyerahkan.setIcon(ambilFotoTtd(nipMenyerahkan));
                     }
-                    // Kalau "Menerima" sudah pernah diisi (ada nip tersimpan), kunci ke data lama itu.
-                    // Kalau belum, BIARKAN default dari tarikDataPasien() (petugas yg sedang login) --
-                    // itulah mekanisme auto-isi "Menerima" oleh petugas yg sekarang membuka form ini.
-                    if (!nvl(rs.getString("nip_menerima")).equals("")) {
-                        nipMenerima = rs.getString("nip_menerima");
-                        tNamaMenerima.setText(nvl(rs.getString("nama_menerima")));
-                    }
+                    // "Menerima" bisa diedit manual kapan saja (spt field2 teks bebas lainnya di form ini) --
+                    // kalau record sudah ada, tampilkan dulu nilai tersimpan; kalau belum ada sama sekali,
+                    // BIARKAN default dari tarikDataPasien() (petugas yg sedang login) tetap berlaku.
+                    nipMenerima = nvl(rs.getString("nip_menerima"));
+                    tNamaMenerima.setText(nvl(rs.getString("nama_menerima")));
                 }
             }
         } catch (Exception e) {
