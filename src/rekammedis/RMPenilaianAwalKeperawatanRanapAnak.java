@@ -3727,11 +3727,16 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
     KdPetugas2.getText(),
     KdDPJP.getText()
 }) == true) {
+    // Hapus dulu baris lama sblm nulis ulang sesuai checkbox saat ini -- spy kalau form ini
+    // dibuka utk EDIT data yg sudah tersimpan (checkbox di-uncheck petugas), masalah/rencana
+    // yg dihapus benar2 hilang, bukan nyangkut terus (dulu cuma insert, ga pernah hapus yg lama).
+    Sequel.meghapus("penilaian_awal_keperawatan_ranap_masalah", "no_rawat", TNoRw.getText());
     for (i = 0; i < tbMasalahKeperawatan.getRowCount(); i++) {
         if (tbMasalahKeperawatan.getValueAt(i, 0).toString().equals("true")) {
             Sequel.menyimpan2("penilaian_awal_keperawatan_ranap_masalah", "?,?", 2, new String[]{TNoRw.getText(), tbMasalahKeperawatan.getValueAt(i, 1).toString()});
         }
     }
+    Sequel.meghapus("penilaian_awal_keperawatan_ranap_rencana", "no_rawat", TNoRw.getText());
     for (i = 0; i < tbRencanaKeperawatan.getRowCount(); i++) {
         if (tbRencanaKeperawatan.getValueAt(i, 0).toString().equals("true")) {
             Sequel.menyimpan2("penilaian_awal_keperawatan_ranap_rencana", "?,?", 2, new String[]{TNoRw.getText(), tbRencanaKeperawatan.getValueAt(i, 1).toString()});
@@ -4143,6 +4148,11 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
             }else{
                 tampilMasalah();
             }
+        } catch (Exception e) {
+        }
+        try {
+            tampilRencana();
+            tampilRencana2();
         } catch (Exception e) {
         }
     }//GEN-LAST:event_formWindowOpened
@@ -5778,61 +5788,15 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
             DiketahuiDietisen.setSelectedItem(tbObat.getValueAt(tbObat.getSelectedRow(),103).toString());
             KeteranganDiketahuiDietisen.setText(tbObat.getValueAt(tbObat.getSelectedRow(),104).toString());
             Rencana.setText(tbObat.getValueAt(tbObat.getSelectedRow(),105).toString());
-            
-            try {
-                Valid.tabelKosong(tabModeMasalah);
-                
-                ps=koneksi.prepareStatement(
-                        "select master_masalah_keperawatan.kode_masalah,master_masalah_keperawatan.nama_masalah from master_masalah_keperawatan "+
-                        "inner join penilaian_awal_keperawatan_ranap_masalah on penilaian_awal_keperawatan_ranap_masalah.kode_masalah=master_masalah_keperawatan.kode_masalah "+
-                        "where penilaian_awal_keperawatan_ranap_masalah.no_rawat=? order by penilaian_awal_keperawatan_ranap_masalah.kode_masalah");
-                try {
-                    ps.setString(1,tbObat.getValueAt(tbObat.getSelectedRow(),0).toString());
-                    rs=ps.executeQuery();
-                    while(rs.next()){
-                        tabModeMasalah.addRow(new Object[]{true,rs.getString(1),rs.getString(2)});
-                    }
-                } catch (Exception e) {
-                    System.out.println("Notif : "+e);
-                } finally{
-                    if(rs!=null){
-                        rs.close();
-                    }
-                    if(ps!=null){
-                        ps.close();
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            }
-            
-            try {
-                Valid.tabelKosong(tabModeRencana);
-                
-                ps=koneksi.prepareStatement(
-                        "select master_rencana_keperawatan.kode_rencana,master_rencana_keperawatan.rencana_keperawatan from master_rencana_keperawatan "+
-                        "inner join penilaian_awal_keperawatan_ranap_rencana on penilaian_awal_keperawatan_ranap_rencana.kode_rencana=master_rencana_keperawatan.kode_rencana "+
-                        "where penilaian_awal_keperawatan_ranap_rencana.no_rawat=? order by penilaian_awal_keperawatan_ranap_rencana.kode_rencana");
-                try {
-                    ps.setString(1,tbObat.getValueAt(tbObat.getSelectedRow(),0).toString());
-                    rs=ps.executeQuery();
-                    while(rs.next()){
-                        tabModeRencana.addRow(new Object[]{true,rs.getString(1),rs.getString(2)});
-                    }
-                } catch (Exception e) {
-                    System.out.println("Notif : "+e);
-                } finally{
-                    if(rs!=null){
-                        rs.close();
-                    }
-                    if(ps!=null){
-                        ps.close();
-                    }
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            }
-            
+
+            // Dulu di sini cuma nampilin Masalah/Rencana yg SUDAH tercentang (dari query inner join),
+            // jadi petugas ga bisa nambah masalah/rencana baru saat edit -- tabelnya cuma berisi yg lama.
+            // Ganti pakai tampilMasalah()+tampilRencana() (daftar LENGKAP) baru muatMasalahRencanaTersimpan()
+            // (centang ulang yg sudah tersimpan) -- spy bisa tambah ATAU hapus centang sebelum klik Ganti.
+            tampilMasalah();
+            tampilRencana();
+            muatMasalahRencanaTersimpan(tbObat.getValueAt(tbObat.getSelectedRow(),0).toString());
+
             Valid.SetTgl2(TglAsuhan,tbObat.getValueAt(tbObat.getSelectedRow(),11).toString());
         }
     }
@@ -5880,6 +5844,54 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
         DTPCari2.setDate(tgl2);
         isRawat();
         muatAnak(norwt);
+        tampilMasalah();
+        tampilRencana();
+        muatMasalahRencanaTersimpan(norwt);
+    }
+
+    /**
+     * Kalau no_rawat ini sudah punya Masalah/Rencana Keperawatan tersimpan (termasuk yg
+     * sudah lama tersimpan sebelumnya), centang ulang baris yg sesuai di tabModeMasalah/
+     * tabModeRencana -- supaya saat form dibuka utk EDIT, petugas lihat kondisi sebenarnya
+     * (bisa tambah/hapus centang & simpan ulang), bukan selalu mulai dari kosong.
+     */
+    private void muatMasalahRencanaTersimpan(String noRawat) {
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "select kode_masalah from penilaian_awal_keperawatan_ranap_masalah where no_rawat=?")) {
+            ps.setString(1, noRawat);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String kode = rs.getString(1);
+                    for (int r = 0; r < tabModeMasalah.getRowCount(); r++) {
+                        if (tabModeMasalah.getValueAt(r, 1).toString().equals(kode)) {
+                            tabModeMasalah.setValueAt(true, r, 0);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi muatMasalahRencanaTersimpan(masalah) : " + e);
+        }
+
+        // refresh daftar Rencana spy rencana yg terkait masalah yg baru dicentang di atas ikut tampil
+        tampilRencana2();
+
+        try (PreparedStatement ps2 = koneksi.prepareStatement(
+                "select kode_rencana from penilaian_awal_keperawatan_ranap_rencana where no_rawat=?")) {
+            ps2.setString(1, noRawat);
+            try (ResultSet rs2 = ps2.executeQuery()) {
+                while (rs2.next()) {
+                    String kode = rs2.getString(1);
+                    for (int r = 0; r < tabModeRencana.getRowCount(); r++) {
+                        if (tabModeRencana.getValueAt(r, 1).toString().equals(kode)) {
+                            tabModeRencana.setValueAt(true, r, 0);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notifikasi muatMasalahRencanaTersimpan(rencana) : " + e);
+        }
     }
     
     
@@ -6288,24 +6300,37 @@ public final class RMPenilaianAwalKeperawatanRanapAnak extends javax.swing.JDial
                 });
             }
 
+            int masalahDicentang=0;
             myObj = new FileReader("./cache/rencanakeperawatan.iyem");
             root = mapper.readTree(myObj);
             response = root.path("rencanakeperawatan");
             if(response.isArray()){
                 for(i=0;i<tbMasalahKeperawatan.getRowCount();i++){
                     if(tbMasalahKeperawatan.getValueAt(i,0).toString().equals("true")){
+                        masalahDicentang++;
                         for(JsonNode list:response){
                             if(list.path("KodeMasalah").asText().toLowerCase().equals(tbMasalahKeperawatan.getValueAt(i,1).toString())&&
                                     list.path("NamaRencana").asText().toLowerCase().contains(TCariRencana.getText().toLowerCase())){
                                 tabModeRencana.addRow(new Object[]{
                                     false,list.path("KodeRencana").asText(),list.path("NamaRencana").asText()
-                                });                    
+                                });
                             }
                         }
                     }
                 }
             }
             myObj.close();
+
+            // Rencana Keperawatan tergantung Masalah Keperawatan yg dicentang (dicocokkan via kode_masalah).
+            // Kalau hasilnya kosong, tampilkan baris keterangan (bukan item terpilih) spy petugas tidak
+            // mengira form rusak -- checkbox-nya tetap false jadi tidak akan pernah ikut tersimpan.
+            if(tabModeRencana.getRowCount()==0){
+                if(masalahDicentang==0){
+                    tabModeRencana.addRow(new Object[]{false,"","(Centang Masalah Keperawatan dahulu, rencana standar utk masalah tsb akan tampil di sini)"});
+                }else{
+                    tabModeRencana.addRow(new Object[]{false,"","(Belum ada rencana standar utk masalah yg dipilih -- isi manual di tab \"Rencana Keperawatan Lainnya\")"});
+                }
+            }
         }catch(Exception e){
             System.out.println("Notifikasi : "+e);
         }
