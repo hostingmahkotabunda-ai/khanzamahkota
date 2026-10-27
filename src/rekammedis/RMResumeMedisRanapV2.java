@@ -120,6 +120,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
     private final Button BtnAmbilAlasanSoap = buatButtonMini("Ambil");
     private final Button BtnAmbilPemeriksaanSoap = buatButtonMini("Ambil");
     private final Button BtnAmbilTerapiObatSoap = buatButtonMini("Ambil");
+    private final Button BtnAmbilDiagnosaMasukSoap = buatButtonMini("Ambil");
+    private final Button BtnAmbilDiagnosaKeluarSoap = buatButtonMini("Ambil");
 
     private final TextArea AreaAlasanRawat = buatTextArea(3);
     private final TextBox TDiagnosaMasuk = buatTextBox(26);
@@ -307,8 +309,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         int row = 0;
         row = tambahJudul(panel, row, "Resume Medis");
         row = tambahAreaDenganTombol(panel, row, "Alasan / Indikasi Dirawat", AreaAlasanRawat, 74, BtnAmbilAlasanSoap);
-        row = tambahDuaKolom(panel, row, "Diagnosa Masuk", TDiagnosaMasuk, "Kode ICD 10", TICD10Masuk);
-        row = tambahDuaKolom(panel, row, "Diagnosa Keluar *", TDiagnosaKeluar, "Kode ICD 10", TICD10Keluar);
+        row = tambahDuaKolom(panel, row, "Diagnosa Masuk", flowPanel(TDiagnosaMasuk, BtnAmbilDiagnosaMasukSoap), "Kode ICD 10", TICD10Masuk);
+        row = tambahDuaKolom(panel, row, "Diagnosa Keluar *", flowPanel(TDiagnosaKeluar, BtnAmbilDiagnosaKeluarSoap), "Kode ICD 10", TICD10Keluar);
         row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 1", TDiagnosaSekunder1, "ICD 10 Sek. 1", TICD10Sekunder1);
         row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 2", TDiagnosaSekunder2, "ICD 10 Sek. 2", TICD10Sekunder2);
         row = tambahDuaKolom(panel, row, "Diagnosa Sekunder 3", TDiagnosaSekunder3, "ICD 10 Sek. 3", TICD10Sekunder3);
@@ -441,6 +443,18 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 bukaPemilihSoapDokter("rtl");
+            }
+        });
+        BtnAmbilDiagnosaMasukSoap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                bukaPemilihSoapDokter("asesmen", TDiagnosaMasuk);
+            }
+        });
+        BtnAmbilDiagnosaKeluarSoap.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                bukaPemilihSoapDokter("asesmen", TDiagnosaKeluar);
             }
         });
         BtnInputTtd.addActionListener(new ActionListener() {
@@ -720,6 +734,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         BtnAmbilAlasanSoap.setEnabled(boleh);
         BtnAmbilPemeriksaanSoap.setEnabled(boleh);
         BtnAmbilTerapiObatSoap.setEnabled(boleh);
+        BtnAmbilDiagnosaMasukSoap.setEnabled(boleh);
+        BtnAmbilDiagnosaKeluarSoap.setEnabled(boleh);
         BtnInputTtd.setEnabled(boleh);
         BtnUploadTtd.setEnabled(boleh);
         BtnHapusTtd.setEnabled(boleh);
@@ -1522,6 +1538,13 @@ public final class RMResumeMedisRanapV2 extends JDialog {
     }
 
     private void bukaPemilihSoapDokter(String kolomTarget) {
+        bukaPemilihSoapDokter(kolomTarget, null);
+    }
+
+    /** targetOverride dipakai kalau 1 sumber SOAP (misal "asesmen") bisa dituju ke LEBIH DARI
+     *  SATU field berbeda (Diagnosa Masuk ATAU Diagnosa Keluar) -- kalau null, target ditentukan
+     *  dari kolomTarget spt sebelumnya (Subjek/Objek/Plan masing2 cuma 1 field tujuan). */
+    private void bukaPemilihSoapDokter(String kolomTarget, final javax.swing.text.JTextComponent targetOverride) {
         if (ambil(TNoRw).isEmpty()) {
             Valid.textKosong(TNoRw, "Pasien Rawat Inap");
             return;
@@ -1529,7 +1552,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
 
         final boolean ambilSubjek = "keluhan".equals(kolomTarget);
         final boolean ambilObjek = "pemeriksaan".equals(kolomTarget);
-        final String judulKolom = ambilSubjek ? "Subjek" : (ambilObjek ? "Objek" : "Plan");
+        final boolean ambilAsesmen = "asesmen".equals(kolomTarget);
+        final String judulKolom = ambilSubjek ? "Subjek" : (ambilObjek ? "Objek" : (ambilAsesmen ? "Asesmen" : "Plan"));
         // Kolom 0 "Pilih" (checkbox) -- boleh centang LEBIH DARI SATU baris SOAP sekaligus,
         // beda dari sebelumnya yg cuma bisa ambil 1 baris. Kalau yg dicentang cuma 1, hasilnya
         // PERSIS spt dulu (isi kolom itu apa adanya, tanpa tambahan apa2) -- header
@@ -1618,7 +1642,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                     }
                     nilai = gabung.toString();
                 }
-                masukkanNilaiSoapKeForm(ambilSubjek, ambilObjek, nilai);
+                masukkanNilaiSoapKeForm(ambilSubjek, ambilObjek, targetOverride, nilai);
                 dialog.dispose();
             }
         };
@@ -1641,7 +1665,7 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                     if (row >= 0) {
                         int modelRow = tabelSoap.convertRowIndexToModel(row);
                         Object nilaiTabel = modelSoap.getValueAt(modelRow, 4);
-                        masukkanNilaiSoapKeForm(ambilSubjek, ambilObjek, nilaiTabel == null ? "" : nilaiTabel.toString());
+                        masukkanNilaiSoapKeForm(ambilSubjek, ambilObjek, targetOverride, nilaiTabel == null ? "" : nilaiTabel.toString());
                         dialog.dispose();
                     }
                 }
@@ -1654,13 +1678,14 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         dialog.setVisible(true);
     }
 
-    /** Isi field target di form (Alasan Rawat/Pemeriksaan Fisik/Terapi Obat) dgn nilai SOAP yg
-     *  dipilih -- dipakai bareng oleh double-klik (1 baris, langsung) & tombol "Ambil Yang
-     *  Dicentang" (bisa gabungan beberapa baris). Kalau field itu SUDAH ada isinya (dari
-     *  "Ambil" sebelumnya, atau diketik manual), isian lama TIDAK ditimpa -- yang baru
-     *  ditambahkan di bawahnya, dipisah baris kosong. */
-    private void masukkanNilaiSoapKeForm(boolean ambilSubjek, boolean ambilObjek, String nilai) {
-        TextArea target = ambilSubjek ? AreaAlasanRawat : (ambilObjek ? AreaPemeriksaanFisik : AreaTerapiObat);
+    /** Isi field target di form (Alasan Rawat/Pemeriksaan Fisik/Terapi Obat, atau Diagnosa
+     *  Masuk/Keluar lewat targetOverride) dgn nilai SOAP yg dipilih -- dipakai bareng oleh
+     *  double-klik (1 baris, langsung) & tombol "Ambil Yang Dicentang" (bisa gabungan beberapa
+     *  baris). Kalau field itu SUDAH ada isinya (dari "Ambil" sebelumnya, atau diketik manual),
+     *  isian lama TIDAK ditimpa -- yang baru ditambahkan di bawahnya, dipisah baris kosong. */
+    private void masukkanNilaiSoapKeForm(boolean ambilSubjek, boolean ambilObjek, javax.swing.text.JTextComponent targetOverride, String nilai) {
+        javax.swing.text.JTextComponent target = targetOverride != null ? targetOverride
+                : (ambilSubjek ? AreaAlasanRawat : (ambilObjek ? AreaPemeriksaanFisik : AreaTerapiObat));
         String isiSekarang = target.getText();
         if (isiSekarang != null && !isiSekarang.trim().isEmpty()) {
             target.setText(isiSekarang + "\n\n" + nilai);
@@ -1677,6 +1702,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
             info = "Klik 2x pada satu baris utk langsung mengambilnya (atau centang beberapa lalu \"Ambil Yang Dicentang\" utk menggabungkan). Kolom Objek akan dimasukkan ke Pemeriksaan Fisik.";
         } else if ("rtl".equals(kolomTarget)) {
             info = "Klik 2x pada satu baris utk langsung mengambilnya (atau centang beberapa lalu \"Ambil Yang Dicentang\" utk menggabungkan). Kolom Plan akan dimasukkan ke Terapi / Obat Yang Diberikan.";
+        } else if ("asesmen".equals(kolomTarget)) {
+            info = "Klik 2x pada satu baris utk langsung mengambilnya (atau centang beberapa lalu \"Ambil Yang Dicentang\" utk menggabungkan). Kolom Asesmen dokter akan dimasukkan ke Diagnosa Masuk/Keluar.";
         }
         JLabel label = new JLabel(info);
         label.setFont(FONT_LABEL);
@@ -1693,6 +1720,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
                 kolomData = "pemeriksaan";
             } else if ("rtl".equals(kolomWajib)) {
                 kolomData = "rtl";
+            } else if ("asesmen".equals(kolomWajib)) {
+                kolomData = "penilaian";
             }
             stmt = koneksi.prepareStatement(
                 "select pemeriksaan_ranap.tgl_perawatan,pemeriksaan_ranap.jam_rawat," +
@@ -2285,6 +2314,8 @@ public final class RMResumeMedisRanapV2 extends JDialog {
         aturTemaButton(BtnAmbilAlasanSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnAmbilPemeriksaanSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnAmbilTerapiObatSoap, new Color(37, 99, 235), Color.WHITE);
+        aturTemaButton(BtnAmbilDiagnosaMasukSoap, new Color(37, 99, 235), Color.WHITE);
+        aturTemaButton(BtnAmbilDiagnosaKeluarSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnInputTtd, new Color(124, 58, 237), Color.WHITE);
         aturTemaButton(BtnUploadTtd, new Color(14, 116, 144), Color.WHITE);
         aturTemaButton(BtnHapusTtd, new Color(100, 116, 139), Color.WHITE);
