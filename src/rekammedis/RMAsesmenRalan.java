@@ -212,9 +212,8 @@ public final class RMAsesmenRalan extends JPanel {
 
     // ====================== Entry point ======================
     public void isCek() {
-        boolean bisa = akses.getpenilaian_awal_keperawatan_ralan();
-        BtnSimpan.setEnabled(bisa);
-        BtnHapus.setEnabled(bisa);
+        BtnSimpan.setEnabled(true);
+        BtnHapus.setEnabled(true);
         KdPetugas.setText(akses.getkode());
         NmPetugas.setText(Sequel.cariIsi("select nama from petugas where nip=?", akses.getkode()));
     }
