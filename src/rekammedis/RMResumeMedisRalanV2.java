@@ -120,6 +120,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
     private final Button BtnAmbilAlasanSoap = buatButtonMini("Ambil");
     private final Button BtnAmbilPemeriksaanSoap = buatButtonMini("Ambil");
     private final Button BtnAmbilTerapiObatSoap = buatButtonMini("Ambil");
+    private final Button BtnAmbilTindakan = buatButtonMini("Ambil");
     private final Button BtnAmbilDiagnosaMasukSoap = buatButtonMini("Ambil");
     private final Button BtnAmbilDiagnosaKeluarSoap = buatButtonMini("Ambil");
 
@@ -328,6 +329,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         row = tambahArea(panel, row, "Radiologi", AreaRadiologi, 84);
         // Penunjang Lainnya disembunyikan dari form (data tetap tersimpan apa adanya)
         row = tambahAreaDenganTombol(panel, row, "Plan / Terapi / Obat", AreaTerapiObat, 220, BtnAmbilTerapiObatSoap);
+        row = tambahAreaDenganTombol(panel, row, "Tindakan", AreaTerapiTindakan, 140, BtnAmbilTindakan);
         row = tambahArea(panel, row, "Instruksi Untuk Tindak Lanjut", AreaInstruksi, 96);
         row = tambahSatuKolom(panel, row, "Tanggal Kontrol Ulang", TTglKontrol);
         return panel;
@@ -437,6 +439,12 @@ public final class RMResumeMedisRalanV2 extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 bukaPemilihSoapDokter("pemeriksaan");
+            }
+        });
+        BtnAmbilTindakan.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                bukaPemilihSoapDokter("tindakan", AreaTerapiTindakan);
             }
         });
         BtnAmbilTerapiObatSoap.addActionListener(new ActionListener() {
@@ -730,6 +738,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         BtnAmbilAlasanSoap.setEnabled(boleh);
         BtnAmbilPemeriksaanSoap.setEnabled(boleh);
         BtnAmbilTerapiObatSoap.setEnabled(boleh);
+        BtnAmbilTindakan.setEnabled(boleh);
         BtnAmbilDiagnosaMasukSoap.setEnabled(boleh);
         BtnAmbilDiagnosaKeluarSoap.setEnabled(boleh);
         BtnInputTtd.setEnabled(boleh);
@@ -1216,6 +1225,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
             "ifnull(diagnosa_sekunder2,'') diagnosa_sekunder2,ifnull(icd10_sekunder2,'') icd10_sekunder2," +
             "ifnull(icd9_cm,'') icd9_cm,ifnull(pemeriksaan_fisik,'') pemeriksaan_fisik," +
             "ifnull(laboratorium,'') laboratorium,ifnull(radiologi,'') radiologi," +
+            "ifnull(terapi_tindakan,'') terapi_tindakan," +
             "ifnull(terapi_obat,'') terapi_obat,ifnull(instruksi_tindak_lanjut,'') instruksi_tindak_lanjut " +
             "from resume_medis_ralan_v2 where no_rawat=?";
         try (PreparedStatement st = konn.prepareStatement(sql)) {
@@ -1231,6 +1241,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
                     tambahBaris(baris, "lab", "Laboratorium", rs.getString("laboratorium"), null);
                     tambahBaris(baris, "radiologi", "Radiologi", rs.getString("radiologi"), null);
                     tambahBaris(baris, "obat", "Plan / Terapi / Obat", rs.getString("terapi_obat"), null);
+                    tambahBaris(baris, "periksa", "Tindakan", rs.getString("terapi_tindakan"), null);
                     tambahBaris(baris, "klip", "Instruksi Untuk Tindak Lanjut", rs.getString("instruksi_tindak_lanjut"), null);
                 }
             }
@@ -1586,17 +1597,18 @@ public final class RMResumeMedisRalanV2 extends JDialog {
             return;
         }
 
+        final boolean ambilTindakan = "tindakan".equals(kolomTarget);
         final boolean ambilSubjek = "keluhan".equals(kolomTarget);
         final boolean ambilObjek = "pemeriksaan".equals(kolomTarget);
         final boolean ambilAsesmen = "asesmen".equals(kolomTarget);
-        final String judulKolom = ambilSubjek ? "Subjek" : (ambilObjek ? "Objek" : (ambilAsesmen ? "Asesmen" : "Plan"));
+        final String judulKolom = ambilTindakan ? "Tindakan" : ambilSubjek ? "Subjek" : (ambilObjek ? "Objek" : (ambilAsesmen ? "Asesmen" : "Plan"));
         // Kolom 0 "Pilih" (checkbox) -- boleh centang LEBIH DARI SATU baris SOAP sekaligus,
         // beda dari sebelumnya yg cuma bisa ambil 1 baris. Kalau yg dicentang cuma 1, hasilnya
         // PERSIS spt dulu (isi kolom itu apa adanya, tanpa tambahan apa2) -- header
         // tanggal/jam/dokter cuma ditambahkan kalau yg dicentang lebih dari 1, supaya tetap
         // jelas potongan mana berasal dari SOAP yang mana saat digabung.
         final DefaultTableModel modelSoap = new DefaultTableModel(null, new Object[]{
-            "Pilih", "Tanggal", "Jam", "Dokter", judulKolom
+            "Pilih", "Tanggal", "Jam", ambilTindakan ? "Pelaksana" : "Dokter", judulKolom
         }) {
             @Override
             public Class<?> getColumnClass(int column) {
@@ -1607,13 +1619,24 @@ public final class RMResumeMedisRalanV2 extends JDialog {
                 return column == 0;
             }
         };
-        muatSoapDokter(modelSoap, kolomTarget);
+        if (ambilTindakan) {
+            try {
+                for (Object[] tindakan : TindakanResume.baca(koneksi, ambil(TNoRw), false)) {
+                    modelSoap.addRow(tindakan);
+                }
+            } catch (SQLException e) {
+                JOptionPane.showMessageDialog(this, "Gagal memuat tindakan : " + e.getMessage());
+                return;
+            }
+        } else {
+            muatSoapDokter(modelSoap, kolomTarget);
+        }
         if (modelSoap.getRowCount() == 0) {
-            JOptionPane.showMessageDialog(this, "Data SOAP dokter untuk pasien ini belum ditemukan.");
+            JOptionPane.showMessageDialog(this, ambilTindakan ? "Data tindakan untuk nomor rawat ini belum ditemukan." : "Data SOAP dokter untuk pasien ini belum ditemukan.");
             return;
         }
 
-        final JDialog dialog = new JDialog(this, "Ambil " + judulKolom + " Dokter", true);
+        final JDialog dialog = new JDialog(this, "Ambil " + judulKolom + (ambilTindakan ? " Dokter / Petugas" : " Dokter"), true);
         final JTable tabelSoap = new JTable(modelSoap);
         tabelSoap.setRowHeight(54);
         tabelSoap.setFont(FONT_BODY);
@@ -1659,7 +1682,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
                     }
                 }
                 if (terpilih.isEmpty()) {
-                    JOptionPane.showMessageDialog(dialog, "Centang minimal satu data SOAP dokter terlebih dahulu.");
+                    JOptionPane.showMessageDialog(dialog, ambilTindakan ? "Centang minimal satu tindakan terlebih dahulu." : "Centang minimal satu data SOAP dokter terlebih dahulu.");
                     return;
                 }
                 String nilai;
@@ -2350,6 +2373,7 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         aturTemaButton(BtnAmbilAlasanSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnAmbilPemeriksaanSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnAmbilTerapiObatSoap, new Color(37, 99, 235), Color.WHITE);
+        aturTemaButton(BtnAmbilTindakan, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnAmbilDiagnosaMasukSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnAmbilDiagnosaKeluarSoap, new Color(37, 99, 235), Color.WHITE);
         aturTemaButton(BtnInputTtd, new Color(124, 58, 237), Color.WHITE);
