@@ -28,6 +28,7 @@ import org.springframework.web.client.RestTemplate;
 public class ApiSatuSehat {        
     private String key,clientid,urlauth,token;
     private long millis;
+    private long tokenExpiry = 0;
     private SSLContext sslContext;
     private SSLSocketFactory sslFactory;
     private Scheme scheme;
@@ -49,14 +50,21 @@ public class ApiSatuSehat {
     }
 
     public String TokenSatuSehat(){
-        try {    
+        if(token!=null && !token.isEmpty() && System.currentTimeMillis()<tokenExpiry){
+            return token;
+        }
+        try {
             header = new HttpHeaders();
             header.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
             requestEntity = new HttpEntity("client_id="+clientid+"&client_secret="+key,header);
             root = mapper.readTree(getRest().exchange(urlauth+"/accesstoken?grant_type=client_credentials", HttpMethod.POST, requestEntity, String.class).getBody());
             token=root.path("access_token").asText();
+            long expiresIn = root.path("expires_in").asLong(3600);
+            tokenExpiry = System.currentTimeMillis()+Math.max(0,expiresIn-60)*1000L;
         } catch (Exception ex) {
             System.out.println("Notifikasi : "+ex);
+            token=null;
+            tokenExpiry=0;
         }
         return token;
     }

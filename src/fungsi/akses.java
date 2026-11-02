@@ -22,6 +22,24 @@ public final class akses {
     
     private static String kode="",kdbangsal="",alamatip="",namars="",alamatrs="",kabupatenrs="",propinsirs="",kontakrs="",emailrs="",form="",namauser="",kode_ppk=""; 
     private static int jml1=0,jml2=0,lebar=0,tinggi=0;
+    private static boolean satu_sehat_kirim_allergy_intolerance=false;
+    private static boolean satu_sehat_kirim_careplan=false;
+    private static boolean satu_sehat_kirim_diagnosticreport_lab=false;
+    private static boolean satu_sehat_kirim_diagnosticreport_labmb=false;
+    private static boolean satu_sehat_kirim_diagnosticreport_radiologi=false;
+    private static boolean satu_sehat_kirim_imagingstudy_radiologi=false;
+    private static boolean satu_sehat_kirim_observation_lab=false;
+    private static boolean satu_sehat_kirim_observation_labmb=false;
+    private static boolean satu_sehat_kirim_observation_radiologi=false;
+    private static boolean satu_sehat_kirim_questionresponse_telaah_farmasi=false;
+    private static boolean satu_sehat_kirim_servicerequest_lab=false;
+    private static boolean satu_sehat_kirim_servicerequest_labmb=false;
+    private static boolean satu_sehat_kirim_servicerequest_radiologi=false;
+    private static boolean satu_sehat_kirim_specimen_lab=false;
+    private static boolean satu_sehat_kirim_specimen_labmb=false;
+    private static boolean satu_sehat_kirim_specimen_radiologi=false;
+    private static boolean satu_sehat_mapping_lab=false;
+    private static boolean satu_sehat_mapping_radiologi=false;
     private static boolean aktif=false,admin=false,user=false,vakum=false,aplikasi=false,penyakit=false,obat_penyakit=false,dokter=false,jadwal_praktek=false,petugas=false,pasien=false,registrasi=false,
             tindakan_ralan=false,kamar_inap=false,tindakan_ranap=false,operasi=false,rujukan_keluar=false,rujukan_masuk=false,beri_obat=false,
             resep_pulang=false,pasien_meninggal=false,diet_pasien=false,kelahiran_bayi=false,periksa_lab=false,periksa_radiologi=false,
@@ -1254,6 +1272,24 @@ public final class akses {
                         akses.hasil_pemeriksaan_ekg=true;
                         akses.hapus_edit_sep_bpjs=true;
                         akses.satu_sehat_kirim_diet=true;
+                        akses.satu_sehat_kirim_allergy_intolerance=true;
+                        akses.satu_sehat_kirim_careplan=true;
+                        akses.satu_sehat_kirim_diagnosticreport_lab=true;
+                        akses.satu_sehat_kirim_diagnosticreport_labmb=true;
+                        akses.satu_sehat_kirim_diagnosticreport_radiologi=true;
+                        akses.satu_sehat_kirim_imagingstudy_radiologi=true;
+                        akses.satu_sehat_kirim_observation_lab=true;
+                        akses.satu_sehat_kirim_observation_labmb=true;
+                        akses.satu_sehat_kirim_observation_radiologi=true;
+                        akses.satu_sehat_kirim_questionresponse_telaah_farmasi=true;
+                        akses.satu_sehat_kirim_servicerequest_lab=true;
+                        akses.satu_sehat_kirim_servicerequest_labmb=true;
+                        akses.satu_sehat_kirim_servicerequest_radiologi=true;
+                        akses.satu_sehat_kirim_specimen_lab=true;
+                        akses.satu_sehat_kirim_specimen_labmb=true;
+                        akses.satu_sehat_kirim_specimen_radiologi=true;
+                        akses.satu_sehat_mapping_lab=true;
+                        akses.satu_sehat_mapping_radiologi=true;
                         akses.satu_sehat_mapping_obat=true;
                         akses.dapur_ringkasan_pembelian=true;
                         akses.satu_sehat_kirim_medication=true;
@@ -2270,6 +2306,24 @@ public final class akses {
                         akses.hasil_pemeriksaan_ekg=rs2.getBoolean("hasil_pemeriksaan_ekg");
                         akses.hapus_edit_sep_bpjs=rs2.getBoolean("hapus_edit_sep_bpjs");
                         akses.satu_sehat_kirim_diet=rs2.getBoolean("satu_sehat_kirim_diet");
+                        akses.satu_sehat_kirim_allergy_intolerance=getBoolean(rs2,"satu_sehat_kirim_allergy_intolerance");
+                        akses.satu_sehat_kirim_careplan=getBoolean(rs2,"satu_sehat_kirim_careplan");
+                        akses.satu_sehat_kirim_diagnosticreport_lab=getBoolean(rs2,"satu_sehat_kirim_diagnosticreport_lab");
+                        akses.satu_sehat_kirim_diagnosticreport_labmb=getBoolean(rs2,"satu_sehat_kirim_diagnosticreport_labmb");
+                        akses.satu_sehat_kirim_diagnosticreport_radiologi=getBoolean(rs2,"satu_sehat_kirim_diagnosticreport_radiologi");
+                        akses.satu_sehat_kirim_imagingstudy_radiologi=getBoolean(rs2,"satu_sehat_kirim_imagingstudy_radiologi");
+                        akses.satu_sehat_kirim_observation_lab=getBoolean(rs2,"satu_sehat_kirim_observation_lab");
+                        akses.satu_sehat_kirim_observation_labmb=getBoolean(rs2,"satu_sehat_kirim_observation_labmb");
+                        akses.satu_sehat_kirim_observation_radiologi=getBoolean(rs2,"satu_sehat_kirim_observation_radiologi");
+                        akses.satu_sehat_kirim_questionresponse_telaah_farmasi=getBoolean(rs2,"satu_sehat_kirim_questionresponse_telaah_farmasi");
+                        akses.satu_sehat_kirim_servicerequest_lab=getBoolean(rs2,"satu_sehat_kirim_servicerequest_lab");
+                        akses.satu_sehat_kirim_servicerequest_labmb=getBoolean(rs2,"satu_sehat_kirim_servicerequest_labmb");
+                        akses.satu_sehat_kirim_servicerequest_radiologi=getBoolean(rs2,"satu_sehat_kirim_servicerequest_radiologi");
+                        akses.satu_sehat_kirim_specimen_lab=getBoolean(rs2,"satu_sehat_kirim_specimen_lab");
+                        akses.satu_sehat_kirim_specimen_labmb=getBoolean(rs2,"satu_sehat_kirim_specimen_labmb");
+                        akses.satu_sehat_kirim_specimen_radiologi=getBoolean(rs2,"satu_sehat_kirim_specimen_radiologi");
+                        akses.satu_sehat_mapping_lab=getBoolean(rs2,"satu_sehat_mapping_lab");
+                        akses.satu_sehat_mapping_radiologi=getBoolean(rs2,"satu_sehat_mapping_radiologi");
                         akses.satu_sehat_mapping_obat=rs2.getBoolean("satu_sehat_mapping_obat");
                         akses.dapur_ringkasan_pembelian=rs2.getBoolean("dapur_ringkasan_pembelian");
                         akses.satu_sehat_kirim_medication=rs2.getBoolean("satu_sehat_kirim_medication");
@@ -3284,6 +3338,24 @@ public final class akses {
                         akses.hasil_pemeriksaan_ekg=false;
                         akses.hapus_edit_sep_bpjs=false;
                         akses.satu_sehat_kirim_diet=false;
+                        akses.satu_sehat_kirim_allergy_intolerance=false;
+                        akses.satu_sehat_kirim_careplan=false;
+                        akses.satu_sehat_kirim_diagnosticreport_lab=false;
+                        akses.satu_sehat_kirim_diagnosticreport_labmb=false;
+                        akses.satu_sehat_kirim_diagnosticreport_radiologi=false;
+                        akses.satu_sehat_kirim_imagingstudy_radiologi=false;
+                        akses.satu_sehat_kirim_observation_lab=false;
+                        akses.satu_sehat_kirim_observation_labmb=false;
+                        akses.satu_sehat_kirim_observation_radiologi=false;
+                        akses.satu_sehat_kirim_questionresponse_telaah_farmasi=false;
+                        akses.satu_sehat_kirim_servicerequest_lab=false;
+                        akses.satu_sehat_kirim_servicerequest_labmb=false;
+                        akses.satu_sehat_kirim_servicerequest_radiologi=false;
+                        akses.satu_sehat_kirim_specimen_lab=false;
+                        akses.satu_sehat_kirim_specimen_labmb=false;
+                        akses.satu_sehat_kirim_specimen_radiologi=false;
+                        akses.satu_sehat_mapping_lab=false;
+                        akses.satu_sehat_mapping_radiologi=false;
                         akses.satu_sehat_mapping_obat=false;
                         akses.dapur_ringkasan_pembelian=false;
                         akses.satu_sehat_kirim_medication=false;
@@ -4321,6 +4393,24 @@ public final class akses {
         akses.hasil_pemeriksaan_ekg=false;
         akses.hapus_edit_sep_bpjs=false;
         akses.satu_sehat_kirim_diet=false;
+        akses.satu_sehat_kirim_allergy_intolerance=false;
+        akses.satu_sehat_kirim_careplan=false;
+        akses.satu_sehat_kirim_diagnosticreport_lab=false;
+        akses.satu_sehat_kirim_diagnosticreport_labmb=false;
+        akses.satu_sehat_kirim_diagnosticreport_radiologi=false;
+        akses.satu_sehat_kirim_imagingstudy_radiologi=false;
+        akses.satu_sehat_kirim_observation_lab=false;
+        akses.satu_sehat_kirim_observation_labmb=false;
+        akses.satu_sehat_kirim_observation_radiologi=false;
+        akses.satu_sehat_kirim_questionresponse_telaah_farmasi=false;
+        akses.satu_sehat_kirim_servicerequest_lab=false;
+        akses.satu_sehat_kirim_servicerequest_labmb=false;
+        akses.satu_sehat_kirim_servicerequest_radiologi=false;
+        akses.satu_sehat_kirim_specimen_lab=false;
+        akses.satu_sehat_kirim_specimen_labmb=false;
+        akses.satu_sehat_kirim_specimen_radiologi=false;
+        akses.satu_sehat_mapping_lab=false;
+        akses.satu_sehat_mapping_radiologi=false;
         akses.satu_sehat_mapping_obat=false;
         akses.dapur_ringkasan_pembelian=false;
         akses.satu_sehat_kirim_medication=false;
@@ -5374,6 +5464,24 @@ public final class akses {
     public static boolean gethasil_pemeriksaan_ekg(){return akses.hasil_pemeriksaan_ekg;}
     public static boolean gethapus_edit_sep_bpjs(){return akses.hapus_edit_sep_bpjs;}
     public static boolean getsatu_sehat_kirim_diet(){return akses.satu_sehat_kirim_diet;}
+    public static boolean getsatu_sehat_kirim_allergy_intolerance(){return akses.satu_sehat_kirim_allergy_intolerance;}
+    public static boolean getsatu_sehat_kirim_careplan(){return akses.satu_sehat_kirim_careplan;}
+    public static boolean getsatu_sehat_kirim_diagnosticreport_lab(){return akses.satu_sehat_kirim_diagnosticreport_lab;}
+    public static boolean getsatu_sehat_kirim_diagnosticreport_labmb(){return akses.satu_sehat_kirim_diagnosticreport_labmb;}
+    public static boolean getsatu_sehat_kirim_diagnosticreport_radiologi(){return akses.satu_sehat_kirim_diagnosticreport_radiologi;}
+    public static boolean getsatu_sehat_kirim_imagingstudy_radiologi(){return akses.satu_sehat_kirim_imagingstudy_radiologi;}
+    public static boolean getsatu_sehat_kirim_observation_lab(){return akses.satu_sehat_kirim_observation_lab;}
+    public static boolean getsatu_sehat_kirim_observation_labmb(){return akses.satu_sehat_kirim_observation_labmb;}
+    public static boolean getsatu_sehat_kirim_observation_radiologi(){return akses.satu_sehat_kirim_observation_radiologi;}
+    public static boolean getsatu_sehat_kirim_questionresponse_telaah_farmasi(){return akses.satu_sehat_kirim_questionresponse_telaah_farmasi;}
+    public static boolean getsatu_sehat_kirim_servicerequest_lab(){return akses.satu_sehat_kirim_servicerequest_lab;}
+    public static boolean getsatu_sehat_kirim_servicerequest_labmb(){return akses.satu_sehat_kirim_servicerequest_labmb;}
+    public static boolean getsatu_sehat_kirim_servicerequest_radiologi(){return akses.satu_sehat_kirim_servicerequest_radiologi;}
+    public static boolean getsatu_sehat_kirim_specimen_lab(){return akses.satu_sehat_kirim_specimen_lab;}
+    public static boolean getsatu_sehat_kirim_specimen_labmb(){return akses.satu_sehat_kirim_specimen_labmb;}
+    public static boolean getsatu_sehat_kirim_specimen_radiologi(){return akses.satu_sehat_kirim_specimen_radiologi;}
+    public static boolean getsatu_sehat_mapping_lab(){return akses.satu_sehat_mapping_lab;}
+    public static boolean getsatu_sehat_mapping_radiologi(){return akses.satu_sehat_mapping_radiologi;}
     public static boolean getsatu_sehat_mapping_obat(){return akses.satu_sehat_mapping_obat;}
     public static boolean getdapur_ringkasan_pembelian(){return akses.dapur_ringkasan_pembelian;}
     public static boolean getsatu_sehat_kirim_medication(){return akses.satu_sehat_kirim_medication;}

@@ -25,6 +25,12 @@ import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.text.SimpleDateFormat;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.TimeZone;
 import javax.swing.JOptionPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.Document;
@@ -34,6 +40,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpStatusCodeException;
 
 /**
  *
@@ -64,6 +71,7 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
     public SatuSehatKirimMedicationRequest(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ensureSupportTables();
 
         this.setLocation(10,2);
         setSize(628,674);
@@ -695,7 +703,7 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                                         "\"encounter\": {" +
                                             "\"reference\": \"Encounter/"+tbObat.getValueAt(i,8).toString()+"\"" +
                                         "}," +
-                                        "\"authoredOn\": \""+tbObat.getValueAt(i,21).toString().replaceAll(" ","T")+"+07:00\"," +
+                                        "\"authoredOn\": \""+formatSatuSehatDateTime(tbObat.getValueAt(i,21).toString())+"\"," +
                                         "\"requester\": {" +
                                             "\"reference\": \"Practitioner/"+iddokter+"\"," +
                                             "\"display\": \""+tbObat.getValueAt(i,6).toString()+"\"" +
@@ -749,14 +757,13 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                             root = mapper.readTree(json);
                             response = root.path("id");
                             if(!response.asText().equals("")){
-                                if(Sequel.menyimpantf2("satu_sehat_medicationrequest","?,?,?","Obat/Alkes",3,new String[]{
-                                    tbObat.getValueAt(i,25).toString(),tbObat.getValueAt(i,11).toString(),response.asText()
-                                })==true){
+                                if(simpanAtauPerbaruiMedicationRequestId(i,false,response.asText())){
                                     tbObat.setValueAt(response.asText(),i,26);
                                 }
                             }
                         }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
+                            logMedicationRequestError("create non-racikan", i, e);
+                            sinkronkanIdJikaDuplicate(i, false);
                         }
                     }else if(!tbObat.getValueAt(i,27).toString().equals("")){
                         try{
@@ -801,7 +808,7 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                                         "\"encounter\": {" +
                                             "\"reference\": \"Encounter/"+tbObat.getValueAt(i,8).toString()+"\"" +
                                         "}," +
-                                        "\"authoredOn\": \""+tbObat.getValueAt(i,21).toString().replaceAll(" ","T")+"01+07:00\"," +
+                                        "\"authoredOn\": \""+formatSatuSehatDateTime(tbObat.getValueAt(i,21).toString())+"\"," +
                                         "\"requester\": {" +
                                             "\"reference\": \"Practitioner/"+iddokter+"\"," +
                                             "\"display\": \""+tbObat.getValueAt(i,6).toString()+"\"" +
@@ -855,14 +862,13 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                             root = mapper.readTree(json);
                             response = root.path("id");
                             if(!response.asText().equals("")){
-                                if(Sequel.menyimpantf2("satu_sehat_medicationrequest_racikan","?,?,?,?","Obat/Alkes",4,new String[]{
-                                    tbObat.getValueAt(i,25).toString(),tbObat.getValueAt(i,11).toString(),tbObat.getValueAt(i,11).toString(),response.asText()
-                                })==true){
+                                if(simpanAtauPerbaruiMedicationRequestId(i,true,response.asText())){
                                     tbObat.setValueAt(response.asText(),i,26);
                                 }
                             }
                         }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
+                            logMedicationRequestError("create racikan", i, e);
+                            sinkronkanIdJikaDuplicate(i, true);
                         }
                     }
                 } catch (Exception e) {
@@ -909,12 +915,17 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                     } 
                     if(tbObat.getValueAt(i,27).toString().equals("")){
                         try{
+                            String idMedicationRequest = pastikanIdMedicationRequestValid(i,false);
+                            if(idMedicationRequest.equals("")){
+                                System.out.println("Update non-racikan dilewati : id_medicationrequest lokal belum valid untuk no_resep="+tbObat.getValueAt(i,25).toString());
+                                continue;
+                            }
                             headers = new HttpHeaders();
                             headers.setContentType(MediaType.APPLICATION_JSON);
                             headers.add("Authorization", "Bearer "+api.TokenSatuSehat());
                             json = "{" +
                                         "\"resourceType\": \"MedicationRequest\"," +
-                                        "\"id\": \""+tbObat.getValueAt(i,26).toString()+"\"," +
+                                        "\"id\": \""+idMedicationRequest+"\"," +
                                         "\"identifier\": [" +
                                             "{" +
                                                 "\"system\": \"http://sys-ids.kemkes.go.id/prescription/"+koneksiDB.IDSATUSEHAT()+"\"," +
@@ -951,7 +962,7 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                                         "\"encounter\": {" +
                                             "\"reference\": \"Encounter/"+tbObat.getValueAt(i,8).toString()+"\"" +
                                         "}," +
-                                        "\"authoredOn\": \""+tbObat.getValueAt(i,21).toString().replaceAll(" ","T")+"+07:00\"," +
+                                        "\"authoredOn\": \""+formatSatuSehatDateTime(tbObat.getValueAt(i,21).toString())+"\"," +
                                         "\"requester\": {" +
                                             "\"reference\": \"Practitioner/"+iddokter+"\"," +
                                             "\"display\": \""+tbObat.getValueAt(i,6).toString()+"\"" +
@@ -997,22 +1008,27 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                                             "}" +
                                         "}" +
                                     "}";
-                            System.out.println("URL : "+link+"/MedicationRequest/"+tbObat.getValueAt(i,26).toString());
+                            System.out.println("URL : "+link+"/MedicationRequest/"+idMedicationRequest);
                             System.out.println("Request JSON : "+json);
                             requestEntity = new HttpEntity(json,headers);
-                            json=api.getRest().exchange(link+"/MedicationRequest/"+tbObat.getValueAt(i,26).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
+                            json=api.getRest().exchange(link+"/MedicationRequest/"+idMedicationRequest, HttpMethod.PUT, requestEntity, String.class).getBody();
                             System.out.println("Result JSON : "+json);
                         }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
+                            logMedicationRequestError("update non-racikan", i, e);
                         }
                     }else if(!tbObat.getValueAt(i,27).toString().equals("")){
                         try{
+                            String idMedicationRequest = pastikanIdMedicationRequestValid(i,true);
+                            if(idMedicationRequest.equals("")){
+                                System.out.println("Update racikan dilewati : id_medicationrequest lokal belum valid untuk no_resep="+tbObat.getValueAt(i,25).toString()+", no_racik="+tbObat.getValueAt(i,27).toString());
+                                continue;
+                            }
                             headers = new HttpHeaders();
                             headers.setContentType(MediaType.APPLICATION_JSON);
                             headers.add("Authorization", "Bearer "+api.TokenSatuSehat());
                             json = "{" +
                                         "\"resourceType\": \"MedicationRequest\"," +
-                                        "\"id\": \""+tbObat.getValueAt(i,26).toString()+"\"," +
+                                        "\"id\": \""+idMedicationRequest+"\"," +
                                         "\"identifier\": [" +
                                             "{" +
                                                 "\"system\": \"http://sys-ids.kemkes.go.id/prescription/"+koneksiDB.IDSATUSEHAT()+"\"," +
@@ -1049,7 +1065,7 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                                         "\"encounter\": {" +
                                             "\"reference\": \"Encounter/"+tbObat.getValueAt(i,8).toString()+"\"" +
                                         "}," +
-                                        "\"authoredOn\": \""+tbObat.getValueAt(i,21).toString().replaceAll(" ","T")+"01+07:00\"," +
+                                        "\"authoredOn\": \""+formatSatuSehatDateTime(tbObat.getValueAt(i,21).toString())+"\"," +
                                         "\"requester\": {" +
                                             "\"reference\": \"Practitioner/"+iddokter+"\"," +
                                             "\"display\": \""+tbObat.getValueAt(i,6).toString()+"\"" +
@@ -1095,13 +1111,13 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
                                             "}" +
                                         "}" +
                                     "}";
-                            System.out.println("URL : "+link+"/MedicationRequest/"+tbObat.getValueAt(i,26).toString());
+                            System.out.println("URL : "+link+"/MedicationRequest/"+idMedicationRequest);
                             System.out.println("Request JSON : "+json);
                             requestEntity = new HttpEntity(json,headers);
-                            json=api.getRest().exchange(link+"/MedicationRequest/"+tbObat.getValueAt(i,26).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
+                            json=api.getRest().exchange(link+"/MedicationRequest/"+idMedicationRequest, HttpMethod.PUT, requestEntity, String.class).getBody();
                             System.out.println("Result JSON : "+json);
                         }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
+                            logMedicationRequestError("update racikan", i, e);
                         }
                     }
                 } catch (Exception e) {
@@ -1395,5 +1411,308 @@ public final class SatuSehatKirimMedicationRequest extends javax.swing.JDialog {
     
     public JTable getTable(){
         return tbObat;
+    }
+
+    private String formatSatuSehatDateTime(String nilai) {
+        if (nilai == null) {
+            return "";
+        }
+        String raw = nilai.trim().replace('T', ' ');
+        String normalized = raw;
+        if (raw.length() >= 19) {
+            normalized = raw.substring(0, 19);
+        }
+        String[] patterns = new String[] {
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd HH:mm:ss.S",
+            "yyyy-MM-dd HH:mm:ss.SS",
+            "yyyy-MM-dd HH:mm:ss.SSS"
+        };
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat parser = new SimpleDateFormat(pattern);
+                parser.setLenient(false);
+                Date parsed = parser.parse(normalized);
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+                formatter.setTimeZone(TimeZone.getTimeZone("GMT+07:00"));
+                return formatter.format(parsed);
+            } catch (Exception e) {
+            }
+        }
+        return normalized.replace(" ", "T") + "+07:00";
+    }
+
+    private void logMedicationRequestError(String aksi, int rowIndex, Exception e) {
+        System.out.println("Notifikasi Bridging (" + aksi + ") : " + e);
+        System.out.println("Baris gagal : no_resep=" + tbObat.getValueAt(rowIndex,25).toString()
+                + ", kode_brng=" + tbObat.getValueAt(rowIndex,11).toString()
+                + ", no_racik=" + tbObat.getValueAt(rowIndex,27).toString()
+                + ", authoredOn=" + formatSatuSehatDateTime(tbObat.getValueAt(rowIndex,21).toString())
+                + ", quantity=" + tbObat.getValueAt(rowIndex,22).toString() + " " + tbObat.getValueAt(rowIndex,19).toString()
+                + ", aturan_pakai=" + tbObat.getValueAt(rowIndex,24).toString());
+        if (e instanceof HttpStatusCodeException) {
+            HttpStatusCodeException httpError = (HttpStatusCodeException) e;
+            System.out.println("HTTP Status : " + httpError.getStatusCode());
+            System.out.println("Response Body : " + httpError.getResponseBodyAsString());
+            try {
+                JsonNode outcome = mapper.readTree(httpError.getResponseBodyAsString());
+                JsonNode issues = outcome.path("issue");
+                if (issues.isArray()) {
+                    for (JsonNode issue : issues) {
+                        System.out.println(
+                            "OperationOutcome : severity=" + issue.path("severity").asText()
+                            + ", code=" + issue.path("code").asText()
+                            + ", details=" + issue.path("details").path("text").asText()
+                            + ", diagnostics=" + issue.path("diagnostics").asText()
+                            + ", expression=" + issue.path("expression").toString()
+                        );
+                    }
+                }
+            } catch (Exception parseError) {
+                System.out.println("Gagal parsing OperationOutcome : " + parseError);
+            }
+        }
+        try {
+            double qty = Double.parseDouble(tbObat.getValueAt(rowIndex,22).toString());
+            String unit = tbObat.getValueAt(rowIndex,19).toString().toUpperCase();
+            if (qty > 0 && qty < 1 && (unit.equals("CAP") || unit.equals("TAB") || unit.equals("STR") || unit.equals("BLIS"))) {
+                System.out.println("Peringatan Validasi : quantity bernilai pecahan untuk unit diskrit (" + unit + "). Ini berpotensi ditolak SATUSEHAT.");
+            }
+        } catch (Exception ex) {
+        }
+    }
+
+    private void sinkronkanIdJikaDuplicate(int rowIndex, boolean racikan) {
+        try {
+            String idMedicationRequest = cariMedicationRequestSudahAda(rowIndex);
+            if (!idMedicationRequest.equals("")) {
+                boolean tersimpan = simpanAtauPerbaruiMedicationRequestId(rowIndex,racikan,idMedicationRequest);
+
+                if (tersimpan) {
+                    tbObat.setValueAt(idMedicationRequest, rowIndex, 26);
+                    System.out.println("Sinkronisasi Duplicate : id_medicationrequest lokal berhasil diisi dari SATUSEHAT = " + idMedicationRequest);
+                } else {
+                    System.out.println("Sinkronisasi Duplicate : gagal menyimpan id_medicationrequest lokal untuk no_resep=" + tbObat.getValueAt(rowIndex,25).toString());
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Sinkronisasi Duplicate gagal : " + e);
+        }
+    }
+
+    private String cariMedicationRequestSudahAda(int rowIndex) {
+        try {
+            headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.add("Authorization", "Bearer " + api.TokenSatuSehat());
+            requestEntity = new HttpEntity(headers);
+
+            String identifierValue = tbObat.getValueAt(rowIndex,25).toString();
+            if (!tbObat.getValueAt(rowIndex,27).toString().equals("")) {
+                identifierValue = identifierValue + "-" + tbObat.getValueAt(rowIndex,27).toString();
+            }
+            String identifierSystem = "http://sys-ids.kemkes.go.id/prescription/" + koneksiDB.IDSATUSEHAT();
+            String tokenIdentifier = identifierSystem + "|" + identifierValue;
+            String searchUrl = link + "/MedicationRequest?identifier="
+                    + URLEncoder.encode(tokenIdentifier, StandardCharsets.UTF_8.name());
+
+            System.out.println("URL Duplicate Check : " + searchUrl);
+            String hasil = api.getRest().exchange(new URI(searchUrl), HttpMethod.GET, requestEntity, String.class).getBody();
+            System.out.println("JSON Duplicate Check : " + hasil);
+
+            JsonNode bundle = mapper.readTree(hasil);
+            JsonNode entries = bundle.path("entry");
+            String idDitemukan = cariIdMedicationRequestPadaBundle(entries, identifierSystem, identifierValue, rowIndex);
+            if (!idDitemukan.equals("")) {
+                return idDitemukan;
+            }
+
+            String fallbackUrl = link + "/MedicationRequest?identifier="
+                    + URLEncoder.encode(identifierValue, StandardCharsets.UTF_8.name());
+            System.out.println("URL Duplicate Check Fallback : " + fallbackUrl);
+            hasil = api.getRest().exchange(new URI(fallbackUrl), HttpMethod.GET, requestEntity, String.class).getBody();
+            System.out.println("JSON Duplicate Check Fallback : " + hasil);
+
+            bundle = mapper.readTree(hasil);
+            entries = bundle.path("entry");
+            idDitemukan = cariIdMedicationRequestPadaBundle(entries, identifierSystem, identifierValue, rowIndex);
+            if (!idDitemukan.equals("")) {
+                return idDitemukan;
+            }
+        } catch (Exception e) {
+            System.out.println("Pencarian duplicate MedicationRequest gagal : " + e);
+        }
+        return "";
+    }
+
+    private String cariIdMedicationRequestPadaBundle(JsonNode entries, String identifierSystem, String identifierValue, int rowIndex) {
+        if (entries.isArray()) {
+            for (JsonNode entry : entries) {
+                JsonNode resource = entry.path("resource");
+                if (!resource.isObject()) {
+                    continue;
+                }
+
+                JsonNode identifiers = resource.path("identifier");
+                boolean identifierResepCocok = false;
+                boolean identifierItemCocok = false;
+                if (identifiers.isArray()) {
+                    for (JsonNode identifier : identifiers) {
+                        String system = identifier.path("system").asText();
+                        String value = identifier.path("value").asText();
+                        if (system.equals(identifierSystem) && value.equals(identifierValue)) {
+                            identifierResepCocok = true;
+                        }
+                        if (system.equals("http://sys-ids.kemkes.go.id/prescription-item/" + koneksiDB.IDSATUSEHAT())
+                                && value.equals(tbObat.getValueAt(rowIndex,11).toString())) {
+                            identifierItemCocok = true;
+                        }
+                    }
+                }
+
+                if (identifierResepCocok && (tbObat.getValueAt(rowIndex,27).toString().equals("") || identifierItemCocok)) {
+                    String id = resource.path("id").asText();
+                    if (!id.equals("")) {
+                        System.out.println("Duplicate ditemukan di SATUSEHAT : " + id);
+                        return id;
+                    }
+                }
+            }
+        }
+        return "";
+    }
+
+    private boolean simpanAtauPerbaruiMedicationRequestId(int rowIndex, boolean racikan, String idMedicationRequest) {
+        boolean tersimpan;
+        if (racikan) {
+            tersimpan = Sequel.menyimpantf2("satu_sehat_medicationrequest_racikan","?,?,?,?","Obat/Alkes",4,new String[]{
+                tbObat.getValueAt(rowIndex,25).toString(),
+                tbObat.getValueAt(rowIndex,11).toString(),
+                tbObat.getValueAt(rowIndex,27).toString(),
+                idMedicationRequest
+            });
+            if (!tersimpan) {
+                tersimpan = Sequel.queryutf2(
+                    "update satu_sehat_medicationrequest_racikan set id_medicationrequest='"+idMedicationRequest+"' " +
+                    "where no_resep='"+tbObat.getValueAt(rowIndex,25).toString()+"' and kode_brng='"+tbObat.getValueAt(rowIndex,11).toString()+"' " +
+                    "and no_racik='"+tbObat.getValueAt(rowIndex,27).toString()+"'"
+                );
+            }
+        } else {
+            tersimpan = Sequel.menyimpantf2("satu_sehat_medicationrequest","?,?,?","Obat/Alkes",3,new String[]{
+                tbObat.getValueAt(rowIndex,25).toString(),
+                tbObat.getValueAt(rowIndex,11).toString(),
+                idMedicationRequest
+            });
+            if (!tersimpan) {
+                tersimpan = Sequel.queryutf2(
+                    "update satu_sehat_medicationrequest set id_medicationrequest='"+idMedicationRequest+"' " +
+                    "where no_resep='"+tbObat.getValueAt(rowIndex,25).toString()+"' and kode_brng='"+tbObat.getValueAt(rowIndex,11).toString()+"'"
+                );
+            }
+        }
+        return tersimpan;
+    }
+
+    private String pastikanIdMedicationRequestValid(int rowIndex, boolean racikan) {
+        String idMedicationRequest = tbObat.getValueAt(rowIndex,26).toString().trim();
+        if (isIdMedicationRequestValid(idMedicationRequest, rowIndex)) {
+            return idMedicationRequest;
+        }
+
+        System.out.println(
+            "Validasi ID MedicationRequest : id lokal tidak valid untuk update, mencoba sinkron ulang. " +
+            "no_resep="+tbObat.getValueAt(rowIndex,25).toString()+
+            ", kode_brng="+tbObat.getValueAt(rowIndex,11).toString()+
+            ", no_racik="+tbObat.getValueAt(rowIndex,27).toString()+
+            ", id_lokal="+idMedicationRequest
+        );
+
+        idMedicationRequest = cariMedicationRequestSudahAda(rowIndex);
+        if (!idMedicationRequest.equals("") && simpanAtauPerbaruiMedicationRequestId(rowIndex,racikan,idMedicationRequest)) {
+            tbObat.setValueAt(idMedicationRequest,rowIndex,26);
+            System.out.println("Validasi ID MedicationRequest : id lokal berhasil diperbaiki menjadi "+idMedicationRequest);
+            return idMedicationRequest;
+        }
+
+        return "";
+    }
+
+    private boolean isIdMedicationRequestValid(String idMedicationRequest, int rowIndex) {
+        if (idMedicationRequest == null) {
+            return false;
+        }
+
+        String id = idMedicationRequest.trim();
+        if (id.equals("")) {
+            return false;
+        }
+
+        if (id.equals(tbObat.getValueAt(rowIndex,25).toString())) {
+            return false;
+        }
+
+        if (!tbObat.getValueAt(rowIndex,27).toString().equals("") &&
+            id.equals(tbObat.getValueAt(rowIndex,25).toString()+"-"+tbObat.getValueAt(rowIndex,27).toString())) {
+            return false;
+        }
+
+        return id.matches("(?i)[0-9a-f\\-]{30,}");
+    }
+
+    private void ensureSupportTables() {
+        String[] ddl = new String[] {
+            "create table if not exists satu_sehat_mapping_obat ("
+                + "kode_brng varchar(15) not null,"
+                + "obat_code varchar(15) default null,"
+                + "obat_system varchar(100) not null,"
+                + "obat_display varchar(400) default null,"
+                + "form_code varchar(30) default null,"
+                + "form_system varchar(100) default null,"
+                + "form_display varchar(80) default null,"
+                + "numerator_code varchar(15) default null,"
+                + "numerator_system varchar(80) default null,"
+                + "denominator_code varchar(15) default null,"
+                + "denominator_system varchar(80) default null,"
+                + "route_code varchar(30) default null,"
+                + "route_system varchar(100) default null,"
+                + "route_display varchar(80) default null,"
+                + "primary key (kode_brng),"
+                + "constraint satu_sehat_mapping_obat_ibfk_1 foreign key (kode_brng) references databarang (kode_brng) on delete cascade on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci",
+            "create table if not exists satu_sehat_medication ("
+                + "kode_brng varchar(15) not null,"
+                + "id_medication varchar(40) default null,"
+                + "primary key (kode_brng),"
+                + "constraint satu_sehat_medication_ibfk_1 foreign key (kode_brng) references databarang (kode_brng) on delete cascade on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci",
+            "create table if not exists satu_sehat_medicationrequest ("
+                + "no_resep varchar(14) not null,"
+                + "kode_brng varchar(15) not null,"
+                + "id_medicationrequest varchar(40) default null,"
+                + "primary key (no_resep, kode_brng),"
+                + "key kode_brng (kode_brng),"
+                + "constraint satu_sehat_medicationrequest_ibfk_1 foreign key (no_resep) references resep_obat (no_resep) on delete cascade on update cascade,"
+                + "constraint satu_sehat_medicationrequest_ibfk_2 foreign key (kode_brng) references databarang (kode_brng) on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci",
+            "create table if not exists satu_sehat_medicationrequest_racikan ("
+                + "no_resep varchar(14) not null,"
+                + "kode_brng varchar(15) not null,"
+                + "no_racik varchar(2) not null,"
+                + "id_medicationrequest varchar(40) default null,"
+                + "primary key (no_resep, kode_brng, no_racik),"
+                + "key kode_brng (kode_brng),"
+                + "constraint satu_sehat_medicationrequest_racikan_ibfk_1 foreign key (no_resep) references resep_obat (no_resep) on delete cascade on update cascade,"
+                + "constraint satu_sehat_medicationrequest_racikan_ibfk_2 foreign key (kode_brng) references databarang (kode_brng) on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci"
+        };
+
+        for (String sql : ddl) {
+            try (PreparedStatement createTable = koneksi.prepareStatement(sql)) {
+                createTable.executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Notif : " + e);
+            }
+        }
     }
 }

@@ -33,6 +33,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.web.client.HttpClientErrorException;
 
 /**
  *
@@ -619,7 +620,7 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
                                             "}," +
                                             "\"text\" : {" +
                                                 "\"status\" : \"additional\"," +
-                                                "\"div\" : \""+tbObat.getValueAt(i,7).toString()+"\"" +
+                                                "\"div\" : \""+bungkusNarrativeDiv(tbObat.getValueAt(i,7).toString())+"\"" +
                                             "}" +
                                         "}" +
                                     "]" +
@@ -638,6 +639,9 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
                                 tbObat.setValueAt(response.asText(),i,11);
                             }
                         }
+                    }catch(HttpClientErrorException e){
+                        System.out.println("Notifikasi Bridging : "+e);
+                        System.out.println("Response Body : "+e.getResponseBodyAsString());
                     }catch(Exception e){
                         System.out.println("Notifikasi Bridging : "+e);
                     }
@@ -730,7 +734,7 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
                                             "}," +
                                             "\"text\" : {" +
                                                 "\"status\" : \"additional\" ," +
-                                                "\"div\" : \""+tbObat.getValueAt(i,7).toString()+"\"" +
+                                                "\"div\" : \""+bungkusNarrativeDiv(tbObat.getValueAt(i,7).toString())+"\"" +
                                             "}" +
                                         "}" +
                                     "]" +
@@ -740,6 +744,9 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
                         requestEntity = new HttpEntity(json,headers);
                         json=api.getRest().exchange(link+"/Composition/"+tbObat.getValueAt(i,11).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
                         System.out.println("Result JSON : "+json);
+                    }catch(HttpClientErrorException e){
+                        System.out.println("Notifikasi Bridging : "+e);
+                        System.out.println("Response Body : "+e.getResponseBodyAsString());
                     }catch(Exception e){
                         System.out.println("Notifikasi Bridging : "+e);
                     }
@@ -807,6 +814,15 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
     private widget.Table tbObat;
     // End of variables declaration//GEN-END:variables
     
+    /** Bungkus teks instruksi gizi jadi Narrative.div XHTML yang valid + aman di-embed ke string JSON. */
+    private String bungkusNarrativeDiv(String teks){
+        String isi = teks==null?"":teks;
+        isi = isi.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;");
+        isi = isi.replace("\r\n","\n").replace("\n","<br/>");
+        String div = "<div xmlns=\"http://www.w3.org/1999/xhtml\">"+isi+"</div>";
+        return div.replace("\\","\\\\").replace("\"","\\\"");
+    }
+
     private void tampil() {
         Valid.tabelKosong(tabMode);
         try{

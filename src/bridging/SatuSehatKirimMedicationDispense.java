@@ -67,6 +67,7 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
     public SatuSehatKirimMedicationDispense(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        ensureSupportTables();
 
         this.setLocation(10,2);
         setSize(628,674);
@@ -1176,5 +1177,55 @@ public final class SatuSehatKirimMedicationDispense extends javax.swing.JDialog 
     
     public JTable getTable(){
         return tbObat;
+    }
+
+    private void ensureSupportTables() {
+        String[] ddl = new String[] {
+            "create table if not exists satu_sehat_mapping_obat ("
+                + "kode_brng varchar(15) not null,"
+                + "obat_code varchar(15) default null,"
+                + "obat_system varchar(100) not null,"
+                + "obat_display varchar(400) default null,"
+                + "form_code varchar(30) default null,"
+                + "form_system varchar(100) default null,"
+                + "form_display varchar(80) default null,"
+                + "numerator_code varchar(15) default null,"
+                + "numerator_system varchar(80) default null,"
+                + "denominator_code varchar(15) default null,"
+                + "denominator_system varchar(80) default null,"
+                + "route_code varchar(30) default null,"
+                + "route_system varchar(100) default null,"
+                + "route_display varchar(80) default null,"
+                + "primary key (kode_brng),"
+                + "constraint satu_sehat_mapping_obat_ibfk_1 foreign key (kode_brng) references databarang (kode_brng) on delete cascade on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci",
+            "create table if not exists satu_sehat_medication ("
+                + "kode_brng varchar(15) not null,"
+                + "id_medication varchar(40) default null,"
+                + "primary key (kode_brng),"
+                + "constraint satu_sehat_medication_ibfk_1 foreign key (kode_brng) references databarang (kode_brng) on delete cascade on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci",
+            "create table if not exists satu_sehat_medicationdispense ("
+                + "no_rawat varchar(17) not null,"
+                + "tgl_perawatan date not null,"
+                + "jam time not null,"
+                + "kode_brng varchar(15) not null,"
+                + "no_batch varchar(20) not null,"
+                + "no_faktur varchar(20) not null,"
+                + "id_medicationdispanse varchar(40) default null,"
+                + "primary key (no_rawat,tgl_perawatan,jam,kode_brng,no_batch,no_faktur),"
+                + "key kode_brng (kode_brng),"
+                + "constraint satu_sehat_medicationdispense_ibfk_1 foreign key (no_rawat) references reg_periksa (no_rawat) on delete cascade on update cascade,"
+                + "constraint satu_sehat_medicationdispense_ibfk_2 foreign key (kode_brng) references databarang (kode_brng) on delete cascade on update cascade"
+                + ") engine=InnoDB default charset=latin1 collate=latin1_swedish_ci"
+        };
+
+        for (String sql : ddl) {
+            try (PreparedStatement createTable = koneksi.prepareStatement(sql)) {
+                createTable.executeUpdate();
+            } catch (Exception e) {
+                System.out.println("Notif : " + e);
+            }
+        }
     }
 }

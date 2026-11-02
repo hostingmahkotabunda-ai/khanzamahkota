@@ -574,6 +574,14 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                 try {
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,8).toString());
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
+                    if(iddokter.trim().equals("")){
+                        System.out.println("Practitioner SATUSEHAT tidak ditemukan. NIK Praktisi : "+tbObat.getValueAt(i,8).toString()+" / Praktisi : "+tbObat.getValueAt(i,7).toString());
+                        continue;
+                    }
+                    if(idpasien.trim().equals("")){
+                        System.out.println("Patient SATUSEHAT tidak ditemukan. NIK Pasien : "+tbObat.getValueAt(i,5).toString()+" / Pasien : "+tbObat.getValueAt(i,4).toString());
+                        continue;
+                    }
                     try{
                         headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -680,6 +688,14 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                 try {
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,8).toString());
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
+                    if(iddokter.trim().equals("")){
+                        System.out.println("Practitioner SATUSEHAT tidak ditemukan. NIK Praktisi : "+tbObat.getValueAt(i,8).toString()+" / Praktisi : "+tbObat.getValueAt(i,7).toString());
+                        continue;
+                    }
+                    if(idpasien.trim().equals("")){
+                        System.out.println("Patient SATUSEHAT tidak ditemukan. NIK Pasien : "+tbObat.getValueAt(i,5).toString()+" / Pasien : "+tbObat.getValueAt(i,4).toString());
+                        continue;
+                    }
                     try{
                         headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -696,8 +712,8 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                                     "\"status\": \"arrived\"," +
                                     "\"class\": {" +
                                         "\"system\": \"http://terminology.hl7.org/CodeSystem/v3-ActCode\"," +
-                                        "\"code\": \""+(tbObat.getValueAt(i,11).toString().equals("Ralan")?"AMB":"IMP")+"\"," +
-                                        "\"display\": \""+(tbObat.getValueAt(i,11).toString().equals("Ralan")?"ambulatory":"inpatient encounter")+"\"" +
+                                        "\"code\": \""+(tbObat.getValueAt(i,13).toString().equals("Ralan")?"AMB":"IMP")+"\"," +
+                                        "\"display\": \""+(tbObat.getValueAt(i,13).toString().equals("Ralan")?"ambulatory":"inpatient encounter")+"\"" +
                                     "}," +
                                     "\"subject\": {" +
                                         "\"reference\": \"Patient/"+idpasien+"\"," +
@@ -822,11 +838,11 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
             ps=koneksi.prepareStatement(
                    "select reg_periksa.tgl_registrasi,reg_periksa.jam_reg,reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,reg_periksa.kd_dokter,"+
                    "pegawai.nama,pegawai.no_ktp as ktpdokter,reg_periksa.kd_poli,poliklinik.nm_poli,satu_sehat_mapping_lokasi_ralan.id_lokasi_satusehat,reg_periksa.stts,"+
-                   "reg_periksa.status_lanjut,concat(nota_jalan.tanggal,'T',nota_jalan.jam,'+07:00') as pulang,ifnull(satu_sehat_encounter.id_encounter,'') as id_encounter "+
+                   "reg_periksa.status_lanjut,ifnull(concat(nota_jalan.tanggal,'T',nota_jalan.jam,'+07:00'),concat(date_format(date_add(timestamp(reg_periksa.tgl_registrasi,reg_periksa.jam_reg), interval 4 hour),'%Y-%m-%dT%H:%i:%s'),'+07:00')) as pulang,ifnull(satu_sehat_encounter.id_encounter,'') as id_encounter "+
                    "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join pegawai on pegawai.nik=reg_periksa.kd_dokter "+
                    "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join satu_sehat_mapping_lokasi_ralan on satu_sehat_mapping_lokasi_ralan.kd_poli=poliklinik.kd_poli "+
-                   "inner join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat left join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "where nota_jalan.tanggal between ? and ? "+
+                   "left join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat left join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
+                   "where reg_periksa.status_lanjut='Ralan' and reg_periksa.tgl_registrasi between ? and ? "+
                    (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
                    "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.nama like ? or poliklinik.nm_poli like ? or "+
                    "reg_periksa.stts like ? or reg_periksa.status_lanjut like ?)")+" order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg");
@@ -864,12 +880,22 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
             
             ps=koneksi.prepareStatement(
                    "select reg_periksa.tgl_registrasi,reg_periksa.jam_reg,reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,reg_periksa.kd_dokter,"+
-                   "pegawai.nama,pegawai.no_ktp as ktpdokter,reg_periksa.kd_poli,poliklinik.nm_poli,satu_sehat_mapping_lokasi_ralan.id_lokasi_satusehat,reg_periksa.stts,"+
-                   "reg_periksa.status_lanjut,concat(nota_inap.tanggal,'T',nota_inap.jam,'+07:00') as pulang,ifnull(satu_sehat_encounter.id_encounter,'') as id_encounter "+
+                   "pegawai.nama,pegawai.no_ktp as ktpdokter,kamar_ranap.kd_kamar as kd_poli,kamar_ranap.nm_bangsal as nm_poli,kamar_ranap.id_lokasi_satusehat,reg_periksa.stts,"+
+                   "reg_periksa.status_lanjut,ifnull(concat(nota_inap.tanggal,'T',nota_inap.jam,'+07:00'),concat(kamar_ranap.tgl_keluar,'T',kamar_ranap.jam_keluar,'+07:00')) as pulang,ifnull(satu_sehat_encounter.id_encounter,'') as id_encounter "+
                    "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join pegawai on pegawai.nik=reg_periksa.kd_dokter "+
-                   "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join satu_sehat_mapping_lokasi_ralan on satu_sehat_mapping_lokasi_ralan.kd_poli=poliklinik.kd_poli "+
-                   "inner join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat left join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "where nota_inap.tanggal between ? and ? "+
+                   "inner join ("+
+                   "select ki1.no_rawat,ki1.kd_kamar,bangsal.nm_bangsal,mapping_ranap.id_lokasi_satusehat,ki1.tgl_keluar,ki1.jam_keluar "+
+                   "from kamar_inap ki1 inner join satu_sehat_mapping_lokasi_ranap mapping_ranap on mapping_ranap.kd_kamar=ki1.kd_kamar "+
+                   "left join kamar on kamar.kd_kamar=ki1.kd_kamar left join bangsal on bangsal.kd_bangsal=kamar.kd_bangsal "+
+                   "inner join ("+
+                   "select ki2.no_rawat,max(timestamp(ki2.tgl_masuk,ki2.jam_masuk)) as max_masuk "+
+                   "from kamar_inap ki2 inner join satu_sehat_mapping_lokasi_ranap mapping_ranap2 on mapping_ranap2.kd_kamar=ki2.kd_kamar "+
+                   "group by ki2.no_rawat"+
+                   ") pilihan_kamar on pilihan_kamar.no_rawat=ki1.no_rawat and timestamp(ki1.tgl_masuk,ki1.jam_masuk)=pilihan_kamar.max_masuk "+
+                   ") kamar_ranap on kamar_ranap.no_rawat=reg_periksa.no_rawat "+
+                   "left join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat left join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
+                   "where reg_periksa.status_lanjut='Ranap' and reg_periksa.tgl_registrasi between ? and ? "+
+                   "and (ifnull(nota_inap.no_rawat,'')<>'' or (kamar_ranap.tgl_keluar<>'0000-00-00' and kamar_ranap.jam_keluar<>'00:00:00')) "+
                    (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
                    "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.nama like ? or poliklinik.nm_poli like ? or "+
                    "reg_periksa.stts like ? or reg_periksa.status_lanjut like ?)")+" order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg");
@@ -919,3 +945,4 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
         return tbObat;
     }
 }
+

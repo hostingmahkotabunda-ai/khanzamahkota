@@ -283,7 +283,8 @@ public final class SatuSehatCariOrganisasi extends javax.swing.JDialog {
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
         try {
-            if(Valid.daysOld("./cache/satu_sehat_mapping_departemen.iyem")<30){
+            File cacheFile = new File("./cache/satu_sehat_mapping_departemen.iyem");
+            if(cacheFile.exists() && (cacheFile.length()>0) && (Valid.daysOld("./cache/satu_sehat_mapping_departemen.iyem")<30)){
                 tampil2();
             }else{
                 tampil();
@@ -360,7 +361,11 @@ public final class SatuSehatCariOrganisasi extends javax.swing.JDialog {
                     ps.close();
                 }
             }
-            fileWriter.write("{\"satu_sehat_mapping_departemen\":["+iyem.substring(0,iyem.length()-1)+"]}");
+            if(iyem.length()>0){
+                fileWriter.write("{\"satu_sehat_mapping_departemen\":["+iyem.substring(0,iyem.length()-1)+"]}");
+            }else{
+                fileWriter.write("{\"satu_sehat_mapping_departemen\":[]}");
+            }
             fileWriter.flush();
             fileWriter.close();
             iyem=null;
@@ -388,6 +393,7 @@ public final class SatuSehatCariOrganisasi extends javax.swing.JDialog {
             myObj.close();
         } catch (Exception ex) {
             System.out.println("Notifikasi : "+ex);
+            tampil();
         }
         LCount.setText(""+tabMode.getRowCount());
     }
