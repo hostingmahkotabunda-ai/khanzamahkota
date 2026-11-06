@@ -21,12 +21,10 @@ import java.awt.Desktop;
 import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
@@ -39,10 +37,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 
 /**
  *
@@ -56,182 +51,38 @@ public final class SatuSehatKirimAllergyIntolerance extends javax.swing.JDialog 
     private PreparedStatement ps;
     private ResultSet rs;   
     private int i=0;
-    private String link="",json="",idpasien="",idpraktisi="";
+    private String link="",idpasien="",idpraktisi="";
     private ApiSatuSehat api=new ApiSatuSehat();
-    private HttpHeaders headers ;
-    private HttpEntity requestEntity;
     private ObjectMapper mapper = new ObjectMapper();
-    private JsonNode root;
-    private JsonNode response;
     private SatuSehatCekNIK cekViaSatuSehat=new SatuSehatCekNIK();  
     private StringBuilder htmlContent;   
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private volatile boolean ceksukses = false; 
 
-    private void ensureSupportTable(){
-        try {
-            Sequel.queryu(
-                "create table if not exists satu_sehat_allergy_intolerance(" +
-                "no_rawat varchar(17) not null," +
-                "tgl_perawatan date not null," +
-                "jam_rawat time not null," +
-                "id_allergy_intolerance varchar(80) default null," +
-                "primary key(no_rawat,tgl_perawatan,jam_rawat))"
-            );
-        } catch (Exception e) {
-            System.out.println("Notifikasi : " + e);
-        }
-    }
+    private final SatuSehatAllergyMapping allergyMappings =
+            new SatuSehatAllergyMapping(new File("./cache/alergisatusehat.iyem"));
+    private final javax.swing.JButton BtnMappingAlergi = new javax.swing.JButton("Mapping Alergi");
+    private final javax.swing.JButton BtnReferensiAlergi = new javax.swing.JButton("Cari Referensi Online");
+    private final SatuSehatAllergyReferenceService allergyReferences=new SatuSehatAllergyReferenceService(
+            new SatuSehatAllergyOnlineClient(koneksiDB.URLKFAV2SATUSEHAT(),() -> api.TokenSatuSehat()));
 
     private String normalisasiNIK(String nik){
-        return nik==null ? "" : nik.replaceAll("[^0-9]","").trim();
+        return nik==null ? "" : nik.trim();
     }
-
-    private String normalisasiKeywordAlergi(String keyword){
-        return keyword==null ? "" : keyword.replaceAll("(\r\n|\r|\n|\n\r)", "")
-                                         .replaceAll("\t", "")
-                                         .trim()
-                                         .toLowerCase();
-    }
-
-    private String[] buatMappingAlergi(String category,String codingSystem,String codingCode,String codingDisplay,String text,String keyword){
-        return new String[]{category,codingSystem,codingCode,codingDisplay,text,keyword};
-    }
-
-    private void tambahKandidatAlergi(LinkedHashSet<String> kandidat,String nilai){
-        String normal=normalisasiKeywordAlergi(nilai);
-        if(!normal.equals("")){
-            kandidat.add(normal);
-        }
-    }
-
-    private void tambahAliasAlergi(LinkedHashSet<String> kandidat,String keyword){
-        String normal=normalisasiKeywordAlergi(keyword);
-        if(normal.equals("")){
-            return;
-        }
-
-        tambahKandidatAlergi(kandidat, normal);
-        tambahKandidatAlergi(kandidat, normal.replace("makan:", "").replace("antibiotik", "").replace("obat", ""));
-        tambahKandidatAlergi(kandidat, normal.replace("ampicilin", "ampisilin"));
-        tambahKandidatAlergi(kandidat, normal.replace("ceftriaxon", "ceftriaxone"));
-        tambahKandidatAlergi(kandidat, normal.replace("clindamicin", "clindamycin"));
-
-        String tanpaTandaBaca=normal.replaceAll("[()\\[\\]:]", " ")
-                                    .replaceAll("[^a-z0-9,;/+& ]", " ")
-                                    .replaceAll("\\s+", " ")
-                                    .trim();
-        tambahKandidatAlergi(kandidat, tanpaTandaBaca);
-
-        for(String token : tanpaTandaBaca.split("\\s*(,|/|;|\\bdan\\b|\\+|&|\\s)\\s*")){
-            if(token.length()<3){
-                continue;
-            }
-            if(token.equals("makan")||token.equals("antibiotik")||token.equals("obat")||token.equals("alergi")){
-                continue;
-            }
-            tambahKandidatAlergi(kandidat, token);
-            tambahKandidatAlergi(kandidat, token.replace("ampicilin", "ampisilin"));
-            tambahKandidatAlergi(kandidat, token.replace("ceftriaxon", "ceftriaxone"));
-            tambahKandidatAlergi(kandidat, token.replace("clindamicin", "clindamycin"));
-        }
-    }
-
-    private String[] cariMappingPadaJson(JsonNode daftarAlergi,String keyword){
-        if(daftarAlergi!=null && daftarAlergi.isArray()){
-            for(JsonNode list:daftarAlergi){
-                if(list.path("keyword").asText().equalsIgnoreCase(keyword)){
-                    String codingCode=list.path("coding_code").asText().trim();
-                    if(codingCode.equals("")||codingCode.equalsIgnoreCase("unknown")){
-                        return buatMappingAlergi("","","","","",keyword);
-                    }
-                    return buatMappingAlergi(
-                            list.path("category").asText(),
-                            list.path("coding_system").asText(),
-                            codingCode,
-                            list.path("coding_display").asText(),
-                            list.path("text").asText(),
-                            list.path("keyword").asText()
-                    );
-                }
-            }
-        }
-        return buatMappingAlergi("","","","","","");
-    }
-
-    private String[] ambilMappingAlergi(String keywordAlergi){
-        String keyword=normalisasiKeywordAlergi(keywordAlergi);
-        if(keyword.equals("")){
-            return buatMappingAlergi(
-                    "environment",
-                    "http://snomed.info/sct",
-                    "716186003",
-                    "No known allergy",
-                    "No known allergy",
-                    ""
-            );
-        }
-
-        File file = new File("./cache/alergisatusehat.iyem");
-        if(!file.exists()){
-            System.out.println("⚠ File mapping alergi belum ada: "+file.getPath());
-            simpanMappingBaru(keyword);
-            return buatMappingAlergi("","","","","","");
-        }
-
-        try(FileReader reader = new FileReader(file)){
-            JsonNode rootMapping = mapper.readTree(reader);
-            JsonNode daftarAlergi = rootMapping.path("alergi");
-
-            String[] mapping = cariMappingPadaJson(daftarAlergi, keyword);
-            if(!mapping[0].equals("")){
-                return mapping;
-            }
-
-            LinkedHashSet<String> kandidat = new LinkedHashSet<String>();
-            tambahAliasAlergi(kandidat, keyword);
-            for(String item : kandidat){
-                mapping = cariMappingPadaJson(daftarAlergi, item);
-                if(!mapping[0].equals("")){
-                    System.out.println("ℹ Mapping alergi memakai token '"+mapping[5]+"' untuk input '"+keyword+"'");
-                    return mapping;
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("❌ Gagal membaca mapping alergi: "+e);
-            return buatMappingAlergi("","","","","","");
-        }
-
-        System.out.println("⚠ Mapping tidak ditemukan: "+keyword);
-        simpanMappingBaru(keyword);
-        return buatMappingAlergi("","","","","","");
-    }
-
     private boolean validasiIdentitasSatuSehat(int baris){
-        String nikPasien=normalisasiNIK(tbObat.getValueAt(baris,5).toString());
-        String nikPraktisi=normalisasiNIK(tbObat.getValueAt(baris,9).toString());
+        String nikPasien=normalisasiNIK(nilai(baris,5)), nikPraktisi=normalisasiNIK(nilai(baris,9));
+        if(!nikPasien.matches("[0-9]{16}")||!nikPraktisi.matches("[0-9]{16}"))return false;
         idpasien=cekViaSatuSehat.tampilIDPasien(nikPasien);
         idpraktisi=cekViaSatuSehat.tampilIDParktisi(nikPraktisi);
-
-        if(idpasien.equals("")){
-            System.out.println("❌ Patient SATUSEHAT tidak ditemukan. NIK pasien : "+nikPasien+" / Pasien : "+tbObat.getValueAt(baris,4).toString());
-            return false;
-        }
-
-        if(idpraktisi.equals("")){
-            System.out.println("❌ Practitioner SATUSEHAT tidak ditemukan. NIK praktisi : "+nikPraktisi+" / Praktisi : "+tbObat.getValueAt(baris,8).toString());
-            return false;
-        }
-
-        return true;
+        try { SatuSehatEncounterIdentity.requireIds(idpasien,idpraktisi); return true; }
+        catch(IllegalArgumentException e){ return false; }
     }
-    
     /** Creates new form DlgKamar
      * @param parent
      * @param modal */
     public SatuSehatKirimAllergyIntolerance(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
-        ensureSupportTable();
+
         initComponents();
 
         this.setLocation(10,2);
@@ -240,33 +91,36 @@ public final class SatuSehatKirimAllergyIntolerance extends javax.swing.JDialog 
         tabMode=new DefaultTableModel(null,new String[]{
                 "P","Tanggal Registrasi","No.Rawat","No.RM","Nama Pasien","No.KTP Pasien","ID Encounter",
                 "Alergi","Petugas/Praktisi","No.KTP Praktisi","Tanggal","ID Allergy Intolerance",
-                "Status"
+                "Status", "Status Mapping", "Verifikasi Alergi"
             }){
               @Override public boolean isCellEditable(int rowIndex, int colIndex){
                 boolean a = false;
-                if (colIndex==0) {
+                if (colIndex==0 || colIndex==14) {
                     a=true;
                 }
                 return a;
              }
-             Class[] types = new Class[] {
-                 java.lang.Boolean.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, 
-                 java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, 
-                 java.lang.String.class, java.lang.String.class, java.lang.String.class, java.lang.String.class, 
-                 java.lang.String.class
-             };
              @Override
              public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return columnIndex==0 ? Boolean.class : String.class;
              }
         };
         tbObat.setModel(tabMode);
+        BtnMappingAlergi.addActionListener(evt -> editMappingAlergi());
+        panelGlass8.setLayout(new java.awt.GridLayout(3,3,5,5));
+        panelGlass8.setPreferredSize(new Dimension(44,120));
+        panelGlass8.add(BtnMappingAlergi);
+                BtnReferensiAlergi.addActionListener(evt -> cariReferensiBaris());
+        panelGlass8.add(BtnReferensiAlergi);
+        tbObat.getColumnModel().getColumn(14).setCellEditor(new javax.swing.DefaultCellEditor(
+                new javax.swing.JComboBox<String>(new String[]{"","unconfirmed","confirmed"})));
+        jPanel3.setPreferredSize(new Dimension(44,180));
 
         //tbKamar.setDefaultRenderer(Object.class, new WarnaTable(panelJudul.getBackground(),tbKamar.getBackground()));
         tbObat.setPreferredScrollableViewportSize(new Dimension(500,500));
         tbObat.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 
-        for (i = 0; i < 13; i++) {
+        for (i = 0; i < 15; i++) {
             TableColumn column = tbObat.getColumnModel().getColumn(i);
             if(i==0){
                 column.setPreferredWidth(20);
@@ -294,6 +148,10 @@ public final class SatuSehatKirimAllergyIntolerance extends javax.swing.JDialog 
                 column.setPreferredWidth(220);
             }else if(i==12){
                 column.setPreferredWidth(60);
+            }else if(i==13){
+                column.setPreferredWidth(360);
+            }else if(i==14){
+                column.setPreferredWidth(130);
             }
         }
         tbObat.setDefaultRenderer(Object.class, new WarnaTable());
@@ -705,234 +563,9 @@ public final class SatuSehatKirimAllergyIntolerance extends javax.swing.JDialog 
             Valid.pindah(evt,TCari,BtnPrint);
         }
     }//GEN-LAST:event_BtnCariKeyPressed
-private void simpanMappingBaru(String keyword) {
-    File file = new File("./cache/alergisatusehat.iyem");
-    ObjectMapper mapper = new ObjectMapper();
-    ObjectNode root;
-    ArrayNode alergiArray;
-
-    try {
-        // Normalisasi keyword
-        keyword = keyword.replaceAll("(\r\n|\r|\n|\n\r)", "")
-                         .replaceAll("\t", "")
-                         .trim()
-                         .toLowerCase();
-
-        if(keyword.equals("")) return;
-
-        // Jika file ada
-        if(file.exists()){
-            root = (ObjectNode) mapper.readTree(file);
-            alergiArray = (ArrayNode) root.path("alergi");
-        } else {
-            root = mapper.createObjectNode();
-            alergiArray = mapper.createArrayNode();
-            root.set("alergi", alergiArray);
-        }
-
-        // Cek duplikasi
-        boolean sudahAda = false;
-        for(JsonNode node : alergiArray){
-            if(node.path("keyword").asText().equalsIgnoreCase(keyword)){
-                sudahAda = true;
-                break;
-            }
-        }
-
-        // Tambah jika belum ada
-        if(!sudahAda){
-            ObjectNode baru = mapper.createObjectNode();
-            baru.put("keyword", keyword);
-            baru.put("category", "medication");
-            baru.put("coding_system", "http://snomed.info/sct");
-            baru.put("coding_code", "unknown");
-            baru.put("coding_display", keyword);
-            baru.put("text", "Alergi " + keyword);
-
-            alergiArray.add(baru);
-
-            mapper.writerWithDefaultPrettyPrinter().writeValue(file, root);
-
-            System.out.println("✅ Mapping baru ditambahkan: "+keyword);
-        }
-
-    } catch (Exception e) {
-        System.out.println("❌ Gagal simpan mapping: "+e);
-    }
-}
     private void BtnKirimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnKirimActionPerformed
-        for(i=0;i<tbObat.getRowCount();i++){
-
-    if(
-        tbObat.getValueAt(i,0).toString().equals("true") &&
-        !tbObat.getValueAt(i,5).toString().equals("") &&
-        !tbObat.getValueAt(i,6).toString().equals("") &&
-        !tbObat.getValueAt(i,9).toString().equals("") &&
-        tbObat.getValueAt(i,11).toString().equals("")
-    ){
-
-        FileReader myObj = null;
-
-        try {
-
-            String dicari = tbObat.getValueAt(i,7).toString()
-                    .replaceAll("(\r\n|\r|\n|\n\r)", "")
-                    .replaceAll("\t", "")
-                    .trim();
-
-            String category="",coding_system="",coding_code="",coding_display="",text="";
-
-            // =========================
-            // 🔍 BACA FILE MAPPING
-            // =========================
-            File file = new File("./cache/alergisatusehat.iyem");
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = null;
-
-            if(file.exists()){
-                myObj = new FileReader(file);
-                root = mapper.readTree(myObj);
-
-                JsonNode response = root.path("alergi");
-
-                if(response.isArray()){
-                    for(JsonNode list:response){
-                        if(list.path("keyword").asText().equalsIgnoreCase(dicari)){
-                            category=list.path("category").asText();
-                            coding_system=list.path("coding_system").asText();
-                            coding_code=list.path("coding_code").asText();
-                            coding_display=list.path("coding_display").asText();
-                            text=list.path("text").asText();
-                            break;
-                        }
-                    }
-                }
-            }
-
-            // =========================
-            // ❗ JIKA TIDAK ADA MAPPING
-            // =========================
-            if(category.equals("")){
-                System.out.println("⚠ Mapping tidak ditemukan: "+dicari);
-
-                // Simpan ke file otomatis
-                simpanMappingBaru(dicari);
-
-                if(dicari.equals("")){
-                    // Tidak ada alergi
-                    category = "environment";
-                    coding_system = "http://snomed.info/sct";
-                    coding_code = "716186003";
-                    coding_display = "No known allergy";
-                    text = "No known allergy";
-                } else {
-                    // Ada isi tapi belum ada mapping
-                    category = "medication";
-                    coding_system = "http://snomed.info/sct";
-                    coding_code = "unknown";
-                    coding_display = dicari;
-                    text = dicari;
-                }
-            }
-
-            // =========================
-            // 🔗 AMBIL ID SATUSEHAT
-            // =========================
-            if(category.equals("") || coding_code.equalsIgnoreCase("unknown")){
-                String[] mapping = ambilMappingAlergi(dicari);
-                category=mapping[0];
-                coding_system=mapping[1];
-                coding_code=mapping[2];
-                coding_display=mapping[3];
-                text=mapping[4];
-            }
-
-            if(category.equals("") || coding_code.equalsIgnoreCase("unknown")){
-                System.out.println("❌ Pengiriman dibatalkan. Mapping alergi belum valid untuk: "+tbObat.getValueAt(i,7).toString());
-                continue;
-            }
-
-            if(!validasiIdentitasSatuSehat(i)){
-                continue;
-            }
-
-            // =========================
-            // 📦 BUILD JSON
-            // =========================
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.add("Authorization", "Bearer "+api.TokenSatuSehat());
-
-            String json = "{"+
-                    "\"resourceType\":\"AllergyIntolerance\","+
-
-                    "\"identifier\":[{\"system\":\"http://sys-ids.kemkes.go.id/allergy/"+koneksiDB.IDSATUSEHAT()+"\",\"value\":\""+tbObat.getValueAt(i,2).toString()+"\"}],"+
-
-                    "\"clinicalStatus\":{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical\",\"code\":\"active\",\"display\":\"Active\"}]},"+
-
-                    "\"verificationStatus\":{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/allergyintolerance-verification\",\"code\":\"confirmed\",\"display\":\"Confirmed\"}]},"+
-
-                    "\"category\":[\""+category+"\"],"+
-
-                    "\"code\":{\"coding\":[{\"system\":\""+coding_system+"\",\"code\":\""+coding_code+"\",\"display\":\""+coding_display+"\"}],\"text\":\""+text+"\"},"+
-
-                    "\"patient\":{\"reference\":\"Patient/"+idpasien+"\",\"display\":\""+tbObat.getValueAt(i,4).toString()+"\"},"+
-
-                    "\"encounter\":{\"reference\":\"Encounter/"+tbObat.getValueAt(i,6).toString()+"\"},"+
-
-                    "\"recordedDate\":\""+tbObat.getValueAt(i,10).toString().replace(" ","T")+"+07:00\","+
-
-                    "\"recorder\":{\"reference\":\"Practitioner/"+idpraktisi+"\",\"display\":\""+tbObat.getValueAt(i,8).toString()+"\"}"+
-
-                    "}";
-
-            System.out.println("🚀 KIRIM: "+json);
-
-            HttpEntity requestEntity = new HttpEntity(json, headers);
-
-            String result = api.getRest().exchange(
-                    link+"/AllergyIntolerance",
-                    HttpMethod.POST,
-                    requestEntity,
-                    String.class
-            ).getBody();
-
-            System.out.println("✅ RESPONSE: "+result);
-
-            JsonNode res = mapper.readTree(result);
-            String id = res.path("id").asText();
-
-            if(!id.equals("")){
-                if(Sequel.menyimpantf2(
-                        "satu_sehat_allergy_intolerance",
-                        "?,?,?,?,?",
-                        "Simpan",
-                        5,
-                        new String[]{
-                                tbObat.getValueAt(i,2).toString(),
-                                tbObat.getValueAt(i,10).toString().substring(0,10),
-                                tbObat.getValueAt(i,10).toString().substring(11,19),
-                                tbObat.getValueAt(i,12).toString(),
-                                id
-                        }
-                )){
-                    tbObat.setValueAt(id,i,11);
-                    tbObat.setValueAt(false,i,0);
-                }
-            }
-
-        } catch(org.springframework.web.client.HttpStatusCodeException e){
-            System.out.println("❌ ERROR: "+e);
-            System.out.println("❌ RESPONSE BODY: "+e.getResponseBodyAsString());
-        } catch(Exception e){
-            System.out.println("❌ ERROR: "+e);
-        } finally {
-            try { if(myObj!=null) myObj.close(); } catch(Exception e){}
-        }
-    }
-}
+        kirimAlergi(false);
     }//GEN-LAST:event_BtnKirimActionPerformed
-
     private void ppPilihSemuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppPilihSemuaActionPerformed
         for(i=0;i<tbObat.getRowCount();i++){
             tbObat.setValueAt(true,i,0);
@@ -946,147 +579,8 @@ private void simpanMappingBaru(String keyword) {
     }//GEN-LAST:event_ppBersihkanActionPerformed
 
     private void BtnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateActionPerformed
-        for(i=0;i<tbObat.getRowCount();i++){
-            if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,6).toString().equals(""))&&(!tbObat.getValueAt(i,9).toString().equals(""))&&(!tbObat.getValueAt(i,11).toString().equals(""))){
-                FileReader myObj=null;
-                try {
-                    String dicari=tbObat.getValueAt(i,7).toString().replaceAll("(\r\n|\r|\n|\n\r)","").replaceAll("\t", ""),
-                           category="",coding_system="",coding_code="",coding_display="",text="";
-                    myObj = new FileReader("./cache/alergisatusehat.iyem");
-                    root = mapper.readTree(myObj);
-                    response = root.path("alergi");
-                    if(response.isArray()){
-                        for(JsonNode list:response){
-                            if(list.path("keyword").asText().equalsIgnoreCase(dicari)){
-                                category=list.path("category").asText();;
-                                coding_system=list.path("coding_system").asText();
-                                coding_code=list.path("coding_code").asText();
-                                coding_display=list.path("coding_display").asText();
-                                text=list.path("text").asText();
-                                break;
-                            }
-                        }
-                    }
-                    //kirim sebagai "No Known Allergy"
-                    if(category.equals("")){
-                        if(dicari.equals("")){
-                            // tidak ada alergi
-                            category = "environment";
-                            coding_system = "http://snomed.info/sct";
-                            coding_code = "716186003";
-                            coding_display = "No known allergy";
-                            text = "No known allergy";
-                        }else{
-                            // ada isi tapi tidak ada mapping
-                            category = "medication";
-                            coding_system = "http://snomed.info/sct";
-                            coding_code = "unknown";
-                            coding_display = dicari;
-                            text = dicari;
-                        }
-                    }
-                    if(category.equals("") || coding_code.equalsIgnoreCase("unknown")){
-                        String[] mapping = ambilMappingAlergi(dicari);
-                        category=mapping[0];
-                        coding_system=mapping[1];
-                        coding_code=mapping[2];
-                        coding_display=mapping[3];
-                        text=mapping[4];
-                    }
-                    if(category.equals("") || coding_code.equalsIgnoreCase("unknown")){
-                        System.out.println("❌ Update dibatalkan. Mapping alergi belum valid untuk: "+tbObat.getValueAt(i,7).toString());
-                        continue;
-                    }
-                    if(!category.equals("")){
-                        if(!validasiIdentitasSatuSehat(i)){
-                            continue;
-                        }
-                        try{
-                            headers = new HttpHeaders();
-                            headers.setContentType(MediaType.APPLICATION_JSON);
-                            headers.add("Authorization", "Bearer "+api.TokenSatuSehat());
-                            json = "{" +
-                                        "\"resourceType\": \"AllergyIntolerance\"," +
-                                        "\"id\": \""+tbObat.getValueAt(i,11).toString()+"\"," +
-                                        "\"identifier\": [" +
-                                            "{" +
-                                                "\"system\": \"http://sys-ids.kemkes.go.id/allergy/"+koneksiDB.IDSATUSEHAT()+"\"," +
-                                                "\"value\" : \""+tbObat.getValueAt(i,2).toString()+"\"" +
-                                            "}" +
-                                        "]," +
-                                        "\"clinicalStatus\": {" +
-                                            "\"coding\": [" +
-                                                "{" +
-                                                    "\"system\": \"http://terminology.hl7.org/CodeSystem/allergyintolerance-clinical\"," +
-                                                    "\"code\": \"active\"," +
-                                                    "\"display\": \"Active\"" +
-                                                "}" +
-                                            "]" +
-                                        "}," +
-                                        "\"verificationStatus\": {" +
-                                            "\"coding\": [" +
-                                                "{" +
-                                                    "\"system\": \"http://terminology.hl7.org/CodeSystem/allergyintolerance-verification\"," +
-                                                    "\"code\": \"confirmed\"," +
-                                                    "\"display\": \"Confirmed\"" +
-                                                "}" +
-                                            "]" +
-                                        "}," +
-                                        "\"code\": {" +
-                                            "\"text\": \""+tbObat.getValueAt(i,7).toString().replaceAll("(\r\n|\r|\n|\n\r)","").replaceAll("\t", "")+"\"" +
-                                        "}," +
-                                        "\"category\": [" +
-                                            "\""+category+"\"" +
-                                        "]," +
-                                        "\"code\": {" +
-                                            "\"coding\": [" +
-                                                "{" +
-                                                    "\"system\": \""+coding_system+"\"," +
-                                                    "\"code\": \""+coding_code+"\"," +
-                                                    "\"display\": \""+coding_display+"\"" +
-                                                "}" +
-                                            "]," +
-                                            "\"text\": \""+text+"\"" +
-                                        "},"+
-                                        "\"patient\": {" +
-                                            "\"reference\" : \"Patient/"+idpasien+"\"," +
-                                            "\"display\" : \""+tbObat.getValueAt(i,4).toString()+"\"" +
-                                        "}," +
-                                        "\"encounter\" : {" +
-                                            "\"reference\" : \"Encounter/"+tbObat.getValueAt(i,6).toString()+"\","+
-                                            "\"display\" : \"Kunjungan "+tbObat.getValueAt(i,4).toString()+" pada tanggal "+tbObat.getValueAt(i,1).toString()+" dengan nomor kunjungan "+tbObat.getValueAt(i,2).toString()+"\""+
-                                        "}," +
-                                        "\"recordedDate\": \""+tbObat.getValueAt(i,10).toString().replaceAll(" ","T")+"+07:00\"," +
-                                        "\"recorder\": {" +
-                                            "\"reference\" : \"Practitioner/"+idpraktisi+"\"," +
-                                            "\"display\" : \""+tbObat.getValueAt(i,8).toString()+"\"" +
-                                        "}" +
-                                    "}";
-                            System.out.println("URL : "+link+"/AllergyIntolerance/"+tbObat.getValueAt(i,11).toString());
-                            System.out.println("Request JSON : "+json);
-                            requestEntity = new HttpEntity(json,headers);
-                            json=api.getRest().exchange(link+"/AllergyIntolerance/"+tbObat.getValueAt(i,11).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
-                            System.out.println("Result JSON : "+json);
-                            tbObat.setValueAt(false,i,0);
-                        }catch(org.springframework.web.client.HttpStatusCodeException e){
-                            System.out.println("Notifikasi Bridging : "+e);
-                            System.out.println("Response Body : "+e.getResponseBodyAsString());
-                        }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
-                        }
-                    }
-                    myObj.close();
-                } catch (Exception e) {
-                    System.out.println("Notifikasi : "+e);
-                }finally {
-                    if (myObj != null) try { myObj.close(); } catch (Exception e) {}
-                    response = null;
-                    root = null;
-                }
-            }
-        }
+        kirimAlergi(true);
     }//GEN-LAST:event_BtnUpdateActionPerformed
-
     private void BtnAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnAllActionPerformed
         TCari.setText("");
         runBackground(() ->tampil());
@@ -1182,7 +676,7 @@ private void simpanMappingBaru(String keyword) {
                    "inner join pemeriksaan_ralan on pemeriksaan_ralan.no_rawat=reg_periksa.no_rawat "+
                    "inner join pegawai on pemeriksaan_ralan.nip=pegawai.nik "+
                    "left join satu_sehat_allergy_intolerance on satu_sehat_allergy_intolerance.no_rawat=pemeriksaan_ralan.no_rawat "+
-                   "and satu_sehat_allergy_intolerance.tgl_perawatan=pemeriksaan_ralan.tgl_perawatan and satu_sehat_allergy_intolerance.jam_rawat=pemeriksaan_ralan.jam_rawat "+
+                   "and satu_sehat_allergy_intolerance.tgl_perawatan=pemeriksaan_ralan.tgl_perawatan and satu_sehat_allergy_intolerance.jam_rawat=pemeriksaan_ralan.jam_rawat and satu_sehat_allergy_intolerance.status='Ralan' "+
                    "where pemeriksaan_ralan.alergi<>'' and reg_periksa.tgl_registrasi between ? and ? "+
                    (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
                    "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.no_ktp like ? or pegawai.nama like ?) "));
@@ -1202,7 +696,7 @@ private void simpanMappingBaru(String keyword) {
                     tabMode.addRow(new Object[]{
                         false,rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),
                         rs.getString("no_ktp"),rs.getString("id_encounter"),rs.getString("alergi"),rs.getString("nama"),rs.getString("ktppraktisi"),
-                        rs.getString("tgl_perawatan")+" "+rs.getString("jam_rawat"),rs.getString("satu_sehat_allergy_intolerance"),"Ralan"
+                        rs.getString("tgl_perawatan")+" "+rs.getString("jam_rawat"),rs.getString("satu_sehat_allergy_intolerance"),"Ralan",allergyMappings.status(rs.getString("alergi")),rs.getString("satu_sehat_allergy_intolerance").isEmpty()?"unconfirmed":""
                     });
                 }
             } catch (Exception e) {
@@ -1226,7 +720,7 @@ private void simpanMappingBaru(String keyword) {
                    "inner join pemeriksaan_ranap on pemeriksaan_ranap.no_rawat=reg_periksa.no_rawat "+
                    "inner join pegawai on pemeriksaan_ranap.nip=pegawai.nik "+
                    "left join satu_sehat_allergy_intolerance on satu_sehat_allergy_intolerance.no_rawat=pemeriksaan_ranap.no_rawat "+
-                   "and satu_sehat_allergy_intolerance.tgl_perawatan=pemeriksaan_ranap.tgl_perawatan and satu_sehat_allergy_intolerance.jam_rawat=pemeriksaan_ranap.jam_rawat "+
+                   "and satu_sehat_allergy_intolerance.tgl_perawatan=pemeriksaan_ranap.tgl_perawatan and satu_sehat_allergy_intolerance.jam_rawat=pemeriksaan_ranap.jam_rawat and satu_sehat_allergy_intolerance.status='Ranap' "+
                    "where pemeriksaan_ranap.alergi<>'' and reg_periksa.tgl_registrasi between ? and ? "+
                    (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
                    "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.no_ktp like ? or pegawai.nama like ?) "));
@@ -1246,7 +740,7 @@ private void simpanMappingBaru(String keyword) {
                     tabMode.addRow(new Object[]{
                         false,rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),
                         rs.getString("no_ktp"),rs.getString("id_encounter"),rs.getString("alergi"),rs.getString("nama"),rs.getString("ktppraktisi"),
-                        rs.getString("tgl_perawatan")+" "+rs.getString("jam_rawat"),rs.getString("satu_sehat_allergy_intolerance"),"Ranap"
+                        rs.getString("tgl_perawatan")+" "+rs.getString("jam_rawat"),rs.getString("satu_sehat_allergy_intolerance"),"Ranap",allergyMappings.status(rs.getString("alergi")),rs.getString("satu_sehat_allergy_intolerance").isEmpty()?"unconfirmed":""
                     });
                 }
             } catch (Exception e) {
@@ -1265,10 +759,214 @@ private void simpanMappingBaru(String keyword) {
         LCount.setText(""+tabMode.getRowCount());
     }
 
+    private String nilai(int row,int column){
+        Object value=tbObat.getValueAt(row,column);
+        return value==null?"":value.toString().trim();
+    }
+
+    private void refreshMappingStatus(){
+        for(int row=0;row<tbObat.getRowCount();row++)
+            tbObat.setValueAt(allergyMappings.status(nilai(row,7)),row,13);
+    }
+
+    private void editMappingAlergi(){
+        if(ceksukses){javax.swing.JOptionPane.showMessageDialog(this,"Tunggu pemuatan daftar selesai.");return;}
+        int row=tbObat.getSelectedRow();
+        if(row<0){javax.swing.JOptionPane.showMessageDialog(this,"Pilih baris alergi terlebih dahulu.");return;}
+        try {
+            String original=nilai(row,7);
+            SatuSehatAllergyMappingEditor editor=new SatuSehatAllergyMappingEditor(original,allergyMappings.forEditing(original),allergyReferences);
+            javax.swing.JDialog dialog=new javax.swing.JDialog(this,"Mapping Alergi",true);
+            javax.swing.JButton save=new javax.swing.JButton("OK"),cancel=new javax.swing.JButton("Cancel");
+            editor.addPropertyChangeListener("searching",event -> save.setEnabled(!editor.isSearching()));
+            save.addActionListener(event -> {
+                try{
+                    SatuSehatAllergyMapping.Mapping mapping=editor.mapping();String source=editor.referenceSource();
+                    if(source==null)allergyMappings.save(mapping);else allergyMappings.saveReference(mapping,source,true);
+                    refreshMappingStatus();
+                    javax.swing.JOptionPane.showMessageDialog(dialog,mapping.partial?"Mapping sebagian disimpan: "+mapping.display+". Zat lain pada catatan belum terpetakan; catatan asli tetap utuh.":"Mapping disimpan dengan cadangan. Silakan gunakan Kirim/Update sesuai status data.");
+                    dialog.dispose();
+                }catch(Exception e){javax.swing.JOptionPane.showMessageDialog(dialog,e.getMessage(),"Mapping belum valid",javax.swing.JOptionPane.WARNING_MESSAGE);}
+            });
+            cancel.addActionListener(event -> dialog.dispose());
+            javax.swing.JPanel buttons=new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));buttons.add(save);buttons.add(cancel);
+            dialog.setLayout(new java.awt.BorderLayout());dialog.add(editor,java.awt.BorderLayout.CENTER);dialog.add(buttons,java.awt.BorderLayout.SOUTH);
+            dialog.setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+            dialog.addWindowListener(new java.awt.event.WindowAdapter(){@Override public void windowClosed(java.awt.event.WindowEvent event){editor.cancelSearch();}});
+            dialog.getRootPane().setDefaultButton(save);
+            dialog.getRootPane().registerKeyboardAction(event -> dialog.dispose(),javax.swing.KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE,0),javax.swing.JComponent.WHEN_IN_FOCUSED_WINDOW);
+            dialog.setMinimumSize(new Dimension(780,460));dialog.pack();dialog.setLocationRelativeTo(this);dialog.setVisible(true);
+        }catch(Exception e){javax.swing.JOptionPane.showMessageDialog(this,"Mapping tidak dapat dibaca. Periksa format kamus/cadangan sebelum melanjutkan.");}
+    }
+    private void kirimAlergi(boolean update){
+        if(!akses.getsatu_sehat_kirim_allergy_intolerance()||ceksukses)return;
+        if(tbObat.isEditing()&&!tbObat.getCellEditor().stopCellEditing())return;
+        java.util.Set<String> missing=new java.util.LinkedHashSet<>();
+        for(int row=0;row<tbObat.getRowCount();row++){
+            if(!Boolean.TRUE.equals(tbObat.getValueAt(row,0))||update==nilai(row,11).isEmpty())continue;
+            try{if(allergyMappings.lookup(nilai(row,7))==null){SatuSehatAllergySearchTerm.extract(nilai(row,7));missing.add(nilai(row,7));}}
+            catch(Exception e){/* Alasan spesifik tetap ditampilkan oleh validasi pengiriman. */}
+        }
+        if(missing.isEmpty()){prosesKirimAlergi(update);return;}
+        if(missing.size()>10){javax.swing.JOptionPane.showMessageDialog(this,"Pilih maksimal 10 catatan alergi baru per pencarian daring.");return;}
+        cariReferensiOnline(new java.util.ArrayList<>(missing),true,update);
+    }
+
+    private void cariReferensiBaris(){
+        if(!akses.getsatu_sehat_kirim_allergy_intolerance()||ceksukses)return;
+        int row=tbObat.getSelectedRow();
+        if(row<0){javax.swing.JOptionPane.showMessageDialog(this,"Pilih satu baris alergi terlebih dahulu.");return;}
+        try{
+            String text=nilai(row,7);SatuSehatAllergySearchTerm.extract(text);
+            cariReferensiOnline(java.util.Collections.singletonList(text),false,false);
+        }catch(IllegalArgumentException e){javax.swing.JOptionPane.showMessageDialog(this,e.getMessage());}
+    }
+
+    private void cariReferensiOnline(final java.util.List<String> texts,final boolean untukKirim,final boolean update){
+        final String pilihanAwal=untukKirim?pilihanPengiriman():"";
+        ceksukses=true;setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        BtnReferensiAlergi.setEnabled(false);BtnMappingAlergi.setEnabled(false);BtnKirim.setEnabled(false);BtnUpdate.setEnabled(false);
+        new javax.swing.SwingWorker<java.util.List<SatuSehatAllergyReferenceService.Lookup>,Void>(){
+            private final StringBuilder errors=new StringBuilder();
+            @Override protected java.util.List<SatuSehatAllergyReferenceService.Lookup> doInBackground(){
+                java.util.List<SatuSehatAllergyReferenceService.Lookup> results=new java.util.ArrayList<>();
+                for(String text:texts){
+                    if(isCancelled())break;
+                    try{results.add(allergyReferences.search(text));}
+                    catch(Exception e){errors.append("Referensi belum dapat dicari; periksa satu nama alergen dan koneksi.\n");}
+                }
+                return results;
+            }
+            @Override protected void done(){
+                ceksukses=false;
+                if(!isDisplayable())return;
+                setCursor(Cursor.getDefaultCursor());isCek();
+                try{
+                    java.util.List<SatuSehatAllergyReferenceService.Lookup> results=get();
+                    if(untukKirim){
+                        if(tbObat.isEditing())tbObat.getCellEditor().stopCellEditing();
+                        if(!pilihanAwal.equals(pilihanPengiriman())){
+                            javax.swing.JOptionPane.showMessageDialog(SatuSehatKirimAllergyIntolerance.this,"Pilihan baris/status berubah selama pencarian. Periksa kembali lalu klik Kirim/Update; belum ada pengiriman.");return;
+                        }
+                        int held=0;
+                        for(SatuSehatAllergyReferenceService.Lookup lookup:results){
+                            try{if(!allergyReferences.saveAutomatic(lookup,allergyMappings))held++;}
+                            catch(Exception e){held++;}
+                        }
+                        refreshMappingStatus();
+                        if(held>0||errors.length()>0)javax.swing.JOptionPane.showMessageDialog(SatuSehatKirimAllergyIntolerance.this,
+                                "Sebagian referensi belum cocok tepat/tunggal atau layanan tidak lengkap. Baris tersebut tetap ditahan. Gunakan Cari Referensi Online untuk meninjau pilihan.");
+                        prosesKirimAlergi(update);
+                    }else if(!results.isEmpty()){
+                        SatuSehatAllergyReferenceService.Lookup lookup=results.get(0);
+                        if(allergyReferences.saveAutomatic(lookup,allergyMappings))
+                            javax.swing.JOptionPane.showMessageDialog(SatuSehatKirimAllergyIntolerance.this,"Referensi cocok tepat dan tunggal; mapping disimpan dengan cadangan. Status klinis tetap mengikuti pilihan per baris.");
+                        else pilihReferensi(lookup);
+                        refreshMappingStatus();
+                    }else javax.swing.JOptionPane.showMessageDialog(SatuSehatKirimAllergyIntolerance.this,"Referensi belum dapat ditemukan. Periksa nama alergen dan koneksi; mapping lama dipertahankan.");
+                }catch(Exception e){javax.swing.JOptionPane.showMessageDialog(SatuSehatKirimAllergyIntolerance.this,"Referensi belum dapat disimpan. Muat ulang dan tinjau kamus; tidak ada pengiriman otomatis dari tombol pencarian.");}
+            }
+        }.execute();
+    }
+
+    private String pilihanPengiriman(){
+        StringBuilder selected=new StringBuilder();
+        for(int row=0;row<tbObat.getRowCount();row++)if(Boolean.TRUE.equals(tbObat.getValueAt(row,0)))
+            for(int col:new int[]{2,6,7,10,11,12,14})selected.append(nilai(row,col)).append('\u0000');
+        return selected.toString();
+    }
+
+    private void pilihReferensi(SatuSehatAllergyReferenceService.Lookup lookup)throws java.io.IOException{
+        if(lookup.result.candidates.isEmpty()){
+            javax.swing.JOptionPane.showMessageDialog(this,"Tidak ditemukan padanan dalam referensi yang tersedia. "+lookup.result.warning);return;
+        }
+        javax.swing.JList<SatuSehatAllergyReferenceService.Candidate> list=new javax.swing.JList<>(
+                lookup.result.candidates.toArray(new SatuSehatAllergyReferenceService.Candidate[0]));
+        list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        javax.swing.JComboBox<String> category=new javax.swing.JComboBox<>(new String[]{"","food","environment","biologic","medication"});
+        list.addListSelectionListener(e -> {
+            SatuSehatAllergyReferenceService.Candidate c=list.getSelectedValue();
+            if(c!=null){category.setSelectedItem(c.category);category.setEnabled(c.category.isEmpty());}
+        });
+        list.setSelectedIndex(0);
+        javax.swing.JScrollPane scroll=new javax.swing.JScrollPane(list);scroll.setPreferredSize(new Dimension(700,240));
+        Object[] fields={"Nama alergen yang dicari: "+lookup.query,lookup.result.warning,scroll,"Kategori (tinjau jika belum ditentukan)",category,
+            "Pilih hanya zat yang sesuai catatan klinis. Penemuan kode tidak mengonfirmasi alergi pasien."};
+        if(javax.swing.JOptionPane.showConfirmDialog(this,fields,"Referensi Alergi",javax.swing.JOptionPane.OK_CANCEL_OPTION,javax.swing.JOptionPane.PLAIN_MESSAGE)==javax.swing.JOptionPane.OK_OPTION){
+            SatuSehatAllergyReferenceService.Candidate c=list.getSelectedValue();
+            if(c!=null)allergyMappings.saveReference(c.mapping(lookup.original,(String)category.getSelectedItem()),c.source,true);
+        }
+    }
+
+    /** POST dan PUT memakai validasi serta pembentuk payload yang sama. Tidak menulis DDL. */
+    private void prosesKirimAlergi(boolean update){
+        if(!akses.getsatu_sehat_kirim_allergy_intolerance())return;
+        if(ceksukses){javax.swing.JOptionPane.showMessageDialog(this,"Tunggu pemuatan daftar selesai.");return;}
+        int sukses=0,terpilih=0;
+        StringBuilder masalah=new StringBuilder();
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            for(int row=0;row<tbObat.getRowCount();row++){
+                if(!Boolean.TRUE.equals(tbObat.getValueAt(row,0)))continue;
+                terpilih++;
+                try {
+                    String oldId=nilai(row,11);
+                    if(update&&oldId.isEmpty())throw new IllegalArgumentException("Belum dikirim; gunakan Kirim terlebih dahulu.");
+                    if(!update&&!oldId.isEmpty())throw new IllegalArgumentException("Sudah memiliki ID; gunakan Update.");
+                    SatuSehatAllergyMapping.Mapping mapping=allergyMappings.resolve(nilai(row,7));
+                    tbObat.setValueAt(allergyMappings.status(nilai(row,7)),row,13);
+                    if(!validasiIdentitasSatuSehat(row))throw new IllegalArgumentException("NIK atau ID SATUSEHAT pasien/praktisi belum valid. Lengkapi mapping identitas terlebih dahulu.");
+                    ObjectNode payload=SatuSehatAllergyPayload.build(mapper,koneksiDB.IDSATUSEHAT(),nilai(row,2),
+                            idpasien,nilai(row,6),idpraktisi,nilai(row,10),nilai(row,7),mapping,update?oldId:null,nilai(row,14));
+                    HttpHeaders requestHeaders=new HttpHeaders();
+                    requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+                    requestHeaders.add("Authorization","Bearer "+api.TokenSatuSehat());
+                    String body=api.getRest().exchange(link+"/AllergyIntolerance"+(update?"/"+oldId:""),
+                            update?HttpMethod.PUT:HttpMethod.POST,new HttpEntity<String>(mapper.writeValueAsString(payload),requestHeaders),String.class).getBody();
+                    JsonNode result=mapper.readTree(body);
+                    String id=result==null?"":result.path("id").asText();
+                    if(!id.matches("[A-Za-z0-9.-]{1,64}")||result==null||!"AllergyIntolerance".equals(result.path("resourceType").asText()))
+                        throw new IllegalStateException("Respons tidak memuat resource/ID AllergyIntolerance yang valid. Periksa hasil di SATUSEHAT sebelum mengulang Kirim.");
+                    if(update&&!id.equals(oldId))throw new IllegalStateException("ID respons Update berbeda. Periksa hasil sebelum mengulang.");
+                    if(!update){
+                        // Tampilkan ID lebih dahulu agar kegagalan simpan lokal tidak memicu POST ulang di sesi ini.
+                        tbObat.setValueAt(id,row,11);
+                        try(PreparedStatement save=koneksi.prepareStatement("insert into satu_sehat_allergy_intolerance "
+                                +"(no_rawat,tgl_perawatan,jam_rawat,status,id_allergy_intolerance) values (?,?,?,?,?)")){
+                            save.setString(1,nilai(row,2));save.setString(2,nilai(row,10).substring(0,10));
+                            save.setString(3,nilai(row,10).substring(11,19));save.setString(4,nilai(row,12));save.setString(5,id);
+                            save.executeUpdate();
+                        }catch(java.sql.SQLException e){
+                            throw new IllegalStateException("API berhasil, tetapi ID gagal disimpan lokal. Catat ID pada tabel dan perbaiki pencatatan lokal sebelum memuat ulang/kirim lagi.");
+                        }
+                    }
+                    sukses++;tbObat.setValueAt(false,row,0);
+                }catch(org.springframework.web.client.HttpStatusCodeException e){
+                    masalah.append("Baris ").append(row+1).append(": HTTP ").append(e.getStatusCode().value());
+                    // Hanya tampilkan pesan validasi di dialog, tanpa menulis payload/kredensial ke log.
+                    try {
+                        JsonNode outcome=mapper.readTree(e.getResponseBodyAsString());
+                        for(JsonNode issue:outcome.path("issue"))masalah.append("; ").append(issue.path("details").path("text").asText());
+                    }catch(Exception ignored){}
+                    masalah.append('\n');
+                }catch(IllegalArgumentException|IllegalStateException e){
+                    masalah.append("Baris ").append(row+1).append(": ").append(e.getMessage()).append('\n');
+                }catch(Exception e){
+                    masalah.append("Baris ").append(row+1).append(": Proses gagal. Periksa koneksi, kamus, dan respons sebelum mengulang.\n");
+                }
+            }
+        }finally{setCursor(Cursor.getDefaultCursor());refreshMappingStatus();}
+        javax.swing.JTextArea hasil=new javax.swing.JTextArea("Dipilih: "+terpilih+"; berhasil: "+sukses+".\n"+masalah,12,70);
+        hasil.setEditable(false);hasil.setLineWrap(true);hasil.setWrapStyleWord(true);
+        javax.swing.JOptionPane.showMessageDialog(this,new javax.swing.JScrollPane(hasil),"AllergyIntolerance",javax.swing.JOptionPane.INFORMATION_MESSAGE);
+    }
+
     public void isCek(){
         BtnKirim.setEnabled(akses.getsatu_sehat_kirim_allergy_intolerance());
         BtnUpdate.setEnabled(akses.getsatu_sehat_kirim_allergy_intolerance());
         BtnPrint.setEnabled(akses.getsatu_sehat_kirim_allergy_intolerance());
+        BtnMappingAlergi.setEnabled(akses.getsatu_sehat_kirim_allergy_intolerance());
+        BtnReferensiAlergi.setEnabled(akses.getsatu_sehat_kirim_allergy_intolerance());
     }
     
     public JTable getTable(){

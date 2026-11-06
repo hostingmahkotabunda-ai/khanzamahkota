@@ -57,8 +57,9 @@ public final class SatuSehatReferensiObatKFA extends javax.swing.JDialog {
     public SatuSehatReferensiObatKFA(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        arrangeSearchControls();
         this.setLocation(10, 2);
-        setSize(628, 674);
+        setSize(1100, 650);
 
         tabMode = new DefaultTableModel(null, new String[] {
             "KFA Code", "KFA Display", "Aktif?", "Status", "Tipe Produk",
@@ -117,12 +118,55 @@ public final class SatuSehatReferensiObatKFA extends javax.swing.JDialog {
     public void insertUpdate(DocumentEvent e) {
         searchDebounce.restart();
     }
+
     public void removeUpdate(DocumentEvent e) {
         searchDebounce.restart();
     }
     public void changedUpdate(DocumentEvent e) {}
 });
         }
+    }
+
+    private void arrangeSearchControls() {
+        // FlowLayout lama membungkus kontrol ke baris kedua tetapi tinggi panel tetap 54px.
+        panelGlass6.removeAll();
+        panelGlass6.setPreferredSize(null);
+        panelGlass6.setLayout(new java.awt.GridBagLayout());
+        java.awt.GridBagConstraints c = new java.awt.GridBagConstraints();
+        c.insets = new java.awt.Insets(5, 5, 5, 5);
+        c.anchor = java.awt.GridBagConstraints.WEST;
+        java.awt.Component[] first = {jLabel7, ProductType, jLabel16, TCari, BtnCari};
+        for (int x = 0; x < first.length; x++) {
+            c.gridx = x; c.gridy = 0; c.weightx = x == 3 ? 1 : 0;
+            c.fill = x == 3 ? java.awt.GridBagConstraints.HORIZONTAL : java.awt.GridBagConstraints.NONE;
+            panelGlass6.add(first[x], c);
+        }
+        javax.swing.JPanel actions = new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 0));
+        actions.setOpaque(false);
+        for (java.awt.Component component : new java.awt.Component[]{jLabel6, LimitData, BtnKeluar1, jLabel8, LCount, BtnKeluar}) {
+            actions.add(component);
+        }
+        c.gridx = 0; c.gridy = 1; c.gridwidth = 5; c.weightx = 1;
+        c.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        panelGlass6.add(actions, c);
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        if (visible) {
+            java.awt.GraphicsConfiguration config = getGraphicsConfiguration();
+            java.awt.Rectangle area = new java.awt.Rectangle(config.getBounds());
+            java.awt.Insets insets = java.awt.Toolkit.getDefaultToolkit().getScreenInsets(config);
+            area.x += insets.left; area.y += insets.top;
+            area.width -= insets.left + insets.right;
+            area.height -= insets.top + insets.bottom;
+            setSize(Math.min(getWidth(), area.width - 20), Math.min(getHeight(), area.height - 20));
+            setLocation(Math.max(area.x, Math.min(getX(), area.x + area.width - getWidth())),
+                    Math.max(area.y, Math.min(getY(), area.y + area.height - getHeight())));
+            Scroll.getHorizontalScrollBar().setValue(0);
+            Scroll.getViewport().setViewPosition(new java.awt.Point(0, 0));
+        }
+        super.setVisible(visible);
     }
 
     /**

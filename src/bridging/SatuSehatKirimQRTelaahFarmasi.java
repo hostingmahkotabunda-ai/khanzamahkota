@@ -62,6 +62,54 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
     private StringBuilder htmlContent;   
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private volatile boolean ceksukses = false;
+    private final javax.swing.JLabel statusPengirimanTelaah=new javax.swing.JLabel("QR Telaah: belum ada proses pengiriman.");
+    private final StringBuilder pesanPengirimanTelaah=new StringBuilder();
+    private int dipilihSaatMulaiTelaah;
+
+    private int jumlahTerpilihTelaah(){
+        int count=0;
+        for(int row=0;row<tbObat.getRowCount();row++)if(Boolean.TRUE.equals(tbObat.getValueAt(row,0)))count++;
+        return count;
+    }
+    private void mulaiPengirimanTelaah(){
+        dipilihSaatMulaiTelaah=jumlahTerpilihTelaah();pesanPengirimanTelaah.setLength(0);
+        statusPengirimanTelaah.setText("QR Telaah: memproses "+dipilihSaatMulaiTelaah+" baris...");
+        statusPengirimanTelaah.setToolTipText(null);
+    }
+    private void catatPesanTelaah(String message){
+        if(pesanPengirimanTelaah.length()<3600)pesanPengirimanTelaah.append(message).append('\n');
+    }
+    private void selesaiPengirimanTelaah(){
+        int remaining=jumlahTerpilihTelaah();
+        statusPengirimanTelaah.setText("QR Telaah: "+Math.max(0,dipilihSaatMulaiTelaah-remaining)+" berhasil, "+remaining+" belum selesai. Rincian: arahkan penunjuk.");
+        String details=pesanPengirimanTelaah.length()==0?"Baris yang masih dicentang belum selesai; periksa NIK, referensi, dan kesesuaian tombol Kirim/Update.":pesanPengirimanTelaah.toString();
+        statusPengirimanTelaah.setToolTipText("<html>"+details.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\n","<br>")+"</html>");
+    }
+
+    private boolean validasiReferensiTelaah(int row){
+        try{
+            Object encounter=tbObat.getValueAt(row,8);
+            SatuSehatQRTelaahValidation.requireReferences(idpasien,idpraktisi,encounter==null?null:encounter.toString());
+            return true;
+        }catch(IllegalArgumentException e){
+            catatPesanTelaah("Baris "+(row+1)+": "+e.getMessage());
+            return false;
+        }
+    }
+
+    private void tampilkanErrorTelaah(org.springframework.web.client.HttpStatusCodeException error){
+        StringBuilder message=new StringBuilder("HTTP ").append(error.getStatusCode().value()).append("\n");
+        try{
+            JsonNode outcome=mapper.readTree(error.getResponseBodyAsString());
+            if(outcome==null||!outcome.path("issue").isArray())message.append("Respons belum memuat rincian OperationOutcome.");
+            else for(JsonNode issue:outcome.path("issue")){
+                message.append(issue.path("details").path("text").asText()).append('\n');
+                if(issue.has("diagnostics"))message.append(issue.path("diagnostics").asText()).append('\n');
+                for(JsonNode field:issue.path("expression"))message.append("Field: ").append(field.asText()).append('\n');
+            }
+        }catch(Exception ignored){message.append("Rincian respons server belum dapat dibaca sebagai OperationOutcome.");}
+        catatPesanTelaah("Baris "+(i+1)+": "+message);
+    }
 
     private void ensureSupportTable(){
         try {
@@ -82,6 +130,10 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
     public SatuSehatKirimQRTelaahFarmasi(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        statusPengirimanTelaah.setBorder(javax.swing.BorderFactory.createEmptyBorder(2,6,2,6));
+        statusPengirimanTelaah.setPreferredSize(new Dimension(44,24));
+        jPanel3.add(statusPengirimanTelaah,java.awt.BorderLayout.SOUTH);
+        jPanel3.setPreferredSize(new Dimension(44,128));
         ensureSupportTable();
 
         this.setLocation(10,2);
@@ -572,11 +624,13 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
     }//GEN-LAST:event_BtnCariKeyPressed
 
     private void BtnKirimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnKirimActionPerformed
+        mulaiPengirimanTelaah();
         for(i=0;i<tbObat.getRowCount();i++){
             if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,7).toString().equals(""))){
                 try {
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
                     idpraktisi=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,7).toString());
+                    if(!validasiReferensiTelaah(i))continue;
                     if(tbObat.getValueAt(i,11).toString().equals("")){
                         try{
                             headers = new HttpHeaders();
@@ -741,11 +795,8 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
                                             "}" +
                                         "]" +
                                     "}";
-                            System.out.println("URL : "+link+"/QuestionnaireResponse");
-                            System.out.println("Request JSON : "+json);
                             requestEntity = new HttpEntity(json,headers);
                             json=api.getRest().exchange(link+"/QuestionnaireResponse", HttpMethod.POST, requestEntity, String.class).getBody();
-                            System.out.println("Result JSON : "+json);
                             root = mapper.readTree(json);
                             response = root.path("id");
                             if(!response.asText().equals("")){
@@ -756,8 +807,11 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
                                     tbObat.setValueAt(false,i,0);
                                 }
                             }
+                        }catch(org.springframework.web.client.HttpStatusCodeException e){
+                            tampilkanErrorTelaah(e);
                         }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
+                            System.out.println("Notifikasi QR Telaah : "+e.getClass().getSimpleName());
+                            catatPesanTelaah("Baris "+(i+1)+": Proses QR Telaah gagal. Periksa koneksi, referensi, dan format data sebelum mengulang.");
                         }
                     }
                 } catch (Exception e) {
@@ -765,6 +819,7 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
                 }
             }
         }
+        selesaiPengirimanTelaah();
     }//GEN-LAST:event_BtnKirimActionPerformed
 
     private void ppPilihSemuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppPilihSemuaActionPerformed
@@ -780,11 +835,13 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
     }//GEN-LAST:event_ppBersihkanActionPerformed
 
     private void BtnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateActionPerformed
+        mulaiPengirimanTelaah();
         for(i=0;i<tbObat.getRowCount();i++){
             if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,7).toString().equals(""))){
                 try {
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
                     idpraktisi=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,7).toString());
+                    if(!validasiReferensiTelaah(i))continue;
                     if(!tbObat.getValueAt(i,11).toString().equals("")){
                         try{
                             headers = new HttpHeaders();
@@ -950,14 +1007,14 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
                                             "}" +
                                         "]" +
                                     "}";
-                            System.out.println("URL : "+link+"/QuestionnaireResponse/"+tbObat.getValueAt(i,11).toString());
-                            System.out.println("Request JSON : "+json);
                             requestEntity = new HttpEntity(json,headers);
                             json=api.getRest().exchange(link+"/QuestionnaireResponse/"+tbObat.getValueAt(i,11).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
-                            System.out.println("Result JSON : "+json);
                             tbObat.setValueAt(false,i,0);
+                        }catch(org.springframework.web.client.HttpStatusCodeException e){
+                            tampilkanErrorTelaah(e);
                         }catch(Exception e){
-                            System.out.println("Notifikasi Bridging : "+e);
+                            System.out.println("Notifikasi QR Telaah : "+e.getClass().getSimpleName());
+                            catatPesanTelaah("Baris "+(i+1)+": Proses QR Telaah gagal. Periksa koneksi, referensi, dan format data sebelum mengulang.");
                         }
                     }
                 } catch (Exception e) {
@@ -965,6 +1022,7 @@ public final class SatuSehatKirimQRTelaahFarmasi extends javax.swing.JDialog {
                 }
             }
         }
+        selesaiPengirimanTelaah();
     }//GEN-LAST:event_BtnUpdateActionPerformed
 
     private void BtnAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnAllActionPerformed

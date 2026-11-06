@@ -63,6 +63,13 @@ public final class SatuSehatKirimCondition extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
+        javax.swing.JMenuItem ppEpisodePerawatan=new javax.swing.JMenuItem("Episode Perawatan PTM");
+        ppEpisodePerawatan.setFont(new java.awt.Font("Tahoma",0,11));
+        ppEpisodePerawatan.setPreferredSize(new java.awt.Dimension(185,26));
+        ppEpisodePerawatan.addActionListener(evt -> bukaEpisodePerawatan());
+        jPopupMenu1.addSeparator();
+        jPopupMenu1.add(ppEpisodePerawatan);
+
         this.setLocation(10,2);
         setSize(628,674);
 
@@ -638,6 +645,30 @@ public final class SatuSehatKirimCondition extends javax.swing.JDialog {
             tbObat.setValueAt(false,i,0);
         }
     }//GEN-LAST:event_ppBersihkanActionPerformed
+
+    private void bukaEpisodePerawatan() {
+        int baris=tbObat.getSelectedRow();
+        if(baris<0){
+            javax.swing.JOptionPane.showMessageDialog(this,"Pilih satu baris diagnosis terlebih dahulu.");
+            return;
+        }
+        if(tbObat.getValueAt(baris,12).toString().equals("")){
+            javax.swing.JOptionPane.showMessageDialog(this,"Condition belum dikirim ke SATUSEHAT.");
+            return;
+        }
+        SatuSehatKirimEpisodeOfCare dialog=new SatuSehatKirimEpisodeOfCare(
+                this,true,
+                tbObat.getValueAt(baris,2).toString(),
+                tbObat.getValueAt(baris,3).toString(),
+                tbObat.getValueAt(baris,4).toString(),
+                tbObat.getValueAt(baris,5).toString(),
+                tbObat.getValueAt(baris,12).toString(),
+                tbObat.getValueAt(baris,1).toString(),
+                tbObat.getValueAt(baris,10).toString(),
+                tbObat.getValueAt(baris,11).toString()
+        );
+        dialog.setVisible(true);
+    }
 
     private void BtnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateActionPerformed
         for(i=0;i<tbObat.getRowCount();i++){

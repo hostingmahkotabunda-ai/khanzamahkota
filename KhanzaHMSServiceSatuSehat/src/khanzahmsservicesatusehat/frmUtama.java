@@ -333,6 +333,9 @@ public class frmUtama extends javax.swing.JFrame {
                                                 "}" +
                                             "]" +
                                         "}";
+                                com.fasterxml.jackson.databind.node.ObjectNode episodePayload=(com.fasterxml.jackson.databind.node.ObjectNode)mapper.readTree(json);
+                                fungsi.SatuSehatEpisodeEncounterGuard.applyLocal(koneksi,episodePayload,rs.getString("no_rawat"));
+                                json=mapper.writeValueAsString(episodePayload);
                                 TeksArea.append("URL : "+link+"/Encounter\n");
                                 TeksArea.append("Request JSON : "+json+"\n");
                                 requestEntity = new HttpEntity(json,headers);
@@ -421,6 +424,14 @@ public class frmUtama extends javax.swing.JFrame {
                                                 "}" +
                                             "]" +
                                         "}";
+                                String encounterUrl=link+"/Encounter/"+rs.getString("id_encounter");
+                                JsonNode previous=mapper.readTree(api.getRest().exchange(encounterUrl,HttpMethod.GET,new HttpEntity(headers),String.class).getBody());
+                                com.fasterxml.jackson.databind.node.ObjectNode episodePayload=(com.fasterxml.jackson.databind.node.ObjectNode)mapper.readTree(json);
+                                fungsi.SatuSehatEpisodeEncounterGuard.applyLocal(koneksi,episodePayload,rs.getString("no_rawat"));
+                                fungsi.SatuSehatEpisodeEncounterGuard.preserveRemote(episodePayload,previous);
+                                String version=previous.path("meta").path("versionId").asText();
+                                if(!version.isEmpty())headers.add("If-Match","W/\""+version+"\"");
+                                json=mapper.writeValueAsString(episodePayload);
                                 TeksArea.append("URL : "+link+"/Encounter/"+rs.getString("id_encounter")+"\n");
                                 TeksArea.append("Request JSON : "+json+"\n");
                                 requestEntity = new HttpEntity(json,headers);

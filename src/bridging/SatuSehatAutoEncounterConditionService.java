@@ -374,7 +374,9 @@ public class SatuSehatAutoEncounterConditionService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.add("Authorization", "Bearer " + token);
-            String requestJson = mapper.writeValueAsString(buatPayloadEncounter(data, idPasien, idDokter));
+            ObjectNode encounterPayload=buatPayloadEncounter(data, idPasien, idDokter);
+            SatuSehatEpisodeSupport.applyLocalLinks(koneksi,encounterPayload,data.noRawat);
+            String requestJson = mapper.writeValueAsString(encounterPayload);
             System.out.println("URL : " + link + "/Encounter");
             System.out.println("Request JSON Auto Encounter : " + requestJson);
             String result = api.getRest().exchange(link + "/Encounter", HttpMethod.POST, new HttpEntity(requestJson, headers), String.class).getBody();

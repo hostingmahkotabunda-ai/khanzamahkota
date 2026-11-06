@@ -642,7 +642,8 @@ public final class SatuSehatKirimObservationRadiologi extends javax.swing.JDialo
                                         "\"reference\": \"Specimen/"+tbObat.getValueAt(i,13).toString()+"\"" +
                                     "}," +
                                     "\"effectiveDateTime\": \""+tbObat.getValueAt(i,6).toString().replaceAll(" ","T")+"+07:00\"," +
-                                    "\"valueString\": \""+tbObat.getValueAt(i,11).toString()+"\"" +
+                                    "\"issued\": \""+tbObat.getValueAt(i,6).toString().replaceAll(" ","T")+"+07:00\"," +
+                                    "\"valueString\": "+mapper.writeValueAsString(tbObat.getValueAt(i,11).toString()) +
                                "}";
                         System.out.println("URL : "+link+"/Observation");
                         System.out.println("Request JSON : "+json);
@@ -661,6 +662,9 @@ public final class SatuSehatKirimObservationRadiologi extends javax.swing.JDialo
                         }
                     }catch(Exception e){
                         System.out.println("Notifikasi Bridging : "+e);
+                        if(e instanceof org.springframework.web.client.HttpStatusCodeException){
+                            System.out.println("Response SATUSEHAT : "+((org.springframework.web.client.HttpStatusCodeException)e).getResponseBodyAsString());
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println("Notifikasi : "+e);
@@ -745,7 +749,8 @@ public final class SatuSehatKirimObservationRadiologi extends javax.swing.JDialo
                                         "\"reference\": \"Specimen/"+tbObat.getValueAt(i,13).toString()+"\"" +
                                     "}," +
                                     "\"effectiveDateTime\": \""+tbObat.getValueAt(i,6).toString().replaceAll(" ","T")+"+07:00\"," +
-                                    "\"valueString\": \""+tbObat.getValueAt(i,11).toString()+"\"" +
+                                    "\"issued\": \""+tbObat.getValueAt(i,6).toString().replaceAll(" ","T")+"+07:00\"," +
+                                    "\"valueString\": "+mapper.writeValueAsString(tbObat.getValueAt(i,11).toString()) +
                                "}";
                         System.out.println("URL : "+link+"/Observation/"+tbObat.getValueAt(i,18).toString());
                         System.out.println("Request JSON : "+json);
@@ -755,6 +760,9 @@ public final class SatuSehatKirimObservationRadiologi extends javax.swing.JDialo
                         tbObat.setValueAt(false,i,0);
                     }catch(Exception e){
                         System.out.println("Notifikasi Bridging : "+e);
+                        if(e instanceof org.springframework.web.client.HttpStatusCodeException){
+                            System.out.println("Response SATUSEHAT : "+((org.springframework.web.client.HttpStatusCodeException)e).getResponseBodyAsString());
+                        }
                     }
                 } catch (Exception e) {
                     System.out.println("Notifikasi : "+e);
