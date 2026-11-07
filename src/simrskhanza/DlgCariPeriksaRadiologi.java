@@ -1,6 +1,5 @@
 package simrskhanza;
 import bridging.ApiOrthanc;
-import bridging.OrthancDICOM;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kepegawaian.DlgCariPetugas;
@@ -35,8 +34,22 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.swing.JDialog;
+import javax.swing.JPanel;
+import javax.swing.JLabel;
+import javax.swing.JButton;
+import javax.swing.JProgressBar;
+import javax.swing.SwingWorker;
+import javax.swing.SwingUtilities;
+import javax.swing.BorderFactory;
+import java.awt.BorderLayout;
+import java.awt.Dialog;
+import java.awt.Window;
+import java.util.List;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.table.DefaultTableModel;
@@ -523,7 +536,8 @@ public class DlgCariPeriksaRadiologi extends javax.swing.JDialog {
         Scroll5 = new widget.ScrollPane();
         tbListDicom = new widget.Table();
         panelGlass7 = new widget.panelisi();
-        btnDicom = new widget.Button();
+        btnUploadDicom = new widget.Button();
+        lblStatusDicom = new widget.Label();
 
         Kd2.setName("Kd2"); // NOI18N
         Kd2.setPreferredSize(new java.awt.Dimension(207, 23));
@@ -1252,36 +1266,32 @@ public class DlgCariPeriksaRadiologi extends javax.swing.JDialog {
         Scroll5.setOpaque(true);
 
         tbListDicom.setName("tbListDicom"); // NOI18N
-        tbListDicom.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                tbListDicomMouseClicked(evt);
-            }
-        });
-        tbListDicom.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                tbListDicomKeyPressed(evt);
-            }
-        });
         Scroll5.setViewportView(tbListDicom);
 
         FormOrthan.add(Scroll5, java.awt.BorderLayout.CENTER);
+
+        lblStatusDicom.setText("Status DICOM : -");
+        lblStatusDicom.setFont(lblStatusDicom.getFont().deriveFont(java.awt.Font.BOLD));
+        lblStatusDicom.setBorder(javax.swing.BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        lblStatusDicom.setName("lblStatusDicom"); // NOI18N
+        FormOrthan.add(lblStatusDicom, java.awt.BorderLayout.PAGE_START);
 
         panelGlass7.setBorder(null);
         panelGlass7.setName("panelGlass7"); // NOI18N
         panelGlass7.setPreferredSize(new java.awt.Dimension(115, 40));
 
-        btnDicom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png"))); // NOI18N
-        btnDicom.setMnemonic('T');
-        btnDicom.setText("Tampilkan DICOM");
-        btnDicom.setToolTipText("Alt+T");
-        btnDicom.setName("btnDicom"); // NOI18N
-        btnDicom.setPreferredSize(new java.awt.Dimension(150, 30));
-        btnDicom.addActionListener(new java.awt.event.ActionListener() {
+        btnUploadDicom.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/upload24.png"))); // NOI18N
+        btnUploadDicom.setMnemonic('U');
+        btnUploadDicom.setText("Upload DICOM");
+        btnUploadDicom.setToolTipText("Alt+U");
+        btnUploadDicom.setName("btnUploadDicom"); // NOI18N
+        btnUploadDicom.setPreferredSize(new java.awt.Dimension(150, 30));
+        btnUploadDicom.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDicomActionPerformed(evt);
+                btnUploadDicomActionPerformed(evt);
             }
         });
-        panelGlass7.add(btnDicom);
+        panelGlass7.add(btnUploadDicom);
 
         FormOrthan.add(panelGlass7, java.awt.BorderLayout.PAGE_END);
 
@@ -2211,50 +2221,155 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         templatehasil.setVisible(true);
     }//GEN-LAST:event_btnAmbilPhoto1ActionPerformed
 
-    private void btnDicomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDicomActionPerformed
-        if(tabModeDicom.getRowCount()==0){
-            JOptionPane.showMessageDialog(null,"Maaf, data sudah habis...!!!!");
-            TCari.requestFocus();
-        }else {
-            if(tbListDicom.getSelectedRow()!= -1){
-                this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                OrthancDICOM orthan=new OrthancDICOM(null,false);
-                orthan.setJudul("::[ DICOM Orthanc Pasien "+tbDokter.getValueAt(tbDokter.getSelectedRow(),1).toString()+", Series "+tbListDicom.getValueAt(tbListDicom.getSelectedRow(),2).toString()+" ]::",tbDokter.getValueAt(tbDokter.getSelectedRow(),0).toString().replaceAll("/",""),tbListDicom.getValueAt(tbListDicom.getSelectedRow(),2).toString());
-                try {
-                    System.out.println("URL : "+koneksiDB.URLORTHANC()+":"+koneksiDB.PORTORTHANC()+"/web-viewer/app/viewer.html?series="+tbListDicom.getValueAt(tbListDicom.getSelectedRow(),2).toString());
-                    orthan.loadURL(koneksiDB.URLORTHANC()+":"+koneksiDB.PORTORTHANC()+"/web-viewer/app/viewer.html?series="+tbListDicom.getValueAt(tbListDicom.getSelectedRow(),2).toString());
-                } catch (Exception ex) {
-                    System.out.println("Notifikasi : "+ex);
-                }
-                orthan.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
-                orthan.setLocationRelativeTo(internalFrame1);
-                orthan.setVisible(true);
-                this.setCursor(Cursor.getDefaultCursor());
-            }else{
-                JOptionPane.showMessageDialog(null,"Maaf, Silahkan pilih data..!!");
-            }
+    private void btnUploadDicomActionPerformed(java.awt.event.ActionEvent evt) {
+        int baris = getBarisPemeriksaanTerpilih();
+        if (baris == -1) {
+            JOptionPane.showMessageDialog(null, "Maaf, Silahkan pilih data pemeriksaan terlebih dahulu..!!");
+            return;
         }
-    }//GEN-LAST:event_btnDicomActionPerformed
+        String noRawat = tbDokter.getValueAt(baris, 0).toString();
+        String noRm = Sequel.cariIsi("select reg_periksa.no_rkm_medis from reg_periksa where reg_periksa.no_rawat=?", noRawat);
+        if (noRm == null || noRm.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No. RM pasien tidak ditemukan untuk pemeriksaan ini..!!");
+            return;
+        }
+
+        JFileChooser fc = new JFileChooser();
+        fc.setMultiSelectionEnabled(true);
+        fc.setFileFilter(new FileNameExtensionFilter("File DICOM (*.dcm)", "dcm"));
+        fc.setAcceptAllFileFilterUsed(true);
+        if (fc.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File[] files = fc.getSelectedFiles();
+        if (files == null || files.length == 0) {
+            return;
+        }
+
+        btnUploadDicom.setEnabled(false);
+        DlgProgressUploadDicom dlgProgress = new DlgProgressUploadDicom((Window) SwingUtilities.getWindowAncestor(this));
+
+        SwingWorker<Void, DicomUploadProgress> worker = new SwingWorker<Void, DicomUploadProgress>() {
+            private int sukses = 0;
+            private int diproses = 0;
+            private final StringBuilder gagal = new StringBuilder();
+
+            @Override
+            protected Void doInBackground() {
+                ApiOrthanc orthanc = new ApiOrthanc();
+                for (File f : files) {
+                    if (isCancelled()) {
+                        break;
+                    }
+                    diproses++;
+                    publish(new DicomUploadProgress(diproses, files.length, f.getName()));
+                    try {
+                        JsonNode hasil = orthanc.UploadInstance(f);
+                        String status = (hasil != null) ? hasil.path("Status").asText() : "";
+                        if ("Success".equals(status) || "AlreadyStored".equals(status)) {
+                            sukses++;
+                        } else {
+                            gagal.append("- ").append(f.getName()).append("\n");
+                        }
+                    } catch (Exception e) {
+                        gagal.append("- ").append(f.getName()).append(" (").append(e.getMessage()).append(")\n");
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            protected void process(List<DicomUploadProgress> chunks) {
+                dlgProgress.update(chunks.get(chunks.size() - 1));
+            }
+
+            @Override
+            protected void done() {
+                dlgProgress.dispose();
+                btnUploadDicom.setEnabled(true);
+
+                String pesan;
+                if (isCancelled()) {
+                    pesan = "Upload dibatalkan. " + sukses + " dari " + diproses + " file sempat berhasil diupload sebelum dibatalkan.";
+                } else {
+                    pesan = sukses + " dari " + files.length + " file berhasil diupload ke Orthanc.";
+                }
+                if (gagal.length() > 0) {
+                    pesan += "\n\nGagal:\n" + gagal.toString();
+                }
+                JOptionPane.showMessageDialog(DlgCariPeriksaRadiologi.this, pesan);
+                tampilOrthanc();
+            }
+        };
+
+        dlgProgress.setWorker(worker);
+        worker.execute();
+        dlgProgress.setLocationRelativeTo(this);
+        dlgProgress.setVisible(true);
+    }
+
+    private static final class DicomUploadProgress {
+        final int current;
+        final int total;
+        final String namaFile;
+
+        DicomUploadProgress(int current, int total, String namaFile) {
+            this.current = current;
+            this.total = total;
+            this.namaFile = namaFile;
+        }
+    }
+
+    private static final class DlgProgressUploadDicom extends JDialog {
+        private final JLabel lblInfo = new JLabel("Mempersiapkan upload...", JLabel.CENTER);
+        private final JProgressBar progressBar = new JProgressBar(0, 100);
+        private final JButton btnBatal = new JButton("Batal");
+        private SwingWorker<?, ?> worker;
+
+        DlgProgressUploadDicom(Window owner) {
+            super(owner, "Upload DICOM ke Orthanc", Dialog.ModalityType.APPLICATION_MODAL);
+            setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+
+            progressBar.setStringPainted(true);
+            progressBar.setPreferredSize(new Dimension(320, 20));
+            lblInfo.setPreferredSize(new Dimension(320, 70));
+
+            JPanel panel = new JPanel(new BorderLayout(10, 10));
+            panel.setBorder(BorderFactory.createEmptyBorder(15, 20, 15, 20));
+            panel.add(lblInfo, BorderLayout.NORTH);
+            panel.add(progressBar, BorderLayout.CENTER);
+
+            btnBatal.addActionListener(e -> {
+                if (worker != null) {
+                    btnBatal.setEnabled(false);
+                    lblInfo.setText("<html><div style='text-align:center;'>Membatalkan,<br>menunggu upload file saat ini selesai...</div></html>");
+                    worker.cancel(true);
+                }
+            });
+            JPanel panelBtn = new JPanel();
+            panelBtn.add(btnBatal);
+            panel.add(panelBtn, BorderLayout.SOUTH);
+
+            setContentPane(panel);
+            pack();
+            setResizable(false);
+        }
+
+        void setWorker(SwingWorker<?, ?> worker) {
+            this.worker = worker;
+        }
+
+        void update(DicomUploadProgress p) {
+            int persen = (int) Math.round((p.current * 100.0) / p.total);
+            progressBar.setValue(persen);
+            lblInfo.setText("<html><div style='text-align:center;'>Sedang mengirim file ke server Orthanc,<br>mohon tunggu...<br><br><b>File " + p.current + " dari " + p.total + "</b><br>" + p.namaFile + "</div></html>");
+        }
+    }
 
     private void TabDataMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabDataMouseClicked
         tampilOrthanc();
     }//GEN-LAST:event_TabDataMouseClicked
 
-    private void tbListDicomMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tbListDicomMouseClicked
-        if(tabModeDicom.getRowCount()!=0){
-            if(evt.getClickCount()==2){
-                btnDicomActionPerformed(null);
-            }
-        }
-    }//GEN-LAST:event_tbListDicomMouseClicked
-
-    private void tbListDicomKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_tbListDicomKeyPressed
-        if(tabModeDicom.getRowCount()!=0){
-            if(evt.getKeyCode()==KeyEvent.VK_SPACE){
-                btnDicomActionPerformed(null);
-            }
-        }
-    }//GEN-LAST:event_tbListDicomKeyPressed
 
     private void ppRiwayatBtnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppRiwayatBtnPrintActionPerformed
         if(tabMode.getRowCount()==0){
@@ -2682,7 +2797,8 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private javax.swing.JDialog WindowGantiDokterParamedis;
     private widget.Button btnAmbilPhoto;
     private widget.Button btnAmbilPhoto1;
-    private widget.Button btnDicom;
+    private widget.Label lblStatusDicom;
+    private widget.Button btnUploadDicom;
     private widget.Button btnDokter;
     private widget.Button btnDokterPj;
     private widget.Button btnPasien;
@@ -3195,11 +3311,20 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
                                  for(JsonNode sublist:list.path("Series")){
                                       tabModeDicom.addRow(new Object[]{
                                            list.path("PatientMainDicomTags").path("PatientID").asText(),list.path("ID").asText(),sublist.asText()
-                                      });   
-                                 }        
+                                      });
+                                 }
+                             }
+                             if(tabModeDicom.getRowCount()>0){
+                                 lblStatusDicom.setText("Status DICOM : Sudah ada "+tabModeDicom.getRowCount()+" series terupload di Orthanc");
+                                 lblStatusDicom.setForeground(new java.awt.Color(0,128,0));
+                             }else{
+                                 lblStatusDicom.setText("Status DICOM : Belum ada file DICOM terupload untuk pemeriksaan ini");
+                                 lblStatusDicom.setForeground(new java.awt.Color(192,0,0));
                              }
                          } catch (Exception e) {
                              System.out.println("Notif : "+e);
+                             lblStatusDicom.setText("Status DICOM : Gagal memeriksa data di Orthanc");
+                             lblStatusDicom.setForeground(new java.awt.Color(192,96,0));
                          }
                      }
                 }

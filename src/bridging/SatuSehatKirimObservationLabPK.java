@@ -39,6 +39,22 @@ import org.springframework.http.MediaType;
  * @author dosen
  */
 public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
+    private final SatuSehatLabDoctorIdentity labDoctorIdentity=new SatuSehatLabDoctorIdentity();
+    private final javax.swing.JLabel labDoctorStatus=new javax.swing.JLabel();
+    private void installLabDoctorLink() {
+        javax.swing.JPanel panel=new javax.swing.JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT,5,3));
+        javax.swing.JButton button=new javax.swing.JButton("Hubungkan Dokter PJ");
+        button.addActionListener(evt -> {
+            int row=tbObat.getSelectedRow();
+            if(row<0){labDoctorStatus.setText("Pilih baris pemeriksaan untuk menghubungkan dokter PJ.");return;}
+            try {
+                if(labDoctorIdentity.choose(this,koneksi,tbObat.getValueAt(row,14).toString(),tbObat.getValueAt(row,15).toString()))tampil();
+            }catch(Exception e){labDoctorStatus.setText("Penghubung belum disimpan. "+e.getMessage());}
+        });
+        panel.add(button);panel.add(labDoctorStatus);
+        jPanel3.add(panel,java.awt.BorderLayout.SOUTH);
+        jPanel3.setPreferredSize(new java.awt.Dimension(44,138));
+    }
     private final DefaultTableModel tabMode;
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
@@ -62,6 +78,7 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
     public SatuSehatKirimObservationLabPK(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        installLabDoctorLink();
 
         this.setLocation(10,2);
         setSize(628,674);
@@ -588,62 +605,14 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
                 try {
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,4).toString());
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,16).toString());
+                    if(!SatuSehatLabDoctorIdentity.validReferences(idpasien,iddokter)){labDoctorStatus.setText("Ditahan: ID Patient atau Practitioner belum ditemukan. Periksa identitas.");continue;}
                     try{
                         headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.add("Authorization", "Bearer "+api.TokenSatuSehat());
-                        json = "{" +
-                                    "\"resourceType\": \"Observation\"," +
-                                    "\"identifier\": [" +
-                                        "{" +
-                                            "\"system\": \"http://sys-ids.kemkes.go.id/servicerequest/"+koneksiDB.IDSATUSEHAT()+"\"," +
-                                            "\"value\": \""+tbObat.getValueAt(i,5).toString()+"\"" +
-                                        "}" +
-                                    "]," +
-                                    "\"status\": \"final\"," +
-                                    "\"category\": [" +
-                                        "{" +
-                                            "\"coding\": [" +
-                                                "{" +
-                                                    "\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\"," +
-                                                    "\"code\": \"laboratory\"," +
-                                                    "\"display\": \"Laboratory\"" +
-                                                "}" +
-                                            "]" +
-                                        "}" +
-                                    "]," +
-                                    "\"code\": {" +
-                                        "\"coding\": [" +
-                                            "{" +
-                                                "\"system\": \""+tbObat.getValueAt(i,9).toString()+"\"," +
-                                                "\"code\": \""+tbObat.getValueAt(i,8).toString()+"\"," +
-                                                "\"display\": \""+tbObat.getValueAt(i,10).toString()+"\"" +
-                                            "}" +
-                                        "]" +
-                                    "}," +
-                                    "\"subject\": {" +
-                                        "\"reference\": \"Patient/"+idpasien+"\"" +
-                                    "}," +
-                                    "\"performer\": [" +
-                                        "{" +
-                                            "\"reference\": \"Practitioner/"+iddokter+"\"" +
-                                        "}" +
-                                    "]," +
-                                    "\"encounter\": {" +
-                                        "\"reference\": \"Encounter/"+tbObat.getValueAt(i,17).toString()+"\"," +
-                                        "\"display\": \"Hasil Pemeriksaan Lab "+tbObat.getValueAt(i,7).toString()+" No.Rawat "+tbObat.getValueAt(i,1).toString()+", Atas Nama Pasien "+tbObat.getValueAt(i,3).toString()+", No.RM "+tbObat.getValueAt(i,2).toString()+", Pada Tanggal "+tbObat.getValueAt(i,6).toString()+"\"" +
-                                    "}," +
-                                    "\"specimen\": {" +
-                                        "\"reference\": \"Specimen/"+tbObat.getValueAt(i,13).toString()+"\"" +
-                                    "}," +
-                                    "\"effectiveDateTime\": \""+tbObat.getValueAt(i,6).toString().replaceAll(" ","T")+"+07:00\"," +
-                                    "\"valueString\": \""+tbObat.getValueAt(i,11).toString().replaceAll("(\r|\r||\r)","<br>").replaceAll("\t", " ")+"\"" +
-                               "}";
-                        System.out.println("URL : "+link+"/Observation");
-                        System.out.println("Request JSON : "+json);
+                        json=buatPayloadObservation(i,false);
                         requestEntity = new HttpEntity(json,headers);
                         json=api.getRest().exchange(link+"/Observation", HttpMethod.POST, requestEntity, String.class).getBody();
-                        System.out.println("Result JSON : "+json);
                         root = mapper.readTree(json);
                         response = root.path("id");
                         if(!response.asText().equals("")){
@@ -655,7 +624,7 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
                             }
                         }
                     }catch(Exception e){
-                        System.out.println("Notifikasi Bridging : "+e);
+                        catatErrorObservation(e);
                     }
                 } catch (Exception e) {
                     System.out.println("Notifikasi : "+e);
@@ -682,66 +651,17 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
                 try {
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,4).toString());
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,16).toString());
+                    if(!SatuSehatLabDoctorIdentity.validReferences(idpasien,iddokter)){labDoctorStatus.setText("Ditahan: ID Patient atau Practitioner belum ditemukan. Periksa identitas.");continue;}
                     try{
                         headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
                         headers.add("Authorization", "Bearer "+api.TokenSatuSehat());
-                        json = "{" +
-                                    "\"resourceType\": \"Observation\"," +
-                                    "\"id\": \""+tbObat.getValueAt(i,18).toString()+"\"," +
-                                    "\"identifier\": [" +
-                                        "{" +
-                                            "\"system\": \"http://sys-ids.kemkes.go.id/servicerequest/"+koneksiDB.IDSATUSEHAT()+"\"," +
-                                            "\"value\": \""+tbObat.getValueAt(i,5).toString()+"\"" +
-                                        "}" +
-                                    "]," +
-                                    "\"status\": \"final\"," +
-                                    "\"category\": [" +
-                                        "{" +
-                                            "\"coding\": [" +
-                                                "{" +
-                                                    "\"system\": \"http://terminology.hl7.org/CodeSystem/observation-category\"," +
-                                                    "\"code\": \"laboratory\"," +
-                                                    "\"display\": \"Laboratory\"" +
-                                                "}" +
-                                            "]" +
-                                        "}" +
-                                    "]," +
-                                    "\"code\": {" +
-                                        "\"coding\": [" +
-                                            "{" +
-                                                "\"system\": \""+tbObat.getValueAt(i,9).toString()+"\"," +
-                                                "\"code\": \""+tbObat.getValueAt(i,8).toString()+"\"," +
-                                                "\"display\": \""+tbObat.getValueAt(i,10).toString()+"\"" +
-                                            "}" +
-                                        "]" +
-                                    "}," +
-                                    "\"subject\": {" +
-                                        "\"reference\": \"Patient/"+idpasien+"\"" +
-                                    "}," +
-                                    "\"performer\": [" +
-                                        "{" +
-                                            "\"reference\": \"Practitioner/"+iddokter+"\"" +
-                                        "}" +
-                                    "]," +
-                                    "\"encounter\": {" +
-                                        "\"reference\": \"Encounter/"+tbObat.getValueAt(i,17).toString()+"\"," +
-                                        "\"display\": \"Hasil Pemeriksaan Lab "+tbObat.getValueAt(i,7).toString()+" No.Rawat "+tbObat.getValueAt(i,1).toString()+", Atas Nama Pasien "+tbObat.getValueAt(i,3).toString()+", No.RM "+tbObat.getValueAt(i,2).toString()+", Pada Tanggal "+tbObat.getValueAt(i,6).toString()+"\"" +
-                                    "}," +
-                                    "\"specimen\": {" +
-                                        "\"reference\": \"Specimen/"+tbObat.getValueAt(i,13).toString()+"\"" +
-                                    "}," +
-                                    "\"effectiveDateTime\": \""+tbObat.getValueAt(i,6).toString().replaceAll(" ","T")+"+07:00\"," +
-                                    "\"valueString\": \""+tbObat.getValueAt(i,11).toString().replaceAll("(\r|\r||\r)","<br>").replaceAll("\t", " ")+"\"" +
-                               "}";
-                        System.out.println("URL : "+link+"/Observation/"+tbObat.getValueAt(i,18).toString());
-                        System.out.println("Request JSON : "+json);
+                        json=buatPayloadObservation(i,true);
                         requestEntity = new HttpEntity(json,headers);
                         json=api.getRest().exchange(link+"/Observation/"+tbObat.getValueAt(i,18).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
-                        System.out.println("Result JSON : "+json);
                         tbObat.setValueAt(false,i,0);
                     }catch(Exception e){
-                        System.out.println("Notifikasi Bridging : "+e);
+                        catatErrorObservation(e);
                     }
                 } catch (Exception e) {
                     System.out.println("Notifikasi : "+e);
@@ -806,15 +726,46 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
     private javax.swing.JMenuItem ppPilihSemua;
     private widget.Table tbObat;
     // End of variables declaration//GEN-END:variables
+    private String buatPayloadObservation(int row,boolean update)throws Exception {
+        return mapper.writeValueAsString(SatuSehatLabObservationPayload.build(mapper,
+                koneksiDB.IDSATUSEHAT(),tbObat.getValueAt(row,5).toString(),
+                tbObat.getValueAt(row,19).toString(),tbObat.getValueAt(row,12).toString(),
+                tbObat.getValueAt(row,9).toString(),tbObat.getValueAt(row,8).toString(),tbObat.getValueAt(row,10).toString(),
+                idpasien,iddokter,tbObat.getValueAt(row,17).toString(),tbObat.getValueAt(row,13).toString(),
+                tbObat.getValueAt(row,6).toString(),tbObat.getValueAt(row,11).toString(),
+                update?tbObat.getValueAt(row,18).toString():""));
+    }
+    private void catatErrorObservation(Exception error) {
+        String detail="";
+        if(error instanceof org.springframework.web.client.HttpStatusCodeException){
+            org.springframework.web.client.HttpStatusCodeException http=(org.springframework.web.client.HttpStatusCodeException)error;
+            labDoctorStatus.setText("Observation gagal: HTTP "+http.getStatusCode().value()+". Rincian: arahkan penunjuk.");
+            try{
+                JsonNode outcome=mapper.readTree(http.getResponseBodyAsString());
+                for(JsonNode issue:outcome.path("issue")){
+                    detail+=issue.path("expression").toString()+" "+issue.path("details").path("text").asText()+" "+issue.path("diagnostics").asText()+"\n";
+                }
+            }catch(Exception ignored){}
+        }else{
+            labDoctorStatus.setText("Observation belum dikirim: payload tidak valid. Rincian: arahkan penunjuk.");
+            detail=error.getMessage()==null?error.getClass().getSimpleName():error.getMessage();
+        }
+        if(detail.isEmpty())detail="Server belum memberikan OperationOutcome yang dapat dibaca.";
+        if(detail.length()>2000)detail=detail.substring(0,2000);
+        labDoctorStatus.setToolTipText("<html>"+detail.replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\n","<br>")+"</html>");
+    }
     private void tampil() {
         Valid.tabelKosong(tabMode);
+        java.util.Map<String,SatuSehatLabDoctorIdentity.Identity> identities=new java.util.HashMap<>();
+        int unresolved=0;
         try{
+            // Ralan/Ranap memakai tanggal registrasi; hasil tetap harus cocok dengan item order.
             ps=koneksi.prepareStatement(
                    "select reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,permintaan_lab.noorder,"+
                    "permintaan_lab.tgl_hasil,permintaan_lab.jam_hasil,template_laboratorium.Pemeriksaan,satu_sehat_mapping_lab.code,"+
                    "satu_sehat_mapping_lab.system,satu_sehat_mapping_lab.display,detail_periksa_lab.nilai,detail_periksa_lab.nilai_rujukan,"+
                    "detail_periksa_lab.keterangan,permintaan_detail_permintaan_lab.id_template,satu_sehat_specimen_lab.id_specimen,"+
-                   "periksa_lab.kd_dokter,pegawai.nama,pegawai.no_ktp as ktppraktisi,satu_sehat_encounter.id_encounter,"+
+                   "periksa_lab.kd_dokter,ifnull(dokter.nm_dokter,ifnull(pegawai.nama,'')) as nama,ifnull(pegawai.no_ktp,'') as ktppraktisi,satu_sehat_encounter.id_encounter,"+
                    "ifnull(satu_sehat_observation_lab.id_observation,'') as id_observation,detail_periksa_lab.kd_jenis_prw,template_laboratorium.satuan "+
                    "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join permintaan_lab on permintaan_lab.no_rawat=reg_periksa.no_rawat "+
                    "inner join permintaan_detail_permintaan_lab on permintaan_detail_permintaan_lab.noorder=permintaan_lab.noorder "+
@@ -826,13 +777,13 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
                    "inner join periksa_lab on periksa_lab.no_rawat=permintaan_lab.no_rawat and periksa_lab.tgl_periksa=permintaan_lab.tgl_hasil "+
                    "and periksa_lab.jam=permintaan_lab.jam_hasil and periksa_lab.dokter_perujuk=permintaan_lab.dokter_perujuk "+
                    "inner join detail_periksa_lab on periksa_lab.no_rawat=detail_periksa_lab.no_rawat and periksa_lab.tgl_periksa=detail_periksa_lab.tgl_periksa "+
-                   "and periksa_lab.jam=detail_periksa_lab.jam "+
+                   "and periksa_lab.jam=detail_periksa_lab.jam and detail_periksa_lab.id_template=permintaan_detail_permintaan_lab.id_template and detail_periksa_lab.kd_jenis_prw=permintaan_detail_permintaan_lab.kd_jenis_prw and periksa_lab.kd_jenis_prw=permintaan_detail_permintaan_lab.kd_jenis_prw "+
                    "left join satu_sehat_observation_lab on satu_sehat_specimen_lab.noorder=satu_sehat_observation_lab.noorder "+
                    "and satu_sehat_specimen_lab.id_template=satu_sehat_observation_lab.id_template "+
                    "and satu_sehat_specimen_lab.kd_jenis_prw=satu_sehat_observation_lab.kd_jenis_prw "+
-                   "inner join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat inner join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "inner join pegawai on periksa_lab.kd_dokter=pegawai.nik "+
-                   "where nota_jalan.tanggal between ? and ? "+
+                   "inner join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
+                   "left join dokter on dokter.kd_dokter=periksa_lab.kd_dokter left join pegawai on periksa_lab.kd_dokter=pegawai.nik "+
+                   "where reg_periksa.tgl_registrasi between ? and ? and trim(ifnull(satu_sehat_specimen_lab.id_specimen,''))<>'' and trim(ifnull(satu_sehat_encounter.id_encounter,''))<>'' "+
                    (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
                    "pasien.nm_pasien like ? or pasien.no_ktp like ? or template_laboratorium.Pemeriksaan like ? or "+
                    "satu_sehat_mapping_lab.sampel_code like ? or permintaan_lab.noorder like ?)"));
@@ -850,10 +801,15 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
                 }
                 rs=ps.executeQuery();
                 while(rs.next()){
+                    String doctorCode=rs.getString("kd_dokter");
+                    SatuSehatLabDoctorIdentity.Identity identity=identities.get(doctorCode);
+                    if(identity==null){identity=labDoctorIdentity.resolve(koneksi,doctorCode,rs.getString("nama"));identities.put(doctorCode,identity);}
+                    if(!identity.nik.matches("[0-9]{16}"))unresolved++;
+
                     tabMode.addRow(new Object[]{
                         false,rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),rs.getString("no_ktp"),rs.getString("noorder"),rs.getString("tgl_hasil")+" "+rs.getString("jam_hasil"),rs.getString("Pemeriksaan"),
                         rs.getString("code"),rs.getString("system"),rs.getString("display"),"Hasil Lab : "+rs.getString("nilai")+" "+rs.getString("satuan")+", Nilai Rujukan : "+rs.getString("nilai_rujukan")+(rs.getString("keterangan").equals("")?"":", Keterangan : "+rs.getString("keterangan")),
-                        rs.getString("id_template"),rs.getString("id_specimen"),rs.getString("kd_dokter"),rs.getString("nama"),rs.getString("ktppraktisi"),rs.getString("id_encounter"),rs.getString("id_observation"),rs.getString("kd_jenis_prw")
+                        rs.getString("id_template"),rs.getString("id_specimen"),rs.getString("kd_dokter"),identity.name,identity.nik,rs.getString("id_encounter"),rs.getString("id_observation"),rs.getString("kd_jenis_prw")
                     });
                 }
             } catch (Exception e) {
@@ -867,67 +823,11 @@ public final class SatuSehatKirimObservationLabPK extends javax.swing.JDialog {
                 }
             }
             
-            ps=koneksi.prepareStatement(
-                   "select reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,permintaan_lab.noorder,"+
-                   "permintaan_lab.tgl_hasil,permintaan_lab.jam_hasil,template_laboratorium.Pemeriksaan,satu_sehat_mapping_lab.code,"+
-                   "satu_sehat_mapping_lab.system,satu_sehat_mapping_lab.display,detail_periksa_lab.nilai,detail_periksa_lab.nilai_rujukan,"+
-                   "detail_periksa_lab.keterangan,permintaan_detail_permintaan_lab.id_template,satu_sehat_specimen_lab.id_specimen,"+
-                   "periksa_lab.kd_dokter,pegawai.nama,pegawai.no_ktp as ktppraktisi,satu_sehat_encounter.id_encounter,"+
-                   "ifnull(satu_sehat_observation_lab.id_observation,'') as id_observation,detail_periksa_lab.kd_jenis_prw,template_laboratorium.satuan "+
-                   "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join permintaan_lab on permintaan_lab.no_rawat=reg_periksa.no_rawat "+
-                   "inner join permintaan_detail_permintaan_lab on permintaan_detail_permintaan_lab.noorder=permintaan_lab.noorder "+
-                   "inner join template_laboratorium on template_laboratorium.id_template=permintaan_detail_permintaan_lab.id_template "+
-                   "inner join satu_sehat_mapping_lab on satu_sehat_mapping_lab.id_template=template_laboratorium.id_template "+
-                   "inner join satu_sehat_specimen_lab on satu_sehat_specimen_lab.noorder=permintaan_detail_permintaan_lab.noorder "+
-                   "and satu_sehat_specimen_lab.id_template=permintaan_detail_permintaan_lab.id_template "+
-                   "and satu_sehat_specimen_lab.kd_jenis_prw=permintaan_detail_permintaan_lab.kd_jenis_prw "+
-                   "inner join periksa_lab on periksa_lab.no_rawat=permintaan_lab.no_rawat and periksa_lab.tgl_periksa=permintaan_lab.tgl_hasil "+
-                   "and periksa_lab.jam=permintaan_lab.jam_hasil and periksa_lab.dokter_perujuk=permintaan_lab.dokter_perujuk "+
-                   "inner join detail_periksa_lab on periksa_lab.no_rawat=detail_periksa_lab.no_rawat and periksa_lab.tgl_periksa=detail_periksa_lab.tgl_periksa "+
-                   "and periksa_lab.jam=detail_periksa_lab.jam "+
-                   "left join satu_sehat_observation_lab on satu_sehat_specimen_lab.noorder=satu_sehat_observation_lab.noorder "+
-                   "and satu_sehat_specimen_lab.id_template=satu_sehat_observation_lab.id_template "+
-                   "and satu_sehat_specimen_lab.kd_jenis_prw=satu_sehat_observation_lab.kd_jenis_prw "+
-                   "inner join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat inner join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "inner join pegawai on periksa_lab.kd_dokter=pegawai.nik "+
-                   "where nota_inap.tanggal between ? and ? "+
-                   (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
-                   "pasien.nm_pasien like ? or pasien.no_ktp like ? or template_laboratorium.Pemeriksaan like ? or "+
-                   "satu_sehat_mapping_lab.sampel_code like ? or permintaan_lab.noorder like ?)"));
-            try {
-                ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
-                ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
-                if(!TCari.getText().equals("")){
-                    ps.setString(3,"%"+TCari.getText()+"%");
-                    ps.setString(4,"%"+TCari.getText()+"%");
-                    ps.setString(5,"%"+TCari.getText()+"%");
-                    ps.setString(6,"%"+TCari.getText()+"%");
-                    ps.setString(7,"%"+TCari.getText()+"%");
-                    ps.setString(8,"%"+TCari.getText()+"%");
-                    ps.setString(9,"%"+TCari.getText()+"%");
-                }
-                rs=ps.executeQuery();
-                while(rs.next()){
-                    tabMode.addRow(new Object[]{
-                        false,rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),rs.getString("no_ktp"),rs.getString("noorder"),rs.getString("tgl_hasil")+" "+rs.getString("jam_hasil"),rs.getString("Pemeriksaan"),
-                        rs.getString("code"),rs.getString("system"),rs.getString("display"),"Hasil Lab : "+rs.getString("nilai")+" "+rs.getString("satuan")+", Nilai Rujukan : "+rs.getString("nilai_rujukan")+(rs.getString("keterangan").equals("")?"":", Keterangan : "+rs.getString("keterangan")),
-                        rs.getString("id_template"),rs.getString("id_specimen"),rs.getString("kd_dokter"),rs.getString("nama"),rs.getString("ktppraktisi"),rs.getString("id_encounter"),rs.getString("id_observation"),rs.getString("kd_jenis_prw")
-                    });
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            } finally{
-                if(rs!=null){
-                    rs.close();
-                }
-                if(ps!=null){
-                    ps.close();
-                }
-            }
         }catch(Exception e){
             System.out.println("Notifikasi : "+e);
         }
         LCount.setText(""+tabMode.getRowCount());
+        labDoctorStatus.setText(unresolved==0?"Identitas dokter tersedia; ID Practitioner diperiksa saat kirim.":unresolved+" item: lengkapi/hubungkan identitas dokter PJ.");
     }
 
     public void isCek(){

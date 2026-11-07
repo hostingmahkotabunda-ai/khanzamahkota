@@ -555,8 +555,10 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
         for(i=0;i<tbObat.getRowCount();i++){
             if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,6).toString().equals(""))&&(!tbObat.getValueAt(i,9).toString().equals(""))&&tbObat.getValueAt(i,11).toString().equals("")){
                 try {
+                    if(!dietMasihMemenuhiSyarat(i)){LCount.setToolTipText("Ada data berubah/belum memenuhi syarat diet pulang. Muat ulang daftar.");continue;}
                     idpraktisi=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,9).toString());
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
+                    if(!referensiDietValid()){LCount.setToolTipText("ID Patient/Practitioner belum ditemukan atau referensi belum valid. Diet belum dikirim.");continue;}
                     try{
                         headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -668,8 +670,10 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
         for(i=0;i<tbObat.getRowCount();i++){
             if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,6).toString().equals(""))&&(!tbObat.getValueAt(i,9).toString().equals(""))&&(!tbObat.getValueAt(i,11).toString().equals(""))){
                 try {
+                    if(!dietMasihMemenuhiSyarat(i)){LCount.setToolTipText("Ada data berubah/belum memenuhi syarat diet pulang. Muat ulang daftar.");continue;}
                     idpraktisi=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,9).toString());
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
+                    if(!referensiDietValid()){LCount.setToolTipText("ID Patient/Practitioner belum ditemukan atau referensi belum valid. Diet belum dikirim.");continue;}
                     try{
                         headers = new HttpHeaders();
                         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -823,26 +827,29 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
         return div.replace("\\","\\\\").replace("\"","\\\"");
     }
 
+    private boolean referensiDietValid(){
+        return idpasien!=null&&idpasien.matches("[A-Za-z0-9.-]{1,64}")&&idpraktisi!=null&&idpraktisi.matches("[A-Za-z0-9.-]{1,64}");
+    }
+    private boolean dietMasihMemenuhiSyarat(int row) {
+        try {
+            String sql=SatuSehatDietQuery.query(false).replace("order by reg_periksa.tgl_registrasi", "and reg_periksa.no_rawat=? and catatan_adime_gizi.tanggal=? order by reg_periksa.tgl_registrasi");
+            try(PreparedStatement p=koneksi.prepareStatement(sql)){
+                p.setString(1,"2014-06-03");p.setString(2,"9999-12-31");
+                p.setString(3,tbObat.getValueAt(row,2).toString());p.setString(4,tbObat.getValueAt(row,10).toString());
+                try(ResultSet r=p.executeQuery()){
+                    return r.next()&&r.getString("id_encounter").equals(tbObat.getValueAt(row,6).toString())
+                        &&r.getString("instruksi").equals(tbObat.getValueAt(row,7).toString())
+                        &&java.util.Objects.equals(r.getString("no_ktp"),tbObat.getValueAt(row,5).toString())
+                        &&java.util.Objects.equals(r.getString("ktppraktisi"),tbObat.getValueAt(row,9).toString())
+                        &&java.util.Objects.equals(r.getString("satu_sehat_diet"),tbObat.getValueAt(row,11).toString());
+                }
+            }
+        }catch(Exception e){System.out.println("Diet ditahan: pemeriksaan prasyarat belum berhasil.");return false;}
+    }
     private void tampil() {
         Valid.tabelKosong(tabMode);
         try{
-            ps=koneksi.prepareStatement(
-                   "select reg_periksa.tgl_registrasi,reg_periksa.jam_reg,reg_periksa.no_rawat,reg_periksa.no_rkm_medis,"+
-                   "pasien.nm_pasien,pasien.no_ktp,satu_sehat_encounter.id_encounter,catatan_adime_gizi.instruksi,"+
-                   "pegawai.nama,pegawai.no_ktp as ktppraktisi,catatan_adime_gizi.tanggal,"+
-                   "ifnull(satu_sehat_diet.id_diet,'') as satu_sehat_diet "+
-                   "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
-                   "inner join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat "+
-                   "inner join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "inner join catatan_adime_gizi on catatan_adime_gizi.no_rawat=reg_periksa.no_rawat "+
-                   "inner join pegawai on catatan_adime_gizi.nip=pegawai.nik "+
-                   "left join satu_sehat_diet on satu_sehat_diet.no_rawat=catatan_adime_gizi.no_rawat "+
-                   "and satu_sehat_diet.tanggal=catatan_adime_gizi.tanggal "+
-                   "where catatan_adime_gizi.instruksi<>'' and nota_jalan.tanggal between ? and ? "+
-                   (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
-                   "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.no_ktp like ? or pegawai.nama like ?) ")+
-                   "order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg,"+
-                   "reg_periksa.no_rawat,catatan_adime_gizi.tanggal");
+            ps=koneksi.prepareStatement(SatuSehatDietQuery.query(!TCari.getText().isEmpty()));
             try {
                 ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
                 ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
@@ -873,52 +880,6 @@ public final class SatuSehatKirimDiet extends javax.swing.JDialog {
                 }
             }
             
-            ps=koneksi.prepareStatement(
-                   "select reg_periksa.tgl_registrasi,reg_periksa.jam_reg,reg_periksa.no_rawat,reg_periksa.no_rkm_medis,"+
-                   "pasien.nm_pasien,pasien.no_ktp,satu_sehat_encounter.id_encounter,catatan_adime_gizi.instruksi,"+
-                   "pegawai.nama,pegawai.no_ktp as ktppraktisi,catatan_adime_gizi.tanggal,"+
-                   "ifnull(satu_sehat_diet.id_diet,'') as satu_sehat_diet "+
-                   "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis "+
-                   "inner join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat "+
-                   "inner join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "inner join catatan_adime_gizi on catatan_adime_gizi.no_rawat=reg_periksa.no_rawat "+
-                   "inner join pegawai on catatan_adime_gizi.nip=pegawai.nik "+
-                   "left join satu_sehat_diet on satu_sehat_diet.no_rawat=catatan_adime_gizi.no_rawat "+
-                   "and satu_sehat_diet.tanggal=catatan_adime_gizi.tanggal "+
-                   "where catatan_adime_gizi.instruksi<>'' and nota_inap.tanggal between ? and ? "+
-                   (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
-                   "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.no_ktp like ? or pegawai.nama like ?) ")+
-                   "order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg,"+
-                   "reg_periksa.no_rawat,catatan_adime_gizi.tanggal");
-            try {
-                ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
-                ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
-                if(!TCari.getText().equals("")){
-                    ps.setString(3,"%"+TCari.getText()+"%");
-                    ps.setString(4,"%"+TCari.getText()+"%");
-                    ps.setString(5,"%"+TCari.getText()+"%");
-                    ps.setString(6,"%"+TCari.getText()+"%");
-                    ps.setString(7,"%"+TCari.getText()+"%");
-                    ps.setString(8,"%"+TCari.getText()+"%");
-                }
-                rs=ps.executeQuery();
-                while(rs.next()){
-                    tabMode.addRow(new Object[]{
-                        false,rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg"),rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),
-                        rs.getString("no_ktp"),rs.getString("id_encounter"),rs.getString("instruksi"),rs.getString("nama"),rs.getString("ktppraktisi"),
-                        rs.getString("tanggal"),rs.getString("satu_sehat_diet")
-                    });
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            } finally{
-                if(rs!=null){
-                    rs.close();
-                }
-                if(ps!=null){
-                    ps.close();
-                }
-            }
         }catch(Exception e){
             System.out.println("Notifikasi : "+e);
         }

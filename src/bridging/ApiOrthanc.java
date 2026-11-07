@@ -381,6 +381,25 @@ public class ApiOrthanc {
         return root;
     }
 
+    public JsonNode UploadInstance(File file) {
+        System.out.println("Percobaan Upload DICOM ke Orthanc : " + file.getName());
+        try {
+            byte[] data = FileUtils.readFileToByteArray(file);
+            headers = new HttpHeaders();
+            headers.add("Authorization", "Basic " + authEncrypt);
+            headers.setContentType(MediaType.valueOf("application/dicom"));
+            HttpEntity<byte[]> entity = new HttpEntity<>(data, headers);
+            System.out.println("URL : " + koneksiDB.URLORTHANC() + ":" + koneksiDB.PORTORTHANC() + "/instances");
+            requestJson = getRest().exchange(koneksiDB.URLORTHANC() + ":" + koneksiDB.PORTORTHANC() + "/instances", HttpMethod.POST, entity, String.class).getBody();
+            System.out.println("Result Upload : " + requestJson);
+            root = mapper.readTree(requestJson);
+        } catch (Exception e) {
+            System.out.println("Notifikasi Upload : " + e);
+            root = null;
+        }
+        return root;
+    }
+
 //    private void uploadImage(String fileName, String docPath) {
 //    try {
 //        File file = new File("./gambarradiologi/" + fileName);

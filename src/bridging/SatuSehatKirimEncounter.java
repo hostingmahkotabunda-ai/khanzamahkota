@@ -48,6 +48,58 @@ import org.springframework.web.client.HttpClientErrorException;
  * @author dosen
  */
 public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
+    private final javax.swing.JLabel statusEncounter=new javax.swing.JLabel("Hanya Ralan sudah bayar / Ranap sudah dipulangkan.");
+    private final StringBuilder rincianEncounter=new StringBuilder();
+    private final java.util.Map<String,String[]> waktuSelesaiEncounter=new java.util.HashMap<>();
+    private int pilihanEncounterAwal;
+    private int jumlahPilihanEncounter(){int total=0;for(int row=0;row<tbObat.getRowCount();row++)if(Boolean.TRUE.equals(tbObat.getValueAt(row,0)))total++;return total;}
+    private void mulaiPengirimanEncounter(){pilihanEncounterAwal=jumlahPilihanEncounter();rincianEncounter.setLength(0);statusEncounter.setText("Memproses "+pilihanEncounterAwal+" Encounter...");statusEncounter.setToolTipText(null);}
+    private void catatStatusEncounter(String message){
+        if(rincianEncounter.length()<7000)rincianEncounter.append(message).append('\n');
+        statusEncounter.setText("Encounter belum selesai. Rincian: arahkan penunjuk.");
+        statusEncounter.setToolTipText("<html>"+rincianEncounter.toString().replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\n","<br>")+"</html>");
+    }
+    private void selesaiPengirimanEncounter(){
+        int pending=jumlahPilihanEncounter();
+        if(pending>0&&rincianEncounter.length()==0)catatStatusEncounter("Ada baris yang belum memenuhi syarat Kirim/Update. Periksa NIK pasien/dokter dan ID Encounter; Kirim untuk ID kosong, Update untuk ID yang sudah ada.");
+        statusEncounter.setText("Encounter: "+(pilihanEncounterAwal-pending)+" berhasil, "+pending+" belum selesai. Rincian: arahkan penunjuk.");
+    }
+    private boolean resumeRalanTersedia()throws Exception{
+        try(PreparedStatement p=koneksi.prepareStatement("select count(*) from information_schema.columns where table_schema=database() and table_name='resume_medis_ralan_v2' and column_name in ('no_rawat','tgl_keluar','jam_keluar')");ResultSet r=p.executeQuery()){return r.next()&&r.getInt(1)==3;}
+    }
+    private boolean validasiKunjunganSelesai(int row){
+        String noRawat=tbObat.getValueAt(row,2).toString();
+        waktuSelesaiEncounter.remove(noRawat);
+        try{
+            String sql=SatuSehatEncounterCompletion.query("Ranap".equals(tbObat.getValueAt(row,13).toString()),false,resumeRalanTersedia());
+            sql=sql.replace("order by reg_periksa.tgl_registrasi", "and reg_periksa.no_rawat=? order by reg_periksa.tgl_registrasi");
+            try(PreparedStatement p=koneksi.prepareStatement(sql)){
+                p.setString(1,"2014-06-03");p.setString(2,"9999-12-31");p.setString(3,noRawat);
+                try(ResultSet r=p.executeQuery()){
+                    if(!r.next())throw new IllegalArgumentException("Status terbaru belum memenuhi syarat selesai/pulang. Muat ulang daftar.");
+                    String[] times={tanggalFhirUtc(r.getString("tgl_registrasi")+" "+r.getString("jam_reg")),tanggalFhirUtc(r.getString("mulai_layanan")),tanggalFhirUtc(r.getString("pulang"))};
+                    SatuSehatEncounterCompletion.complete(mapper.createObjectNode(),times[0],times[1],times[2],java.time.Clock.systemUTC());
+                    waktuSelesaiEncounter.put(noRawat,times);
+                    return true;
+                }
+            }
+        }catch(Exception e){catatStatusEncounter("Baris "+(row+1)+": "+e.getMessage());return false;}
+    }
+    private String lengkapiEncounterSelesai(String payload,int row)throws Exception{
+        String[] times=waktuSelesaiEncounter.get(tbObat.getValueAt(row,2).toString());
+        if(times==null)throw new IllegalArgumentException("Kunjungan belum diverifikasi selesai.");
+        ObjectNode resource=(ObjectNode)mapper.readTree(payload);
+        SatuSehatEncounterCompletion.complete(resource,times[0],times[1],times[2],java.time.Clock.systemUTC());
+        try{
+            resource.set("diagnosis",SatuSehatEncounterDiagnosis.load(koneksi,mapper,tbObat.getValueAt(row,2).toString(),tbObat.getValueAt(row,13).toString()));
+        }catch(SatuSehatEncounterDiagnosis.NotReady e){
+            if(!tbObat.getValueAt(row,15).toString().isEmpty())throw e;
+            SatuSehatEncounterCompletion.initial(resource);
+            catatStatusEncounter("Baris "+(row+1)+": Payload Encounter awal disiapkan untuk memperoleh ID. Setelah berhasil, kirim Condition lalu Update Encounter sampai finished. "+e.getMessage());
+        }
+        return mapper.writeValueAsString(resource);
+    }
+
     private final DefaultTableModel tabMode;
     private sekuel Sequel=new sekuel();
     private validasi Valid=new validasi();
@@ -74,6 +126,9 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     public SatuSehatKirimEncounter(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        statusEncounter.setPreferredSize(new Dimension(44,24));
+        jPanel3.add(statusEncounter,java.awt.BorderLayout.SOUTH);
+        jPanel3.setPreferredSize(new Dimension(44,158));
         BtnANC.setPreferredSize(new Dimension(100,30));
         BtnANC.setToolTipText("Tandai dan klasifikasikan kunjungan ANC");
         BtnANC.addActionListener(evt -> bukaPengaturanAnc());
@@ -591,9 +646,11 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     }//GEN-LAST:event_BtnCariKeyPressed
 
     private void BtnKirimActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnKirimActionPerformed
+        mulaiPengirimanEncounter();
         for(i=0;i<tbObat.getRowCount();i++){
             if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,8).toString().equals(""))&&tbObat.getValueAt(i,15).toString().equals("")){
                 try {
+                    if(!validasiKunjunganSelesai(i))continue;
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,8).toString());
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
                     try{
@@ -664,11 +721,9 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                                         "}" +
                                     "]" +
                                 "}";
-                        System.out.println("URL : "+link+"/Encounter");
-                        System.out.println("Request JSON : "+json);
+                        json=lengkapiEncounterSelesai(json,i);
                         requestEntity = new HttpEntity(json,headers);
                         json=api.getRest().exchange(link+"/Encounter", HttpMethod.POST, requestEntity, String.class).getBody();
-                        System.out.println("Result JSON : "+json);
                         root = mapper.readTree(json);
                         response = root.path("id");
                         if(!response.asText().equals("")){
@@ -676,16 +731,18 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                                 tbObat.getValueAt(i,2).toString(),response.asText()
                             })==true){
                                 tbObat.setValueAt(response.asText(),i,15);
+                                tbObat.setValueAt(false,i,0);
                             }
                         }
                     }catch(Exception e){
                         tampilkanKesalahanBridging(e);
                     }
                 } catch (Exception e) {
-                    System.out.println("Notifikasi : "+e);
+                    tampilkanKesalahanBridging(e);
                 }
             }
         }
+        selesaiPengirimanEncounter();
     }//GEN-LAST:event_BtnKirimActionPerformed
 
     private void ppPilihSemuaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppPilihSemuaActionPerformed
@@ -701,9 +758,11 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     }//GEN-LAST:event_ppBersihkanActionPerformed
 
     private void BtnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnUpdateActionPerformed
+        mulaiPengirimanEncounter();
         for(i=0;i<tbObat.getRowCount();i++){
             if(tbObat.getValueAt(i,0).toString().equals("true")&&(!tbObat.getValueAt(i,5).toString().equals(""))&&(!tbObat.getValueAt(i,8).toString().equals(""))&&(!tbObat.getValueAt(i,15).toString().equals(""))){
                 try {
+                    if(!validasiKunjunganSelesai(i))continue;
                     iddokter=cekViaSatuSehat.tampilIDParktisi(tbObat.getValueAt(i,8).toString());
                     idpasien=cekViaSatuSehat.tampilIDPasien(tbObat.getValueAt(i,5).toString());
                     try{
@@ -775,20 +834,20 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
                                         "\"reference\": \"Organization/"+koneksiDB.IDSATUSEHAT()+"\"" +
                                     "}" +
                                 "}";
+                        json=lengkapiEncounterSelesai(json,i);
                         json=pertahankanEpisodeDanIdentifier(json,tbObat.getValueAt(i,15).toString());
-                        System.out.println("URL : "+link+"/Encounter/"+tbObat.getValueAt(i,15).toString());
-                        System.out.println("Request JSON : "+json);
                         requestEntity = new HttpEntity(json,headers);
                         json=api.getRest().exchange(link+"/Encounter/"+tbObat.getValueAt(i,15).toString(), HttpMethod.PUT, requestEntity, String.class).getBody();
-                        System.out.println("Result JSON : "+json);
+                        tbObat.setValueAt(false,i,0);
                     }catch(Exception e){
                         tampilkanKesalahanBridging(e);
                     }
                 } catch (Exception e) {
-                    System.out.println("Notifikasi : "+e);
+                    tampilkanKesalahanBridging(e);
                 }
             }
         }
+        selesaiPengirimanEncounter();
     }//GEN-LAST:event_BtnUpdateActionPerformed
 
     private boolean validasiIdentitasEncounter(int row){
@@ -796,8 +855,7 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
             SatuSehatEncounterIdentity.requireIds(idpasien,iddokter);
             return true;
         }catch(IllegalArgumentException e){
-            JOptionPane.showMessageDialog(this,"No. Rawat: "+tbObat.getValueAt(row,2)+" / RM: "+tbObat.getValueAt(row,3)+"\n"+e.getMessage(),
-                    "Identitas SATUSEHAT belum tersedia",JOptionPane.WARNING_MESSAGE);
+            catatStatusEncounter("Baris "+(row+1)+": "+e.getMessage());
             return false;
         }
     }
@@ -938,15 +996,17 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     }
 
     private void tampilkanKesalahanBridging(Exception e) {
-        System.out.println("Notifikasi Bridging : "+e);
-        if(e instanceof HttpClientErrorException){
-            String respons=((HttpClientErrorException)e).getResponseBodyAsString();
-            if(respons!=null && !respons.trim().isEmpty()){
-                System.out.println("Response SATUSEHAT : "+respons);
-            }
+        String message=e.getMessage();
+        if(e instanceof org.springframework.web.client.HttpStatusCodeException){
+            org.springframework.web.client.HttpStatusCodeException http=(org.springframework.web.client.HttpStatusCodeException)e;
+            message="HTTP "+http.getStatusCode().value();
+            try{
+                JsonNode outcome=mapper.readTree(http.getResponseBodyAsString());
+                for(JsonNode issue:outcome.path("issue"))message+=" "+issue.path("expression").toString()+" "+issue.path("details").path("text").asText()+" "+issue.path("diagnostics").asText();
+            }catch(Exception ignored){}
         }
+        catatStatusEncounter(message==null?e.getClass().getSimpleName():message);
     }
-
     private String identifierAncJson(String noRawat) throws Exception {
         try (PreparedStatement psAnc=koneksi.prepareStatement(
                 "select status_kunjungan from satu_sehat_kunjungan_anc where no_rawat=?")) {
@@ -988,7 +1048,7 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
         SatuSehatEpisodeSupport.preserveRemoteLinks(local,remote);
         String version=remote.path("meta").path("versionId").asText();
         if(!version.isEmpty())headers.add("If-Match","W/\""+version+"\"");
-        return mapper.writeValueAsString(local);
+        return mapper.writeValueAsString(SatuSehatEncounterCompletion.mergeCompleted(local,remote));
     }
     private void BtnAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_BtnAllActionPerformed
         TCari.setText("");
@@ -1048,7 +1108,7 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
     private String tanggalFhirUtc(String nilai) {
         if(nilai==null || nilai.trim().isEmpty()) return "";
-        LocalDateTime waktuLokal=LocalDateTime.parse(nilai.trim(),DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime waktuLokal=LocalDateTime.parse(nilai.trim(),DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm:ss").withResolverStyle(java.time.format.ResolverStyle.STRICT));
         return waktuLokal.atZone(ZoneId.of("Asia/Makassar"))
                 .withZoneSameInstant(ZoneOffset.UTC)
                 .format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssxxx"));
@@ -1056,98 +1116,25 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
 
     private void tampil() {
         Valid.tabelKosong(tabMode);
-        try{
-            ps=koneksi.prepareStatement(
-                   "select reg_periksa.tgl_registrasi,reg_periksa.jam_reg,reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,reg_periksa.kd_dokter,"+
-                   "pegawai.nama,pegawai.no_ktp as ktpdokter,reg_periksa.kd_poli,poliklinik.nm_poli,satu_sehat_mapping_lokasi_ralan.id_lokasi_satusehat,reg_periksa.stts,"+
-                   "reg_periksa.status_lanjut,concat(nota_jalan.tanggal,' ',nota_jalan.jam) as pulang,ifnull(satu_sehat_encounter.id_encounter,'') as id_encounter "+
-                   "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join pegawai on pegawai.nik=reg_periksa.kd_dokter "+
-                   "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join satu_sehat_mapping_lokasi_ralan on satu_sehat_mapping_lokasi_ralan.kd_poli=poliklinik.kd_poli "+
-                   "inner join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat left join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "where nota_jalan.tanggal between ? and ? "+
-                   (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
-                   "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.nama like ? or poliklinik.nm_poli like ? or "+
-                   "reg_periksa.stts like ? or reg_periksa.status_lanjut like ?)")+" order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg");
-            try {
-                ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
-                ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
-                if(!TCari.getText().equals("")){
-                    ps.setString(3,"%"+TCari.getText()+"%");
-                    ps.setString(4,"%"+TCari.getText()+"%");
-                    ps.setString(5,"%"+TCari.getText()+"%");
-                    ps.setString(6,"%"+TCari.getText()+"%");
-                    ps.setString(7,"%"+TCari.getText()+"%");
-                    ps.setString(8,"%"+TCari.getText()+"%");
-                    ps.setString(9,"%"+TCari.getText()+"%");
-                    ps.setString(10,"%"+TCari.getText()+"%");
-                }
-                rs=ps.executeQuery();
-                while(rs.next()){
-                    tabMode.addRow(new Object[]{
-                        false,tanggalFhirUtc(rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg")),rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),
-                        rs.getString("no_ktp"),rs.getString("kd_dokter"),rs.getString("nama"),rs.getString("ktpdokter"),rs.getString("kd_poli"),rs.getString("nm_poli"),
-                        rs.getString("id_lokasi_satusehat"),rs.getString("stts"),rs.getString("status_lanjut"),tanggalFhirUtc(rs.getString("pulang")),rs.getString("id_encounter")
-                    });
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            } finally{
-                if(rs!=null){
-                    rs.close();
-                }
-                if(ps!=null){
-                    ps.close();
+        waktuSelesaiEncounter.clear();
+        try {
+            boolean resume=resumeRalanTersedia();
+            for(boolean inpatient:new boolean[]{false,true}){
+                try(PreparedStatement p=koneksi.prepareStatement(SatuSehatEncounterCompletion.query(inpatient,!TCari.getText().isEmpty(),resume))){
+                    p.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));p.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
+                    if(!TCari.getText().isEmpty())for(int n=3;n<=10;n++)p.setString(n,"%"+TCari.getText()+"%");
+                    try(ResultSet r=p.executeQuery()){
+                        while(r.next()){
+                            tabMode.addRow(new Object[]{false,tanggalFhirUtc(r.getString("tgl_registrasi")+" "+r.getString("jam_reg")),r.getString("no_rawat"),r.getString("no_rkm_medis"),r.getString("nm_pasien"),
+                                r.getString("no_ktp"),r.getString("kd_dokter"),r.getString("nama"),r.getString("ktpdokter"),r.getString("kd_poli"),r.getString("nm_poli"),r.getString("id_lokasi_satusehat"),r.getString("stts"),r.getString("status_lanjut"),tanggalFhirUtc(r.getString("pulang")),r.getString("id_encounter")});
+                        }
+                    }
                 }
             }
-            
-            ps=koneksi.prepareStatement(
-                   "select reg_periksa.tgl_registrasi,reg_periksa.jam_reg,reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,reg_periksa.kd_dokter,"+
-                   "pegawai.nama,pegawai.no_ktp as ktpdokter,reg_periksa.kd_poli,poliklinik.nm_poli,satu_sehat_mapping_lokasi_ralan.id_lokasi_satusehat,reg_periksa.stts,"+
-                   "reg_periksa.status_lanjut,concat(nota_inap.tanggal,' ',nota_inap.jam) as pulang,ifnull(satu_sehat_encounter.id_encounter,'') as id_encounter "+
-                   "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join pegawai on pegawai.nik=reg_periksa.kd_dokter "+
-                   "inner join poliklinik on reg_periksa.kd_poli=poliklinik.kd_poli inner join satu_sehat_mapping_lokasi_ralan on satu_sehat_mapping_lokasi_ralan.kd_poli=poliklinik.kd_poli "+
-                   "inner join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat left join satu_sehat_encounter on satu_sehat_encounter.no_rawat=reg_periksa.no_rawat "+
-                   "where nota_inap.tanggal between ? and ? "+
-                   (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
-                   "pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.nama like ? or poliklinik.nm_poli like ? or "+
-                   "reg_periksa.stts like ? or reg_periksa.status_lanjut like ?)")+" order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg");
-            try {
-                ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
-                ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
-                if(!TCari.getText().equals("")){
-                    ps.setString(3,"%"+TCari.getText()+"%");
-                    ps.setString(4,"%"+TCari.getText()+"%");
-                    ps.setString(5,"%"+TCari.getText()+"%");
-                    ps.setString(6,"%"+TCari.getText()+"%");
-                    ps.setString(7,"%"+TCari.getText()+"%");
-                    ps.setString(8,"%"+TCari.getText()+"%");
-                    ps.setString(9,"%"+TCari.getText()+"%");
-                    ps.setString(10,"%"+TCari.getText()+"%");
-                }
-                rs=ps.executeQuery();
-                while(rs.next()){
-                    tabMode.addRow(new Object[]{
-                        false,tanggalFhirUtc(rs.getString("tgl_registrasi")+" "+rs.getString("jam_reg")),rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),
-                        rs.getString("no_ktp"),rs.getString("kd_dokter"),rs.getString("nama"),rs.getString("ktpdokter"),rs.getString("kd_poli"),rs.getString("nm_poli"),
-                        rs.getString("id_lokasi_satusehat"),rs.getString("stts"),rs.getString("status_lanjut"),tanggalFhirUtc(rs.getString("pulang")),rs.getString("id_encounter")
-                    });
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            } finally{
-                if(rs!=null){
-                    rs.close();
-                }
-                if(ps!=null){
-                    ps.close();
-                }
-            }
-        }catch(Exception e){
-            System.out.println("Notifikasi : "+e);
-        }
+            statusEncounter.setText("Ralan sudah bayar / Ranap sudah pulang. Waktu yang belum lengkap ditahan saat kirim.");
+        }catch(Exception e){catatStatusEncounter("Daftar belum lengkap: "+e.getMessage());}
         LCount.setText(""+tabMode.getRowCount());
     }
-
     public void isCek(){
         BtnKirim.setEnabled(akses.getsatu_sehat_kirim_encounter());
         BtnPrint.setEnabled(akses.getsatu_sehat_kirim_encounter());

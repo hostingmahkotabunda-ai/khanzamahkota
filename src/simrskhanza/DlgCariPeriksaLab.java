@@ -34,6 +34,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import laporan.DlgBerkasRawat;
 import rekammedis.RMRiwayatPerawatan;
+import rekammedis.MasterCariTemplateSaranKesanLab;
 import surat.SuratKeteranganCovid;
 
 import java.io.*;
@@ -56,6 +57,7 @@ public class DlgCariPeriksaLab extends javax.swing.JDialog {
     private Connection koneksi=koneksiDB.condb();
     private DlgCariPasien member=new DlgCariPasien(null,false);
     private DlgCariPetugas petugas=new DlgCariPetugas(null,false);
+    private MasterCariTemplateSaranKesanLab templateSaranKesan=new MasterCariTemplateSaranKesanLab(null,false);
     private int i,jmlkunjungan=0,jmlpemeriksaan=0,jmlsubpemeriksaan=0;
     private PreparedStatement ps,ps2,ps3,ps4,psrekening,ps5,pspermintaan;
     private ResultSet rs,rs2,rs3,rs5,rsrekening,rspermintaan;
@@ -103,6 +105,28 @@ public class DlgCariPeriksaLab extends javax.swing.JDialog {
         });
         jPopupMenu1.addSeparator();
         jPopupMenu1.add(MnLaporKritis);
+
+        templateSaranKesan.addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {}
+            @Override
+            public void windowClosing(WindowEvent e) {}
+            @Override
+            public void windowClosed(WindowEvent e) {
+                if(templateSaranKesan.getTable().getSelectedRow()!= -1){
+                    Kesan.setText(templateSaranKesan.getTable().getValueAt(templateSaranKesan.getTable().getSelectedRow(),2).toString());
+                    Saran.setText(templateSaranKesan.getTable().getValueAt(templateSaranKesan.getTable().getSelectedRow(),3).toString());
+                }
+            }
+            @Override
+            public void windowIconified(WindowEvent e) {}
+            @Override
+            public void windowDeiconified(WindowEvent e) {}
+            @Override
+            public void windowActivated(WindowEvent e) {}
+            @Override
+            public void windowDeactivated(WindowEvent e) {}
+        });
 
         Object[] row={"No.Rawat","Pasien","Petugas","Tgl.Periksa","Jam Periksa","Dokter Perujuk","Penanggung Jawab"};
         tabMode=new DefaultTableModel(null,row){
@@ -404,6 +428,7 @@ public class DlgCariPeriksaLab extends javax.swing.JDialog {
         WindowSaran = new javax.swing.JDialog();
         internalFrame6 = new widget.InternalFrame();
         panelGlass6 = new widget.panelisi();
+        BtnTemplateSaranKesan = new widget.Button();
         BtnSimpan = new widget.Button();
         BtnCloseIn5 = new widget.Button();
         jPanel3 = new javax.swing.JPanel();
@@ -939,6 +964,19 @@ public class DlgCariPeriksaLab extends javax.swing.JDialog {
         panelGlass6.setName("panelGlass6"); // NOI18N
         panelGlass6.setPreferredSize(new java.awt.Dimension(55, 55));
         panelGlass6.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 5, 9));
+
+        BtnTemplateSaranKesan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/190.png"))); // NOI18N
+        BtnTemplateSaranKesan.setMnemonic('T');
+        BtnTemplateSaranKesan.setText("Template");
+        BtnTemplateSaranKesan.setToolTipText("Alt+T");
+        BtnTemplateSaranKesan.setName("BtnTemplateSaranKesan"); // NOI18N
+        BtnTemplateSaranKesan.setPreferredSize(new java.awt.Dimension(100, 30));
+        BtnTemplateSaranKesan.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                BtnTemplateSaranKesanActionPerformed(evt);
+            }
+        });
+        panelGlass6.add(BtnTemplateSaranKesan);
 
         BtnSimpan.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/save-16x16.png"))); // NOI18N
         BtnSimpan.setMnemonic('U');
@@ -3840,6 +3878,13 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
         WindowSaran.dispose();
     }//GEN-LAST:event_BtnCloseIn5ActionPerformed
 
+    private void BtnTemplateSaranKesanActionPerformed(java.awt.event.ActionEvent evt) {
+        templateSaranKesan.emptTeks();
+        templateSaranKesan.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+        templateSaranKesan.setLocationRelativeTo(WindowSaran);
+        templateSaranKesan.setVisible(true);
+    }
+
     private void TabRawatMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TabRawatMouseClicked
         if(TabRawat.getSelectedIndex()==0){
             tampil();
@@ -6379,6 +6424,7 @@ private void tbDokterKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_
     private widget.Button BtnAll;
     private widget.Button BtnCari;
     private widget.Button BtnCloseIn5;
+    private widget.Button BtnTemplateSaranKesan;
     private widget.Button BtnHapus;
     private widget.Button BtnKeluar;
     private widget.Button BtnPrint;

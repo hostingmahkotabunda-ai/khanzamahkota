@@ -84,16 +84,16 @@
     <entry key="URLAPICORONA">http://sirs.kemkes.go.id/fo/index.php</entry>
     <entry key="IDCORONA">l4nh5eVYrLAER/I2A4b3Tw==</entry>
     <entry key="PASSCORONA">l4nh5eVYrLAER/I2A4b3Tw==</entry>
-    <entry key="CLIENTIDSATUSEHAT">FPY70+fOELjljscUFXARNHKY+JfqXP3aM5qsRSIGWbwjZ96yTg4ruHY8/P8tAzB7MkE8znK59L7CgZFZRoe3gQ==</entry>
-    <entry key="SECRETKEYSATUSEHAT">hDbiPDgIsaIpYVlPUjRH0O6HlexPzVnCuFJS2OGdwSDq/TDIGMfK0BHRTiqojxNiplE8e2FfoQ1JvPKCrpLE91blt/Kcmr9yEk39xgmX4Ts=</entry>
-    <entry key="URLAUTHSATUSEHAT">https://api-satusehat.kemkes.go.id/oauth2/v1</entry> 
+    <entry key="CLIENTIDSATUSEHAT">tb00EFbyAkP31Kz3Vo2ABYhiue85jIuG5Z0deKalUTENy/us3qu2PP8OP7wRSDEQ4Hy5xUCPFH4Dm2HZPJeGMA==</entry>
+    <entry key="SECRETKEYSATUSEHAT">Z2Y5L4uol9RAwslpJ03qYdBDBlpHXSw+VizBN0n8FaDx0lKZ8eifxqHogojXVftgZG9r3ANLHRMxoGFYBjlV6PgyoyBPNTeG35IouRO50/8=</entry>
+    <entry key="URLAUTHSATUSEHAT">https://api-satusehat.kemkes.go.id/oauth2/v1</entry>
     <entry key="URLFHIRSATUSEHAT">https://api-satusehat.kemkes.go.id/fhir-r4/v1</entry>
-    <entry key="IDSATUSEHAT">bsi/8tnYO7trlVP/b8P31A==</entry>
-    <entry key="KELURAHANSATUSEHAT">6372041004</entry>
-    <entry key="KECAMATANSATUSEHAT">637204</entry>
-    <entry key="KABUPATENSATUSEHAT">6372</entry>
+    <entry key="IDSATUSEHAT">UDrZjNJSdHYLvZKxQxasTg==</entry>
+    <entry key="KELURAHANSATUSEHAT">6371051001</entry>
+    <entry key="KECAMATANSATUSEHAT">637105</entry>
+    <entry key="KABUPATENSATUSEHAT">6371</entry>
     <entry key="PROPINSISATUSEHAT">63</entry>
-    <entry key="KODEPOSSATUSEHAT">70714</entry>
+    <entry key="KODEPOSSATUSEHAT">70231</entry>
     <entry key="KAMARAKTIFRANAP"></entry>
     <entry key="DOKTERAKTIFKASIRRALAN"></entry>
     <entry key="POLIAKTIFKASIRRALAN"></entry>
@@ -156,7 +156,7 @@
     <entry key="PORTVANSLAB">nioxtijcpDaKSUiUiP5FAg==</entry>
     <entry key="USERVANSLAB">kMR3WfAwUK6MbhCyydxa0g==</entry>
     <entry key="PASVANSLAB">l4nh5eVYrLAER/I2A4b3Tw==</entry>
-    <entry key="URLORTHANC">http://192.168.1.163</entry>
+    <entry key="URLORTHANC">http://192.168.110.151</entry>
     <entry key="PORTORTHANC">gie5pRePkRsFe+dOh84P4A==</entry>
     <entry key="USERORTHANC">V9bi0P2HgAq8Nn8lUyS6/A==</entry>
     <entry key="PASSORTHANC">V9bi0P2HgAq8Nn8lUyS6/A==</entry>

@@ -749,6 +749,7 @@ public final class SatuSehatKirimSpecimenLabPK extends javax.swing.JDialog {
     private void tampil() {
         Valid.tabelKosong(tabMode);
         try{
+            // Ralan/Ranap memakai tanggal registrasi; nota bukan prasyarat daftar klinis.
             ps=koneksi.prepareStatement(
                    "select reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,permintaan_lab.noorder,"+
                    "permintaan_lab.tgl_sampel,permintaan_lab.jam_sampel,template_laboratorium.Pemeriksaan,"+
@@ -764,8 +765,7 @@ public final class SatuSehatKirimSpecimenLabPK extends javax.swing.JDialog {
                    "left join satu_sehat_specimen_lab on satu_sehat_servicerequest_lab.noorder=satu_sehat_specimen_lab.noorder "+
                    "and satu_sehat_servicerequest_lab.id_template=satu_sehat_specimen_lab.id_template "+
                    "and satu_sehat_servicerequest_lab.kd_jenis_prw=satu_sehat_specimen_lab.kd_jenis_prw "+
-                   "inner join nota_jalan on nota_jalan.no_rawat=reg_periksa.no_rawat "+
-                   "where nota_jalan.tanggal between ? and ? "+
+                   "where reg_periksa.tgl_registrasi between ? and ? and trim(ifnull(satu_sehat_servicerequest_lab.id_servicerequest,''))<>'' "+
                    (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
                    "pasien.nm_pasien like ? or pasien.no_ktp like ? or template_laboratorium.Pemeriksaan like ? or "+
                    "satu_sehat_mapping_lab.sampel_code like ? or permintaan_lab.noorder like ?)"));
@@ -800,56 +800,6 @@ public final class SatuSehatKirimSpecimenLabPK extends javax.swing.JDialog {
                 }
             }
             
-            ps=koneksi.prepareStatement(
-                   "select reg_periksa.no_rawat,reg_periksa.no_rkm_medis,pasien.nm_pasien,pasien.no_ktp,permintaan_lab.noorder,"+
-                   "permintaan_lab.tgl_sampel,permintaan_lab.jam_sampel,template_laboratorium.Pemeriksaan,"+
-                   "satu_sehat_mapping_lab.sampel_code,satu_sehat_mapping_lab.sampel_system,satu_sehat_mapping_lab.sampel_display,satu_sehat_servicerequest_lab.id_servicerequest,"+
-                   "permintaan_detail_permintaan_lab.id_template,ifnull(satu_sehat_specimen_lab.id_specimen,'') as id_specimen,permintaan_detail_permintaan_lab.kd_jenis_prw "+
-                   "from reg_periksa inner join pasien on reg_periksa.no_rkm_medis=pasien.no_rkm_medis inner join permintaan_lab on permintaan_lab.no_rawat=reg_periksa.no_rawat "+
-                   "inner join permintaan_detail_permintaan_lab on permintaan_detail_permintaan_lab.noorder=permintaan_lab.noorder "+
-                   "inner join template_laboratorium on template_laboratorium.id_template=permintaan_detail_permintaan_lab.id_template "+
-                   "inner join satu_sehat_mapping_lab on satu_sehat_mapping_lab.id_template=template_laboratorium.id_template "+
-                   "inner join satu_sehat_servicerequest_lab on satu_sehat_servicerequest_lab.noorder=permintaan_detail_permintaan_lab.noorder "+
-                   "and satu_sehat_servicerequest_lab.id_template=permintaan_detail_permintaan_lab.id_template "+
-                   "and satu_sehat_servicerequest_lab.kd_jenis_prw=permintaan_detail_permintaan_lab.kd_jenis_prw "+
-                   "left join satu_sehat_specimen_lab on satu_sehat_servicerequest_lab.noorder=satu_sehat_specimen_lab.noorder "+
-                   "and satu_sehat_servicerequest_lab.id_template=satu_sehat_specimen_lab.id_template "+
-                   "and satu_sehat_servicerequest_lab.kd_jenis_prw=satu_sehat_specimen_lab.kd_jenis_prw "+
-                   "inner join nota_inap on nota_inap.no_rawat=reg_periksa.no_rawat "+
-                   "where nota_inap.tanggal between ? and ? "+
-                   (TCari.getText().equals("")?"":"and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or "+
-                   "pasien.nm_pasien like ? or pasien.no_ktp like ? or template_laboratorium.Pemeriksaan like ? or "+
-                   "satu_sehat_mapping_lab.sampel_code like ? or permintaan_lab.noorder like ?)"));
-            try {
-                ps.setString(1,Valid.SetTgl(DTPCari1.getSelectedItem()+""));
-                ps.setString(2,Valid.SetTgl(DTPCari2.getSelectedItem()+""));
-                if(!TCari.getText().equals("")){
-                    ps.setString(3,"%"+TCari.getText()+"%");
-                    ps.setString(4,"%"+TCari.getText()+"%");
-                    ps.setString(5,"%"+TCari.getText()+"%");
-                    ps.setString(6,"%"+TCari.getText()+"%");
-                    ps.setString(7,"%"+TCari.getText()+"%");
-                    ps.setString(8,"%"+TCari.getText()+"%");
-                    ps.setString(9,"%"+TCari.getText()+"%");
-                }
-                rs=ps.executeQuery();
-                while(rs.next()){
-                    tabMode.addRow(new Object[]{
-                        false,rs.getString("no_rawat"),rs.getString("no_rkm_medis"),rs.getString("nm_pasien"),rs.getString("no_ktp"),rs.getString("noorder"),
-                        rs.getString("tgl_sampel")+" "+rs.getString("jam_sampel"),rs.getString("Pemeriksaan"),rs.getString("sampel_code"),rs.getString("sampel_system"),
-                        rs.getString("sampel_display"),rs.getString("id_servicerequest"),rs.getString("id_template"),rs.getString("id_specimen"),rs.getString("kd_jenis_prw")
-                    });
-                }
-            } catch (Exception e) {
-                System.out.println("Notif : "+e);
-            } finally{
-                if(rs!=null){
-                    rs.close();
-                }
-                if(ps!=null){
-                    ps.close();
-                }
-            }
         }catch(Exception e){
             System.out.println("Notifikasi : "+e);
         }
