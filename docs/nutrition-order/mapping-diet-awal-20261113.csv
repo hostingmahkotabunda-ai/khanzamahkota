@@ -1,0 +1,18 @@
+kelompok,kode_lokal,nama_lokal,system_kandidat,code_kandidat,display_referensi,status,catatan
+jenis,TKTP,Diet tinggi kalori tinggi protein,http://snomed.info/sct,1055200005,Increased protein and/or protein derivative diet,KONFIRMASI_GIZI,Lampiran memakainya untuk TETP; pastikan TKTP lokal setara; jangan samakan dengan Tprot
+jenis,Tprot,Diet tinggi protein,,,,PERLU_VERIFIKASI_TERMINOLOGI,Jangan gunakan kode TETP secara otomatis
+jenis,RG,Diet rendah garam,http://snomed.info/sct,386619000,Low salt diet,REFERENSI_LANGSUNG,Tabel 19; belum diuji API
+jenis,RS,Diet rendah serat,,,,PERLU_VERIFIKASI_TERMINOLOGI,Jangan otomatis dipetakan menjadi rendah sisa
+jenis,RL,Diet rendah lemak,http://snomed.info/sct,1055207008,Decreased fat and oil diet,REFERENSI_LANGSUNG,Tabel 19; belum diuji API
+jenis,RP,Diet rendah protein,,,,PERLU_RINCIAN_PRESKRIPSI,Tabel 19 membedakan OV000374 untuk 20-40 g; OV000375 untuk 50 g; OV000376 untuk 60 g; jangan tebak
+jenis,Rpur,Diet rendah purin,http://snomed.info/sct,22745007,Low purine diet,REFERENSI_LANGSUNG,Tabel 19; belum diuji API
+jenis,DM,Diet diabetes melitus,http://terminology.kemkes.go.id/CodeSystem/clinical-term,OV000370,Diet Diabetes Melitus (DM),REFERENSI_LANGSUNG,Tabel 19; belum diuji API
+jenis,TS,Diet tinggi serat,,,,PERLU_VERIFIKASI_TERMINOLOGI,Cari konsep resmi yang sesuai sebelum aktivasi
+jenis,JANTUNG,Diet Jantung,http://terminology.kemkes.go.id/CodeSystem/clinical-term,OV000380,Diet Jantung,REFERENSI_LANGSUNG,Tabel 19; belum diuji API
+jenis,HATI,Diet Hati,http://terminology.kemkes.go.id/CodeSystem/clinical-term,OV000372,Diet Hati (DH),REFERENSI_LANGSUNG,Tabel 19; belum diuji API
+bentuk,NB,Nasi Biasa,http://snomed.info/sct,228060008,Solid food,KONFIRMASI_GIZI,Kandidat kategori makanan biasa; konfirmasi cakupan lokal
+bentuk,NL,Nasi Lembek,http://snomed.info/sct,228059003,Soft food,KONFIRMASI_GIZI,Kandidat kategori lunak; nama NL tetap disimpan
+bentuk,BB,Bubur,http://snomed.info/sct,228059003,Soft food,KONFIRMASI_GIZI,Jangan samakan konsistensi bubur dengan NL tanpa konfirmasi
+bentuk,BS,Bubur Saring,http://snomed.info/sct,441791000124106,Strained food,KONFIRMASI_GIZI,Kandidat kategori makanan saring
+bentuk,MCJ,Makanan Cair Jernih,,,,PERLU_VERIFIKASI_TERMINOLOGI,Lampiran hanya menyediakan kategori cair umum; pertahankan perbedaan MCJ dan MCP
+bentuk,MCP,Makanan Cair Penuh,,,,PERLU_VERIFIKASI_TERMINOLOGI,Lampiran hanya menyediakan kategori cair umum; pertahankan perbedaan MCJ dan MCP

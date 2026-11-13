@@ -1,0 +1,43 @@
+{
+  "resourceType" : "NutritionOrder",
+  "status" : "active",
+  "intent" : "order",
+  "patient" : {
+    "reference" : "Patient/contoh-patient"
+  },
+  "encounter" : {
+    "reference" : "Encounter/contoh-encounter"
+  },
+  "orderer" : {
+    "reference" : "Practitioner/contoh-practitioner"
+  },
+  "dateTime" : "2026-11-12T09:00:00+08:00",
+  "oralDiet" : {
+    "type" : [ {
+      "coding" : [ {
+        "system" : "http://snomed.info/sct",
+        "code" : "386619000",
+        "display" : "Low salt diet"
+      } ],
+      "text" : "Rendah garam"
+    } ],
+    "texture" : [ {
+      "modifier" : {
+        "coding" : [ {
+          "system" : "http://snomed.info/sct",
+          "code" : "228060008",
+          "display" : "Solid food"
+        } ],
+        "text" : "Nasi Biasa"
+      }
+    } ],
+    "schedule" : [ {
+      "repeat" : {
+        "boundsPeriod" : {
+          "start" : "2026-11-12T10:00:00+08:00"
+        }
+      }
+    } ],
+    "instruction" : "Instruksi contoh, bukan data klinis pasien.\nBentuk makanan: Nasi Biasa"
+  }
+}

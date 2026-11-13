@@ -56,12 +56,23 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     private DlgCariPetugas petugas=new DlgCariPetugas(null,false);
     private final MasterCariTemplateADIMEGizi template=new MasterCariTemplateADIMEGizi(null,false);
     private widget.Button BtnTemplateGizi;
+    private AdimeGiziView tampilanModern;
     /** Creates new form DlgRujuk
      * @param parent
      * @param modal */
     public RMCatatanADIMEGizi(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        javax.swing.JMenuItem instruksiDiet=new javax.swing.JMenuItem("Instruksi Diet / NutritionOrder SATUSEHAT");
+        instruksiDiet.addActionListener(e->{
+            int selected=tbObat.getSelectedRow();
+            if(selected<0){JOptionPane.showMessageDialog(this,"Pilih ADIME yang sudah disimpan.");return;}
+            if(!bridging.SatuSehatNutritionOrderService.canRead()){JOptionPane.showMessageDialog(this,"Memerlukan akses ADIME atau pengiriman Diet.");return;}
+            bridging.SatuSehatKirimNutritionOrder dialog=new bridging.SatuSehatKirimNutritionOrder(this,true);
+            dialog.openSource(tbObat.getValueAt(selected,0).toString(),tbObat.getValueAt(selected,5).toString());
+            dialog.setVisible(true);
+        });
+        jPopupMenu1.add(instruksiDiet);
         aturTampilanFormInput();
         this.setLocation(8,1);
         setSize(628,674);
@@ -174,6 +185,16 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
         jam();
 
         pasangTombolTemplate();
+        pasangTampilanModern();
+    }
+
+    private void pasangTampilanModern(){
+        Map<String,javax.swing.JComponent> inputs=new HashMap<>();
+        inputs.put("visit",TNoRw);inputs.put("rm",TNoRM);inputs.put("patient",TPasien);inputs.put("date",Tanggal);inputs.put("hour",Jam);inputs.put("minute",Menit);inputs.put("second",Detik);inputs.put("automatic",ChkKejadian);inputs.put("staffCode",KdPetugas);inputs.put("staffName",NmPetugas);inputs.put("staffPick",btnPetugas);
+        tampilanModern=new AdimeGiziView(inputs,new javax.swing.JScrollPane[]{scrollPane1,scrollPane3,scrollPane5,scrollPane2,scrollPane4,scrollPane6},Scroll,new javax.swing.JComponent[]{DTPCari1,DTPCari2,TCari,BtnCari,BtnAll},new javax.swing.JButton[]{BtnTemplateGizi,BtnSimpan,BtnBatal,BtnEdit,BtnHapus,BtnPrint,BtnKeluar},ChkInput);
+        internalFrame1.removeAll();internalFrame1.setBorder(javax.swing.BorderFactory.createEmptyBorder());internalFrame1.add(tampilanModern,java.awt.BorderLayout.CENTER);
+        java.awt.Dimension screen=java.awt.Toolkit.getDefaultToolkit().getScreenSize();setSize(Math.min(1450,screen.width-40),Math.min(950,screen.height-70));
+        ChkInput.setSelected(true);internalFrame1.revalidate();
     }
 
     /** Memasang tombol "Template" pada toolbar bawah. Tombol membuka dialog
@@ -1414,7 +1435,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
             JK.setText(tbObat.getValueAt(tbObat.getSelectedRow(),4).toString());
             Valid.SetTgl(Tanggal,tbObat.getValueAt(tbObat.getSelectedRow(),5).toString());  
             Jam.setSelectedItem(tbObat.getValueAt(tbObat.getSelectedRow(),5).toString().substring(11,13));
-            Menit.setSelectedItem(tbObat.getValueAt(tbObat.getSelectedRow(),5).toString().substring(14,15));
+            Menit.setSelectedItem(tbObat.getValueAt(tbObat.getSelectedRow(),5).toString().substring(14,16));
             Detik.setSelectedItem(tbObat.getValueAt(tbObat.getSelectedRow(),5).toString().substring(17,19));
             Asesmen.setText(tbObat.getValueAt(tbObat.getSelectedRow(),6).toString());
             Diagnosis.setText(tbObat.getValueAt(tbObat.getSelectedRow(),7).toString());
@@ -1505,6 +1526,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     }
     
     private void isForm(){
+        if(tampilanModern!=null){tampilanModern.setInputVisible(ChkInput.isSelected());return;}
         if(ChkInput.isSelected()==true){
             if(internalFrame1.getHeight()>592){
                 ChkInput.setVisible(false);
@@ -1596,6 +1618,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     }
 
     private void ganti() {
+        if(instruksiDietTertaut())return;
         if(Sequel.mengedittf("catatan_adime_gizi","tanggal=? and no_rawat=?","no_rawat=?,tanggal=?,asesmen=?,diagnosis=?,intervensi=?,monitoring=?,evaluasi=?,instruksi=?,nip=?",11,new String[]{
             TNoRw.getText(),Valid.SetTgl(Tanggal.getSelectedItem()+"")+" "+Jam.getSelectedItem()+":"+Menit.getSelectedItem()+":"+Detik.getSelectedItem(),Asesmen.getText(),Diagnosis.getText(),
             Intervensi.getText(),Monitoring.getText(),Evaluasi.getText(),Instruksi.getText(),KdPetugas.getText(),tbObat.getValueAt(tbObat.getSelectedRow(),5).toString(),
@@ -1620,6 +1643,7 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
     }
 
     private void hapus() {
+        if(instruksiDietTertaut())return;
         if(Sequel.queryu2tf("delete from catatan_adime_gizi where tanggal=? and no_rawat=?",2,new String[]{
             tbObat.getValueAt(tbObat.getSelectedRow(),5).toString(),tbObat.getValueAt(tbObat.getSelectedRow(),0).toString()
         })==true){
@@ -1631,4 +1655,16 @@ public final class RMCatatanADIMEGizi extends javax.swing.JDialog {
         }
     }
     
+    private boolean instruksiDietTertaut(){
+        try{
+            try(PreparedStatement p=koneksi.prepareStatement("select count(*) from information_schema.tables where table_schema=database() and table_name='gizi_instruksi_diet'");ResultSet r=p.executeQuery()){
+                if(!r.next()||r.getInt(1)==0)return false;
+            }
+            int selected=tbObat.getSelectedRow();if(selected<0)return false;
+            try(PreparedStatement p=koneksi.prepareStatement("select count(*) from gizi_instruksi_diet where source_key=?")){
+                p.setString(1,bridging.SatuSehatNutritionOrderPayload.sourceKey(tbObat.getValueAt(selected,0).toString(),tbObat.getValueAt(selected,5).toString()));
+                try(ResultSet r=p.executeQuery()){if(r.next()&&r.getInt(1)>0){JOptionPane.showMessageDialog(this,"ADIME sudah tertaut instruksi diet. Buat ADIME lanjutan untuk perubahan; riwayat sumber dipertahankan.");return true;}}
+            }return false;
+        }catch(Exception e){JOptionPane.showMessageDialog(this,"Hubungan instruksi diet belum dapat diperiksa. Perubahan ADIME ditahan; periksa koneksi.");return true;}
+    }
 }
