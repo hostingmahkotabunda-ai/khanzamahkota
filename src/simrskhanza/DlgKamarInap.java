@@ -14,6 +14,9 @@ package simrskhanza;
 import bridging.BPJSCekDataIndukKecelakaan;
 import bridging.BPJSCekSuplesiJasaRaharja;
 import rekammedis.RMRiwayatPerawatan;
+import rekammedis.RMCPBronkopneumonia;
+import rekammedis.RMCPKejangDemam;
+import rekammedis.RMCPAsfiksiaNeonatorum;
 import permintaan.DlgBookingOperasi;
 import inventory.DlgResepObat;
 import laporan.DlgDataHAIs;
@@ -1243,6 +1246,20 @@ public class DlgKamarInap extends javax.swing.JDialog {
         ppResume = new javax.swing.JMenuItem();
         ppResumeV2 = new javax.swing.JMenuItem();
         ppRiwayat = new javax.swing.JMenuItem();
+        MnCP = new javax.swing.JMenu();
+        MnCP1 = new javax.swing.JMenuItem();
+        MnCP2 = new javax.swing.JMenuItem();
+        MnCP3 = new javax.swing.JMenuItem();
+        MnCP4 = new javax.swing.JMenuItem();
+        MnCP5 = new javax.swing.JMenuItem();
+        MnCP6 = new javax.swing.JMenuItem();
+        MnCP7 = new javax.swing.JMenuItem();
+        MnCP8 = new javax.swing.JMenuItem();
+        MnCP9 = new javax.swing.JMenuItem();
+        MnCP10 = new javax.swing.JMenuItem();
+        MnCP11 = new javax.swing.JMenuItem();
+        MnCP12 = new javax.swing.JMenuItem();
+        MnCP13 = new javax.swing.JMenuItem();
         MnPermintaan = new javax.swing.JMenu();
         MnJadwalOperasi = new javax.swing.JMenuItem();
         MnPermintaanLab = new javax.swing.JMenuItem();
@@ -3154,6 +3171,226 @@ public class DlgKamarInap extends javax.swing.JDialog {
             }
         });
         MnDataRM.add(ppRiwayat);
+
+        MnCP.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP.setText("CP (Clinical Pathway)");
+        MnCP.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP.setName("MnCP"); // NOI18N
+        MnCP.setPreferredSize(new java.awt.Dimension(200, 26));
+
+        MnCP1.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP1.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP1.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP1.setText("Bronkopneumonia");
+        MnCP1.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP1.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP1.setName("MnCP1"); // NOI18N
+        MnCP1.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP1ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP1);
+
+        MnCP2.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP2.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP2.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP2.setText("Kejang Demam");
+        MnCP2.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP2.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP2.setName("MnCP2"); // NOI18N
+        MnCP2.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP2ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP2);
+
+        MnCP3.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP3.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP3.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP3.setText("Asfiksia Neonatorum");
+        MnCP3.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP3.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP3.setName("MnCP3"); // NOI18N
+        MnCP3.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP3ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP3);
+
+        MnCP4.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP4.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP4.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP4.setText("CP 4");
+        MnCP4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP4.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP4.setName("MnCP4"); // NOI18N
+        MnCP4.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP4ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP4);
+
+        MnCP5.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP5.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP5.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP5.setText("CP 5");
+        MnCP5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP5.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP5.setName("MnCP5"); // NOI18N
+        MnCP5.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP5ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP5);
+
+        MnCP6.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP6.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP6.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP6.setText("CP 6");
+        MnCP6.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP6.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP6.setName("MnCP6"); // NOI18N
+        MnCP6.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP6ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP6);
+
+        MnCP7.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP7.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP7.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP7.setText("CP 7");
+        MnCP7.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP7.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP7.setName("MnCP7"); // NOI18N
+        MnCP7.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP7ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP7);
+
+        MnCP8.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP8.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP8.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP8.setText("CP 8");
+        MnCP8.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP8.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP8.setName("MnCP8"); // NOI18N
+        MnCP8.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP8ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP8);
+
+        MnCP9.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP9.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP9.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP9.setText("CP 9");
+        MnCP9.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP9.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP9.setName("MnCP9"); // NOI18N
+        MnCP9.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP9.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP9ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP9);
+
+        MnCP10.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP10.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP10.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP10.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP10.setText("CP 10");
+        MnCP10.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP10.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP10.setName("MnCP10"); // NOI18N
+        MnCP10.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP10.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP10ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP10);
+
+        MnCP11.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP11.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP11.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP11.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP11.setText("CP 11");
+        MnCP11.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP11.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP11.setName("MnCP11"); // NOI18N
+        MnCP11.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP11.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP11ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP11);
+
+        MnCP12.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP12.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP12.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP12.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP12.setText("CP 12");
+        MnCP12.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP12.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP12.setName("MnCP12"); // NOI18N
+        MnCP12.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP12ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP12);
+
+        MnCP13.setBackground(new java.awt.Color(255, 255, 254));
+        MnCP13.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
+        MnCP13.setForeground(new java.awt.Color(50, 50, 50));
+        MnCP13.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
+        MnCP13.setText("CP 13");
+        MnCP13.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        MnCP13.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        MnCP13.setName("MnCP13"); // NOI18N
+        MnCP13.setPreferredSize(new java.awt.Dimension(200, 26));
+        MnCP13.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                MnCP13ActionPerformed(evt);
+            }
+        });
+        MnCP.add(MnCP13);
+
+        MnDataRM.add(MnCP);
 
         jPopupMenu1.add(MnDataRM);
 
@@ -9511,6 +9748,185 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             this.setCursor(Cursor.getDefaultCursor());
         }
     }//GEN-LAST:event_ppRiwayatBtnPrintActionPerformed
+
+    /**
+     * Submenu CP (Clinical Pathway): scaffolding 13 slot menu dulu, formnya menyusul
+     * satu-satu setelah contoh form CP di-upload. Ganti isi blok else di tiap method
+     * di bawah ini dengan pemanggilan form CP yang sesungguhnya saat sudah siap.
+     */
+    private void MnCP1ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            RMCPBronkopneumonia form=new RMCPBronkopneumonia(null,false);
+            form.setSize(internalFrame1.getWidth()-10,internalFrame1.getHeight()-10);
+            form.setLocationRelativeTo(internalFrame1);
+            form.setNoRawat(norawat.getText());
+            form.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void MnCP2ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            RMCPKejangDemam form=new RMCPKejangDemam(null,false);
+            form.setSize(internalFrame1.getWidth()-10,internalFrame1.getHeight()-10);
+            form.setLocationRelativeTo(internalFrame1);
+            form.setNoRawat(norawat.getText());
+            form.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void MnCP3ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            RMCPAsfiksiaNeonatorum form=new RMCPAsfiksiaNeonatorum(null,false);
+            form.setSize(internalFrame1.getWidth()-10,internalFrame1.getHeight()-10);
+            form.setLocationRelativeTo(internalFrame1);
+            form.setNoRawat(norawat.getText());
+            form.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
+
+    private void MnCP4ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 4 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP5ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 5 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP6ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 6 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP7ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 7 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP8ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 8 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP9ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 9 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP10ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 10 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP11ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 11 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP12ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 12 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
+
+    private void MnCP13ActionPerformed(java.awt.event.ActionEvent evt) {
+        if(tabMode.getRowCount()==0){
+            JOptionPane.showMessageDialog(null,"Maaf, table masih kosong...!!!!");
+            TCari.requestFocus();
+        }else if(tbKamIn.getSelectedRow()<=-1){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
+            tbKamIn.requestFocus();
+        }else{
+            JOptionPane.showMessageDialog(null,"Form CP 13 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+        }
+    }
 
     private void ppCatatanPasienBtnPrintActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ppCatatanPasienBtnPrintActionPerformed
         if(tabMode.getRowCount()==0){
@@ -17122,6 +17538,20 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private javax.swing.JMenuItem MnBarcode2;
     private javax.swing.JMenuItem MnBarcodeRM9;
     private javax.swing.JMenuItem MnBilling;
+    private javax.swing.JMenu MnCP;
+    private javax.swing.JMenuItem MnCP1;
+    private javax.swing.JMenuItem MnCP2;
+    private javax.swing.JMenuItem MnCP3;
+    private javax.swing.JMenuItem MnCP4;
+    private javax.swing.JMenuItem MnCP5;
+    private javax.swing.JMenuItem MnCP6;
+    private javax.swing.JMenuItem MnCP7;
+    private javax.swing.JMenuItem MnCP8;
+    private javax.swing.JMenuItem MnCP9;
+    private javax.swing.JMenuItem MnCP10;
+    private javax.swing.JMenuItem MnCP11;
+    private javax.swing.JMenuItem MnCP12;
+    private javax.swing.JMenuItem MnCP13;
     private javax.swing.JMenuItem MnCatatanCekGDS;
     private javax.swing.JMenuItem MnCatatanKeperawatan;
     private javax.swing.JMenuItem MnCatatanObservasiRanap;
