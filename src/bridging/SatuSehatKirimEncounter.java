@@ -116,8 +116,6 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     private JsonNode response;
     private SatuSehatCekNIK cekViaSatuSehat=new SatuSehatCekNIK();  
     private StringBuilder htmlContent;    
-    private final JButton BtnANC=new JButton("Atur ANC");
-    private final JButton BtnEpisodePTM=new JButton("Episode PTM");
     private static final Object ANC_EPISODE_LOCK=new Object();
     
     /** Creates new form DlgKamar
@@ -129,16 +127,6 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
         statusEncounter.setPreferredSize(new Dimension(44,24));
         jPanel3.add(statusEncounter,java.awt.BorderLayout.SOUTH);
         jPanel3.setPreferredSize(new Dimension(44,158));
-        BtnANC.setPreferredSize(new Dimension(100,30));
-        BtnANC.setToolTipText("Tandai dan klasifikasikan kunjungan ANC");
-        BtnANC.addActionListener(evt -> bukaPengaturanAnc());
-        panelGlass8.add(BtnANC,3);
-        BtnEpisodePTM.setPreferredSize(new Dimension(110,30));
-        BtnEpisodePTM.addActionListener(evt -> bukaEpisodePtm());
-        panelGlass8.add(BtnEpisodePTM,3);
-        // Dua baris tetap agar tombol tambahan tidak terpotong pada jendela sempit.
-        panelGlass8.setPreferredSize(new Dimension(44,84));
-        panelGlass8.setLayout(new java.awt.GridLayout(2,4,5,5));
 
         this.setLocation(10,2);
         setSize(628,674);
@@ -1138,8 +1126,6 @@ public final class SatuSehatKirimEncounter extends javax.swing.JDialog {
     public void isCek(){
         BtnKirim.setEnabled(akses.getsatu_sehat_kirim_encounter());
         BtnPrint.setEnabled(akses.getsatu_sehat_kirim_encounter());
-        BtnANC.setEnabled(akses.getsatu_sehat_kirim_encounter());
-        BtnEpisodePTM.setEnabled(akses.getsatu_sehat_kirim_encounter()&&akses.getsatu_sehat_kirim_condition());
     }
     
     public JTable getTable(){

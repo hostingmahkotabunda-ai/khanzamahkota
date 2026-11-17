@@ -16,6 +16,7 @@ import bridging.INACBGPerawatanCorona;
 import bridging.InhealthDataSJP;
 import bridging.PCareDataPendaftaran;
 import bridging.SisruteRujukanKeluar;
+import bridging.SatuSehatInputEpisodeOfCare;
 import inventory.DlgResepObat;
 import inventory.DlgPemberianObat;
 import laporan.DlgDiagnosaPenyakit;
@@ -237,6 +238,13 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
     public DlgKasirRalan(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        javax.swing.JMenuItem inputEpisode=new javax.swing.JMenuItem("Input Episode Perawatan SATUSEHAT");
+        inputEpisode.setFont(new java.awt.Font("Tahoma",0,11));
+        inputEpisode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png")));
+        inputEpisode.setPreferredSize(new java.awt.Dimension(230,26));
+        inputEpisode.addActionListener(e -> bukaInputEpisodePerawatan());
+        MnDataRM.addSeparator();
+        MnDataRM.add(inputEpisode);
         initKasirRalan();
         pasangSuratKontrolV2();
         WaktuPeriksaRalan.pastikanTabel();
@@ -610,6 +618,14 @@ public final class DlgKasirRalan extends javax.swing.JDialog {
             System.out.println(e);
         }
         terapkanTampilanModernKasirRalan();
+    }
+
+    private void bukaInputEpisodePerawatan(){
+        if(tabModekasir.getRowCount()==0 || TNoRw.getText().trim().isEmpty() || tbKasirRalan.getSelectedRow()==-1){
+            JOptionPane.showMessageDialog(this,"Pilih satu kunjungan terlebih dahulu.");
+            return;
+        }
+        new SatuSehatInputEpisodeOfCare(this,TNoRw.getText().trim()).setVisible(true);
     }
 
     /** Menyegarkan visual halaman tanpa mengganti komponen maupun event lama -- mengikuti

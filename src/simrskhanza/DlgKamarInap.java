@@ -17,6 +17,7 @@ import rekammedis.RMRiwayatPerawatan;
 import rekammedis.RMCPBronkopneumonia;
 import rekammedis.RMCPKejangDemam;
 import rekammedis.RMCPAsfiksiaNeonatorum;
+import rekammedis.RMCPBBLR;
 import permintaan.DlgBookingOperasi;
 import inventory.DlgResepObat;
 import laporan.DlgDataHAIs;
@@ -3234,7 +3235,7 @@ public class DlgKamarInap extends javax.swing.JDialog {
         MnCP4.setFont(new java.awt.Font("Tahoma", 0, 11)); // NOI18N
         MnCP4.setForeground(new java.awt.Color(50, 50, 50));
         MnCP4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/category.png"))); // NOI18N
-        MnCP4.setText("CP 4");
+        MnCP4.setText("BBLR");
         MnCP4.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         MnCP4.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
         MnCP4.setName("MnCP4"); // NOI18N
@@ -9816,7 +9817,13 @@ private void MnRujukMasukActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu pasien...!!!");
             tbKamIn.requestFocus();
         }else{
-            JOptionPane.showMessageDialog(null,"Form CP 4 belum tersedia, akan ditambahkan setelah contoh form di-upload.");
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            RMCPBBLR form=new RMCPBBLR(null,false);
+            form.setSize(internalFrame1.getWidth()-10,internalFrame1.getHeight()-10);
+            form.setLocationRelativeTo(internalFrame1);
+            form.setNoRawat(norawat.getText());
+            form.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
         }
     }
 

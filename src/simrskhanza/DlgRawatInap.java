@@ -9539,7 +9539,21 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
             form.tampil();
             this.setCursor(Cursor.getDefaultCursor());
         }
-    } 
+    }
+    private void BtnPPRAAntibiotikActionPerformed(java.awt.event.ActionEvent evt) {
+        if(TPasien.getText().trim().equals("")||TNoRw.getText().trim().equals("")){
+            JOptionPane.showMessageDialog(null,"Maaf, Silahkan anda pilih dulu dengan menklik data pada table...!!!");
+            TCari.requestFocus();
+        }else{
+            this.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            rekammedis.RMPPRAAntibiotik form=new rekammedis.RMPPRAAntibiotik(null,false);
+            form.setSize(internalFrame1.getWidth()-20,internalFrame1.getHeight()-20);
+            form.setLocationRelativeTo(internalFrame1);
+            form.setNoRawat(TNoRw.getText());
+            form.setVisible(true);
+            this.setCursor(Cursor.getDefaultCursor());
+        }
+    }
     /**
     * @param args the command line arguments
     */
@@ -9881,6 +9895,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
     private javax.swing.JTable tbSoapDokter;
     private javax.swing.JTable tbSoapPerawat;
     // End of variables declaration//GEN-END:variables
+    private widget.Button BtnPPRAAntibiotik;
     private widget.Button BtnSkorBromagePascaAnestesi,BtnPenilaianPreInduksi,BtnHasilPemeriksaanUSGUrologi,BtnHasilPemeriksaanUSGGynecologi,BtnHasilPemeriksaanEKG,BtnHasilPemeriksaanUSGNeonatus,BtnHasilEndoskopiFaringLaring;
 
     private void initPanelRadiologi() {
@@ -11993,7 +12008,20 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         BtnHasilEndoskopiFaringLaring.setPreferredSize(new java.awt.Dimension(190, 23));
         BtnHasilEndoskopiFaringLaring.setRoundRect(false);
         BtnHasilEndoskopiFaringLaring.addActionListener(this::BtnHasilEndoskopiFaringLaringActionPerformed);
-        
+
+        BtnPPRAAntibiotik = new widget.Button();
+        BtnPPRAAntibiotik.setIcon(new javax.swing.ImageIcon(getClass().getResource("/picture/item.png")));
+        BtnPPRAAntibiotik.setText("Input Antibiotik (PPRA)");
+        BtnPPRAAntibiotik.setFocusPainted(false);
+        BtnPPRAAntibiotik.setFont(new java.awt.Font("Tahoma", 0, 11));
+        BtnPPRAAntibiotik.setGlassColor(new java.awt.Color(255, 255, 255));
+        BtnPPRAAntibiotik.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        BtnPPRAAntibiotik.setMargin(new java.awt.Insets(1, 1, 1, 1));
+        BtnPPRAAntibiotik.setName("BtnPPRAAntibiotik");
+        BtnPPRAAntibiotik.setPreferredSize(new java.awt.Dimension(190, 23));
+        BtnPPRAAntibiotik.setRoundRect(false);
+        BtnPPRAAntibiotik.addActionListener(this::BtnPPRAAntibiotikActionPerformed);
+
         FormMenu.add(BtnRiwayat);
         FormMenu.add(BtnResepObat);
         FormMenu.add(BtnCopyResep);
@@ -12072,6 +12100,7 @@ private void BtnEditKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_B
         FormMenu.add(BtnKonselingFarmasi);
         FormMenu.add(BtnInformasiObat);
         FormMenu.add(BtnRekonsiliasiObat);
+        FormMenu.add(BtnPPRAAntibiotik);
         FormMenu.add(BtnTransferAntarRuang);
         FormMenu.add(BtnPengkajianRestrain);
         FormMenu.add(BtnPenilaianPasienTerminal);

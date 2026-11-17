@@ -1065,6 +1065,8 @@ import ziscsr.ZISUkuranRumahPenerimaDankes;
  * @author perpustakaan
  */
 public class frmUtama extends javax.swing.JFrame {
+    private final widget.ButtonBig btnKirimEpisodeOfCareSatuSehat=new widget.ButtonBig();
+    private bridging.SatuSehatKirimEpisodeOfCareMandiri episodeOfCareDialog;
     private final Connection koneksi=koneksiDB.condb();
     private final sekuel Sequel=new sekuel();
     private final validasi Valid=new validasi();
@@ -1084,6 +1086,11 @@ public class frmUtama extends javax.swing.JFrame {
     private frmUtama() {
         super();
         initComponents();
+        btnKirimEpisodeOfCareSatuSehat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/48x48/satusehat.png")));
+        btnKirimEpisodeOfCareSatuSehat.setText("Kirim EpisodeOfCare Satu Sehat");
+        btnKirimEpisodeOfCareSatuSehat.setIconTextGap(0);
+        btnKirimEpisodeOfCareSatuSehat.setPreferredSize(new java.awt.Dimension(200,90));
+        btnKirimEpisodeOfCareSatuSehat.addActionListener(this::btnKirimEpisodeOfCareActionPerformed);
         initKhanza();
         setIconImage(new ImageIcon(super.getClass().getResource("/picture/yaski24.png")).getImage());
         
@@ -21602,6 +21609,13 @@ private void MnGantiPasswordBtnLogActionPerformed(java.awt.event.ActionEvent evt
         bridging.SatuSehatKirimNutritionOrder dialog=new bridging.SatuSehatKirimNutritionOrder(this,false);
         dialog.setLocationRelativeTo(PanelUtama);dialog.load();dialog.setVisible(true);
     }
+
+    private void btnKirimEpisodeOfCareActionPerformed(java.awt.event.ActionEvent evt){
+        if(!akses.getsatu_sehat_kirim_encounter())return;
+        episodeOfCareDialog=bridging.SatuSehatKirimEpisodeOfCareMandiri.open(
+                this,DlgHome,episodeOfCareDialog,this::isTutup,PanelUtama);
+        episodeOfCareDialog.load();
+    }
     
     private void btnMappingObatSatuSehatActionPerformed(java.awt.event.ActionEvent evt) {
         isTutup();
@@ -25441,6 +25455,9 @@ private void MnGantiPasswordBtnLogActionPerformed(java.awt.event.ActionEvent evt
             }
             if(bridging.SatuSehatNutritionOrderService.canRead()){
                 Panelmenu.add(btnKirimNutritionOrderSatuSehat);jmlmenu++;
+            }
+            if(akses.getsatu_sehat_kirim_encounter()){
+                Panelmenu.add(btnKirimEpisodeOfCareSatuSehat);jmlmenu++;
             }
 
             if(akses.getsatu_sehat_kirim_careplan()==true){
@@ -30538,6 +30555,9 @@ private void MnGantiPasswordBtnLogActionPerformed(java.awt.event.ActionEvent evt
         }
         if(bridging.SatuSehatNutritionOrderService.canRead()){
             Panelmenu.add(btnKirimNutritionOrderSatuSehat);jmlmenu++;
+        }
+        if(akses.getsatu_sehat_kirim_encounter()){
+            Panelmenu.add(btnKirimEpisodeOfCareSatuSehat);jmlmenu++;
         }
 
         if(akses.getsatu_sehat_kirim_careplan()==true){
@@ -36790,6 +36810,9 @@ private void MnGantiPasswordBtnLogActionPerformed(java.awt.event.ActionEvent evt
         }
         if(bridging.SatuSehatNutritionOrderService.canRead()&&btnKirimNutritionOrderSatuSehat.getText().toLowerCase().contains(TCari.getText().toLowerCase().trim())){
             Panelmenu.add(btnKirimNutritionOrderSatuSehat);jmlmenu++;
+        }
+        if(akses.getsatu_sehat_kirim_encounter()==true&&btnKirimEpisodeOfCareSatuSehat.getText().toLowerCase().contains(TCari.getText().toLowerCase().trim())){
+            Panelmenu.add(btnKirimEpisodeOfCareSatuSehat);jmlmenu++;
         }
 
         if(akses.getsatu_sehat_kirim_careplan()==true){

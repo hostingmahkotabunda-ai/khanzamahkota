@@ -63,13 +63,6 @@ public final class SatuSehatKirimCondition extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
-        javax.swing.JMenuItem ppEpisodePerawatan=new javax.swing.JMenuItem("Episode Perawatan PTM");
-        ppEpisodePerawatan.setFont(new java.awt.Font("Tahoma",0,11));
-        ppEpisodePerawatan.setPreferredSize(new java.awt.Dimension(185,26));
-        ppEpisodePerawatan.addActionListener(evt -> bukaEpisodePerawatan());
-        jPopupMenu1.addSeparator();
-        jPopupMenu1.add(ppEpisodePerawatan);
-
         this.setLocation(10,2);
         setSize(628,674);
 

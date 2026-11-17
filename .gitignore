@@ -25,3 +25,8 @@ cache/*.iyem
 export_*.xls
 /.claude/
 /KhanzaHMSServiceSatuSehat/build/
+
+# Artefak pemeriksaan lokal dan data historis pasien
+/tmp/
+/sql/migrasi_ppra_ddd_antimikroba.sql
+/cache/satusehat-episode-pending/
