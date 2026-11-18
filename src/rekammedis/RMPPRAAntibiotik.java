@@ -7,32 +7,44 @@ import fungsi.sekuel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.RenderingHints;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -52,10 +64,29 @@ import javax.swing.table.DefaultTableModel;
  * Kode ATC & Standar DDD selalu ketemu. Kolom identitas pasien SENGAJA tidak disimpan di
  * tabel baru ini -- cukup no_rawat, identitas ditarik live tiap form dibuka.
  *
+ * KSM (Kelompok Staf Medis) dicatat SEKALI per rawatan (bukan per baris antibiotik),
+ * disimpan di tabel ppra_rawatan_ksm (no_rawat sbg PRIMARY KEY), auto-tersimpan tiap
+ * dropdownnya diganti.
+ *
  * "Lama Rawat Inap" tidak ada di form ini -- nanti ditarik dari menu Hitung ALOS
  * setelah menu itu direvisi (lihat memory terkait), jadi field itu DITUNDA dulu.
+ *
+ * Tampilan mengikuti gaya "kartu putih melengkung di atas latar abu-abu" ala
+ * AdimeGiziView (modernisasi form ADIME Gizi) -- lihat kelas Surface/colorButton/style
+ * di bawah, sengaja disalin gaya & palet warnanya (BACK/INK/TEAL/MUTED) persis supaya
+ * konsisten dgn form lain yg sudah dimodernisasi.
  */
 public final class RMPPRAAntibiotik extends JDialog {
+
+    private static final Color BACK = new Color(243, 247, 250);
+    private static final Color INK = new Color(24, 44, 62);
+    private static final Color TEAL = new Color(12, 132, 124);
+    private static final Color MUTED = new Color(100, 116, 139);
+    private static final Color GARIS = new Color(222, 232, 238);
+    private static final Color HIJAU = new Color(8, 121, 102);
+    private static final Color MERAH = new Color(187, 43, 65);
+    private static final Color BIRU = new Color(37, 99, 205);
+    private static final Color ABU = new Color(71, 85, 105);
 
     private final sekuel Sequel = new sekuel();
     private final Connection koneksi = koneksiDB.condb();
@@ -63,14 +94,19 @@ public final class RMPPRAAntibiotik extends JDialog {
     private final DefaultTableModel tabModeTanggal;
     private final Map<String, String> petaKodeAtc = new LinkedHashMap<>();
     private final Map<String, Double> petaStandarDdd = new LinkedHashMap<>();
+    private final List<String> daftarAntibiotikSemua = new ArrayList<>();
 
     private Integer antibiotikIdTerpilih = null;
+    private JTextField editorAntibiotik;
+    private boolean sedangMenyaringAntibiotik = false;
 
     // Header identitas (readonly)
     private final widget.TextBox TNoRw = ro();
     private final widget.TextBox TNoRM = ro();
     private final widget.TextBox TPasien = ro();
     private final widget.TextBox TDiagnosa = ro();
+    private final widget.ComboBox cmbKsm = cmb("-- pilih KSM --", "Anak", "Obgyn", "Penyakit Dalam");
+    private boolean sedangMemuatKsm = false;
 
     // Entri antibiotik baru
     private final widget.ComboBox cmbAntibiotik = new widget.ComboBox();
@@ -84,6 +120,8 @@ public final class RMPPRAAntibiotik extends JDialog {
     private final widget.Button BtnHapusAntibiotik = new widget.Button();
 
     private final widget.Table tbAntibiotik = new widget.Table();
+    private final JLabel ringkasanJumlahAntibiotik = new JLabel("0");
+    private final JLabel ringkasanTotalDdd = new JLabel("0.0000");
 
     // Log tanggal pemberian (utk antibiotik yang dipilih di tabel atas)
     private final JLabel lblAntibiotikTerpilih = new JLabel("Pilih dulu salah satu antibiotik di tabel atas.");
@@ -115,44 +153,59 @@ public final class RMPPRAAntibiotik extends JDialog {
     }
 
     private void initComponents() {
-        final Color utama = new Color(0, 133, 143);
-        final Color latar = new Color(246, 249, 251);
-        final Color garis = new Color(215, 224, 230);
-        final Color teks = new Color(32, 49, 66);
+        JPanel raiz = new JPanel(new BorderLayout(0, 10));
+        raiz.setBackground(BACK);
+        raiz.setBorder(new EmptyBorder(10, 14, 12, 14));
+        setContentPane(raiz);
 
-        getContentPane().setBackground(latar);
-        getContentPane().setLayout(new BorderLayout(0, 10));
-
-        // ===== Header =====
-        JPanel atas = new JPanel(new BorderLayout(12, 10));
-        atas.setBackground(latar);
-        atas.setBorder(new EmptyBorder(14, 18, 0, 18));
-
+        // ===== Header (kartu navy melengkung) + identitas pasien (kartu putih melengkung) =====
+        JPanel header = new Surface(new BorderLayout(14, 0), INK);
+        header.setBorder(new EmptyBorder(10, 16, 10, 16));
+        JPanel blokJudul = new JPanel();
+        blokJudul.setOpaque(false);
+        blokJudul.setLayout(new BoxLayout(blokJudul, BoxLayout.Y_AXIS));
         JLabel judulUtama = new JLabel("Input Antibiotik - PPRA / DDD");
-        judulUtama.setFont(new Font("Tahoma", Font.BOLD, 20));
-        judulUtama.setForeground(teks);
-        atas.add(judulUtama, BorderLayout.NORTH);
+        judulUtama.setFont(new Font("Segoe UI", Font.BOLD, 23));
+        judulUtama.setForeground(Color.WHITE);
+        JLabel subJudul = new JLabel("Catat pemakaian antibiotik & hitung DDD otomatis per pasien rawat inap");
+        subJudul.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        subJudul.setForeground(new Color(205, 221, 238));
+        blokJudul.add(Box.createVerticalGlue());
+        blokJudul.add(judulUtama);
+        blokJudul.add(Box.createVerticalStrut(2));
+        blokJudul.add(subJudul);
+        blokJudul.add(Box.createVerticalGlue());
+        header.add(blokJudul, BorderLayout.CENTER);
 
-        JPanel ringkasanPasien = new JPanel(new java.awt.GridLayout(1, 4, 0, 0));
-        ringkasanPasien.setBackground(Color.WHITE);
-        ringkasanPasien.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(garis), new EmptyBorder(10, 12, 10, 12)));
-        ringkasanPasien.add(fieldRingkasan("No. Rawat", TNoRw));
-        ringkasanPasien.add(fieldRingkasan("No. RM", TNoRM));
-        ringkasanPasien.add(fieldRingkasan("Nama Pasien", TPasien));
-        ringkasanPasien.add(fieldRingkasan("Diagnosa", TDiagnosa));
-        atas.add(ringkasanPasien, BorderLayout.CENTER);
-        getContentPane().add(atas, BorderLayout.NORTH);
+        JPanel kartuRingkasanHeader = new JPanel(new java.awt.GridLayout(1, 2, 9, 0));
+        kartuRingkasanHeader.setOpaque(false);
+        kartuRingkasanHeader.add(buatKartuRingkasanMini("ANTIBIOTIK", ringkasanJumlahAntibiotik, TEAL));
+        kartuRingkasanHeader.add(buatKartuRingkasanMini("TOTAL DDD", ringkasanTotalDdd, HIJAU));
+        kartuRingkasanHeader.setPreferredSize(new Dimension(300, 52));
+        header.add(kartuRingkasanHeader, BorderLayout.EAST);
+
+        JPanel identitas = new Surface(new java.awt.GridLayout(1, 5, 0, 0), Color.WHITE);
+        identitas.setBorder(new EmptyBorder(10, 14, 10, 14));
+        identitas.add(fieldRingkasan("No. Rawat", TNoRw));
+        identitas.add(fieldRingkasan("No. RM", TNoRM));
+        identitas.add(fieldRingkasan("Nama Pasien", TPasien));
+        identitas.add(fieldRingkasan("Diagnosa", TDiagnosa));
+        identitas.add(fieldRingkasan("KSM", cmbKsm));
+
+        JPanel bagianAtas = new JPanel(new BorderLayout(0, 10));
+        bagianAtas.setOpaque(false);
+        bagianAtas.add(header, BorderLayout.NORTH);
+        bagianAtas.add(identitas, BorderLayout.CENTER);
+        raiz.add(bagianAtas, BorderLayout.NORTH);
 
         // ===== Tengah =====
         JPanel tengah = new JPanel();
-        tengah.setBackground(latar);
+        tengah.setOpaque(false);
         tengah.setLayout(new BoxLayout(tengah, BoxLayout.Y_AXIS));
-        tengah.setBorder(new EmptyBorder(10, 18, 10, 18));
 
-        JPanel kartuEntri = kartu("Tambah Antibiotik", teks, garis);
+        JPanel kartuEntri = kartu("Tambah Antibiotik");
         int row = 0;
-        row = pasanganVertikal(kartuEntri, row, "Nama Antibiotik", cmbAntibiotik, "Rute", cmbRute);
+        row = pasanganVertikal(kartuEntri, row, "Nama Antibiotik (ketik utk mencari)", cmbAntibiotik, "Rute", cmbRute);
         row = pasanganVertikal(kartuEntri, row, "Dosis per Sekali Pemberian (mg)", tDosisPemberian,
                 "Interval Pemberian", cmbInterval);
         row = pasanganVertikal(kartuEntri, row, "Dosis per Hari (mg) - otomatis", tDosisPerHari,
@@ -160,86 +213,106 @@ public final class RMPPRAAntibiotik extends JDialog {
         row = tunggalVertikal(kartuEntri, row, "Standar DDD (gram) - otomatis", tStandarDdd);
         kartuEntri.setAlignmentX(Component.LEFT_ALIGNMENT);
         tengah.add(kartuEntri);
-        tengah.add(Box.createVerticalStrut(8));
+        tengah.add(Box.createVerticalStrut(10));
 
-        JPanel panelTombolEntri = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel panelTombolEntri = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         panelTombolEntri.setOpaque(false);
         panelTombolEntri.setAlignmentX(Component.LEFT_ALIGNMENT);
         BtnTambahAntibiotik.setText("+ Tambah Antibiotik");
         BtnHapusAntibiotik.setText("Hapus Antibiotik Terpilih");
+        colorButton(BtnTambahAntibiotik, HIJAU);
+        colorButton(BtnHapusAntibiotik, MERAH);
         panelTombolEntri.add(BtnTambahAntibiotik);
         panelTombolEntri.add(BtnHapusAntibiotik);
         tengah.add(panelTombolEntri);
-        tengah.add(Box.createVerticalStrut(10));
+        tengah.add(Box.createVerticalStrut(12));
 
+        JPanel kartuTabelAntibiotik = new Surface(new BorderLayout(0, 8), Color.WHITE);
+        kartuTabelAntibiotik.setBorder(new EmptyBorder(12, 14, 12, 14));
+        kartuTabelAntibiotik.setAlignmentX(Component.LEFT_ALIGNMENT);
         JLabel judulAntibiotik = new JLabel("Daftar Antibiotik Rawatan Ini");
-        judulAntibiotik.setFont(new Font("Tahoma", Font.BOLD, 13));
-        judulAntibiotik.setForeground(teks);
-        judulAntibiotik.setAlignmentX(Component.LEFT_ALIGNMENT);
-        judulAntibiotik.setBorder(new EmptyBorder(0, 0, 6, 0));
-        tengah.add(judulAntibiotik);
+        judulAntibiotik.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        judulAntibiotik.setForeground(INK);
+        kartuTabelAntibiotik.add(judulAntibiotik, BorderLayout.NORTH);
 
         tbAntibiotik.setModel(tabModeAntibiotik);
         tbAntibiotik.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tbAntibiotik.setAutoResizeMode(widget.Table.AUTO_RESIZE_OFF);
-        tbAntibiotik.setRowHeight(24);
+        tbAntibiotik.setAutoResizeMode(widget.Table.AUTO_RESIZE_ALL_COLUMNS);
+        gayaTabelModern(tbAntibiotik);
         tbAntibiotik.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) { pilihAntibiotik(); }
         });
         JScrollPane scrollAntibiotik = new JScrollPane(tbAntibiotik);
-        scrollAntibiotik.setPreferredSize(new Dimension(1120, 160));
-        scrollAntibiotik.setAlignmentX(Component.LEFT_ALIGNMENT);
-        tengah.add(scrollAntibiotik);
+        scrollAntibiotik.setPreferredSize(new Dimension(1100, 160));
+        scrollAntibiotik.setBorder(BorderFactory.createLineBorder(GARIS));
+        scrollAntibiotik.getViewport().setBackground(Color.WHITE);
+        kartuTabelAntibiotik.add(scrollAntibiotik, BorderLayout.CENTER);
+        tengah.add(kartuTabelAntibiotik);
         tengah.add(Box.createVerticalStrut(12));
 
+        JPanel kartuTanggal = new Surface(new BorderLayout(0, 8), Color.WHITE);
+        kartuTanggal.setBorder(new EmptyBorder(12, 14, 12, 14));
+        kartuTanggal.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        JPanel blokJudulTanggal = new JPanel();
+        blokJudulTanggal.setOpaque(false);
+        blokJudulTanggal.setLayout(new BoxLayout(blokJudulTanggal, BoxLayout.Y_AXIS));
         JLabel judulTanggal = new JLabel("Log Tanggal Pemberian (untuk antibiotik terpilih di atas)");
-        judulTanggal.setFont(new Font("Tahoma", Font.BOLD, 13));
-        judulTanggal.setForeground(teks);
+        judulTanggal.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        judulTanggal.setForeground(INK);
         judulTanggal.setAlignmentX(Component.LEFT_ALIGNMENT);
-        judulTanggal.setBorder(new EmptyBorder(0, 0, 4, 0));
-        tengah.add(judulTanggal);
-
-        lblAntibiotikTerpilih.setFont(new Font("Tahoma", Font.ITALIC, 11));
-        lblAntibiotikTerpilih.setForeground(new Color(91, 105, 115));
+        lblAntibiotikTerpilih.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        lblAntibiotikTerpilih.setForeground(MUTED);
         lblAntibiotikTerpilih.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblAntibiotikTerpilih.setBorder(new EmptyBorder(0, 0, 6, 0));
-        tengah.add(lblAntibiotikTerpilih);
+        blokJudulTanggal.add(judulTanggal);
+        blokJudulTanggal.add(Box.createVerticalStrut(3));
+        blokJudulTanggal.add(lblAntibiotikTerpilih);
+        blokJudulTanggal.add(Box.createVerticalStrut(8));
 
-        JPanel panelTanggalEntri = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        JPanel panelTanggalEntri = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         panelTanggalEntri.setOpaque(false);
-        panelTanggalEntri.setAlignmentX(Component.LEFT_ALIGNMENT);
-        dtpTanggal.setPreferredSize(new Dimension(130, 25));
+        dtpTanggal.setPreferredSize(new Dimension(130, 28));
         BtnTambahTanggal.setText("+ Tambah Tanggal Pemberian");
         BtnHapusTanggal.setText("Hapus Tanggal Terpilih");
-        panelTanggalEntri.add(new JLabel("Tanggal : "));
+        colorButton(BtnTambahTanggal, BIRU);
+        colorButton(BtnHapusTanggal, ABU);
+        panelTanggalEntri.add(labelAtas("Tanggal :"));
         panelTanggalEntri.add(dtpTanggal);
         panelTanggalEntri.add(BtnTambahTanggal);
         panelTanggalEntri.add(BtnHapusTanggal);
-        tengah.add(panelTanggalEntri);
-        tengah.add(Box.createVerticalStrut(6));
+        blokJudulTanggal.add(panelTanggalEntri);
+        kartuTanggal.add(blokJudulTanggal, BorderLayout.NORTH);
 
         tbTanggal.setModel(tabModeTanggal);
         tbTanggal.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tbTanggal.setAutoResizeMode(widget.Table.AUTO_RESIZE_OFF);
-        tbTanggal.setRowHeight(22);
+        tbTanggal.setAutoResizeMode(widget.Table.AUTO_RESIZE_ALL_COLUMNS);
+        gayaTabelModern(tbTanggal);
+        if (tbTanggal.getColumnModel().getColumnCount() >= 2) {
+            tbTanggal.getColumnModel().getColumn(0).setMinWidth(0);
+            tbTanggal.getColumnModel().getColumn(0).setMaxWidth(0);
+        }
         JScrollPane scrollTanggal = new JScrollPane(tbTanggal);
         scrollTanggal.setPreferredSize(new Dimension(300, 120));
-        scrollTanggal.setAlignmentX(Component.LEFT_ALIGNMENT);
-        tengah.add(scrollTanggal);
+        scrollTanggal.setBorder(BorderFactory.createLineBorder(GARIS));
+        scrollTanggal.getViewport().setBackground(Color.WHITE);
+        kartuTanggal.add(scrollTanggal, BorderLayout.CENTER);
+        tengah.add(kartuTanggal);
 
         JScrollPane scrollTengah = new JScrollPane(tengah);
         scrollTengah.setBorder(null);
+        scrollTengah.getViewport().setOpaque(false);
+        scrollTengah.setOpaque(false);
         scrollTengah.getVerticalScrollBar().setUnitIncrement(20);
-        getContentPane().add(scrollTengah, BorderLayout.CENTER);
+        raiz.add(scrollTengah, BorderLayout.CENTER);
 
         // ===== Bawah =====
         BtnKeluar.setText("Keluar");
+        colorButton(BtnKeluar, INK);
         BtnKeluar.addActionListener(e -> dispose());
-        JPanel bawah = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 9));
-        bawah.setBackground(Color.WHITE);
-        bawah.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, garis));
+        JPanel bawah = new Surface(new FlowLayout(FlowLayout.RIGHT, 8, 8), Color.WHITE);
+        bawah.setBorder(new EmptyBorder(6, 14, 6, 14));
         bawah.add(BtnKeluar);
-        getContentPane().add(bawah, BorderLayout.SOUTH);
+        raiz.add(bawah, BorderLayout.SOUTH);
 
         // ===== Listener & validasi input =====
         tDosisPemberian.setDocument(new batasInput((byte) 10).getKata(tDosisPemberian));
@@ -250,16 +323,20 @@ public final class RMPPRAAntibiotik extends JDialog {
         };
         tDosisPemberian.getDocument().addDocumentListener(listenerHitung);
         cmbInterval.addItemListener(e -> hitungDosisPerHari());
-        cmbAntibiotik.addItemListener(e -> perbaruiLookupAntibiotik());
+        cmbKsm.addItemListener(e -> simpanKsm());
+        aktifkanPencarianAntibiotik();
 
         BtnTambahAntibiotik.addActionListener(e -> tambahAntibiotik());
         BtnHapusAntibiotik.addActionListener(e -> hapusAntibiotik());
         BtnTambahTanggal.addActionListener(e -> tambahTanggal());
         BtnHapusTanggal.addActionListener(e -> hapusTanggal());
 
+        tabModeAntibiotik.addTableModelListener(e -> perbaruiRingkasanHeader());
+
         dtpTanggal.setDate(new Date());
         perbaruiLookupAntibiotik();
         hitungDosisPerHari();
+        perbaruiRingkasanHeader();
     }
 
     /** Dipanggil dari DlgRawatInap (menu sidebar FormMenu). */
@@ -270,12 +347,55 @@ public final class RMPPRAAntibiotik extends JDialog {
         lblAntibiotikTerpilih.setText("Pilih dulu salah satu antibiotik di tabel atas.");
         if (norawat == null || norawat.trim().equals("")) {
             TNoRw.setText(""); TNoRM.setText(""); TPasien.setText(""); TDiagnosa.setText("");
+            cmbKsm.setSelectedIndex(0);
             tabModeAntibiotik.setRowCount(0);
             return;
         }
         TNoRw.setText(norawat.trim());
         tarikIdentitas(norawat.trim());
+        muatKsm(norawat.trim());
         muatAntibiotik(norawat.trim());
+    }
+
+    private void muatKsm(String norawat) {
+        sedangMemuatKsm = true;
+        try {
+            cmbKsm.setSelectedIndex(0);
+            try (PreparedStatement ps = koneksi.prepareStatement(
+                    "select ksm from ppra_rawatan_ksm where no_rawat=?")) {
+                ps.setString(1, norawat);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        String ksm = rs.getString("ksm");
+                        for (int i = 0; i < cmbKsm.getItemCount(); i++) {
+                            if (String.valueOf(cmbKsm.getItemAt(i)).equals(ksm)) {
+                                cmbKsm.setSelectedIndex(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Notif muat KSM PPRA : " + e);
+        } finally {
+            sedangMemuatKsm = false;
+        }
+    }
+
+    private void simpanKsm() {
+        if (sedangMemuatKsm) { return; }
+        String ksm = s(cmbKsm);
+        if (ksm.isEmpty() || ambil(TNoRw).isEmpty()) { return; }
+        try (PreparedStatement ps = koneksi.prepareStatement(
+                "replace into ppra_rawatan_ksm (no_rawat,ksm,created_by,created_at) values (?,?,?,now())")) {
+            ps.setString(1, ambil(TNoRw));
+            ps.setString(2, ksm);
+            ps.setString(3, akses.getkode());
+            ps.executeUpdate();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Gagal menyimpan KSM.\n" + e.getMessage());
+        }
     }
 
     private void tarikIdentitas(String norawat) {
@@ -321,6 +441,7 @@ public final class RMPPRAAntibiotik extends JDialog {
                     String nama = rs.getString("nama_antimikroba");
                     petaKodeAtc.put(nama, rs.getString("kode_atc"));
                     petaStandarDdd.put(nama, rs.getDouble("standar_ddd_gram"));
+                    daftarAntibiotikSemua.add(nama);
                     cmbAntibiotik.addItem(nama);
                 }
             }
@@ -330,13 +451,105 @@ public final class RMPPRAAntibiotik extends JDialog {
     }
 
     private void perbaruiLookupAntibiotik() {
-        String nama = s(cmbAntibiotik);
-        if (nama.isEmpty() || !petaKodeAtc.containsKey(nama)) {
+        String nama = cariNamaTepat(teksAntibiotik());
+        if (nama == null) {
             tKodeAtc.setText(""); tStandarDdd.setText("");
             return;
         }
         tKodeAtc.setText(petaKodeAtc.get(nama));
         tStandarDdd.setText(String.format("%.4f", petaStandarDdd.get(nama)));
+    }
+
+    /** Teks yg sedang diketik/terpilih di kolom cari-antibiotik. */
+    private String teksAntibiotik() {
+        if (editorAntibiotik != null) {
+            return editorAntibiotik.getText() == null ? "" : editorAntibiotik.getText().trim();
+        }
+        return s(cmbAntibiotik);
+    }
+
+    /** Hanya cocok kalau teks SAMA PERSIS (tanpa besar/kecil huruf) dgn salah satu nama master --
+     *  supaya ketikan sebagian/belum dipilih dari daftar saran tidak dianggap sudah valid. */
+    private String cariNamaTepat(String teks) {
+        if (teks == null || teks.trim().isEmpty()) { return null; }
+        String k = teks.trim();
+        for (String nama : daftarAntibiotikSemua) {
+            if (nama.equalsIgnoreCase(k)) { return nama; }
+        }
+        return null;
+    }
+
+    /** Pasang pencarian "live" (search-as-you-type) di kombo Nama Antibiotik: tiap ketikan
+     *  menyaring ulang daftar 282 master ke yg mengandung ketikan, lalu tampilkan sbg saran di
+     *  popup combo (klik/Enter dari popup = bawaan JComboBox, tak perlu kode tambahan). Teks yg
+     *  sedang diketik user SELALU dikembalikan apa adanya sesudah model disaring -- DefaultComboBoxModel
+     *  otomatis memilih item pertama begitu ditambahkan (saat selectedItem lama kosong), yg kalau tidak
+     *  dikoreksi akan "menimpa" ketikan user di kolom teks. */
+    private void aktifkanPencarianAntibiotik() {
+        cmbAntibiotik.setEditable(true);
+        cmbAntibiotik.setMaximumRowCount(10);
+        editorAntibiotik = (JTextField) cmbAntibiotik.getEditor().getEditorComponent();
+        editorAntibiotik.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        editorAntibiotik.setForeground(INK);
+        editorAntibiotik.setBackground(Color.WHITE);
+        editorAntibiotik.getDocument().addDocumentListener(new DocumentListener() {
+            @Override public void insertUpdate(DocumentEvent e) { jadwalkanSaring(); }
+            @Override public void removeUpdate(DocumentEvent e) { jadwalkanSaring(); }
+            @Override public void changedUpdate(DocumentEvent e) { }
+            private void jadwalkanSaring() {
+                if (sedangMenyaringAntibiotik) { return; }
+                String ketikan = editorAntibiotik.getText();
+                SwingUtilities.invokeLater(() -> saringAntibiotik(ketikan));
+            }
+        });
+    }
+
+    private void saringAntibiotik(String ketikanAwal) {
+        sedangMenyaringAntibiotik = true;
+        try {
+            String ketikan = ketikanAwal == null ? "" : ketikanAwal;
+            String kunci = ketikan.trim().toLowerCase();
+            cmbAntibiotik.removeAllItems();
+            if (kunci.isEmpty()) { cmbAntibiotik.addItem("-- pilih antibiotik --"); }
+            for (String nama : daftarAntibiotikSemua) {
+                if (kunci.isEmpty() || nama.toLowerCase().contains(kunci)) {
+                    cmbAntibiotik.addItem(nama);
+                }
+            }
+            editorAntibiotik.setText(ketikan);
+            editorAntibiotik.setCaretPosition(ketikan.length());
+            if (!kunci.isEmpty() && editorAntibiotik.isFocusOwner() && cmbAntibiotik.getItemCount() > 0) {
+                cmbAntibiotik.setPopupVisible(true);
+            } else {
+                cmbAntibiotik.setPopupVisible(false);
+            }
+        } finally {
+            sedangMenyaringAntibiotik = false;
+        }
+        perbaruiLookupAntibiotik();
+    }
+
+    /** Kembalikan kolom cari-antibiotik ke kondisi awal (daftar penuh, teks kosong). */
+    private void resetPilihanAntibiotik() {
+        sedangMenyaringAntibiotik = true;
+        try {
+            cmbAntibiotik.removeAllItems();
+            cmbAntibiotik.addItem("-- pilih antibiotik --");
+            for (String nama : daftarAntibiotikSemua) { cmbAntibiotik.addItem(nama); }
+            if (editorAntibiotik != null) { editorAntibiotik.setText(""); }
+            cmbAntibiotik.setPopupVisible(false);
+        } finally {
+            sedangMenyaringAntibiotik = false;
+        }
+    }
+
+    private void perbaruiRingkasanHeader() {
+        ringkasanJumlahAntibiotik.setText(String.valueOf(tabModeAntibiotik.getRowCount()));
+        double total = 0;
+        for (int r = 0; r < tabModeAntibiotik.getRowCount(); r++) {
+            total += parseDouble(String.valueOf(tabModeAntibiotik.getValueAt(r, 10)));
+        }
+        ringkasanTotalDdd.setText(fmt4(total));
     }
 
     private void hitungDosisPerHari() {
@@ -403,8 +616,8 @@ public final class RMPPRAAntibiotik extends JDialog {
             JOptionPane.showMessageDialog(this, "Pilih pasien terlebih dahulu.");
             return;
         }
-        String nama = s(cmbAntibiotik);
-        if (nama.isEmpty() || !petaKodeAtc.containsKey(nama)) {
+        String nama = cariNamaTepat(teksAntibiotik());
+        if (nama == null) {
             JOptionPane.showMessageDialog(this, "Pilih Nama Antibiotik dari daftar terlebih dahulu.");
             return;
         }
@@ -589,7 +802,7 @@ public final class RMPPRAAntibiotik extends JDialog {
     }
 
     private void bersihkanEntri() {
-        cmbAntibiotik.setSelectedIndex(0);
+        resetPilihanAntibiotik();
         tDosisPemberian.setText("");
         cmbInterval.setSelectedIndex(0);
         cmbRute.setSelectedIndex(0);
@@ -657,34 +870,125 @@ public final class RMPPRAAntibiotik extends JDialog {
         return t.getText() == null ? "" : t.getText().trim();
     }
 
-    private JPanel fieldRingkasan(String label, Component komponen) {
+    /** Ratakan tampilan "glass" bawaan widget.TextBox/widget.ComboBox jadi flat modern, dgn
+     *  skala font PERSIS spt SatuSehatAturNutritionOrder.java ("Instruksi Diet / NutritionOrder"):
+     *  teks isian Segoe UI PLAIN 13, kombo/dropdown Segoe UI PLAIN 14. */
+    private static void style(JComponent component) {
+        component.setForeground(INK);
+        if (component instanceof JTextField) {
+            component.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            component.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(GARIS), BorderFactory.createEmptyBorder(4, 8, 4, 8)));
+            component.setBackground(Color.WHITE);
+        } else if (component instanceof javax.swing.JComboBox) {
+            component.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            component.setBackground(Color.WHITE);
+        }
+    }
+
+    /** Tombol flat rounded ala colorButton() di AdimeGiziView -- timpa gradient "glass"
+     *  bawaan widget.Button tapi listener/komponen aslinya tetap dipakai. */
+    private static void colorButton(javax.swing.AbstractButton button, final Color color) {
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setForeground(Color.WHITE);
+        button.setBackground(color);
+        button.setBorder(BorderFactory.createEmptyBorder(6, 14, 6, 14));
+        button.setContentAreaFilled(false);
+        button.setOpaque(false);
+        button.setFocusPainted(true);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        button.setUI(new BasicButtonUI() {
+            @Override
+            public void update(Graphics graphics, JComponent component) {
+                javax.swing.AbstractButton b = (javax.swing.AbstractButton) component;
+                Graphics2D g = (Graphics2D) graphics.create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setColor(Color.WHITE);
+                g.fillRect(0, 0, b.getWidth(), b.getHeight());
+                g.setColor(!b.isEnabled() ? new Color(218, 226, 232)
+                        : b.getModel().isPressed() ? color.darker()
+                        : b.getModel().isRollover() ? color.brighter() : color);
+                g.fillRoundRect(0, 0, b.getWidth(), b.getHeight(), 10, 10);
+                if (b.hasFocus()) {
+                    g.setColor(new Color(166, 215, 232));
+                    g.drawRoundRect(2, 2, b.getWidth() - 5, b.getHeight() - 5, 8, 8);
+                }
+                g.dispose();
+                paint(graphics, component);
+            }
+        });
+    }
+
+    /** Header tabel + grid flat, baris selang-seling -- gaya persis tabel riwayat di AdimeGiziView. */
+    private void gayaTabelModern(widget.Table tabel) {
+        tabel.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        tabel.setRowHeight(30);
+        tabel.setShowGrid(false);
+        tabel.setIntercellSpacing(new Dimension(0, 0));
+        tabel.setFillsViewportHeight(true);
+        tabel.setBackground(Color.WHITE);
+        tabel.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        tabel.getTableHeader().setBackground(new Color(234, 243, 247));
+        tabel.getTableHeader().setForeground(INK);
+        tabel.getTableHeader().setPreferredSize(new Dimension(100, 32));
+        tabel.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable t, Object value, boolean selected,
+                    boolean focus, int r, int col) {
+                super.getTableCellRendererComponent(t, value, selected, focus, r, col);
+                setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 10));
+                setBackground(selected ? new Color(214, 239, 235) : r % 2 == 0 ? Color.WHITE : new Color(247, 250, 252));
+                setForeground(INK);
+                return this;
+            }
+        });
+    }
+
+    /** Kartu ringkasan kecil di header (mis. jumlah antibiotik/total DDD). */
+    private JPanel buatKartuRingkasanMini(String judul, JLabel nilai, Color aksen) {
+        JPanel panel = new Surface(new BorderLayout(6, 0), Color.WHITE);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 4, 0, 0, aksen), new EmptyBorder(6, 10, 6, 10)));
+        JLabel label = new JLabel(judul);
+        label.setFont(new Font("Segoe UI", Font.BOLD, 10));
+        label.setForeground(MUTED);
+        nilai.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        nilai.setForeground(INK);
+        nilai.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        panel.add(label, BorderLayout.CENTER);
+        panel.add(nilai, BorderLayout.EAST);
+        return panel;
+    }
+
+    private JPanel fieldRingkasan(String teksLabel, Component komponen) {
         JPanel p = new JPanel();
-        p.setBackground(Color.WHITE);
+        p.setOpaque(false);
         p.setBorder(new EmptyBorder(0, 10, 0, 10));
         p.setLayout(new BoxLayout(p, BoxLayout.Y_AXIS));
-        JLabel l = new JLabel(label);
-        l.setFont(new Font("Tahoma", Font.PLAIN, 10));
-        l.setForeground(new Color(86, 101, 112));
+        JLabel l = labelAtas(teksLabel);
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
-        komponen.setMaximumSize(new Dimension(Integer.MAX_VALUE, 25));
-        komponen.setPreferredSize(new Dimension(150, 25));
-        komponen.setBackground(new Color(248, 250, 251));
+        if (komponen instanceof JComponent) {
+            style((JComponent) komponen);
+            // Identitas pasien lbh menonjol dari field isian biasa -- spt "patient" (BOLD 14)
+            // di SatuSehatAturNutritionOrder.java, bukan PLAIN spt field isian form Tambah Antibiotik.
+            komponen.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        }
+        komponen.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        komponen.setPreferredSize(new Dimension(150, 28));
         p.add(l);
         p.add(Box.createVerticalStrut(3));
         p.add(komponen);
         return p;
     }
 
-    private JPanel kartu(String judul, Color teks, Color garis) {
-        JPanel luar = new JPanel(new GridBagLayout());
-        luar.setBackground(Color.WHITE);
-        luar.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(garis), new EmptyBorder(8, 12, 12, 12)));
+    private JPanel kartu(String judul) {
+        JPanel luar = new Surface(new GridBagLayout(), Color.WHITE);
+        luar.setBorder(new EmptyBorder(12, 14, 14, 14));
         JLabel l = new JLabel(judul);
-        l.setFont(new Font("Tahoma", Font.BOLD, 13));
-        l.setForeground(teks);
+        l.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        l.setForeground(INK);
         GridBagConstraints g = gc(0, 0, 4, 1.0);
-        g.insets = new Insets(2, 4, 10, 4);
+        g.insets = new Insets(2, 4, 12, 4);
         luar.add(l, g);
         return luar;
     }
@@ -719,13 +1023,14 @@ public final class RMPPRAAntibiotik extends JDialog {
 
     private JLabel labelAtas(String teks) {
         JLabel l = new JLabel(teks);
-        l.setFont(new Font("Tahoma", Font.PLAIN, 11));
-        l.setForeground(new Color(49, 64, 75));
+        l.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        l.setForeground(MUTED);
         return l;
     }
 
     private void siapkanInput(Component komponen) {
-        komponen.setPreferredSize(new Dimension(220, 28));
+        komponen.setPreferredSize(new Dimension(220, 30));
+        if (komponen instanceof JComponent) { style((JComponent) komponen); }
     }
 
     private GridBagConstraints gc(int x, int y, int w, double wx) {
@@ -735,5 +1040,25 @@ public final class RMPPRAAntibiotik extends JDialog {
         g.anchor = GridBagConstraints.WEST;
         g.insets = new Insets(2, 4, 2, 4);
         return g;
+    }
+
+    /** Panel putih/navy dgn sudut melengkung -- disalin persis dari kelas Surface di AdimeGiziView
+     *  supaya semua "kartu" di form ini konsisten gaya dgn form ADIME Gizi yg sudah dimodernisasi. */
+    private static final class Surface extends JPanel {
+        private final Color fill;
+        Surface(java.awt.LayoutManager layout, Color fill) {
+            super(layout);
+            this.fill = fill;
+            setOpaque(false);
+        }
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            Graphics2D p = (Graphics2D) g.create();
+            p.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            p.setColor(fill);
+            p.fillRoundRect(0, 0, getWidth(), getHeight(), 16, 16);
+            p.dispose();
+        }
     }
 }

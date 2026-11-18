@@ -10,7 +10,7 @@ public final class SatuSehatEncounterCompletion {
     public static String query(boolean inpatient,boolean search,boolean resumeAvailable){
         String start="concat(reg_periksa.tgl_registrasi,' ',reg_periksa.jam_reg)";
         String care=inpatient?"(select min(concat(k.tgl_masuk,' ',k.jam_masuk)) from kamar_inap k where k.no_rawat=reg_periksa.no_rawat and k.tgl_masuk>'0000-00-00')"
-            :"(select min(concat(p.tgl_perawatan,' ',p.jam_rawat)) from pemeriksaan_ralan p where p.no_rawat=reg_periksa.no_rawat)";
+            :outpatientServiceStart();
         String end;
         if(inpatient){
             end="(select max(concat(k.tgl_keluar,' ',k.jam_keluar)) from kamar_inap k where k.no_rawat=reg_periksa.no_rawat "
@@ -33,6 +33,23 @@ public final class SatuSehatEncounterCompletion {
             +(inpatient?"and "+end+" is not null ":"and reg_periksa.status_bayar='Sudah Bayar' ");
         if(search)sql+="and (reg_periksa.no_rawat like ? or reg_periksa.no_rkm_medis like ? or pasien.nm_pasien like ? or pasien.no_ktp like ? or pegawai.nama like ? or poliklinik.nm_poli like ? or reg_periksa.stts like ? or reg_periksa.status_lanjut like ?) ";
         return sql+"order by reg_periksa.tgl_registrasi,reg_periksa.jam_reg";
+    }
+    /**
+     * Waktu mulai rawat jalan berasal dari aktivitas pelayanan nyata paling awal.
+     * SOAP hanyalah salah satu sumber; kunjungan radiologi/lab/tindakan/obat tidak
+     * boleh ditahan hanya karena tidak mempunyai pemeriksaan_ralan.
+     */
+    private static String outpatientServiceStart(){
+        String none="9999-12-31 23:59:59";
+        return "nullif(least("+
+            "coalesce((select min(concat(p.tgl_perawatan,' ',p.jam_rawat)) from pemeriksaan_ralan p where p.no_rawat=reg_periksa.no_rawat and p.tgl_perawatan>'0000-00-00'),'"+none+"'),"+
+            "coalesce((select min(concat(r.tgl_periksa,' ',r.jam)) from periksa_radiologi r where r.no_rawat=reg_periksa.no_rawat and r.tgl_periksa>'0000-00-00'),'"+none+"'),"+
+            "coalesce((select min(concat(l.tgl_periksa,' ',l.jam)) from periksa_lab l where l.no_rawat=reg_periksa.no_rawat and l.tgl_periksa>'0000-00-00'),'"+none+"'),"+
+            "coalesce((select min(concat(d.tgl_perawatan,' ',d.jam_rawat)) from rawat_jl_dr d where d.no_rawat=reg_periksa.no_rawat and d.tgl_perawatan>'0000-00-00'),'"+none+"'),"+
+            "coalesce((select min(concat(dp.tgl_perawatan,' ',dp.jam_rawat)) from rawat_jl_drpr dp where dp.no_rawat=reg_periksa.no_rawat and dp.tgl_perawatan>'0000-00-00'),'"+none+"'),"+
+            "coalesce((select min(concat(pr.tgl_perawatan,' ',pr.jam_rawat)) from rawat_jl_pr pr where pr.no_rawat=reg_periksa.no_rawat and pr.tgl_perawatan>'0000-00-00'),'"+none+"'),"+
+            "coalesce((select min(concat(o.tgl_perawatan,' ',o.jam)) from detail_pemberian_obat o where o.no_rawat=reg_periksa.no_rawat and o.tgl_perawatan>'0000-00-00'),'"+none+"')"+
+            "),'"+none+"')";
     }
     public static void complete(ObjectNode payload,String start,String care,String end,Clock clock){
         Instant a=instant(start),b=instant(care),c=instant(end);

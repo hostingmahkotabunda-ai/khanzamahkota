@@ -152,7 +152,8 @@ public final class RMResumeMedisRalanV2 extends JDialog {
         "Melarikan Diri",
         "Pindah Rumah Sakit",
         "Pulang Atas Permintaan Sendiri",
-        "Dirujuk Ke"
+        "Dirujuk Ke",
+        "Meninggal Dunia"
     );
     private final TextBox TDirujukKe = buatTextBox(24);
     private final javax.swing.JComboBox<String> CmbKeadaanKeluar = buatCombo("Sembuh", "Membaik", "Belum Sembuh", "Meninggal");
@@ -529,6 +530,10 @@ public final class RMResumeMedisRalanV2 extends JDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 sinkronkanCaraKeluar();
+                // cara keluar meninggal dunia -> keadaan keluar ikut "Meninggal" (saat muat data, keadaan tersimpan dimuat sesudahnya jadi tetap menang)
+                if ("Meninggal Dunia".equals(CmbCaraKeluar.getSelectedItem())) {
+                    CmbKeadaanKeluar.setSelectedItem("Meninggal");
+                }
             }
         });
         tbData.addMouseListener(new MouseAdapter() {

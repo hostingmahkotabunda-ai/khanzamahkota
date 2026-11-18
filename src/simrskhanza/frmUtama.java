@@ -1085,7 +1085,9 @@ public class frmUtama extends javax.swing.JFrame {
     
     private frmUtama() {
         super();
+        StartupProgress.tahap(StartupProgress.TAMPILAN);
         initComponents();
+        StartupProgress.tahap(StartupProgress.FITUR);
         btnKirimEpisodeOfCareSatuSehat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/48x48/satusehat.png")));
         btnKirimEpisodeOfCareSatuSehat.setText("Kirim EpisodeOfCare Satu Sehat");
         btnKirimEpisodeOfCareSatuSehat.setIconTextGap(0);

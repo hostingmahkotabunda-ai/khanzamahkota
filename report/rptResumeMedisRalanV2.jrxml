@@ -342,6 +342,7 @@
 				<textField><reportElement x="10" y="52" width="160" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[(($F{cara_keluar}.equals("Pindah Rumah Sakit")) ? "■ " : "□ ") + "pindah rumah sakit"]]></textFieldExpression></textField>
 				<textField><reportElement x="10" y="66" width="164" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[(($F{cara_keluar}.equals("Pulang Atas Permintaan Sendiri")) ? "■ " : "□ ") + "pulang atas permintaan sendiri"]]></textFieldExpression></textField>
 				<textField><reportElement x="10" y="80" width="164" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[(($F{cara_keluar}.equals("Dirujuk Ke")) ? "■ " : "□ ") + "dirujuk ke " + $F{dirujuk_ke}]]></textFieldExpression></textField>
+				<textField><reportElement x="10" y="94" width="164" height="12"/><textElement><font fontName="Tahoma" size="8"/></textElement><textFieldExpression><![CDATA[(($F{cara_keluar}.equals("Meninggal Dunia")) ? "■ " : "□ ") + "meninggal dunia"]]></textFieldExpression></textField>
 
 				<rectangle radius="4"><reportElement x="185" y="3" width="16" height="16" backcolor="#ECFDF5" mode="Opaque"/><graphicElement><pen lineWidth="0.5" lineColor="#BBF7D0"/></graphicElement></rectangle>
 				<image scaleImage="RetainShape" onErrorType="Blank"><reportElement x="187" y="5" width="12" height="12"/><imageExpression class="java.lang.String"><![CDATA["./report/icons/kondisi.png"]]></imageExpression></image>

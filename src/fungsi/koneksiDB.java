@@ -61,11 +61,13 @@ public class koneksiDB {
             try{
                 prop.loadFromXML(new FileInputStream("setting/database.xml"));
                 System.out.println("XML loaded successfully.");
+                simrskhanza.StartupProgress.tahap(simrskhanza.StartupProgress.DATABASE);
                 dataSource.setURL("jdbc:mysql://"+EnkripsiAES.decrypt(prop.getProperty("HOST"))+":"+EnkripsiAES.decrypt(prop.getProperty("PORT"))+"/"+EnkripsiAES.decrypt(prop.getProperty("DATABASE"))+"?zeroDateTimeBehavior=convertToNull&autoReconnect=true&useCompression=true");
                 dataSource.setUser(EnkripsiAES.decrypt(prop.getProperty("USER")));
                 dataSource.setPassword(EnkripsiAES.decrypt(prop.getProperty("PAS")));
-                connection=dataSource.getConnection();       
-                System.out.println("  Koneksi Berhasil. Sorry bro loading, silahkan baca dulu.... \n\n"+
+                connection=dataSource.getConnection();
+                simrskhanza.StartupProgress.tahap(simrskhanza.StartupProgress.MODUL);
+                simrskhanza.StartupProgress.cetakBanner("  Koneksi Berhasil. Sorry bro loading, silahkan baca dulu.... \n\n"+
                         "	Software ini adalah Software Menejemen Rumah Sakit/Klinik/\n" +
                         "  Puskesmas yang  gratis dan boleh digunakan siapa saja tanpa dikenai \n" +
                         "  biaya apapun. Dilarang keras memperjualbelikan/mengambil \n" +
@@ -85,6 +87,7 @@ public class koneksiDB {
                         "                                                                           ");
             }catch(Exception e){
                 System.out.println("Notif : "+e);
+                simrskhanza.StartupProgress.tampilkanKonsol();
                 try {
                     if(connection.isClosed()){
                         prop.loadFromXML(new FileInputStream("setting/database.xml"));

@@ -22,6 +22,12 @@ public class SatuSehatEncounterCompletionTest {
         exec("create table satu_sehat_encounter(no_rawat varchar,id_encounter varchar)");
         exec("create table kamar_inap(no_rawat varchar,tgl_masuk varchar,jam_masuk varchar,tgl_keluar varchar,jam_keluar varchar,stts_pulang varchar)");
         exec("create table pemeriksaan_ralan(no_rawat varchar,tgl_perawatan varchar,jam_rawat varchar)");
+        exec("create table periksa_radiologi(no_rawat varchar,tgl_periksa varchar,jam varchar)");
+        exec("create table periksa_lab(no_rawat varchar,tgl_periksa varchar,jam varchar)");
+        exec("create table rawat_jl_dr(no_rawat varchar,tgl_perawatan varchar,jam_rawat varchar)");
+        exec("create table rawat_jl_drpr(no_rawat varchar,tgl_perawatan varchar,jam_rawat varchar)");
+        exec("create table rawat_jl_pr(no_rawat varchar,tgl_perawatan varchar,jam_rawat varchar)");
+        exec("create table detail_pemberian_obat(no_rawat varchar,tgl_perawatan varchar,jam varchar)");
         exec("create table nota_jalan(no_rawat varchar,tanggal varchar,jam varchar)");
         exec("create table resume_medis_ralan_v2(no_rawat varchar,tgl_keluar varchar,jam_keluar varchar)");
         exec("insert into reg_periksa values('visit','patient','2026-10-01','08:00:00','doctor','clinic','Sudah','Ralan','Sudah Bayar')");
@@ -40,6 +46,11 @@ public class SatuSehatEncounterCompletionTest {
         }
     }
     private void inpatient()throws Exception{exec("update reg_periksa set status_lanjut='Ranap',status_bayar='Belum Bayar'");}
+    private String care()throws Exception{
+        try(PreparedStatement s=db.prepareStatement(SatuSehatEncounterCompletion.query(false,false,true))){
+            s.setString(1,"2026-10-01");s.setString(2,"2026-11-07");try(ResultSet r=s.executeQuery()){assertTrue(r.next());return r.getString("mulai_layanan");}
+        }
+    }
     private void segment(String date,String exit,String status)throws Exception{
         exec("insert into kamar_inap values('visit','"+date+"','10:00:00','"+exit+"','00:00:00','"+status+"')");
     }
@@ -59,6 +70,20 @@ public class SatuSehatEncounterCompletionTest {
     @Test public void optionalKeywordWorks()throws Exception{assertEquals(1,rows(false,true,true));}
     @Test public void registrationFilterAppliesWithoutNota()throws Exception{exec("update reg_periksa set tgl_registrasi='2026-09-30'");assertEquals(0,rows(false,true,false));}
     @Test public void activeRoomAlsoBlocksPaidOutpatient()throws Exception{segment("2026-10-01","0000-00-00","-");assertEquals(0,rows(false,true,false));}
+    @Test public void radiologyVisitDoesNotRequireSoap()throws Exception{
+        exec("delete from pemeriksaan_ralan");exec("insert into periksa_radiologi values('visit','2026-10-01','09:15:00')");
+        assertEquals("2026-10-01 09:15:00",care());
+    }
+    @Test public void earliestRecordedServiceIsUsedWithoutSoap()throws Exception{
+        exec("delete from pemeriksaan_ralan");
+        exec("insert into periksa_lab values('visit','2026-10-01','10:00:00')");
+        exec("insert into rawat_jl_pr values('visit','2026-10-01','09:30:00')");
+        exec("insert into detail_pemberian_obat values('visit','2026-10-01','09:45:00')");
+        assertEquals("2026-10-01 09:30:00",care());
+    }
+    @Test public void missingAllClinicalActivityIsNotInvented()throws Exception{
+        exec("delete from pemeriksaan_ralan");assertNull(care());
+    }
     private ObjectNode completed(){ObjectNode n=mapper.createObjectNode();SatuSehatEncounterCompletion.complete(n,"2026-10-01T00:00:00Z","2026-10-01T01:00:00Z","2026-10-03T00:00:00Z",clock);return n;}
     @Test public void finishedPayloadUsesActualTimesAndThreeTransitions(){ObjectNode n=completed();assertEquals("finished",n.path("status").asText());assertEquals("2026-10-03T00:00:00Z",n.path("period").path("end").asText());assertEquals(3,n.path("statusHistory").size());assertEquals("in-progress",n.path("statusHistory").get(1).path("status").asText());}
     @Test(expected=IllegalArgumentException.class) public void unknownTimeIsHeld(){SatuSehatEncounterCompletion.complete(mapper.createObjectNode(),"2026-10-01T00:00:00Z","","",clock);}

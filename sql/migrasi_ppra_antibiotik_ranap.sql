@@ -43,3 +43,14 @@ CREATE TABLE IF NOT EXISTS ppra_antibiotik_ranap_tanggal (
     UNIQUE KEY uq_antibiotik_tanggal (antibiotik_id, tanggal),
     KEY idx_antibiotik_id (antibiotik_id)
 ) ENGINE=InnoDB;
+
+-- KSM (Kelompok Staf Medis) yang menangani rawatan ini: Anak/Obgyn/Penyakit Dalam.
+-- SATU pilihan utk seluruh rawatan (bukan per baris antibiotik) -- no_rawat sbg PRIMARY KEY,
+-- diisi/diubah dari dropdown di bagian identitas pasien (atas form), REPLACE INTO dari Java.
+CREATE TABLE IF NOT EXISTS ppra_rawatan_ksm (
+    no_rawat VARCHAR(17) NOT NULL,
+    ksm VARCHAR(30) DEFAULT '',
+    created_by VARCHAR(50) DEFAULT '',
+    created_at DATETIME NULL,
+    PRIMARY KEY (no_rawat)
+) ENGINE=InnoDB;

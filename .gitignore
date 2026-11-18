@@ -16,6 +16,7 @@ nbproject/private/
 
 # tambahkan ini kalau mau
 cache/*.iyem
+cache/startup-profile.properties
 # Hasil compile
 *.class
 

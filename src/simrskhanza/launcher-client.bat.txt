@@ -1,0 +1,22 @@
+@echo off
+REM KHANZA-LAUNCHER v3 - dibuat otomatis oleh SIMRS Khanza.
+REM Update + progress + menjalankan aplikasi ada di launcher\launcher.ps1 (ikut terupdate otomatis).
+REM Yang boleh diubah di file ini hanya alamat SERVER, akun share, dan JAVA_CMD.
+REM Cadangan launcher lama: cache\jalankan-client.bat.v1
+set "SERVER=@@SERVER@@"
+set "JAVA_CMD=@@JAVA@@"
+set "LOCAL=%~dp0"
+if "%LOCAL:~-1%"=="\" set "LOCAL=%LOCAL:~0,-1%"
+cd /d "%LOCAL%"
+title SIMRS Khanza
+net use "%SERVER%" /delete /y >nul 2>&1
+net use "%SERVER%" /user:@@AKUN@@ /persistent:no >nul 2>&1
+if not exist "%LOCAL%\launcher\launcher.ps1" goto LAMA
+powershell -NoProfile -ExecutionPolicy Bypass -File "%LOCAL%\launcher\launcher.ps1" -Server "%SERVER%" -Local "%LOCAL%" -Perintah "%JAVA_CMD%" & if not errorlevel 1 exit
+goto JALAN
+:LAMA
+if not exist "%SERVER%\version.txt" goto JALAN
+robocopy "%SERVER%" "%LOCAL%" /MIR /XD setting cache /XF *.html *.csv *.bat version.txt /R:2 /W:5 /NJH /NJS /NDL /NP
+if not errorlevel 8 copy /Y "%SERVER%\version.txt" "%LOCAL%\version.txt" >nul
+:JALAN
+%JAVA_CMD% & exit
